@@ -4,10 +4,11 @@ import (
 	"testing"
 	"time"
 
+	"cosmossdk.io/collections"
 	"cosmossdk.io/core/header"
+	cosmosMath "cosmossdk.io/math"
 	storetypes "cosmossdk.io/store/types"
 	abci "github.com/cometbft/cometbft/abci/types"
-	cosmosMath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
 
@@ -34,9 +35,10 @@ import (
 // payoutTestFixture wires a real emissions keeper with just enough account and
 // bank scaffolding for payoutRewards to run.
 type payoutTestFixture struct {
-	ctx        sdk.Context
-	keeper     keeper.Keeper
-	bankKeeper bankkeeper.BaseKeeper
+	ctx               sdk.Context
+	keeper            keeper.Keeper
+	bankKeeper        bankkeeper.BaseKeeper
+	emissionsStoreKey *storetypes.KVStoreKey
 }
 
 func newPayoutTestFixture(t *testing.T) payoutTestFixture {
@@ -92,7 +94,7 @@ func newPayoutTestFixture(t *testing.T) payoutTestFixture {
 		authtypes.FeeCollectorName,
 	)
 
-	return payoutTestFixture{ctx: ctx, keeper: emissionsKeeper, bankKeeper: bankKeeper}
+	return payoutTestFixture{ctx: ctx, keeper: emissionsKeeper, bankKeeper: bankKeeper, emissionsStoreKey: keyEmissions}
 }
 
 // fundRewardsAccount mints coins into the rewards module account so sends
@@ -244,4 +246,42 @@ func TestPayoutRewardsSuccessEmitsNoFailureEvent(t *testing.T) {
 	errs := payoutRewards(ctx, f.keeper, rewards, nonce)
 	require.Empty(t, errs)
 	require.Empty(t, allRewardPayoutFailedEvents(t, em))
+}
+
+// An inclusion-count failure happens after the actor is paid, so it emits no
+// EventRewardPayoutFailed; the actor still lands in the settled list.
+func TestPayoutRewardsInclusionCountFailureEmitsNoFailureEvent(t *testing.T) {
+	f := newPayoutTestFixture(t)
+	f.fundRewardsAccount(t, cosmosMath.NewInt(1000))
+	em := sdk.NewEventManager()
+	ctx := f.ctx.WithEventManager(em)
+	nonce := int64(940)
+
+	owner := sdk.AccAddress([]byte("owner_______________")).String()
+	worker := sdk.AccAddress([]byte("worker______________")).String()
+	topicId := uint64(1)
+	require.NoError(t, f.keeper.GetWorkerKeeper().InsertWorker(ctx, topicId, worker, types.OffchainNode{
+		Owner:       owner,
+		NodeAddress: worker,
+	}))
+
+	// Corrupt the inclusion count so the post-send increment fails on read:
+	// the count is a uint64 collection, and an undecodable value errors the
+	// Get inside the increment. The key is built with the same prefix and
+	// pair codec the keeper's map uses.
+	countKey := collections.Join(topicId, worker)
+	keyCodec := collections.PairKeyCodec(collections.Uint64Key, collections.StringKey)
+	encodedKey := make([]byte, keyCodec.Size(countKey))
+	_, err := keyCodec.Encode(encodedKey, countKey)
+	require.NoError(t, err)
+	storeKey := append(types.CountInfererInclusionsInTopicKey.Bytes(), encodedKey...)
+	kvStore := f.ctx.KVStore(f.emissionsStoreKey)
+	kvStore.Set(storeKey, []byte{0xff})
+
+	rewards := []types.TaskReward{
+		{TopicId: topicId, Address: worker, Reward: alloraMath.NewDecFromInt64(10), Type: types.WorkerInferenceRewardType},
+	}
+	errs := payoutRewards(ctx, f.keeper, rewards, nonce)
+	require.Len(t, errs, 1, "the inclusion-count failure is still returned")
+	require.Empty(t, allRewardPayoutFailedEvents(t, em), "no payout failure event: the actor was paid")
 }
