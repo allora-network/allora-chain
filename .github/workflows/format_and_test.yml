@@ -28,13 +28,11 @@ jobs:
         go-version: 1.22.x
 
     - name: Test
-      uses: robherley/go-test-action@v0.4.1
+      uses: robherley/go-test-action@v1.1.0
       with:
         omit: |
           untested
           successful
-          pkg-tests
-          pkg-output
           pie
 
   integration-test:
