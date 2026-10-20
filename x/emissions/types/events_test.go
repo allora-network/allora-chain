@@ -13,22 +13,25 @@ import (
 	"github.com/allora-network/allora-chain/x/emissions/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/gogoproto/proto"
 	"github.com/stretchr/testify/require"
 )
 
 const (
-	AttributeKeyActorType     = "actor_type"
-	AttributeKeyTopicId       = "topic_id"
-	AttributeKeyBlockHeight   = "block_height"
-	AttributeKeyBlockHeightTx = "block_height_tx"
-	AttributeKeyAddresses     = "addresses"
-	AttributeKeyScores        = "scores"
-	AttributeKeyRewards       = "rewards"
-	AttributeKeyValueBundle   = "bundle"
-	AttributeKeyCoefficients  = "coefficients"
-	AttributeKeyRegrets       = "regrets"
-	AttributeKeyRegret        = "regret"
-	AttributeKeyWeights       = "weights"
+	AttributeKeyActorType        = "actor_type"
+	AttributeKeyTopicId          = "topic_id"
+	AttributeKeyBlockHeight      = "block_height"
+	AttributeKeyBlockHeightTx    = "block_height_tx"
+	AttributeKeyNonce            = "nonce"
+	AttributeKeyNonceBlockHeight = "nonce_block_height"
+	AttributeKeyAddresses        = "addresses"
+	AttributeKeyScores           = "scores"
+	AttributeKeyRewards          = "rewards"
+	AttributeKeyValueBundle      = "bundle"
+	AttributeKeyCoefficients     = "coefficients"
+	AttributeKeyRegrets          = "regrets"
+	AttributeKeyRegret           = "regret"
+	AttributeKeyWeights          = "weights"
 )
 
 func TestEmitNewInfererScoresSetEventWithScores(t *testing.T) {
@@ -57,7 +60,7 @@ func TestEmitNewInfererScoresSetEventWithScores(t *testing.T) {
 	require.Equal(t, "emissions.v10.EventScoresSet", event.Type)
 
 	attributes := event.Attributes
-	require.Len(t, attributes, 5)
+	require.Len(t, attributes, 6)
 
 	val, exists := event.GetAttribute(AttributeKeyActorType)
 	require.True(t, exists)
@@ -134,7 +137,7 @@ func TestEmitNewForecasterScoresSetEventWithScores(t *testing.T) {
 	require.Equal(t, "emissions.v10.EventScoresSet", event.Type)
 
 	attributes := event.Attributes
-	require.Len(t, attributes, 5)
+	require.Len(t, attributes, 6)
 
 	val, exists := event.GetAttribute(AttributeKeyActorType)
 	require.True(t, exists)
@@ -193,7 +196,7 @@ func TestEmitNewReputerScoresSetEventWithScores(t *testing.T) {
 	require.Equal(t, "emissions.v10.EventScoresSet", event.Type)
 
 	attributes := event.Attributes
-	require.Len(t, attributes, 5)
+	require.Len(t, attributes, 6)
 
 	val, exists := event.GetAttribute(AttributeKeyActorType)
 	require.True(t, exists)
@@ -313,7 +316,7 @@ func TestEmitNewInfererRewardsSettledEventWithRewards(t *testing.T) {
 	require.Equal(t, "emissions.v10.EventRewardsSettled", event.Type)
 
 	attributes := event.Attributes
-	require.Len(t, attributes, 6)
+	require.Len(t, attributes, 7)
 
 	val, exists := event.GetAttribute(AttributeKeyActorType)
 	require.True(t, exists)
@@ -372,7 +375,7 @@ func TestEmitNewForecasterRewardsSettledEventWithRewards(t *testing.T) {
 	require.Equal(t, "emissions.v10.EventRewardsSettled", event.Type)
 
 	attributes := event.Attributes
-	require.Len(t, attributes, 6)
+	require.Len(t, attributes, 7)
 
 	val, exists := event.GetAttribute(AttributeKeyActorType)
 	require.True(t, exists)
@@ -431,7 +434,7 @@ func TestEmitNewReputerAndDelegatorRewardsSettledEventWithRewards(t *testing.T) 
 	require.Equal(t, "emissions.v10.EventRewardsSettled", event.Type)
 
 	attributes := event.Attributes
-	require.Len(t, attributes, 6)
+	require.Len(t, attributes, 7)
 
 	val, exists := event.GetAttribute(AttributeKeyActorType)
 	require.True(t, exists)
@@ -1228,7 +1231,7 @@ func TestEmitNewForecastTaskSetEvent(t *testing.T) {
 	require.Equal(t, "emissions.v10.EventForecastTaskScoreSet", event.Type)
 
 	// Check that we have the expected number of attributes
-	require.Len(t, event.Attributes, 3)
+	require.Len(t, event.Attributes, 4)
 
 	// Create a map to check attributes regardless of order
 	attributes := make(map[string]string)
@@ -1242,6 +1245,9 @@ func TestEmitNewForecastTaskSetEvent(t *testing.T) {
 
 	require.Contains(t, attributes, "score")
 	require.Equal(t, "\"10\"", attributes["score"])
+
+	require.Contains(t, attributes, "nonce")
+	require.Equal(t, "\"10\"", attributes["nonce"])
 
 	require.Contains(t, attributes, "nonce_block_height")
 	require.Equal(t, "\"10\"", attributes["nonce_block_height"])
@@ -1383,7 +1389,7 @@ func TestEmitNewListeningCoefficientsSetEvent(t *testing.T) {
 	require.Equal(t, "emissions.v10.EventListeningCoefficientsSet", event.Type)
 
 	attributes := event.Attributes
-	require.Len(t, attributes, 5)
+	require.Len(t, attributes, 6)
 
 	val, exists := event.GetAttribute(AttributeKeyActorType)
 	require.True(t, exists)
@@ -1783,7 +1789,7 @@ func TestEmitNewNetworkInferenceInfererWeightsSetEvent(t *testing.T) {
 	require.True(t, exists)
 	require.Contains(t, val.GetValue(), "1")
 
-	val, exists = event.GetAttribute("nonce_block_height")
+	val, exists = event.GetAttribute("nonce")
 	require.True(t, exists)
 	require.Contains(t, val.GetValue(), "10")
 
@@ -1815,7 +1821,7 @@ func TestEmitNewNetworkInferenceForecasterWeightsSetEvent(t *testing.T) {
 	require.True(t, exists)
 	require.Contains(t, val.GetValue(), "1")
 
-	val, exists = event.GetAttribute("nonce_block_height")
+	val, exists = event.GetAttribute("nonce")
 	require.True(t, exists)
 	require.Contains(t, val.GetValue(), "10")
 
@@ -1858,4 +1864,59 @@ func TestEmitNewTopicFeeRevenueDrippedEvent(t *testing.T) {
 	val, exists = event.GetAttribute("drip_amount")
 	require.True(t, exists)
 	require.Contains(t, val.GetValue(), "50")
+}
+
+// Every event carrying the epoch nonce emits it as nonce and, with the same
+// value, under its deprecated name.
+func TestEpochEventsEmitNonce(t *testing.T) {
+	one := alloraMath.NewDecFromInt64(1)
+	score := types.Score{TopicId: 1, BlockHeight: 940, Address: "address1", Score: one}
+	reward := types.TaskReward{TopicId: 1, Address: "address1", Reward: one, Type: types.WorkerInferenceRewardType}
+	addrs := []string{"address1"}
+	decs := []alloraMath.Dec{one}
+	tests := []struct {
+		name       string
+		event      proto.Message
+		deprecated string
+	}{
+		{"scores", types.NewScoresSetEventBase(types.ActorType_ACTOR_TYPE_INFERER_UNSPECIFIED, []types.Score{score}), AttributeKeyBlockHeight},
+		{"rewards", types.NewRewardsSetEventBase(types.ActorType_ACTOR_TYPE_INFERER_UNSPECIFIED, 940, 1000, []types.TaskReward{reward}), AttributeKeyBlockHeight},
+		{"listening coefficients", types.NewListeningCoefficientsSetEventBase(1, 940, addrs, types.ActorType_ACTOR_TYPE_REPUTER, decs), AttributeKeyBlockHeight},
+		{"inferer network regrets", types.NewInfererNetworkRegretSetEventBase(1, 940, addrs, decs), AttributeKeyBlockHeight},
+		{"forecaster network regrets", types.NewForecasterNetworkRegretSetEventBase(1, 940, addrs, decs), AttributeKeyBlockHeight},
+		{"naive inferer network regrets", types.NewNaiveInfererNetworkRegretSetEventBase(1, 940, addrs, decs), AttributeKeyBlockHeight},
+		{"topic initial regret", types.NewTopicInitialRegretSetEventBase(1, 940, one), AttributeKeyBlockHeight},
+		{"topic initial ema score", types.NewTopicInitialEmaScoreSetEventBase(types.ActorType_ACTOR_TYPE_INFERER_UNSPECIFIED, 1, 940, one), AttributeKeyBlockHeight},
+		{"regret std norm", types.NewRegretStdNormSetEventBase(1, 940, one), AttributeKeyBlockHeight},
+		{"inferer weights", types.NewInfererWeightsSetEventBase(1, 940, addrs, decs), AttributeKeyBlockHeight},
+		{"forecaster weights", types.NewForecasterWeightsSetEventBase(1, 940, addrs, decs), AttributeKeyBlockHeight},
+		{"forecast task score", types.NewForecastTaskScoreSetEventBase(1, one, 940), AttributeKeyNonceBlockHeight},
+		{"active reputers", types.NewActiveReputersSetEventBase(1, 940, addrs), AttributeKeyNonceBlockHeight},
+		{"active inferers", types.NewActiveInferersSetEventBase(1, 940, addrs), AttributeKeyNonceBlockHeight},
+		{"active forecasters", types.NewActiveForecastersSetEventBase(1, 940, addrs), AttributeKeyNonceBlockHeight},
+		{"network inference inferer weights", types.NewNetworkInferenceInfererWeightsSetEventBase(1, 940, addrs, decs), AttributeKeyNonceBlockHeight},
+		{"network inference forecaster weights", types.NewNetworkInferenceForecasterWeightsSetEventBase(1, 940, addrs, decs), AttributeKeyNonceBlockHeight},
+		{"network inference inferer regrets used", types.NewNetworkInferenceInfererRegretsUsedSetEventBase(1, 940, addrs, decs), AttributeKeyNonceBlockHeight},
+		{"network inference forecaster regrets used", types.NewNetworkInferenceForecasterRegretsUsedSetEventBase(1, 940, addrs, decs), AttributeKeyNonceBlockHeight},
+		{"worker submission window opened", types.NewWorkerSubmissionWindowOpenedEventBase(1, 940, 950), AttributeKeyNonceBlockHeight},
+		{"worker submission window closed", types.NewWorkerSubmissionWindowClosedEventBase(1, 940), AttributeKeyNonceBlockHeight},
+		{"reputer submission window opened", types.NewReputerSubmissionWindowOpenedEventBase(1, 940, 950), AttributeKeyNonceBlockHeight},
+		{"reputer submission window closed", types.NewReputerSubmissionWindowClosedEventBase(1, 940), AttributeKeyNonceBlockHeight},
+		{"epoch label registry frozen", types.NewEpochLabelRegistryFrozenEventBase(1, 940, 1), AttributeKeyNonceBlockHeight},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := sdk.Context{}.WithEventManager(sdk.NewEventManager())
+			require.NoError(t, ctx.EventManager().EmitTypedEvent(tt.event))
+			events := ctx.EventManager().Events()
+			require.Len(t, events, 1)
+
+			nonce, ok := events[0].GetAttribute(AttributeKeyNonce)
+			require.True(t, ok, "nonce is emitted")
+			require.Equal(t, `"940"`, nonce.GetValue())
+			old, ok := events[0].GetAttribute(tt.deprecated)
+			require.True(t, ok, "%s is emitted", tt.deprecated)
+			require.Equal(t, nonce.GetValue(), old.GetValue())
+		})
+	}
 }
