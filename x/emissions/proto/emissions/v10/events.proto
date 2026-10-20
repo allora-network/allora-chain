@@ -47,6 +47,8 @@ enum RewardPayoutFailureReason {
   REWARD_PAYOUT_FAILURE_REASON_WORKER_INFO_LOOKUP = 5;
   // The module-to-account send to the payout address failed.
   REWARD_PAYOUT_FAILURE_REASON_ACCOUNT_SEND = 6;
+  // The reward was negative.
+  REWARD_PAYOUT_FAILURE_REASON_NEGATIVE_REWARD = 7;
 }
 
 // Why a topic's active status changed.

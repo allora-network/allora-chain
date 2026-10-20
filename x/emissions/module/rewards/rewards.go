@@ -623,7 +623,7 @@ func payoutRewards(
 				reward.TopicId,
 				reward.Type,
 			))
-			emitRewardPayoutFailedEvent(ctx, reward, nonce, types.RewardPayoutFailureReason_REWARD_PAYOUT_FAILURE_REASON_REWARD_CONVERSION)
+			emitRewardPayoutFailedEvent(ctx, reward, nonce, types.RewardPayoutFailureReason_REWARD_PAYOUT_FAILURE_REASON_NEGATIVE_REWARD)
 			continue
 		}
 

@@ -141,6 +141,14 @@ func TestPayoutRewardsEmitsFailureReasonPerSite(t *testing.T) {
 			reward:    types.TaskReward{TopicId: 1, Address: worker, Reward: alloraMath.NewDecFromInt64(-1), Type: types.WorkerInferenceRewardType},
 			setup:     func(t *testing.T, f payoutTestFixture) {},
 			actorType: types.ActorType_ACTOR_TYPE_INFERER_UNSPECIFIED,
+			reason:    types.RewardPayoutFailureReason_REWARD_PAYOUT_FAILURE_REASON_NEGATIVE_REWARD,
+		},
+		{
+			name: "reward conversion",
+			// A NaN cannot be converted to an integer coin amount.
+			reward:    types.TaskReward{TopicId: 1, Address: worker, Reward: alloraMath.NewNaN(), Type: types.WorkerInferenceRewardType},
+			setup:     func(t *testing.T, f payoutTestFixture) {},
+			actorType: types.ActorType_ACTOR_TYPE_INFERER_UNSPECIFIED,
 			reason:    types.RewardPayoutFailureReason_REWARD_PAYOUT_FAILURE_REASON_REWARD_CONVERSION,
 		},
 		{
