@@ -304,7 +304,7 @@ func (s *MsgServerTestSuite) TestCreateNewTopic() {
 // TestCreateNewTopicEmitsGateAndFeeEvents pins the event contract of topic
 // creation: one Enabled event per requested whitelist gate, one funding event
 // for the creation fee credited to topic fee revenue, and the topic creation
-// event, all in the same transaction and in emission order.
+// event, in the order create, gates, fund.
 func (s *MsgServerTestSuite) TestCreateNewTopicEmitsGateAndFeeEvents() {
 	msgServer := s.EmissionsMsgServer()
 	creator := s.AddrsStr(0)
@@ -342,6 +342,7 @@ func (s *MsgServerTestSuite) TestCreateNewTopicEmitsGateAndFeeEvents() {
 
 			var created, funded, workerEnabled, reputerEnabled, workerDisabled, reputerDisabled, seq int
 			var createdAt, fundedAt int
+			var gateEnabledAt []int
 			for _, ev := range ctx.EventManager().Events() {
 				parsed, err := sdk.ParseTypedEvent(abci.Event(ev))
 				if err != nil {
@@ -362,9 +363,11 @@ func (s *MsgServerTestSuite) TestCreateNewTopicEmitsGateAndFeeEvents() {
 				case *types.EventTopicWorkerWhitelistEnabled:
 					s.Require().Equal(topicId, e.TopicId)
 					workerEnabled++
+					gateEnabledAt = append(gateEnabledAt, seq)
 				case *types.EventTopicReputerWhitelistEnabled:
 					s.Require().Equal(topicId, e.TopicId)
 					reputerEnabled++
+					gateEnabledAt = append(gateEnabledAt, seq)
 				case *types.EventTopicWorkerWhitelistDisabled:
 					workerDisabled++
 				case *types.EventTopicReputerWhitelistDisabled:
@@ -378,6 +381,9 @@ func (s *MsgServerTestSuite) TestCreateNewTopicEmitsGateAndFeeEvents() {
 			s.Require().Equal(tc.wantReputerEvents, reputerEnabled, "exact reputer gate event count")
 			s.Require().Zero(workerDisabled)
 			s.Require().Zero(reputerDisabled)
+			for _, at := range gateEnabledAt {
+				s.Require().Less(createdAt, at, "the creation event must precede the gate events")
+			}
 			s.Require().Less(createdAt, fundedAt, "the creation event must precede the fee funding event")
 		})
 	}

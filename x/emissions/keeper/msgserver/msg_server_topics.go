@@ -120,6 +120,11 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.CreateNewTopi
 		return nil, err
 	}
 
+	// Emit the creation event first so indexers that materialize the topic
+	// on EventCreateNewTopic only ever see gate and funding events for a
+	// topic they already know.
+	types.EmitNewCreateNewTopicEvent(ctx, &topic)
+
 	// Turn topic whitelist on by default so no one can squeeze in payloads before an admin notices or can act
 	if msg.EnableWorkerWhitelist {
 		err = ms.wlk.EnableTopicWorkerWhitelist(ctx, topicId)
@@ -141,10 +146,6 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.CreateNewTopi
 		}
 	}
 
-	// Emit the creation event before the funding event so indexers that
-	// materialize the topic on EventCreateNewTopic see the funding of a topic
-	// they already know.
-	types.EmitNewCreateNewTopicEvent(ctx, &topic)
 	if chargeFee {
 		// The creation fee is credited to the topic's fee revenue, so emit the
 		// same event as FundTopic to keep the fee-revenue event stream complete.
