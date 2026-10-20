@@ -794,8 +794,17 @@ func NewNetworkInferenceForecasterRegretsUsedSetEventBase(topicId TopicId, block
 	}
 }
 
-func NewTopicWeightUpdatedEventBase(topicId TopicId, newWeight alloraMath.Dec, topicStake math.Int, topicFeeRevenue math.Int) proto.Message {
-	return &EventTopicWeightUpdated{
+// topicWeightFields holds the payload both topic weight events share, so the
+// two stay in lockstep.
+type topicWeightFields struct {
+	TopicId         TopicId
+	NewWeight       alloraMath.Dec
+	TopicStake      math.Int
+	TopicFeeRevenue math.Int
+}
+
+func newTopicWeightFields(topicId TopicId, newWeight alloraMath.Dec, topicStake math.Int, topicFeeRevenue math.Int) topicWeightFields {
+	return topicWeightFields{
 		TopicId:         topicId,
 		NewWeight:       clampDec(newWeight),
 		TopicStake:      topicStake,
@@ -803,12 +812,23 @@ func NewTopicWeightUpdatedEventBase(topicId TopicId, newWeight alloraMath.Dec, t
 	}
 }
 
+func NewTopicWeightUpdatedEventBase(topicId TopicId, newWeight alloraMath.Dec, topicStake math.Int, topicFeeRevenue math.Int) proto.Message {
+	f := newTopicWeightFields(topicId, newWeight, topicStake, topicFeeRevenue)
+	return &EventTopicWeightUpdated{
+		TopicId:         f.TopicId,
+		NewWeight:       f.NewWeight,
+		TopicStake:      f.TopicStake,
+		TopicFeeRevenue: f.TopicFeeRevenue,
+	}
+}
+
 func NewTopicWeightUpdatedAfterStakeChangeEventBase(topicId TopicId, newWeight alloraMath.Dec, topicStake math.Int, topicFeeRevenue math.Int) proto.Message {
+	f := newTopicWeightFields(topicId, newWeight, topicStake, topicFeeRevenue)
 	return &EventTopicWeightUpdatedAfterStakeChange{
-		TopicId:         topicId,
-		NewWeight:       clampDec(newWeight),
-		TopicStake:      topicStake,
-		TopicFeeRevenue: topicFeeRevenue,
+		TopicId:         f.TopicId,
+		NewWeight:       f.NewWeight,
+		TopicStake:      f.TopicStake,
+		TopicFeeRevenue: f.TopicFeeRevenue,
 	}
 }
 
