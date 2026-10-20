@@ -115,6 +115,84 @@ func (s *KeeperTestSuite) TestStakeEventsEmitPostChangeTopicStake() {
 	s.Require().True(removeReputerEvent.TopicStake.IsZero())
 }
 
+// The removal events carry the topic's remaining stake after the removal,
+// each through its own removal path.
+func (s *KeeperTestSuite) TestRemoveStakeEventsEmitPostRemovalTopicStake() {
+	moduleParams, err := s.ParamsKeeper().GetParams(s.Ctx())
+	s.Require().NoError(err)
+
+	s.Run("reputer removal", func() {
+		s.SetupTest()
+		ctx := s.Ctx()
+		k := s.StakingKeeper()
+		topicId := uint64(1)
+		reputerAddr := s.AddrsStr(0)
+		reputerStake := cosmosMath.NewInt(500)
+		extraStake := cosmosMath.NewInt(200)
+
+		em := sdk.NewEventManager()
+		eventCtx := ctx.WithEventManager(em)
+
+		// A second staker keeps the topic stake non-zero after the removal.
+		s.Require().NoError(k.AddReputerStake(eventCtx, topicId, s.AddrsStr(1), extraStake))
+		s.Require().NoError(k.AddReputerStake(eventCtx, topicId, reputerAddr, reputerStake))
+
+		endBlock := ctx.BlockHeight() + moduleParams.RemoveStakeDelayWindow
+		s.Require().NoError(k.SetStakeRemoval(eventCtx, types.StakeRemovalInfo{
+			TopicId:               topicId,
+			Reputer:               reputerAddr,
+			Amount:                reputerStake,
+			BlockRemovalStarted:   ctx.BlockHeight(),
+			BlockRemovalCompleted: endBlock,
+		}))
+		s.Require().NoError(k.RemoveReputerStake(eventCtx, endBlock, topicId, reputerAddr, reputerStake))
+
+		event := lastRemoveStakeEvent(em)
+		s.Require().NotNil(event)
+		s.Require().Equal(topicId, event.TopicId)
+		s.Require().Equal(reputerAddr, event.Reputer)
+		s.Require().Equal(reputerAddr, event.Delegator)
+		s.Require().Equal(reputerStake, event.Amount)
+		s.Require().Equal(extraStake, event.TopicStake)
+	})
+
+	s.Run("delegate removal", func() {
+		s.SetupTest()
+		ctx := s.Ctx()
+		k := s.StakingKeeper()
+		topicId := uint64(1)
+		reputerAddr := s.AddrsStr(0)
+		delegatorAddr := s.AddrsStr(1)
+		reputerStake := cosmosMath.NewInt(500)
+		delegateStake := cosmosMath.NewInt(300)
+
+		em := sdk.NewEventManager()
+		eventCtx := ctx.WithEventManager(em)
+
+		s.Require().NoError(k.AddReputerStake(eventCtx, topicId, reputerAddr, reputerStake))
+		s.Require().NoError(k.AddDelegateStake(eventCtx, topicId, delegatorAddr, reputerAddr, delegateStake))
+
+		endBlock := ctx.BlockHeight() + moduleParams.RemoveStakeDelayWindow
+		s.Require().NoError(k.SetDelegateStakeRemoval(eventCtx, types.DelegateStakeRemovalInfo{
+			BlockRemovalStarted:   ctx.BlockHeight(),
+			BlockRemovalCompleted: endBlock,
+			TopicId:               topicId,
+			Delegator:             delegatorAddr,
+			Reputer:               reputerAddr,
+			Amount:                delegateStake,
+		}))
+		s.Require().NoError(k.RemoveDelegateStake(eventCtx, endBlock, topicId, delegatorAddr, reputerAddr, delegateStake))
+
+		event := lastRemoveStakeEvent(em)
+		s.Require().NotNil(event)
+		s.Require().Equal(topicId, event.TopicId)
+		s.Require().Equal(reputerAddr, event.Reputer)
+		s.Require().Equal(delegatorAddr, event.Delegator)
+		s.Require().Equal(delegateStake, event.Amount)
+		s.Require().Equal(reputerStake, event.TopicStake)
+	})
+}
+
 func (s *KeeperTestSuite) TestGetSetTotalStake() {
 	ctx := s.Ctx()
 	k := s.StakingKeeper()
