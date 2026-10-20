@@ -4,6 +4,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/allora-network/allora-chain/app/params"
+	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	minttypes "github.com/allora-network/allora-chain/x/mint/types"
 )
@@ -102,7 +103,7 @@ func (s *QueryServerTestSuite) TestRegisteredWorkerIsRegisteredInTopicId() {
 	// Topic register
 	err := s.TopicKeeper().SetTopic(ctx, topicId, topic1)
 	require.NoError(err, "SetTopic should not return an error")
-	err = s.TopicKeeper().ActivateTopic(ctx, topicId)
+	err = s.TopicKeeper().ActivateTopic(ctx, topicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec())
 	require.NoError(err, "ActivateTopic should not return an error")
 	// Worker register
 	registerMsg := &types.RegisterRequest{
@@ -154,7 +155,7 @@ func (s *QueryServerTestSuite) TestRegisteredReputerIsRegisteredInTopicId() {
 	// Topic register
 	err = s.TopicKeeper().SetTopic(ctx, topicId, topic1)
 	require.NoError(err, "SetTopic should not return an error")
-	err = s.TopicKeeper().ActivateTopic(ctx, topicId)
+	err = s.TopicKeeper().ActivateTopic(ctx, topicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec())
 	require.NoError(err, "ActivateTopic should not return an error")
 	// Register reputer
 	registerMsg := &types.RegisterRequest{

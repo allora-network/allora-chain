@@ -38,7 +38,7 @@ func (s *KeeperTestSuite) TestTopicInvariantTotalSumPreviousTopicWeightsEqualAct
 	stayingTopicId := s.CreateTopic(testutil.WithEpochLength(epochLength), testutil.WithWorkerSubmissionWindow(epochLength))
 	churnedTopicId := s.CreateTopic(testutil.WithEpochLength(epochLength), testutil.WithWorkerSubmissionWindow(epochLength))
 	for _, topicId := range []uint64{stayingTopicId, churnedTopicId} {
-		err = k.ActivateTopic(ctx, topicId)
+		err = k.ActivateTopic(ctx, topicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec())
 		s.Require().NoError(err)
 		err = s.StakingKeeper().AddReputerStake(ctx, topicId, reputerAddr, stakeAmount)
 		s.Require().NoError(err)
@@ -54,7 +54,7 @@ func (s *KeeperTestSuite) TestTopicInvariantTotalSumPreviousTopicWeightsEqualAct
 	}
 	assertHolds("two active topics with weights")
 
-	err = k.InactivateTopic(ctx, churnedTopicId)
+	err = k.InactivateTopic(ctx, churnedTopicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec())
 	s.Require().NoError(err)
 	assertHolds("inactivation")
 
@@ -73,7 +73,7 @@ func (s *KeeperTestSuite) TestTopicInvariantTotalSumPreviousTopicWeightsEqualAct
 	s.Require().NoError(err)
 	assertHolds("stake removal from inactive topic")
 
-	err = k.ActivateTopic(ctx, churnedTopicId)
+	err = k.ActivateTopic(ctx, churnedTopicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec())
 	s.Require().NoError(err)
 	assertHolds("reactivation")
 

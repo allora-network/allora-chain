@@ -16,7 +16,7 @@ func (s *MsgServerTestSuite) TestFundTopicSimple() {
 	// put some stake in the topic
 	err := s.StakingKeeper().AddReputerStake(s.Ctx(), topic, s.AddrsStr(1), cosmosMath.NewInt(500000))
 	s.Require().NoError(err)
-	err = s.TopicKeeper().InactivateTopic(s.Ctx(), topic)
+	err = s.TopicKeeper().InactivateTopic(s.Ctx(), topic, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec())
 	s.Require().NoError(err)
 	var initialStake int64 = 1000
 	initialStakeCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(initialStake)))
@@ -67,11 +67,11 @@ func (s *MsgServerTestSuite) TestHighWeightForHighFundedTopic() {
 	// put some stake in the topic
 	err := s.StakingKeeper().AddReputerStake(s.Ctx(), topic1, reputer, cosmosMath.NewInt(500000))
 	s.Require().NoError(err)
-	err = s.TopicKeeper().InactivateTopic(s.Ctx(), topic1)
+	err = s.TopicKeeper().InactivateTopic(s.Ctx(), topic1, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec())
 	s.Require().NoError(err)
 	err = s.StakingKeeper().AddReputerStake(s.Ctx(), topic2, reputer, cosmosMath.NewInt(500000))
 	s.Require().NoError(err)
-	err = s.TopicKeeper().InactivateTopic(s.Ctx(), topic2)
+	err = s.TopicKeeper().InactivateTopic(s.Ctx(), topic2, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec())
 	s.Require().NoError(err)
 	var initialStake int64 = 1000
 	var initialStake2 int64 = 10000
@@ -131,12 +131,12 @@ func (s *MsgServerTestSuite) TestTopicWeightDoesNotChangeWithDifferentEpochLengt
 	// Put same stake in both topics
 	err := s.StakingKeeper().AddReputerStake(s.Ctx(), topic1, reputer, cosmosMath.NewInt(500000))
 	s.Require().NoError(err)
-	err = s.TopicKeeper().InactivateTopic(s.Ctx(), topic1)
+	err = s.TopicKeeper().InactivateTopic(s.Ctx(), topic1, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec())
 	s.Require().NoError(err)
 
 	err = s.StakingKeeper().AddReputerStake(s.Ctx(), topic2, reputer, cosmosMath.NewInt(500000))
 	s.Require().NoError(err)
-	err = s.TopicKeeper().InactivateTopic(s.Ctx(), topic2)
+	err = s.TopicKeeper().InactivateTopic(s.Ctx(), topic2, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec())
 	s.Require().NoError(err)
 
 	// Set up funding amounts

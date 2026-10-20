@@ -100,10 +100,10 @@ func EmitNewTopicUpdatedEvent(ctx context.Context, topic Topic) {
 	}
 }
 
-func EmitNewAddStakeEvent(ctx context.Context, topicId TopicId, reputer, delegator string, amount, totalStake cosmosMath.Int) {
+func EmitNewAddStakeEvent(ctx context.Context, topicId TopicId, reputer, delegator string, amount, totalStake, topicStake cosmosMath.Int) {
 	metrics.IncrProducerEventCount(metrics.ADD_STAKE_EVENT)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	if err := sdkCtx.EventManager().EmitTypedEvent(NewAddStakeEventBase(topicId, reputer, delegator, amount)); err != nil {
+	if err := sdkCtx.EventManager().EmitTypedEvent(NewAddStakeEventBase(topicId, reputer, delegator, amount, topicStake)); err != nil {
 		sdkCtx.Logger().Warn("Error emitting NewAddReputerStakeEvent", "error", err)
 	}
 	if err := sdkCtx.EventManager().EmitTypedEvent(NewReputerStakeUpdatedEventBase(topicId, reputer, totalStake)); err != nil {
@@ -111,10 +111,10 @@ func EmitNewAddStakeEvent(ctx context.Context, topicId TopicId, reputer, delegat
 	}
 }
 
-func EmitNewRemoveStakeEvent(ctx context.Context, topicId TopicId, reputer string, delegator string, amount, totalStake cosmosMath.Int) {
+func EmitNewRemoveStakeEvent(ctx context.Context, topicId TopicId, reputer string, delegator string, amount, totalStake, topicStake cosmosMath.Int) {
 	metrics.IncrProducerEventCount(metrics.STAKE_REMOVAL_EVENT)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	if err := sdkCtx.EventManager().EmitTypedEvent(NewRemoveStakeEventBase(topicId, reputer, delegator, amount)); err != nil {
+	if err := sdkCtx.EventManager().EmitTypedEvent(NewRemoveStakeEventBase(topicId, reputer, delegator, amount, topicStake)); err != nil {
 		sdkCtx.Logger().Warn("Error emitting NewRemoveStakeEvent", "error", err)
 	}
 	if err := sdkCtx.EventManager().EmitTypedEvent(NewReputerStakeUpdatedEventBase(topicId, reputer, totalStake)); err != nil {
@@ -469,10 +469,10 @@ func EmitNewTopicRewardSetEvent(ctx context.Context, topicRewards map[uint64]*al
 
 // Delegate rewards share updated event
 
-func EmitNewDelegateRewardShareUpdatedEvent(ctx context.Context, topicId TopicId, reputer string, rewardPerShare alloraMath.Dec) {
+func EmitNewDelegateRewardShareUpdatedEvent(ctx context.Context, topicId TopicId, reputer string, rewardPerShare alloraMath.Dec, nonce int64) {
 	metrics.IncrProducerEventCount(metrics.DELEGATE_REWARD_SHARE_UPDATED_EVENT)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	err := sdkCtx.EventManager().EmitTypedEvent(NewDelegateRewardShareUpdatedEventBase(topicId, reputer, rewardPerShare))
+	err := sdkCtx.EventManager().EmitTypedEvent(NewDelegateRewardShareUpdatedEventBase(topicId, reputer, rewardPerShare, nonce))
 	if err != nil {
 		sdkCtx.Logger().Warn("Error emitting DelegateRewardShareUpdatedEvent", "error", err)
 	}
@@ -480,10 +480,10 @@ func EmitNewDelegateRewardShareUpdatedEvent(ctx context.Context, topicId TopicId
 
 // Delegate rewards distributed event
 
-func EmitNewDelegateRewardDistributedEvent(ctx context.Context, topicId TopicId, reputer string, amount cosmosMath.Int) {
+func EmitNewDelegateRewardDistributedEvent(ctx context.Context, topicId TopicId, reputer string, amount cosmosMath.Int, nonce int64) {
 	metrics.IncrProducerEventCount(metrics.DELEGATE_REWARD_DISTRIBUTED_EVENT)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	err := sdkCtx.EventManager().EmitTypedEvent(NewDelegateRewardDistributedEventBase(topicId, reputer, amount))
+	err := sdkCtx.EventManager().EmitTypedEvent(NewDelegateRewardDistributedEventBase(topicId, reputer, amount, nonce))
 	if err != nil {
 		sdkCtx.Logger().Warn("Error emitting DelegateRewardDistributedEvent", "error", err)
 	}
@@ -518,10 +518,19 @@ func EmitNewActiveForecastersSetEvent(ctx context.Context, topicId TopicId, nonc
 	}
 }
 
-func EmitNewTopicStatusChangedEvent(ctx context.Context, topicId TopicId, isActive bool) {
+func EmitNewRewardPayoutFailedEvent(ctx context.Context, topicId TopicId, nonce int64, address string, actorType ActorType, amount alloraMath.Dec, reason RewardPayoutFailureReason) {
+	metrics.IncrProducerEventCount(metrics.REWARD_PAYOUT_FAILED_EVENT)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	err := sdkCtx.EventManager().EmitTypedEvent(NewRewardPayoutFailedEventBase(topicId, nonce, address, actorType, amount, reason))
+	if err != nil {
+		sdkCtx.Logger().Warn("Error emitting RewardPayoutFailedEvent", "error", err)
+	}
+}
+
+func EmitNewTopicStatusChangedEvent(ctx context.Context, topicId TopicId, isActive bool, reason TopicStatusChangeReason, weight, minWeight alloraMath.Dec) {
 	metrics.IncrProducerEventCount(metrics.TOPIC_STATUS_CHANGED_EVENT)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	err := sdkCtx.EventManager().EmitTypedEvent(NewTopicStatusChangedEventBase(topicId, isActive))
+	err := sdkCtx.EventManager().EmitTypedEvent(NewTopicStatusChangedEventBase(topicId, isActive, reason, weight, minWeight))
 	if err != nil {
 		sdkCtx.Logger().Warn("Error emitting TopicStatusChangedEvent", "error", err)
 	}
@@ -581,6 +590,15 @@ func EmitNewTopicWeightUpdatedEvent(ctx context.Context, topicId TopicId, newWei
 	err := sdkCtx.EventManager().EmitTypedEvent(NewTopicWeightUpdatedEventBase(topicId, newWeight, topicStake, topicFeeRevenue))
 	if err != nil {
 		sdkCtx.Logger().Warn("Error emitting TopicWeightUpdatedEvent", "error", err)
+	}
+}
+
+func EmitNewTopicWeightUpdatedAfterStakeChangeEvent(ctx context.Context, topicId TopicId, newWeight alloraMath.Dec, topicStake cosmosMath.Int, topicFeeRevenue cosmosMath.Int) {
+	metrics.IncrProducerEventCount(metrics.TOPIC_WEIGHT_UPDATED_AFTER_STAKE_CHANGE_EVENT)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	err := sdkCtx.EventManager().EmitTypedEvent(NewTopicWeightUpdatedAfterStakeChangeEventBase(topicId, newWeight, topicStake, topicFeeRevenue))
+	if err != nil {
+		sdkCtx.Logger().Warn("Error emitting TopicWeightUpdatedAfterStakeChangeEvent", "error", err)
 	}
 }
 
