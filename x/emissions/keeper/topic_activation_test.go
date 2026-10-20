@@ -113,6 +113,16 @@ func (s *KeeperTestSuite) TestEvictedTopicEmitsEvictedByHigherWeight() {
 	highWeight, err := k.GetTopicWeightFromTopicId(ctx, highTopicId)
 	s.Require().NoError(err)
 
+	// Snapshot the stored lowest-weight value the eviction decision reads,
+	// before the activation replaces it.
+	topic, err := k.GetTopic(ctx, lowTopicId)
+	s.Require().NoError(err)
+	lowEpochEndBlock := ctx.BlockHeight() + topic.EpochLength
+	storedLowest, noPrior, err := k.GetLowestActiveTopicWeightAtBlock(ctx, lowEpochEndBlock)
+	s.Require().NoError(err)
+	s.Require().False(noPrior, "the full active set must have a stored lowest weight")
+	s.Require().Equal(lowTopicId, storedLowest.TopicId)
+
 	em := sdk.NewEventManager()
 	err = k.ActivateTopic(ctx.WithEventManager(em), highTopicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_ACTIVATED_BY_FUNDING, highWeight, params.MinTopicWeight)
 	s.Require().NoError(err)
@@ -138,11 +148,9 @@ func (s *KeeperTestSuite) TestEvictedTopicEmitsEvictedByHigherWeight() {
 	s.Require().False(evicted.IsActive)
 	s.Require().Equal(types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_EVICTED_BY_HIGHER_WEIGHT, evicted.Reason)
 	s.Require().Equal(params.MinTopicWeight, evicted.MinWeight)
-	// The evicted topic's event carries the weight that lost the slot: the
-	// lowest weight in the full set at the time of eviction.
-	lowWeight, err := k.GetTopicWeightFromTopicId(ctx, lowTopicId)
-	s.Require().NoError(err)
-	s.Require().True(lowWeight.Equal(evicted.Weight), "expected weight %s, got %s", lowWeight.String(), evicted.Weight.String())
+	// The evicted topic's event carries the stored lowest-weight snapshot the
+	// eviction read, not a recompute.
+	s.Require().True(storedLowest.Weight.Equal(evicted.Weight), "expected weight %s, got %s", storedLowest.Weight.String(), evicted.Weight.String())
 	s.Require().NotNil(activated)
 	s.Require().True(activated.IsActive)
 	s.Require().Equal(types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_ACTIVATED_BY_FUNDING, activated.Reason)
