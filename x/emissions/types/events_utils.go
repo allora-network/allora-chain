@@ -876,6 +876,32 @@ func NewReputerSubmissionWindowClosedEventBase(topicId TopicId, nonceBlockHeight
 	}
 }
 
+func NewTopicRewardForfeitedNoRewardNonceEventBase(topicId TopicId, epoch int64, amount alloraMath.Dec) proto.Message {
+	return &EventTopicRewardForfeitedNoRewardNonce{
+		TopicId: topicId,
+		Epoch:   epoch,
+		Amount:  clampDec(amount),
+	}
+}
+
+func NewTopicRewardForfeitedDistributionFailedEventBase(topicId TopicId, epoch int64, rewardNonce int64, amount alloraMath.Dec) proto.Message {
+	return &EventTopicRewardForfeitedDistributionFailed{
+		TopicId:     topicId,
+		Epoch:       epoch,
+		RewardNonce: rewardNonce,
+		Amount:      clampDec(amount),
+	}
+}
+
+func NewNonceExpiredEventBase(topicId TopicId, nonce int64, actorType ActorType, reason NonceExpiredReason) proto.Message {
+	return &EventNonceExpired{
+		TopicId:   topicId,
+		Nonce:     nonce,
+		ActorType: actorType,
+		Reason:    reason,
+	}
+}
+
 // NewEpochLabelRegistryFrozenEventBase is emitted once per (topicId, nonce)
 // after the final active inputs have been finalized into a registry at
 // CloseWorkerNonce time. Offchain indexers can reconstruct the full

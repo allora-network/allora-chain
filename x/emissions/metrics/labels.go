@@ -82,4 +82,7 @@ const (
 	FORECASTER_WEIGHTS_EVENT                                = "forecaster_weights_event"
 	PREVIOUS_PERCENTAGE_REWARD_TO_STAKED_REPUTERS_SET_EVENT = "previous_percentage_reward_to_staked_reputers_set_event"
 	PRUNE_RECORDS_EVENT                                     = "prune_records_event"
+	TOPIC_REWARD_FORFEITED_NO_REWARD_NONCE_EVENT            = "topic_reward_forfeited_no_reward_nonce_event"
+	TOPIC_REWARD_FORFEITED_DISTRIBUTION_FAILED_EVENT        = "topic_reward_forfeited_distribution_failed_event"
+	NONCE_EXPIRED_EVENT                                     = "nonce_expired_event"
 )

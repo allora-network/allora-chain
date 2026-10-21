@@ -45767,6 +45767,1634 @@ func (x *fastReflection_EventRewardPayoutFailed) ProtoMethods() *protoiface.Meth
 }
 
 var (
+	md_EventTopicRewardForfeitedNoRewardNonce          protoreflect.MessageDescriptor
+	fd_EventTopicRewardForfeitedNoRewardNonce_topic_id protoreflect.FieldDescriptor
+	fd_EventTopicRewardForfeitedNoRewardNonce_epoch    protoreflect.FieldDescriptor
+	fd_EventTopicRewardForfeitedNoRewardNonce_amount   protoreflect.FieldDescriptor
+)
+
+func init() {
+	file_emissions_v10_events_proto_init()
+	md_EventTopicRewardForfeitedNoRewardNonce = File_emissions_v10_events_proto.Messages().ByName("EventTopicRewardForfeitedNoRewardNonce")
+	fd_EventTopicRewardForfeitedNoRewardNonce_topic_id = md_EventTopicRewardForfeitedNoRewardNonce.Fields().ByName("topic_id")
+	fd_EventTopicRewardForfeitedNoRewardNonce_epoch = md_EventTopicRewardForfeitedNoRewardNonce.Fields().ByName("epoch")
+	fd_EventTopicRewardForfeitedNoRewardNonce_amount = md_EventTopicRewardForfeitedNoRewardNonce.Fields().ByName("amount")
+}
+
+var _ protoreflect.Message = (*fastReflection_EventTopicRewardForfeitedNoRewardNonce)(nil)
+
+type fastReflection_EventTopicRewardForfeitedNoRewardNonce EventTopicRewardForfeitedNoRewardNonce
+
+func (x *EventTopicRewardForfeitedNoRewardNonce) ProtoReflect() protoreflect.Message {
+	return (*fastReflection_EventTopicRewardForfeitedNoRewardNonce)(x)
+}
+
+func (x *EventTopicRewardForfeitedNoRewardNonce) slowProtoReflect() protoreflect.Message {
+	mi := &file_emissions_v10_events_proto_msgTypes[77]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+var _fastReflection_EventTopicRewardForfeitedNoRewardNonce_messageType fastReflection_EventTopicRewardForfeitedNoRewardNonce_messageType
+var _ protoreflect.MessageType = fastReflection_EventTopicRewardForfeitedNoRewardNonce_messageType{}
+
+type fastReflection_EventTopicRewardForfeitedNoRewardNonce_messageType struct{}
+
+func (x fastReflection_EventTopicRewardForfeitedNoRewardNonce_messageType) Zero() protoreflect.Message {
+	return (*fastReflection_EventTopicRewardForfeitedNoRewardNonce)(nil)
+}
+func (x fastReflection_EventTopicRewardForfeitedNoRewardNonce_messageType) New() protoreflect.Message {
+	return new(fastReflection_EventTopicRewardForfeitedNoRewardNonce)
+}
+func (x fastReflection_EventTopicRewardForfeitedNoRewardNonce_messageType) Descriptor() protoreflect.MessageDescriptor {
+	return md_EventTopicRewardForfeitedNoRewardNonce
+}
+
+// Descriptor returns message descriptor, which contains only the protobuf
+// type information for the message.
+func (x *fastReflection_EventTopicRewardForfeitedNoRewardNonce) Descriptor() protoreflect.MessageDescriptor {
+	return md_EventTopicRewardForfeitedNoRewardNonce
+}
+
+// Type returns the message type, which encapsulates both Go and protobuf
+// type information. If the Go type information is not needed,
+// it is recommended that the message descriptor be used instead.
+func (x *fastReflection_EventTopicRewardForfeitedNoRewardNonce) Type() protoreflect.MessageType {
+	return _fastReflection_EventTopicRewardForfeitedNoRewardNonce_messageType
+}
+
+// New returns a newly allocated and mutable empty message.
+func (x *fastReflection_EventTopicRewardForfeitedNoRewardNonce) New() protoreflect.Message {
+	return new(fastReflection_EventTopicRewardForfeitedNoRewardNonce)
+}
+
+// Interface unwraps the message reflection interface and
+// returns the underlying ProtoMessage interface.
+func (x *fastReflection_EventTopicRewardForfeitedNoRewardNonce) Interface() protoreflect.ProtoMessage {
+	return (*EventTopicRewardForfeitedNoRewardNonce)(x)
+}
+
+// Range iterates over every populated field in an undefined order,
+// calling f for each field descriptor and value encountered.
+// Range returns immediately if f returns false.
+// While iterating, mutating operations may only be performed
+// on the current field descriptor.
+func (x *fastReflection_EventTopicRewardForfeitedNoRewardNonce) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
+	if x.TopicId != uint64(0) {
+		value := protoreflect.ValueOfUint64(x.TopicId)
+		if !f(fd_EventTopicRewardForfeitedNoRewardNonce_topic_id, value) {
+			return
+		}
+	}
+	if x.Epoch != int64(0) {
+		value := protoreflect.ValueOfInt64(x.Epoch)
+		if !f(fd_EventTopicRewardForfeitedNoRewardNonce_epoch, value) {
+			return
+		}
+	}
+	if x.Amount != "" {
+		value := protoreflect.ValueOfString(x.Amount)
+		if !f(fd_EventTopicRewardForfeitedNoRewardNonce_amount, value) {
+			return
+		}
+	}
+}
+
+// Has reports whether a field is populated.
+//
+// Some fields have the property of nullability where it is possible to
+// distinguish between the default value of a field and whether the field
+// was explicitly populated with the default value. Singular message fields,
+// member fields of a oneof, and proto2 scalar fields are nullable. Such
+// fields are populated only if explicitly set.
+//
+// In other cases (aside from the nullable cases above),
+// a proto3 scalar field is populated if it contains a non-zero value, and
+// a repeated field is populated if it is non-empty.
+func (x *fastReflection_EventTopicRewardForfeitedNoRewardNonce) Has(fd protoreflect.FieldDescriptor) bool {
+	switch fd.FullName() {
+	case "emissions.v10.EventTopicRewardForfeitedNoRewardNonce.topic_id":
+		return x.TopicId != uint64(0)
+	case "emissions.v10.EventTopicRewardForfeitedNoRewardNonce.epoch":
+		return x.Epoch != int64(0)
+	case "emissions.v10.EventTopicRewardForfeitedNoRewardNonce.amount":
+		return x.Amount != ""
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v10.EventTopicRewardForfeitedNoRewardNonce"))
+		}
+		panic(fmt.Errorf("message emissions.v10.EventTopicRewardForfeitedNoRewardNonce does not contain field %s", fd.FullName()))
+	}
+}
+
+// Clear clears the field such that a subsequent Has call reports false.
+//
+// Clearing an extension field clears both the extension type and value
+// associated with the given field number.
+//
+// Clear is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventTopicRewardForfeitedNoRewardNonce) Clear(fd protoreflect.FieldDescriptor) {
+	switch fd.FullName() {
+	case "emissions.v10.EventTopicRewardForfeitedNoRewardNonce.topic_id":
+		x.TopicId = uint64(0)
+	case "emissions.v10.EventTopicRewardForfeitedNoRewardNonce.epoch":
+		x.Epoch = int64(0)
+	case "emissions.v10.EventTopicRewardForfeitedNoRewardNonce.amount":
+		x.Amount = ""
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v10.EventTopicRewardForfeitedNoRewardNonce"))
+		}
+		panic(fmt.Errorf("message emissions.v10.EventTopicRewardForfeitedNoRewardNonce does not contain field %s", fd.FullName()))
+	}
+}
+
+// Get retrieves the value for a field.
+//
+// For unpopulated scalars, it returns the default value, where
+// the default value of a bytes scalar is guaranteed to be a copy.
+// For unpopulated composite types, it returns an empty, read-only view
+// of the value; to obtain a mutable reference, use Mutable.
+func (x *fastReflection_EventTopicRewardForfeitedNoRewardNonce) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
+	switch descriptor.FullName() {
+	case "emissions.v10.EventTopicRewardForfeitedNoRewardNonce.topic_id":
+		value := x.TopicId
+		return protoreflect.ValueOfUint64(value)
+	case "emissions.v10.EventTopicRewardForfeitedNoRewardNonce.epoch":
+		value := x.Epoch
+		return protoreflect.ValueOfInt64(value)
+	case "emissions.v10.EventTopicRewardForfeitedNoRewardNonce.amount":
+		value := x.Amount
+		return protoreflect.ValueOfString(value)
+	default:
+		if descriptor.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v10.EventTopicRewardForfeitedNoRewardNonce"))
+		}
+		panic(fmt.Errorf("message emissions.v10.EventTopicRewardForfeitedNoRewardNonce does not contain field %s", descriptor.FullName()))
+	}
+}
+
+// Set stores the value for a field.
+//
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType.
+// When setting a composite type, it is unspecified whether the stored value
+// aliases the source's memory in any way. If the composite value is an
+// empty, read-only value, then it panics.
+//
+// Set is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventTopicRewardForfeitedNoRewardNonce) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
+	switch fd.FullName() {
+	case "emissions.v10.EventTopicRewardForfeitedNoRewardNonce.topic_id":
+		x.TopicId = value.Uint()
+	case "emissions.v10.EventTopicRewardForfeitedNoRewardNonce.epoch":
+		x.Epoch = value.Int()
+	case "emissions.v10.EventTopicRewardForfeitedNoRewardNonce.amount":
+		x.Amount = value.Interface().(string)
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v10.EventTopicRewardForfeitedNoRewardNonce"))
+		}
+		panic(fmt.Errorf("message emissions.v10.EventTopicRewardForfeitedNoRewardNonce does not contain field %s", fd.FullName()))
+	}
+}
+
+// Mutable returns a mutable reference to a composite type.
+//
+// If the field is unpopulated, it may allocate a composite value.
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType
+// if not already stored.
+// It panics if the field does not contain a composite type.
+//
+// Mutable is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventTopicRewardForfeitedNoRewardNonce) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "emissions.v10.EventTopicRewardForfeitedNoRewardNonce.topic_id":
+		panic(fmt.Errorf("field topic_id of message emissions.v10.EventTopicRewardForfeitedNoRewardNonce is not mutable"))
+	case "emissions.v10.EventTopicRewardForfeitedNoRewardNonce.epoch":
+		panic(fmt.Errorf("field epoch of message emissions.v10.EventTopicRewardForfeitedNoRewardNonce is not mutable"))
+	case "emissions.v10.EventTopicRewardForfeitedNoRewardNonce.amount":
+		panic(fmt.Errorf("field amount of message emissions.v10.EventTopicRewardForfeitedNoRewardNonce is not mutable"))
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v10.EventTopicRewardForfeitedNoRewardNonce"))
+		}
+		panic(fmt.Errorf("message emissions.v10.EventTopicRewardForfeitedNoRewardNonce does not contain field %s", fd.FullName()))
+	}
+}
+
+// NewField returns a new value that is assignable to the field
+// for the given descriptor. For scalars, this returns the default value.
+// For lists, maps, and messages, this returns a new, empty, mutable value.
+func (x *fastReflection_EventTopicRewardForfeitedNoRewardNonce) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "emissions.v10.EventTopicRewardForfeitedNoRewardNonce.topic_id":
+		return protoreflect.ValueOfUint64(uint64(0))
+	case "emissions.v10.EventTopicRewardForfeitedNoRewardNonce.epoch":
+		return protoreflect.ValueOfInt64(int64(0))
+	case "emissions.v10.EventTopicRewardForfeitedNoRewardNonce.amount":
+		return protoreflect.ValueOfString("")
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v10.EventTopicRewardForfeitedNoRewardNonce"))
+		}
+		panic(fmt.Errorf("message emissions.v10.EventTopicRewardForfeitedNoRewardNonce does not contain field %s", fd.FullName()))
+	}
+}
+
+// WhichOneof reports which field within the oneof is populated,
+// returning nil if none are populated.
+// It panics if the oneof descriptor does not belong to this message.
+func (x *fastReflection_EventTopicRewardForfeitedNoRewardNonce) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
+	switch d.FullName() {
+	default:
+		panic(fmt.Errorf("%s is not a oneof field in emissions.v10.EventTopicRewardForfeitedNoRewardNonce", d.FullName()))
+	}
+	panic("unreachable")
+}
+
+// GetUnknown retrieves the entire list of unknown fields.
+// The caller may only mutate the contents of the RawFields
+// if the mutated bytes are stored back into the message with SetUnknown.
+func (x *fastReflection_EventTopicRewardForfeitedNoRewardNonce) GetUnknown() protoreflect.RawFields {
+	return x.unknownFields
+}
+
+// SetUnknown stores an entire list of unknown fields.
+// The raw fields must be syntactically valid according to the wire format.
+// An implementation may panic if this is not the case.
+// Once stored, the caller must not mutate the content of the RawFields.
+// An empty RawFields may be passed to clear the fields.
+//
+// SetUnknown is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventTopicRewardForfeitedNoRewardNonce) SetUnknown(fields protoreflect.RawFields) {
+	x.unknownFields = fields
+}
+
+// IsValid reports whether the message is valid.
+//
+// An invalid message is an empty, read-only value.
+//
+// An invalid message often corresponds to a nil pointer of the concrete
+// message type, but the details are implementation dependent.
+// Validity is not part of the protobuf data model, and may not
+// be preserved in marshaling or other operations.
+func (x *fastReflection_EventTopicRewardForfeitedNoRewardNonce) IsValid() bool {
+	return x != nil
+}
+
+// ProtoMethods returns optional fastReflectionFeature-path implementations of various operations.
+// This method may return nil.
+//
+// The returned methods type is identical to
+// "google.golang.org/protobuf/runtime/protoiface".Methods.
+// Consult the protoiface package documentation for details.
+func (x *fastReflection_EventTopicRewardForfeitedNoRewardNonce) ProtoMethods() *protoiface.Methods {
+	size := func(input protoiface.SizeInput) protoiface.SizeOutput {
+		x := input.Message.Interface().(*EventTopicRewardForfeitedNoRewardNonce)
+		if x == nil {
+			return protoiface.SizeOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Size:              0,
+			}
+		}
+		options := runtime.SizeInputToOptions(input)
+		_ = options
+		var n int
+		var l int
+		_ = l
+		if x.TopicId != 0 {
+			n += 1 + runtime.Sov(uint64(x.TopicId))
+		}
+		if x.Epoch != 0 {
+			n += 1 + runtime.Sov(uint64(x.Epoch))
+		}
+		l = len(x.Amount)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		if x.unknownFields != nil {
+			n += len(x.unknownFields)
+		}
+		return protoiface.SizeOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Size:              n,
+		}
+	}
+
+	marshal := func(input protoiface.MarshalInput) (protoiface.MarshalOutput, error) {
+		x := input.Message.Interface().(*EventTopicRewardForfeitedNoRewardNonce)
+		if x == nil {
+			return protoiface.MarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Buf:               input.Buf,
+			}, nil
+		}
+		options := runtime.MarshalInputToOptions(input)
+		_ = options
+		size := options.Size(x)
+		dAtA := make([]byte, size)
+		i := len(dAtA)
+		_ = i
+		var l int
+		_ = l
+		if x.unknownFields != nil {
+			i -= len(x.unknownFields)
+			copy(dAtA[i:], x.unknownFields)
+		}
+		if len(x.Amount) > 0 {
+			i -= len(x.Amount)
+			copy(dAtA[i:], x.Amount)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.Amount)))
+			i--
+			dAtA[i] = 0x1a
+		}
+		if x.Epoch != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.Epoch))
+			i--
+			dAtA[i] = 0x10
+		}
+		if x.TopicId != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.TopicId))
+			i--
+			dAtA[i] = 0x8
+		}
+		if input.Buf != nil {
+			input.Buf = append(input.Buf, dAtA...)
+		} else {
+			input.Buf = dAtA
+		}
+		return protoiface.MarshalOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Buf:               input.Buf,
+		}, nil
+	}
+	unmarshal := func(input protoiface.UnmarshalInput) (protoiface.UnmarshalOutput, error) {
+		x := input.Message.Interface().(*EventTopicRewardForfeitedNoRewardNonce)
+		if x == nil {
+			return protoiface.UnmarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Flags:             input.Flags,
+			}, nil
+		}
+		options := runtime.UnmarshalInputToOptions(input)
+		_ = options
+		dAtA := input.Buf
+		l := len(dAtA)
+		iNdEx := 0
+		for iNdEx < l {
+			preIndex := iNdEx
+			var wire uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				wire |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			fieldNum := int32(wire >> 3)
+			wireType := int(wire & 0x7)
+			if wireType == 4 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: EventTopicRewardForfeitedNoRewardNonce: wiretype end group for non-group")
+			}
+			if fieldNum <= 0 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: EventTopicRewardForfeitedNoRewardNonce: illegal tag %d (wire type %d)", fieldNum, wire)
+			}
+			switch fieldNum {
+			case 1:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+				}
+				x.TopicId = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.TopicId |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+			case 2:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Epoch", wireType)
+				}
+				x.Epoch = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.Epoch |= int64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+			case 3:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Amount", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.Amount = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			default:
+				iNdEx = preIndex
+				skippy, err := runtime.Skip(dAtA[iNdEx:])
+				if err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				if (skippy < 0) || (iNdEx+skippy) < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if (iNdEx + skippy) > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				if !options.DiscardUnknown {
+					x.unknownFields = append(x.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
+				}
+				iNdEx += skippy
+			}
+		}
+
+		if iNdEx > l {
+			return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+		}
+		return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, nil
+	}
+	return &protoiface.Methods{
+		NoUnkeyedLiterals: struct{}{},
+		Flags:             protoiface.SupportMarshalDeterministic | protoiface.SupportUnmarshalDiscardUnknown,
+		Size:              size,
+		Marshal:           marshal,
+		Unmarshal:         unmarshal,
+		Merge:             nil,
+		CheckInitialized:  nil,
+	}
+}
+
+var (
+	md_EventTopicRewardForfeitedDistributionFailed              protoreflect.MessageDescriptor
+	fd_EventTopicRewardForfeitedDistributionFailed_topic_id     protoreflect.FieldDescriptor
+	fd_EventTopicRewardForfeitedDistributionFailed_epoch        protoreflect.FieldDescriptor
+	fd_EventTopicRewardForfeitedDistributionFailed_reward_nonce protoreflect.FieldDescriptor
+	fd_EventTopicRewardForfeitedDistributionFailed_amount       protoreflect.FieldDescriptor
+)
+
+func init() {
+	file_emissions_v10_events_proto_init()
+	md_EventTopicRewardForfeitedDistributionFailed = File_emissions_v10_events_proto.Messages().ByName("EventTopicRewardForfeitedDistributionFailed")
+	fd_EventTopicRewardForfeitedDistributionFailed_topic_id = md_EventTopicRewardForfeitedDistributionFailed.Fields().ByName("topic_id")
+	fd_EventTopicRewardForfeitedDistributionFailed_epoch = md_EventTopicRewardForfeitedDistributionFailed.Fields().ByName("epoch")
+	fd_EventTopicRewardForfeitedDistributionFailed_reward_nonce = md_EventTopicRewardForfeitedDistributionFailed.Fields().ByName("reward_nonce")
+	fd_EventTopicRewardForfeitedDistributionFailed_amount = md_EventTopicRewardForfeitedDistributionFailed.Fields().ByName("amount")
+}
+
+var _ protoreflect.Message = (*fastReflection_EventTopicRewardForfeitedDistributionFailed)(nil)
+
+type fastReflection_EventTopicRewardForfeitedDistributionFailed EventTopicRewardForfeitedDistributionFailed
+
+func (x *EventTopicRewardForfeitedDistributionFailed) ProtoReflect() protoreflect.Message {
+	return (*fastReflection_EventTopicRewardForfeitedDistributionFailed)(x)
+}
+
+func (x *EventTopicRewardForfeitedDistributionFailed) slowProtoReflect() protoreflect.Message {
+	mi := &file_emissions_v10_events_proto_msgTypes[78]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+var _fastReflection_EventTopicRewardForfeitedDistributionFailed_messageType fastReflection_EventTopicRewardForfeitedDistributionFailed_messageType
+var _ protoreflect.MessageType = fastReflection_EventTopicRewardForfeitedDistributionFailed_messageType{}
+
+type fastReflection_EventTopicRewardForfeitedDistributionFailed_messageType struct{}
+
+func (x fastReflection_EventTopicRewardForfeitedDistributionFailed_messageType) Zero() protoreflect.Message {
+	return (*fastReflection_EventTopicRewardForfeitedDistributionFailed)(nil)
+}
+func (x fastReflection_EventTopicRewardForfeitedDistributionFailed_messageType) New() protoreflect.Message {
+	return new(fastReflection_EventTopicRewardForfeitedDistributionFailed)
+}
+func (x fastReflection_EventTopicRewardForfeitedDistributionFailed_messageType) Descriptor() protoreflect.MessageDescriptor {
+	return md_EventTopicRewardForfeitedDistributionFailed
+}
+
+// Descriptor returns message descriptor, which contains only the protobuf
+// type information for the message.
+func (x *fastReflection_EventTopicRewardForfeitedDistributionFailed) Descriptor() protoreflect.MessageDescriptor {
+	return md_EventTopicRewardForfeitedDistributionFailed
+}
+
+// Type returns the message type, which encapsulates both Go and protobuf
+// type information. If the Go type information is not needed,
+// it is recommended that the message descriptor be used instead.
+func (x *fastReflection_EventTopicRewardForfeitedDistributionFailed) Type() protoreflect.MessageType {
+	return _fastReflection_EventTopicRewardForfeitedDistributionFailed_messageType
+}
+
+// New returns a newly allocated and mutable empty message.
+func (x *fastReflection_EventTopicRewardForfeitedDistributionFailed) New() protoreflect.Message {
+	return new(fastReflection_EventTopicRewardForfeitedDistributionFailed)
+}
+
+// Interface unwraps the message reflection interface and
+// returns the underlying ProtoMessage interface.
+func (x *fastReflection_EventTopicRewardForfeitedDistributionFailed) Interface() protoreflect.ProtoMessage {
+	return (*EventTopicRewardForfeitedDistributionFailed)(x)
+}
+
+// Range iterates over every populated field in an undefined order,
+// calling f for each field descriptor and value encountered.
+// Range returns immediately if f returns false.
+// While iterating, mutating operations may only be performed
+// on the current field descriptor.
+func (x *fastReflection_EventTopicRewardForfeitedDistributionFailed) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
+	if x.TopicId != uint64(0) {
+		value := protoreflect.ValueOfUint64(x.TopicId)
+		if !f(fd_EventTopicRewardForfeitedDistributionFailed_topic_id, value) {
+			return
+		}
+	}
+	if x.Epoch != int64(0) {
+		value := protoreflect.ValueOfInt64(x.Epoch)
+		if !f(fd_EventTopicRewardForfeitedDistributionFailed_epoch, value) {
+			return
+		}
+	}
+	if x.RewardNonce != int64(0) {
+		value := protoreflect.ValueOfInt64(x.RewardNonce)
+		if !f(fd_EventTopicRewardForfeitedDistributionFailed_reward_nonce, value) {
+			return
+		}
+	}
+	if x.Amount != "" {
+		value := protoreflect.ValueOfString(x.Amount)
+		if !f(fd_EventTopicRewardForfeitedDistributionFailed_amount, value) {
+			return
+		}
+	}
+}
+
+// Has reports whether a field is populated.
+//
+// Some fields have the property of nullability where it is possible to
+// distinguish between the default value of a field and whether the field
+// was explicitly populated with the default value. Singular message fields,
+// member fields of a oneof, and proto2 scalar fields are nullable. Such
+// fields are populated only if explicitly set.
+//
+// In other cases (aside from the nullable cases above),
+// a proto3 scalar field is populated if it contains a non-zero value, and
+// a repeated field is populated if it is non-empty.
+func (x *fastReflection_EventTopicRewardForfeitedDistributionFailed) Has(fd protoreflect.FieldDescriptor) bool {
+	switch fd.FullName() {
+	case "emissions.v10.EventTopicRewardForfeitedDistributionFailed.topic_id":
+		return x.TopicId != uint64(0)
+	case "emissions.v10.EventTopicRewardForfeitedDistributionFailed.epoch":
+		return x.Epoch != int64(0)
+	case "emissions.v10.EventTopicRewardForfeitedDistributionFailed.reward_nonce":
+		return x.RewardNonce != int64(0)
+	case "emissions.v10.EventTopicRewardForfeitedDistributionFailed.amount":
+		return x.Amount != ""
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v10.EventTopicRewardForfeitedDistributionFailed"))
+		}
+		panic(fmt.Errorf("message emissions.v10.EventTopicRewardForfeitedDistributionFailed does not contain field %s", fd.FullName()))
+	}
+}
+
+// Clear clears the field such that a subsequent Has call reports false.
+//
+// Clearing an extension field clears both the extension type and value
+// associated with the given field number.
+//
+// Clear is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventTopicRewardForfeitedDistributionFailed) Clear(fd protoreflect.FieldDescriptor) {
+	switch fd.FullName() {
+	case "emissions.v10.EventTopicRewardForfeitedDistributionFailed.topic_id":
+		x.TopicId = uint64(0)
+	case "emissions.v10.EventTopicRewardForfeitedDistributionFailed.epoch":
+		x.Epoch = int64(0)
+	case "emissions.v10.EventTopicRewardForfeitedDistributionFailed.reward_nonce":
+		x.RewardNonce = int64(0)
+	case "emissions.v10.EventTopicRewardForfeitedDistributionFailed.amount":
+		x.Amount = ""
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v10.EventTopicRewardForfeitedDistributionFailed"))
+		}
+		panic(fmt.Errorf("message emissions.v10.EventTopicRewardForfeitedDistributionFailed does not contain field %s", fd.FullName()))
+	}
+}
+
+// Get retrieves the value for a field.
+//
+// For unpopulated scalars, it returns the default value, where
+// the default value of a bytes scalar is guaranteed to be a copy.
+// For unpopulated composite types, it returns an empty, read-only view
+// of the value; to obtain a mutable reference, use Mutable.
+func (x *fastReflection_EventTopicRewardForfeitedDistributionFailed) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
+	switch descriptor.FullName() {
+	case "emissions.v10.EventTopicRewardForfeitedDistributionFailed.topic_id":
+		value := x.TopicId
+		return protoreflect.ValueOfUint64(value)
+	case "emissions.v10.EventTopicRewardForfeitedDistributionFailed.epoch":
+		value := x.Epoch
+		return protoreflect.ValueOfInt64(value)
+	case "emissions.v10.EventTopicRewardForfeitedDistributionFailed.reward_nonce":
+		value := x.RewardNonce
+		return protoreflect.ValueOfInt64(value)
+	case "emissions.v10.EventTopicRewardForfeitedDistributionFailed.amount":
+		value := x.Amount
+		return protoreflect.ValueOfString(value)
+	default:
+		if descriptor.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v10.EventTopicRewardForfeitedDistributionFailed"))
+		}
+		panic(fmt.Errorf("message emissions.v10.EventTopicRewardForfeitedDistributionFailed does not contain field %s", descriptor.FullName()))
+	}
+}
+
+// Set stores the value for a field.
+//
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType.
+// When setting a composite type, it is unspecified whether the stored value
+// aliases the source's memory in any way. If the composite value is an
+// empty, read-only value, then it panics.
+//
+// Set is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventTopicRewardForfeitedDistributionFailed) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
+	switch fd.FullName() {
+	case "emissions.v10.EventTopicRewardForfeitedDistributionFailed.topic_id":
+		x.TopicId = value.Uint()
+	case "emissions.v10.EventTopicRewardForfeitedDistributionFailed.epoch":
+		x.Epoch = value.Int()
+	case "emissions.v10.EventTopicRewardForfeitedDistributionFailed.reward_nonce":
+		x.RewardNonce = value.Int()
+	case "emissions.v10.EventTopicRewardForfeitedDistributionFailed.amount":
+		x.Amount = value.Interface().(string)
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v10.EventTopicRewardForfeitedDistributionFailed"))
+		}
+		panic(fmt.Errorf("message emissions.v10.EventTopicRewardForfeitedDistributionFailed does not contain field %s", fd.FullName()))
+	}
+}
+
+// Mutable returns a mutable reference to a composite type.
+//
+// If the field is unpopulated, it may allocate a composite value.
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType
+// if not already stored.
+// It panics if the field does not contain a composite type.
+//
+// Mutable is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventTopicRewardForfeitedDistributionFailed) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "emissions.v10.EventTopicRewardForfeitedDistributionFailed.topic_id":
+		panic(fmt.Errorf("field topic_id of message emissions.v10.EventTopicRewardForfeitedDistributionFailed is not mutable"))
+	case "emissions.v10.EventTopicRewardForfeitedDistributionFailed.epoch":
+		panic(fmt.Errorf("field epoch of message emissions.v10.EventTopicRewardForfeitedDistributionFailed is not mutable"))
+	case "emissions.v10.EventTopicRewardForfeitedDistributionFailed.reward_nonce":
+		panic(fmt.Errorf("field reward_nonce of message emissions.v10.EventTopicRewardForfeitedDistributionFailed is not mutable"))
+	case "emissions.v10.EventTopicRewardForfeitedDistributionFailed.amount":
+		panic(fmt.Errorf("field amount of message emissions.v10.EventTopicRewardForfeitedDistributionFailed is not mutable"))
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v10.EventTopicRewardForfeitedDistributionFailed"))
+		}
+		panic(fmt.Errorf("message emissions.v10.EventTopicRewardForfeitedDistributionFailed does not contain field %s", fd.FullName()))
+	}
+}
+
+// NewField returns a new value that is assignable to the field
+// for the given descriptor. For scalars, this returns the default value.
+// For lists, maps, and messages, this returns a new, empty, mutable value.
+func (x *fastReflection_EventTopicRewardForfeitedDistributionFailed) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "emissions.v10.EventTopicRewardForfeitedDistributionFailed.topic_id":
+		return protoreflect.ValueOfUint64(uint64(0))
+	case "emissions.v10.EventTopicRewardForfeitedDistributionFailed.epoch":
+		return protoreflect.ValueOfInt64(int64(0))
+	case "emissions.v10.EventTopicRewardForfeitedDistributionFailed.reward_nonce":
+		return protoreflect.ValueOfInt64(int64(0))
+	case "emissions.v10.EventTopicRewardForfeitedDistributionFailed.amount":
+		return protoreflect.ValueOfString("")
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v10.EventTopicRewardForfeitedDistributionFailed"))
+		}
+		panic(fmt.Errorf("message emissions.v10.EventTopicRewardForfeitedDistributionFailed does not contain field %s", fd.FullName()))
+	}
+}
+
+// WhichOneof reports which field within the oneof is populated,
+// returning nil if none are populated.
+// It panics if the oneof descriptor does not belong to this message.
+func (x *fastReflection_EventTopicRewardForfeitedDistributionFailed) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
+	switch d.FullName() {
+	default:
+		panic(fmt.Errorf("%s is not a oneof field in emissions.v10.EventTopicRewardForfeitedDistributionFailed", d.FullName()))
+	}
+	panic("unreachable")
+}
+
+// GetUnknown retrieves the entire list of unknown fields.
+// The caller may only mutate the contents of the RawFields
+// if the mutated bytes are stored back into the message with SetUnknown.
+func (x *fastReflection_EventTopicRewardForfeitedDistributionFailed) GetUnknown() protoreflect.RawFields {
+	return x.unknownFields
+}
+
+// SetUnknown stores an entire list of unknown fields.
+// The raw fields must be syntactically valid according to the wire format.
+// An implementation may panic if this is not the case.
+// Once stored, the caller must not mutate the content of the RawFields.
+// An empty RawFields may be passed to clear the fields.
+//
+// SetUnknown is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventTopicRewardForfeitedDistributionFailed) SetUnknown(fields protoreflect.RawFields) {
+	x.unknownFields = fields
+}
+
+// IsValid reports whether the message is valid.
+//
+// An invalid message is an empty, read-only value.
+//
+// An invalid message often corresponds to a nil pointer of the concrete
+// message type, but the details are implementation dependent.
+// Validity is not part of the protobuf data model, and may not
+// be preserved in marshaling or other operations.
+func (x *fastReflection_EventTopicRewardForfeitedDistributionFailed) IsValid() bool {
+	return x != nil
+}
+
+// ProtoMethods returns optional fastReflectionFeature-path implementations of various operations.
+// This method may return nil.
+//
+// The returned methods type is identical to
+// "google.golang.org/protobuf/runtime/protoiface".Methods.
+// Consult the protoiface package documentation for details.
+func (x *fastReflection_EventTopicRewardForfeitedDistributionFailed) ProtoMethods() *protoiface.Methods {
+	size := func(input protoiface.SizeInput) protoiface.SizeOutput {
+		x := input.Message.Interface().(*EventTopicRewardForfeitedDistributionFailed)
+		if x == nil {
+			return protoiface.SizeOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Size:              0,
+			}
+		}
+		options := runtime.SizeInputToOptions(input)
+		_ = options
+		var n int
+		var l int
+		_ = l
+		if x.TopicId != 0 {
+			n += 1 + runtime.Sov(uint64(x.TopicId))
+		}
+		if x.Epoch != 0 {
+			n += 1 + runtime.Sov(uint64(x.Epoch))
+		}
+		if x.RewardNonce != 0 {
+			n += 1 + runtime.Sov(uint64(x.RewardNonce))
+		}
+		l = len(x.Amount)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		if x.unknownFields != nil {
+			n += len(x.unknownFields)
+		}
+		return protoiface.SizeOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Size:              n,
+		}
+	}
+
+	marshal := func(input protoiface.MarshalInput) (protoiface.MarshalOutput, error) {
+		x := input.Message.Interface().(*EventTopicRewardForfeitedDistributionFailed)
+		if x == nil {
+			return protoiface.MarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Buf:               input.Buf,
+			}, nil
+		}
+		options := runtime.MarshalInputToOptions(input)
+		_ = options
+		size := options.Size(x)
+		dAtA := make([]byte, size)
+		i := len(dAtA)
+		_ = i
+		var l int
+		_ = l
+		if x.unknownFields != nil {
+			i -= len(x.unknownFields)
+			copy(dAtA[i:], x.unknownFields)
+		}
+		if len(x.Amount) > 0 {
+			i -= len(x.Amount)
+			copy(dAtA[i:], x.Amount)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.Amount)))
+			i--
+			dAtA[i] = 0x22
+		}
+		if x.RewardNonce != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.RewardNonce))
+			i--
+			dAtA[i] = 0x18
+		}
+		if x.Epoch != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.Epoch))
+			i--
+			dAtA[i] = 0x10
+		}
+		if x.TopicId != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.TopicId))
+			i--
+			dAtA[i] = 0x8
+		}
+		if input.Buf != nil {
+			input.Buf = append(input.Buf, dAtA...)
+		} else {
+			input.Buf = dAtA
+		}
+		return protoiface.MarshalOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Buf:               input.Buf,
+		}, nil
+	}
+	unmarshal := func(input protoiface.UnmarshalInput) (protoiface.UnmarshalOutput, error) {
+		x := input.Message.Interface().(*EventTopicRewardForfeitedDistributionFailed)
+		if x == nil {
+			return protoiface.UnmarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Flags:             input.Flags,
+			}, nil
+		}
+		options := runtime.UnmarshalInputToOptions(input)
+		_ = options
+		dAtA := input.Buf
+		l := len(dAtA)
+		iNdEx := 0
+		for iNdEx < l {
+			preIndex := iNdEx
+			var wire uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				wire |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			fieldNum := int32(wire >> 3)
+			wireType := int(wire & 0x7)
+			if wireType == 4 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: EventTopicRewardForfeitedDistributionFailed: wiretype end group for non-group")
+			}
+			if fieldNum <= 0 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: EventTopicRewardForfeitedDistributionFailed: illegal tag %d (wire type %d)", fieldNum, wire)
+			}
+			switch fieldNum {
+			case 1:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+				}
+				x.TopicId = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.TopicId |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+			case 2:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Epoch", wireType)
+				}
+				x.Epoch = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.Epoch |= int64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+			case 3:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field RewardNonce", wireType)
+				}
+				x.RewardNonce = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.RewardNonce |= int64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+			case 4:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Amount", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.Amount = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			default:
+				iNdEx = preIndex
+				skippy, err := runtime.Skip(dAtA[iNdEx:])
+				if err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				if (skippy < 0) || (iNdEx+skippy) < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if (iNdEx + skippy) > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				if !options.DiscardUnknown {
+					x.unknownFields = append(x.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
+				}
+				iNdEx += skippy
+			}
+		}
+
+		if iNdEx > l {
+			return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+		}
+		return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, nil
+	}
+	return &protoiface.Methods{
+		NoUnkeyedLiterals: struct{}{},
+		Flags:             protoiface.SupportMarshalDeterministic | protoiface.SupportUnmarshalDiscardUnknown,
+		Size:              size,
+		Marshal:           marshal,
+		Unmarshal:         unmarshal,
+		Merge:             nil,
+		CheckInitialized:  nil,
+	}
+}
+
+var (
+	md_EventNonceExpired            protoreflect.MessageDescriptor
+	fd_EventNonceExpired_topic_id   protoreflect.FieldDescriptor
+	fd_EventNonceExpired_nonce      protoreflect.FieldDescriptor
+	fd_EventNonceExpired_actor_type protoreflect.FieldDescriptor
+	fd_EventNonceExpired_reason     protoreflect.FieldDescriptor
+)
+
+func init() {
+	file_emissions_v10_events_proto_init()
+	md_EventNonceExpired = File_emissions_v10_events_proto.Messages().ByName("EventNonceExpired")
+	fd_EventNonceExpired_topic_id = md_EventNonceExpired.Fields().ByName("topic_id")
+	fd_EventNonceExpired_nonce = md_EventNonceExpired.Fields().ByName("nonce")
+	fd_EventNonceExpired_actor_type = md_EventNonceExpired.Fields().ByName("actor_type")
+	fd_EventNonceExpired_reason = md_EventNonceExpired.Fields().ByName("reason")
+}
+
+var _ protoreflect.Message = (*fastReflection_EventNonceExpired)(nil)
+
+type fastReflection_EventNonceExpired EventNonceExpired
+
+func (x *EventNonceExpired) ProtoReflect() protoreflect.Message {
+	return (*fastReflection_EventNonceExpired)(x)
+}
+
+func (x *EventNonceExpired) slowProtoReflect() protoreflect.Message {
+	mi := &file_emissions_v10_events_proto_msgTypes[79]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+var _fastReflection_EventNonceExpired_messageType fastReflection_EventNonceExpired_messageType
+var _ protoreflect.MessageType = fastReflection_EventNonceExpired_messageType{}
+
+type fastReflection_EventNonceExpired_messageType struct{}
+
+func (x fastReflection_EventNonceExpired_messageType) Zero() protoreflect.Message {
+	return (*fastReflection_EventNonceExpired)(nil)
+}
+func (x fastReflection_EventNonceExpired_messageType) New() protoreflect.Message {
+	return new(fastReflection_EventNonceExpired)
+}
+func (x fastReflection_EventNonceExpired_messageType) Descriptor() protoreflect.MessageDescriptor {
+	return md_EventNonceExpired
+}
+
+// Descriptor returns message descriptor, which contains only the protobuf
+// type information for the message.
+func (x *fastReflection_EventNonceExpired) Descriptor() protoreflect.MessageDescriptor {
+	return md_EventNonceExpired
+}
+
+// Type returns the message type, which encapsulates both Go and protobuf
+// type information. If the Go type information is not needed,
+// it is recommended that the message descriptor be used instead.
+func (x *fastReflection_EventNonceExpired) Type() protoreflect.MessageType {
+	return _fastReflection_EventNonceExpired_messageType
+}
+
+// New returns a newly allocated and mutable empty message.
+func (x *fastReflection_EventNonceExpired) New() protoreflect.Message {
+	return new(fastReflection_EventNonceExpired)
+}
+
+// Interface unwraps the message reflection interface and
+// returns the underlying ProtoMessage interface.
+func (x *fastReflection_EventNonceExpired) Interface() protoreflect.ProtoMessage {
+	return (*EventNonceExpired)(x)
+}
+
+// Range iterates over every populated field in an undefined order,
+// calling f for each field descriptor and value encountered.
+// Range returns immediately if f returns false.
+// While iterating, mutating operations may only be performed
+// on the current field descriptor.
+func (x *fastReflection_EventNonceExpired) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
+	if x.TopicId != uint64(0) {
+		value := protoreflect.ValueOfUint64(x.TopicId)
+		if !f(fd_EventNonceExpired_topic_id, value) {
+			return
+		}
+	}
+	if x.Nonce != int64(0) {
+		value := protoreflect.ValueOfInt64(x.Nonce)
+		if !f(fd_EventNonceExpired_nonce, value) {
+			return
+		}
+	}
+	if x.ActorType != 0 {
+		value := protoreflect.ValueOfEnum((protoreflect.EnumNumber)(x.ActorType))
+		if !f(fd_EventNonceExpired_actor_type, value) {
+			return
+		}
+	}
+	if x.Reason != 0 {
+		value := protoreflect.ValueOfEnum((protoreflect.EnumNumber)(x.Reason))
+		if !f(fd_EventNonceExpired_reason, value) {
+			return
+		}
+	}
+}
+
+// Has reports whether a field is populated.
+//
+// Some fields have the property of nullability where it is possible to
+// distinguish between the default value of a field and whether the field
+// was explicitly populated with the default value. Singular message fields,
+// member fields of a oneof, and proto2 scalar fields are nullable. Such
+// fields are populated only if explicitly set.
+//
+// In other cases (aside from the nullable cases above),
+// a proto3 scalar field is populated if it contains a non-zero value, and
+// a repeated field is populated if it is non-empty.
+func (x *fastReflection_EventNonceExpired) Has(fd protoreflect.FieldDescriptor) bool {
+	switch fd.FullName() {
+	case "emissions.v10.EventNonceExpired.topic_id":
+		return x.TopicId != uint64(0)
+	case "emissions.v10.EventNonceExpired.nonce":
+		return x.Nonce != int64(0)
+	case "emissions.v10.EventNonceExpired.actor_type":
+		return x.ActorType != 0
+	case "emissions.v10.EventNonceExpired.reason":
+		return x.Reason != 0
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v10.EventNonceExpired"))
+		}
+		panic(fmt.Errorf("message emissions.v10.EventNonceExpired does not contain field %s", fd.FullName()))
+	}
+}
+
+// Clear clears the field such that a subsequent Has call reports false.
+//
+// Clearing an extension field clears both the extension type and value
+// associated with the given field number.
+//
+// Clear is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventNonceExpired) Clear(fd protoreflect.FieldDescriptor) {
+	switch fd.FullName() {
+	case "emissions.v10.EventNonceExpired.topic_id":
+		x.TopicId = uint64(0)
+	case "emissions.v10.EventNonceExpired.nonce":
+		x.Nonce = int64(0)
+	case "emissions.v10.EventNonceExpired.actor_type":
+		x.ActorType = 0
+	case "emissions.v10.EventNonceExpired.reason":
+		x.Reason = 0
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v10.EventNonceExpired"))
+		}
+		panic(fmt.Errorf("message emissions.v10.EventNonceExpired does not contain field %s", fd.FullName()))
+	}
+}
+
+// Get retrieves the value for a field.
+//
+// For unpopulated scalars, it returns the default value, where
+// the default value of a bytes scalar is guaranteed to be a copy.
+// For unpopulated composite types, it returns an empty, read-only view
+// of the value; to obtain a mutable reference, use Mutable.
+func (x *fastReflection_EventNonceExpired) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
+	switch descriptor.FullName() {
+	case "emissions.v10.EventNonceExpired.topic_id":
+		value := x.TopicId
+		return protoreflect.ValueOfUint64(value)
+	case "emissions.v10.EventNonceExpired.nonce":
+		value := x.Nonce
+		return protoreflect.ValueOfInt64(value)
+	case "emissions.v10.EventNonceExpired.actor_type":
+		value := x.ActorType
+		return protoreflect.ValueOfEnum((protoreflect.EnumNumber)(value))
+	case "emissions.v10.EventNonceExpired.reason":
+		value := x.Reason
+		return protoreflect.ValueOfEnum((protoreflect.EnumNumber)(value))
+	default:
+		if descriptor.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v10.EventNonceExpired"))
+		}
+		panic(fmt.Errorf("message emissions.v10.EventNonceExpired does not contain field %s", descriptor.FullName()))
+	}
+}
+
+// Set stores the value for a field.
+//
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType.
+// When setting a composite type, it is unspecified whether the stored value
+// aliases the source's memory in any way. If the composite value is an
+// empty, read-only value, then it panics.
+//
+// Set is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventNonceExpired) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
+	switch fd.FullName() {
+	case "emissions.v10.EventNonceExpired.topic_id":
+		x.TopicId = value.Uint()
+	case "emissions.v10.EventNonceExpired.nonce":
+		x.Nonce = value.Int()
+	case "emissions.v10.EventNonceExpired.actor_type":
+		x.ActorType = (ActorType)(value.Enum())
+	case "emissions.v10.EventNonceExpired.reason":
+		x.Reason = (NonceExpiredReason)(value.Enum())
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v10.EventNonceExpired"))
+		}
+		panic(fmt.Errorf("message emissions.v10.EventNonceExpired does not contain field %s", fd.FullName()))
+	}
+}
+
+// Mutable returns a mutable reference to a composite type.
+//
+// If the field is unpopulated, it may allocate a composite value.
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType
+// if not already stored.
+// It panics if the field does not contain a composite type.
+//
+// Mutable is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventNonceExpired) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "emissions.v10.EventNonceExpired.topic_id":
+		panic(fmt.Errorf("field topic_id of message emissions.v10.EventNonceExpired is not mutable"))
+	case "emissions.v10.EventNonceExpired.nonce":
+		panic(fmt.Errorf("field nonce of message emissions.v10.EventNonceExpired is not mutable"))
+	case "emissions.v10.EventNonceExpired.actor_type":
+		panic(fmt.Errorf("field actor_type of message emissions.v10.EventNonceExpired is not mutable"))
+	case "emissions.v10.EventNonceExpired.reason":
+		panic(fmt.Errorf("field reason of message emissions.v10.EventNonceExpired is not mutable"))
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v10.EventNonceExpired"))
+		}
+		panic(fmt.Errorf("message emissions.v10.EventNonceExpired does not contain field %s", fd.FullName()))
+	}
+}
+
+// NewField returns a new value that is assignable to the field
+// for the given descriptor. For scalars, this returns the default value.
+// For lists, maps, and messages, this returns a new, empty, mutable value.
+func (x *fastReflection_EventNonceExpired) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "emissions.v10.EventNonceExpired.topic_id":
+		return protoreflect.ValueOfUint64(uint64(0))
+	case "emissions.v10.EventNonceExpired.nonce":
+		return protoreflect.ValueOfInt64(int64(0))
+	case "emissions.v10.EventNonceExpired.actor_type":
+		return protoreflect.ValueOfEnum(0)
+	case "emissions.v10.EventNonceExpired.reason":
+		return protoreflect.ValueOfEnum(0)
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v10.EventNonceExpired"))
+		}
+		panic(fmt.Errorf("message emissions.v10.EventNonceExpired does not contain field %s", fd.FullName()))
+	}
+}
+
+// WhichOneof reports which field within the oneof is populated,
+// returning nil if none are populated.
+// It panics if the oneof descriptor does not belong to this message.
+func (x *fastReflection_EventNonceExpired) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
+	switch d.FullName() {
+	default:
+		panic(fmt.Errorf("%s is not a oneof field in emissions.v10.EventNonceExpired", d.FullName()))
+	}
+	panic("unreachable")
+}
+
+// GetUnknown retrieves the entire list of unknown fields.
+// The caller may only mutate the contents of the RawFields
+// if the mutated bytes are stored back into the message with SetUnknown.
+func (x *fastReflection_EventNonceExpired) GetUnknown() protoreflect.RawFields {
+	return x.unknownFields
+}
+
+// SetUnknown stores an entire list of unknown fields.
+// The raw fields must be syntactically valid according to the wire format.
+// An implementation may panic if this is not the case.
+// Once stored, the caller must not mutate the content of the RawFields.
+// An empty RawFields may be passed to clear the fields.
+//
+// SetUnknown is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventNonceExpired) SetUnknown(fields protoreflect.RawFields) {
+	x.unknownFields = fields
+}
+
+// IsValid reports whether the message is valid.
+//
+// An invalid message is an empty, read-only value.
+//
+// An invalid message often corresponds to a nil pointer of the concrete
+// message type, but the details are implementation dependent.
+// Validity is not part of the protobuf data model, and may not
+// be preserved in marshaling or other operations.
+func (x *fastReflection_EventNonceExpired) IsValid() bool {
+	return x != nil
+}
+
+// ProtoMethods returns optional fastReflectionFeature-path implementations of various operations.
+// This method may return nil.
+//
+// The returned methods type is identical to
+// "google.golang.org/protobuf/runtime/protoiface".Methods.
+// Consult the protoiface package documentation for details.
+func (x *fastReflection_EventNonceExpired) ProtoMethods() *protoiface.Methods {
+	size := func(input protoiface.SizeInput) protoiface.SizeOutput {
+		x := input.Message.Interface().(*EventNonceExpired)
+		if x == nil {
+			return protoiface.SizeOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Size:              0,
+			}
+		}
+		options := runtime.SizeInputToOptions(input)
+		_ = options
+		var n int
+		var l int
+		_ = l
+		if x.TopicId != 0 {
+			n += 1 + runtime.Sov(uint64(x.TopicId))
+		}
+		if x.Nonce != 0 {
+			n += 1 + runtime.Sov(uint64(x.Nonce))
+		}
+		if x.ActorType != 0 {
+			n += 1 + runtime.Sov(uint64(x.ActorType))
+		}
+		if x.Reason != 0 {
+			n += 1 + runtime.Sov(uint64(x.Reason))
+		}
+		if x.unknownFields != nil {
+			n += len(x.unknownFields)
+		}
+		return protoiface.SizeOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Size:              n,
+		}
+	}
+
+	marshal := func(input protoiface.MarshalInput) (protoiface.MarshalOutput, error) {
+		x := input.Message.Interface().(*EventNonceExpired)
+		if x == nil {
+			return protoiface.MarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Buf:               input.Buf,
+			}, nil
+		}
+		options := runtime.MarshalInputToOptions(input)
+		_ = options
+		size := options.Size(x)
+		dAtA := make([]byte, size)
+		i := len(dAtA)
+		_ = i
+		var l int
+		_ = l
+		if x.unknownFields != nil {
+			i -= len(x.unknownFields)
+			copy(dAtA[i:], x.unknownFields)
+		}
+		if x.Reason != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.Reason))
+			i--
+			dAtA[i] = 0x20
+		}
+		if x.ActorType != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.ActorType))
+			i--
+			dAtA[i] = 0x18
+		}
+		if x.Nonce != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.Nonce))
+			i--
+			dAtA[i] = 0x10
+		}
+		if x.TopicId != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.TopicId))
+			i--
+			dAtA[i] = 0x8
+		}
+		if input.Buf != nil {
+			input.Buf = append(input.Buf, dAtA...)
+		} else {
+			input.Buf = dAtA
+		}
+		return protoiface.MarshalOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Buf:               input.Buf,
+		}, nil
+	}
+	unmarshal := func(input protoiface.UnmarshalInput) (protoiface.UnmarshalOutput, error) {
+		x := input.Message.Interface().(*EventNonceExpired)
+		if x == nil {
+			return protoiface.UnmarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Flags:             input.Flags,
+			}, nil
+		}
+		options := runtime.UnmarshalInputToOptions(input)
+		_ = options
+		dAtA := input.Buf
+		l := len(dAtA)
+		iNdEx := 0
+		for iNdEx < l {
+			preIndex := iNdEx
+			var wire uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				wire |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			fieldNum := int32(wire >> 3)
+			wireType := int(wire & 0x7)
+			if wireType == 4 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: EventNonceExpired: wiretype end group for non-group")
+			}
+			if fieldNum <= 0 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: EventNonceExpired: illegal tag %d (wire type %d)", fieldNum, wire)
+			}
+			switch fieldNum {
+			case 1:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+				}
+				x.TopicId = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.TopicId |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+			case 2:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Nonce", wireType)
+				}
+				x.Nonce = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.Nonce |= int64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+			case 3:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field ActorType", wireType)
+				}
+				x.ActorType = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.ActorType |= ActorType(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+			case 4:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Reason", wireType)
+				}
+				x.Reason = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.Reason |= NonceExpiredReason(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+			default:
+				iNdEx = preIndex
+				skippy, err := runtime.Skip(dAtA[iNdEx:])
+				if err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				if (skippy < 0) || (iNdEx+skippy) < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if (iNdEx + skippy) > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				if !options.DiscardUnknown {
+					x.unknownFields = append(x.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
+				}
+				iNdEx += skippy
+			}
+		}
+
+		if iNdEx > l {
+			return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+		}
+		return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, nil
+	}
+	return &protoiface.Methods{
+		NoUnkeyedLiterals: struct{}{},
+		Flags:             protoiface.SupportMarshalDeterministic | protoiface.SupportUnmarshalDiscardUnknown,
+		Size:              size,
+		Marshal:           marshal,
+		Unmarshal:         unmarshal,
+		Merge:             nil,
+		CheckInitialized:  nil,
+	}
+}
+
+var (
 	md_EventEpochLabelRegistryFrozen                    protoreflect.MessageDescriptor
 	fd_EventEpochLabelRegistryFrozen_topic_id           protoreflect.FieldDescriptor
 	fd_EventEpochLabelRegistryFrozen_nonce_block_height protoreflect.FieldDescriptor
@@ -45792,7 +47420,7 @@ func (x *EventEpochLabelRegistryFrozen) ProtoReflect() protoreflect.Message {
 }
 
 func (x *EventEpochLabelRegistryFrozen) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v10_events_proto_msgTypes[77]
+	mi := &file_emissions_v10_events_proto_msgTypes[80]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -46512,6 +48140,65 @@ func (x TopicStatusChangeReason) Number() protoreflect.EnumNumber {
 // Deprecated: Use TopicStatusChangeReason.Descriptor instead.
 func (TopicStatusChangeReason) EnumDescriptor() ([]byte, []int) {
 	return file_emissions_v10_events_proto_rawDescGZIP(), []int{2}
+}
+
+// Why an unfulfilled nonce was removed from state.
+type NonceExpiredReason int32
+
+const (
+	NonceExpiredReason_NONCE_EXPIRED_REASON_UNSPECIFIED NonceExpiredReason = 0
+	// The nonce was the oldest outstanding one, at the tail of the newest-first
+	// unfulfilled list, and was cut when a new nonce pushed the list past the
+	// cap on unfulfilled requests.
+	NonceExpiredReason_NONCE_EXPIRED_REASON_EVICTED_BY_CAP NonceExpiredReason = 1
+	// The nonce aged past the retention threshold and was pruned.
+	NonceExpiredReason_NONCE_EXPIRED_REASON_PRUNED_BY_AGE NonceExpiredReason = 2
+	// Closing the nonce failed (e.g. no usable submissions), and the nonce
+	// left state unfulfilled during cleanup.
+	NonceExpiredReason_NONCE_EXPIRED_REASON_CLOSE_FAILED NonceExpiredReason = 3
+)
+
+// Enum value maps for NonceExpiredReason.
+var (
+	NonceExpiredReason_name = map[int32]string{
+		0: "NONCE_EXPIRED_REASON_UNSPECIFIED",
+		1: "NONCE_EXPIRED_REASON_EVICTED_BY_CAP",
+		2: "NONCE_EXPIRED_REASON_PRUNED_BY_AGE",
+		3: "NONCE_EXPIRED_REASON_CLOSE_FAILED",
+	}
+	NonceExpiredReason_value = map[string]int32{
+		"NONCE_EXPIRED_REASON_UNSPECIFIED":    0,
+		"NONCE_EXPIRED_REASON_EVICTED_BY_CAP": 1,
+		"NONCE_EXPIRED_REASON_PRUNED_BY_AGE":  2,
+		"NONCE_EXPIRED_REASON_CLOSE_FAILED":   3,
+	}
+)
+
+func (x NonceExpiredReason) Enum() *NonceExpiredReason {
+	p := new(NonceExpiredReason)
+	*p = x
+	return p
+}
+
+func (x NonceExpiredReason) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (NonceExpiredReason) Descriptor() protoreflect.EnumDescriptor {
+	return file_emissions_v10_events_proto_enumTypes[3].Descriptor()
+}
+
+func (NonceExpiredReason) Type() protoreflect.EnumType {
+	return &file_emissions_v10_events_proto_enumTypes[3]
+}
+
+func (x NonceExpiredReason) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use NonceExpiredReason.Descriptor instead.
+func (NonceExpiredReason) EnumDescriptor() ([]byte, []int) {
+	return file_emissions_v10_events_proto_rawDescGZIP(), []int{3}
 }
 
 type EventScoresSet struct {
@@ -50943,6 +52630,195 @@ func (x *EventRewardPayoutFailed) GetReason() RewardPayoutFailureReason {
 	return RewardPayoutFailureReason_REWARD_PAYOUT_FAILURE_REASON_UNSPECIFIED
 }
 
+// Emitted when a topic's reward goes back to the ecosystem account because
+// the topic had no reward nonce to settle the reward against.
+type EventTopicRewardForfeitedNoRewardNonce struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	TopicId uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	// The topic's EpochLastEnded. For a topic rewarded in this block, this is
+	// the height of the block the event is emitted in.
+	Epoch int64 `protobuf:"varint,2,opt,name=epoch,proto3" json:"epoch,omitempty"`
+	// The forfeited reward.
+	Amount string `protobuf:"bytes,3,opt,name=amount,proto3" json:"amount,omitempty"`
+}
+
+func (x *EventTopicRewardForfeitedNoRewardNonce) Reset() {
+	*x = EventTopicRewardForfeitedNoRewardNonce{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_emissions_v10_events_proto_msgTypes[77]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *EventTopicRewardForfeitedNoRewardNonce) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*EventTopicRewardForfeitedNoRewardNonce) ProtoMessage() {}
+
+// Deprecated: Use EventTopicRewardForfeitedNoRewardNonce.ProtoReflect.Descriptor instead.
+func (*EventTopicRewardForfeitedNoRewardNonce) Descriptor() ([]byte, []int) {
+	return file_emissions_v10_events_proto_rawDescGZIP(), []int{77}
+}
+
+func (x *EventTopicRewardForfeitedNoRewardNonce) GetTopicId() uint64 {
+	if x != nil {
+		return x.TopicId
+	}
+	return 0
+}
+
+func (x *EventTopicRewardForfeitedNoRewardNonce) GetEpoch() int64 {
+	if x != nil {
+		return x.Epoch
+	}
+	return 0
+}
+
+func (x *EventTopicRewardForfeitedNoRewardNonce) GetAmount() string {
+	if x != nil {
+		return x.Amount
+	}
+	return ""
+}
+
+// Emitted when a topic's reward goes back to the ecosystem account because
+// distributing and paying it out to the topic's actors failed.
+type EventTopicRewardForfeitedDistributionFailed struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	TopicId uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	// The topic's EpochLastEnded. For a topic rewarded in this block, this is
+	// the height of the block the event is emitted in.
+	Epoch int64 `protobuf:"varint,2,opt,name=epoch,proto3" json:"epoch,omitempty"`
+	// The reward nonce whose settlement failed.
+	RewardNonce int64 `protobuf:"varint,3,opt,name=reward_nonce,json=rewardNonce,proto3" json:"reward_nonce,omitempty"`
+	// The forfeited reward.
+	Amount string `protobuf:"bytes,4,opt,name=amount,proto3" json:"amount,omitempty"`
+}
+
+func (x *EventTopicRewardForfeitedDistributionFailed) Reset() {
+	*x = EventTopicRewardForfeitedDistributionFailed{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_emissions_v10_events_proto_msgTypes[78]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *EventTopicRewardForfeitedDistributionFailed) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*EventTopicRewardForfeitedDistributionFailed) ProtoMessage() {}
+
+// Deprecated: Use EventTopicRewardForfeitedDistributionFailed.ProtoReflect.Descriptor instead.
+func (*EventTopicRewardForfeitedDistributionFailed) Descriptor() ([]byte, []int) {
+	return file_emissions_v10_events_proto_rawDescGZIP(), []int{78}
+}
+
+func (x *EventTopicRewardForfeitedDistributionFailed) GetTopicId() uint64 {
+	if x != nil {
+		return x.TopicId
+	}
+	return 0
+}
+
+func (x *EventTopicRewardForfeitedDistributionFailed) GetEpoch() int64 {
+	if x != nil {
+		return x.Epoch
+	}
+	return 0
+}
+
+func (x *EventTopicRewardForfeitedDistributionFailed) GetRewardNonce() int64 {
+	if x != nil {
+		return x.RewardNonce
+	}
+	return 0
+}
+
+func (x *EventTopicRewardForfeitedDistributionFailed) GetAmount() string {
+	if x != nil {
+		return x.Amount
+	}
+	return ""
+}
+
+// Emitted for each unfulfilled nonce that leaves state without being
+// fulfilled. An unfulfilled nonce leaves state in exactly three ways, each
+// covered here: it is evicted by the cap on unfulfilled requests, it is pruned
+// by age, or its close fails and it is dropped during cleanup. Consumers key
+// on `nonce`, the expired nonce itself, not on the block the event is emitted
+// in. `actor_type` says what kind of nonce expired: a worker nonce (no
+// inferences arrived for that epoch) or a reputer nonce (no losses arrived,
+// so the epoch gets no rewards).
+type EventNonceExpired struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	TopicId uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	// The expired nonce: the epoch the submissions were due for.
+	Nonce     int64              `protobuf:"varint,2,opt,name=nonce,proto3" json:"nonce,omitempty"`
+	ActorType ActorType          `protobuf:"varint,3,opt,name=actor_type,json=actorType,proto3,enum=emissions.v10.ActorType" json:"actor_type,omitempty"`
+	Reason    NonceExpiredReason `protobuf:"varint,4,opt,name=reason,proto3,enum=emissions.v10.NonceExpiredReason" json:"reason,omitempty"`
+}
+
+func (x *EventNonceExpired) Reset() {
+	*x = EventNonceExpired{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_emissions_v10_events_proto_msgTypes[79]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *EventNonceExpired) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*EventNonceExpired) ProtoMessage() {}
+
+// Deprecated: Use EventNonceExpired.ProtoReflect.Descriptor instead.
+func (*EventNonceExpired) Descriptor() ([]byte, []int) {
+	return file_emissions_v10_events_proto_rawDescGZIP(), []int{79}
+}
+
+func (x *EventNonceExpired) GetTopicId() uint64 {
+	if x != nil {
+		return x.TopicId
+	}
+	return 0
+}
+
+func (x *EventNonceExpired) GetNonce() int64 {
+	if x != nil {
+		return x.Nonce
+	}
+	return 0
+}
+
+func (x *EventNonceExpired) GetActorType() ActorType {
+	if x != nil {
+		return x.ActorType
+	}
+	return ActorType_ACTOR_TYPE_INFERER_UNSPECIFIED
+}
+
+func (x *EventNonceExpired) GetReason() NonceExpiredReason {
+	if x != nil {
+		return x.Reason
+	}
+	return NonceExpiredReason_NONCE_EXPIRED_REASON_UNSPECIFIED
+}
+
 // Emitted once per epoch at CloseWorkerNonce, after the EpochLabelRegistry is
 // finalized from the active set's surviving submissions and written to
 // state. `registry_size` is the number of unique canonical labels in the
@@ -50966,7 +52842,7 @@ type EventEpochLabelRegistryFrozen struct {
 func (x *EventEpochLabelRegistryFrozen) Reset() {
 	*x = EventEpochLabelRegistryFrozen{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v10_events_proto_msgTypes[77]
+		mi := &file_emissions_v10_events_proto_msgTypes[80]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -50980,7 +52856,7 @@ func (*EventEpochLabelRegistryFrozen) ProtoMessage() {}
 
 // Deprecated: Use EventEpochLabelRegistryFrozen.ProtoReflect.Descriptor instead.
 func (*EventEpochLabelRegistryFrozen) Descriptor() ([]byte, []int) {
-	return file_emissions_v10_events_proto_rawDescGZIP(), []int{77}
+	return file_emissions_v10_events_proto_rawDescGZIP(), []int{80}
 }
 
 func (x *EventEpochLabelRegistryFrozen) GetTopicId() uint64 {
@@ -51941,84 +53817,131 @@ var file_emissions_v10_events_proto_rawDesc = []byte{
 	0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x31, 0x30, 0x2e, 0x52,
 	0x65, 0x77, 0x61, 0x72, 0x64, 0x50, 0x61, 0x79, 0x6f, 0x75, 0x74, 0x46, 0x61, 0x69, 0x6c, 0x75,
 	0x72, 0x65, 0x52, 0x65, 0x61, 0x73, 0x6f, 0x6e, 0x52, 0x06, 0x72, 0x65, 0x61, 0x73, 0x6f, 0x6e,
-	0x22, 0xa7, 0x01, 0x0a, 0x1d, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x45, 0x70, 0x6f, 0x63, 0x68, 0x4c,
-	0x61, 0x62, 0x65, 0x6c, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x79, 0x46, 0x72, 0x6f, 0x7a,
-	0x65, 0x6e, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x01,
-	0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x30, 0x0a,
-	0x12, 0x6e, 0x6f, 0x6e, 0x63, 0x65, 0x5f, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x5f, 0x68, 0x65, 0x69,
-	0x67, 0x68, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x03, 0x42, 0x02, 0x18, 0x01, 0x52, 0x10, 0x6e,
-	0x6f, 0x6e, 0x63, 0x65, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x48, 0x65, 0x69, 0x67, 0x68, 0x74, 0x12,
-	0x23, 0x0a, 0x0d, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x79, 0x5f, 0x73, 0x69, 0x7a, 0x65,
-	0x18, 0x03, 0x20, 0x01, 0x28, 0x04, 0x52, 0x0c, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x79,
-	0x53, 0x69, 0x7a, 0x65, 0x12, 0x14, 0x0a, 0x05, 0x6e, 0x6f, 0x6e, 0x63, 0x65, 0x18, 0x04, 0x20,
-	0x01, 0x28, 0x03, 0x52, 0x05, 0x6e, 0x6f, 0x6e, 0x63, 0x65, 0x2a, 0x62, 0x0a, 0x09, 0x41, 0x63,
-	0x74, 0x6f, 0x72, 0x54, 0x79, 0x70, 0x65, 0x12, 0x22, 0x0a, 0x1e, 0x41, 0x43, 0x54, 0x4f, 0x52,
-	0x5f, 0x54, 0x59, 0x50, 0x45, 0x5f, 0x49, 0x4e, 0x46, 0x45, 0x52, 0x45, 0x52, 0x5f, 0x55, 0x4e,
-	0x53, 0x50, 0x45, 0x43, 0x49, 0x46, 0x49, 0x45, 0x44, 0x10, 0x00, 0x12, 0x19, 0x0a, 0x15, 0x41,
-	0x43, 0x54, 0x4f, 0x52, 0x5f, 0x54, 0x59, 0x50, 0x45, 0x5f, 0x46, 0x4f, 0x52, 0x45, 0x43, 0x41,
-	0x53, 0x54, 0x45, 0x52, 0x10, 0x01, 0x12, 0x16, 0x0a, 0x12, 0x41, 0x43, 0x54, 0x4f, 0x52, 0x5f,
-	0x54, 0x59, 0x50, 0x45, 0x5f, 0x52, 0x45, 0x50, 0x55, 0x54, 0x45, 0x52, 0x10, 0x02, 0x2a, 0xa6,
-	0x03, 0x0a, 0x19, 0x52, 0x65, 0x77, 0x61, 0x72, 0x64, 0x50, 0x61, 0x79, 0x6f, 0x75, 0x74, 0x46,
-	0x61, 0x69, 0x6c, 0x75, 0x72, 0x65, 0x52, 0x65, 0x61, 0x73, 0x6f, 0x6e, 0x12, 0x2c, 0x0a, 0x28,
-	0x52, 0x45, 0x57, 0x41, 0x52, 0x44, 0x5f, 0x50, 0x41, 0x59, 0x4f, 0x55, 0x54, 0x5f, 0x46, 0x41,
-	0x49, 0x4c, 0x55, 0x52, 0x45, 0x5f, 0x52, 0x45, 0x41, 0x53, 0x4f, 0x4e, 0x5f, 0x55, 0x4e, 0x53,
-	0x50, 0x45, 0x43, 0x49, 0x46, 0x49, 0x45, 0x44, 0x10, 0x00, 0x12, 0x32, 0x0a, 0x2e, 0x52, 0x45,
-	0x57, 0x41, 0x52, 0x44, 0x5f, 0x50, 0x41, 0x59, 0x4f, 0x55, 0x54, 0x5f, 0x46, 0x41, 0x49, 0x4c,
-	0x55, 0x52, 0x45, 0x5f, 0x52, 0x45, 0x41, 0x53, 0x4f, 0x4e, 0x5f, 0x52, 0x45, 0x57, 0x41, 0x52,
-	0x44, 0x5f, 0x43, 0x4f, 0x4e, 0x56, 0x45, 0x52, 0x53, 0x49, 0x4f, 0x4e, 0x10, 0x01, 0x12, 0x2c,
-	0x0a, 0x28, 0x52, 0x45, 0x57, 0x41, 0x52, 0x44, 0x5f, 0x50, 0x41, 0x59, 0x4f, 0x55, 0x54, 0x5f,
-	0x46, 0x41, 0x49, 0x4c, 0x55, 0x52, 0x45, 0x5f, 0x52, 0x45, 0x41, 0x53, 0x4f, 0x4e, 0x5f, 0x4d,
-	0x4f, 0x44, 0x55, 0x4c, 0x45, 0x5f, 0x53, 0x45, 0x4e, 0x44, 0x10, 0x02, 0x12, 0x2a, 0x0a, 0x26,
-	0x52, 0x45, 0x57, 0x41, 0x52, 0x44, 0x5f, 0x50, 0x41, 0x59, 0x4f, 0x55, 0x54, 0x5f, 0x46, 0x41,
-	0x49, 0x4c, 0x55, 0x52, 0x45, 0x5f, 0x52, 0x45, 0x41, 0x53, 0x4f, 0x4e, 0x5f, 0x41, 0x44, 0x44,
-	0x5f, 0x53, 0x54, 0x41, 0x4b, 0x45, 0x10, 0x03, 0x12, 0x37, 0x0a, 0x33, 0x52, 0x45, 0x57, 0x41,
-	0x52, 0x44, 0x5f, 0x50, 0x41, 0x59, 0x4f, 0x55, 0x54, 0x5f, 0x46, 0x41, 0x49, 0x4c, 0x55, 0x52,
-	0x45, 0x5f, 0x52, 0x45, 0x41, 0x53, 0x4f, 0x4e, 0x5f, 0x49, 0x4e, 0x56, 0x41, 0x4c, 0x49, 0x44,
-	0x5f, 0x50, 0x41, 0x59, 0x4f, 0x55, 0x54, 0x5f, 0x41, 0x44, 0x44, 0x52, 0x45, 0x53, 0x53, 0x10,
-	0x04, 0x12, 0x33, 0x0a, 0x2f, 0x52, 0x45, 0x57, 0x41, 0x52, 0x44, 0x5f, 0x50, 0x41, 0x59, 0x4f,
-	0x55, 0x54, 0x5f, 0x46, 0x41, 0x49, 0x4c, 0x55, 0x52, 0x45, 0x5f, 0x52, 0x45, 0x41, 0x53, 0x4f,
-	0x4e, 0x5f, 0x57, 0x4f, 0x52, 0x4b, 0x45, 0x52, 0x5f, 0x49, 0x4e, 0x46, 0x4f, 0x5f, 0x4c, 0x4f,
-	0x4f, 0x4b, 0x55, 0x50, 0x10, 0x05, 0x12, 0x2d, 0x0a, 0x29, 0x52, 0x45, 0x57, 0x41, 0x52, 0x44,
-	0x5f, 0x50, 0x41, 0x59, 0x4f, 0x55, 0x54, 0x5f, 0x46, 0x41, 0x49, 0x4c, 0x55, 0x52, 0x45, 0x5f,
-	0x52, 0x45, 0x41, 0x53, 0x4f, 0x4e, 0x5f, 0x41, 0x43, 0x43, 0x4f, 0x55, 0x4e, 0x54, 0x5f, 0x53,
-	0x45, 0x4e, 0x44, 0x10, 0x06, 0x12, 0x30, 0x0a, 0x2c, 0x52, 0x45, 0x57, 0x41, 0x52, 0x44, 0x5f,
+	0x22, 0xaa, 0x01, 0x0a, 0x26, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x52,
+	0x65, 0x77, 0x61, 0x72, 0x64, 0x46, 0x6f, 0x72, 0x66, 0x65, 0x69, 0x74, 0x65, 0x64, 0x4e, 0x6f,
+	0x52, 0x65, 0x77, 0x61, 0x72, 0x64, 0x4e, 0x6f, 0x6e, 0x63, 0x65, 0x12, 0x19, 0x0a, 0x08, 0x74,
+	0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74,
+	0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x14, 0x0a, 0x05, 0x65, 0x70, 0x6f, 0x63, 0x68, 0x18,
+	0x02, 0x20, 0x01, 0x28, 0x03, 0x52, 0x05, 0x65, 0x70, 0x6f, 0x63, 0x68, 0x12, 0x4f, 0x0a, 0x06,
+	0x61, 0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x42, 0x37, 0xc8, 0xde,
+	0x1f, 0x00, 0xda, 0xde, 0x1f, 0x2f, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d,
+	0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f,
+	0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f, 0x6d, 0x61, 0x74,
+	0x68, 0x2e, 0x44, 0x65, 0x63, 0x52, 0x06, 0x61, 0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x22, 0xd2, 0x01,
+	0x0a, 0x2b, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x52, 0x65, 0x77, 0x61,
+	0x72, 0x64, 0x46, 0x6f, 0x72, 0x66, 0x65, 0x69, 0x74, 0x65, 0x64, 0x44, 0x69, 0x73, 0x74, 0x72,
+	0x69, 0x62, 0x75, 0x74, 0x69, 0x6f, 0x6e, 0x46, 0x61, 0x69, 0x6c, 0x65, 0x64, 0x12, 0x19, 0x0a,
+	0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52,
+	0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x14, 0x0a, 0x05, 0x65, 0x70, 0x6f, 0x63,
+	0x68, 0x18, 0x02, 0x20, 0x01, 0x28, 0x03, 0x52, 0x05, 0x65, 0x70, 0x6f, 0x63, 0x68, 0x12, 0x21,
+	0x0a, 0x0c, 0x72, 0x65, 0x77, 0x61, 0x72, 0x64, 0x5f, 0x6e, 0x6f, 0x6e, 0x63, 0x65, 0x18, 0x03,
+	0x20, 0x01, 0x28, 0x03, 0x52, 0x0b, 0x72, 0x65, 0x77, 0x61, 0x72, 0x64, 0x4e, 0x6f, 0x6e, 0x63,
+	0x65, 0x12, 0x4f, 0x0a, 0x06, 0x61, 0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x18, 0x04, 0x20, 0x01, 0x28,
+	0x09, 0x42, 0x37, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x2f, 0x67, 0x69, 0x74, 0x68, 0x75,
+	0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x6e, 0x65, 0x74,
+	0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x63, 0x68, 0x61, 0x69,
+	0x6e, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x44, 0x65, 0x63, 0x52, 0x06, 0x61, 0x6d, 0x6f, 0x75,
+	0x6e, 0x74, 0x22, 0xb8, 0x01, 0x0a, 0x11, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x4e, 0x6f, 0x6e, 0x63,
+	0x65, 0x45, 0x78, 0x70, 0x69, 0x72, 0x65, 0x64, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69,
+	0x63, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69,
+	0x63, 0x49, 0x64, 0x12, 0x14, 0x0a, 0x05, 0x6e, 0x6f, 0x6e, 0x63, 0x65, 0x18, 0x02, 0x20, 0x01,
+	0x28, 0x03, 0x52, 0x05, 0x6e, 0x6f, 0x6e, 0x63, 0x65, 0x12, 0x37, 0x0a, 0x0a, 0x61, 0x63, 0x74,
+	0x6f, 0x72, 0x5f, 0x74, 0x79, 0x70, 0x65, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0e, 0x32, 0x18, 0x2e,
+	0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x31, 0x30, 0x2e, 0x41, 0x63,
+	0x74, 0x6f, 0x72, 0x54, 0x79, 0x70, 0x65, 0x52, 0x09, 0x61, 0x63, 0x74, 0x6f, 0x72, 0x54, 0x79,
+	0x70, 0x65, 0x12, 0x39, 0x0a, 0x06, 0x72, 0x65, 0x61, 0x73, 0x6f, 0x6e, 0x18, 0x04, 0x20, 0x01,
+	0x28, 0x0e, 0x32, 0x21, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76,
+	0x31, 0x30, 0x2e, 0x4e, 0x6f, 0x6e, 0x63, 0x65, 0x45, 0x78, 0x70, 0x69, 0x72, 0x65, 0x64, 0x52,
+	0x65, 0x61, 0x73, 0x6f, 0x6e, 0x52, 0x06, 0x72, 0x65, 0x61, 0x73, 0x6f, 0x6e, 0x22, 0xa7, 0x01,
+	0x0a, 0x1d, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x45, 0x70, 0x6f, 0x63, 0x68, 0x4c, 0x61, 0x62, 0x65,
+	0x6c, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x79, 0x46, 0x72, 0x6f, 0x7a, 0x65, 0x6e, 0x12,
+	0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28,
+	0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x30, 0x0a, 0x12, 0x6e, 0x6f,
+	0x6e, 0x63, 0x65, 0x5f, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x5f, 0x68, 0x65, 0x69, 0x67, 0x68, 0x74,
+	0x18, 0x02, 0x20, 0x01, 0x28, 0x03, 0x42, 0x02, 0x18, 0x01, 0x52, 0x10, 0x6e, 0x6f, 0x6e, 0x63,
+	0x65, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x48, 0x65, 0x69, 0x67, 0x68, 0x74, 0x12, 0x23, 0x0a, 0x0d,
+	0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x79, 0x5f, 0x73, 0x69, 0x7a, 0x65, 0x18, 0x03, 0x20,
+	0x01, 0x28, 0x04, 0x52, 0x0c, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x79, 0x53, 0x69, 0x7a,
+	0x65, 0x12, 0x14, 0x0a, 0x05, 0x6e, 0x6f, 0x6e, 0x63, 0x65, 0x18, 0x04, 0x20, 0x01, 0x28, 0x03,
+	0x52, 0x05, 0x6e, 0x6f, 0x6e, 0x63, 0x65, 0x2a, 0x62, 0x0a, 0x09, 0x41, 0x63, 0x74, 0x6f, 0x72,
+	0x54, 0x79, 0x70, 0x65, 0x12, 0x22, 0x0a, 0x1e, 0x41, 0x43, 0x54, 0x4f, 0x52, 0x5f, 0x54, 0x59,
+	0x50, 0x45, 0x5f, 0x49, 0x4e, 0x46, 0x45, 0x52, 0x45, 0x52, 0x5f, 0x55, 0x4e, 0x53, 0x50, 0x45,
+	0x43, 0x49, 0x46, 0x49, 0x45, 0x44, 0x10, 0x00, 0x12, 0x19, 0x0a, 0x15, 0x41, 0x43, 0x54, 0x4f,
+	0x52, 0x5f, 0x54, 0x59, 0x50, 0x45, 0x5f, 0x46, 0x4f, 0x52, 0x45, 0x43, 0x41, 0x53, 0x54, 0x45,
+	0x52, 0x10, 0x01, 0x12, 0x16, 0x0a, 0x12, 0x41, 0x43, 0x54, 0x4f, 0x52, 0x5f, 0x54, 0x59, 0x50,
+	0x45, 0x5f, 0x52, 0x45, 0x50, 0x55, 0x54, 0x45, 0x52, 0x10, 0x02, 0x2a, 0xa6, 0x03, 0x0a, 0x19,
+	0x52, 0x65, 0x77, 0x61, 0x72, 0x64, 0x50, 0x61, 0x79, 0x6f, 0x75, 0x74, 0x46, 0x61, 0x69, 0x6c,
+	0x75, 0x72, 0x65, 0x52, 0x65, 0x61, 0x73, 0x6f, 0x6e, 0x12, 0x2c, 0x0a, 0x28, 0x52, 0x45, 0x57,
+	0x41, 0x52, 0x44, 0x5f, 0x50, 0x41, 0x59, 0x4f, 0x55, 0x54, 0x5f, 0x46, 0x41, 0x49, 0x4c, 0x55,
+	0x52, 0x45, 0x5f, 0x52, 0x45, 0x41, 0x53, 0x4f, 0x4e, 0x5f, 0x55, 0x4e, 0x53, 0x50, 0x45, 0x43,
+	0x49, 0x46, 0x49, 0x45, 0x44, 0x10, 0x00, 0x12, 0x32, 0x0a, 0x2e, 0x52, 0x45, 0x57, 0x41, 0x52,
+	0x44, 0x5f, 0x50, 0x41, 0x59, 0x4f, 0x55, 0x54, 0x5f, 0x46, 0x41, 0x49, 0x4c, 0x55, 0x52, 0x45,
+	0x5f, 0x52, 0x45, 0x41, 0x53, 0x4f, 0x4e, 0x5f, 0x52, 0x45, 0x57, 0x41, 0x52, 0x44, 0x5f, 0x43,
+	0x4f, 0x4e, 0x56, 0x45, 0x52, 0x53, 0x49, 0x4f, 0x4e, 0x10, 0x01, 0x12, 0x2c, 0x0a, 0x28, 0x52,
+	0x45, 0x57, 0x41, 0x52, 0x44, 0x5f, 0x50, 0x41, 0x59, 0x4f, 0x55, 0x54, 0x5f, 0x46, 0x41, 0x49,
+	0x4c, 0x55, 0x52, 0x45, 0x5f, 0x52, 0x45, 0x41, 0x53, 0x4f, 0x4e, 0x5f, 0x4d, 0x4f, 0x44, 0x55,
+	0x4c, 0x45, 0x5f, 0x53, 0x45, 0x4e, 0x44, 0x10, 0x02, 0x12, 0x2a, 0x0a, 0x26, 0x52, 0x45, 0x57,
+	0x41, 0x52, 0x44, 0x5f, 0x50, 0x41, 0x59, 0x4f, 0x55, 0x54, 0x5f, 0x46, 0x41, 0x49, 0x4c, 0x55,
+	0x52, 0x45, 0x5f, 0x52, 0x45, 0x41, 0x53, 0x4f, 0x4e, 0x5f, 0x41, 0x44, 0x44, 0x5f, 0x53, 0x54,
+	0x41, 0x4b, 0x45, 0x10, 0x03, 0x12, 0x37, 0x0a, 0x33, 0x52, 0x45, 0x57, 0x41, 0x52, 0x44, 0x5f,
 	0x50, 0x41, 0x59, 0x4f, 0x55, 0x54, 0x5f, 0x46, 0x41, 0x49, 0x4c, 0x55, 0x52, 0x45, 0x5f, 0x52,
-	0x45, 0x41, 0x53, 0x4f, 0x4e, 0x5f, 0x4e, 0x45, 0x47, 0x41, 0x54, 0x49, 0x56, 0x45, 0x5f, 0x52,
-	0x45, 0x57, 0x41, 0x52, 0x44, 0x10, 0x07, 0x2a, 0xc8, 0x02, 0x0a, 0x17, 0x54, 0x6f, 0x70, 0x69,
-	0x63, 0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x43, 0x68, 0x61, 0x6e, 0x67, 0x65, 0x52, 0x65, 0x61,
-	0x73, 0x6f, 0x6e, 0x12, 0x2a, 0x0a, 0x26, 0x54, 0x4f, 0x50, 0x49, 0x43, 0x5f, 0x53, 0x54, 0x41,
-	0x54, 0x55, 0x53, 0x5f, 0x43, 0x48, 0x41, 0x4e, 0x47, 0x45, 0x5f, 0x52, 0x45, 0x41, 0x53, 0x4f,
-	0x4e, 0x5f, 0x55, 0x4e, 0x53, 0x50, 0x45, 0x43, 0x49, 0x46, 0x49, 0x45, 0x44, 0x10, 0x00, 0x12,
-	0x33, 0x0a, 0x2f, 0x54, 0x4f, 0x50, 0x49, 0x43, 0x5f, 0x53, 0x54, 0x41, 0x54, 0x55, 0x53, 0x5f,
-	0x43, 0x48, 0x41, 0x4e, 0x47, 0x45, 0x5f, 0x52, 0x45, 0x41, 0x53, 0x4f, 0x4e, 0x5f, 0x57, 0x45,
-	0x49, 0x47, 0x48, 0x54, 0x5f, 0x42, 0x45, 0x4c, 0x4f, 0x57, 0x5f, 0x4d, 0x49, 0x4e, 0x49, 0x4d,
-	0x55, 0x4d, 0x10, 0x01, 0x12, 0x32, 0x0a, 0x2e, 0x54, 0x4f, 0x50, 0x49, 0x43, 0x5f, 0x53, 0x54,
-	0x41, 0x54, 0x55, 0x53, 0x5f, 0x43, 0x48, 0x41, 0x4e, 0x47, 0x45, 0x5f, 0x52, 0x45, 0x41, 0x53,
-	0x4f, 0x4e, 0x5f, 0x52, 0x45, 0x41, 0x43, 0x54, 0x49, 0x56, 0x41, 0x54, 0x49, 0x4f, 0x4e, 0x5f,
-	0x46, 0x41, 0x49, 0x4c, 0x45, 0x44, 0x10, 0x02, 0x12, 0x37, 0x0a, 0x33, 0x54, 0x4f, 0x50, 0x49,
-	0x43, 0x5f, 0x53, 0x54, 0x41, 0x54, 0x55, 0x53, 0x5f, 0x43, 0x48, 0x41, 0x4e, 0x47, 0x45, 0x5f,
-	0x52, 0x45, 0x41, 0x53, 0x4f, 0x4e, 0x5f, 0x45, 0x56, 0x49, 0x43, 0x54, 0x45, 0x44, 0x5f, 0x42,
-	0x59, 0x5f, 0x48, 0x49, 0x47, 0x48, 0x45, 0x52, 0x5f, 0x57, 0x45, 0x49, 0x47, 0x48, 0x54, 0x10,
-	0x03, 0x12, 0x33, 0x0a, 0x2f, 0x54, 0x4f, 0x50, 0x49, 0x43, 0x5f, 0x53, 0x54, 0x41, 0x54, 0x55,
+	0x45, 0x41, 0x53, 0x4f, 0x4e, 0x5f, 0x49, 0x4e, 0x56, 0x41, 0x4c, 0x49, 0x44, 0x5f, 0x50, 0x41,
+	0x59, 0x4f, 0x55, 0x54, 0x5f, 0x41, 0x44, 0x44, 0x52, 0x45, 0x53, 0x53, 0x10, 0x04, 0x12, 0x33,
+	0x0a, 0x2f, 0x52, 0x45, 0x57, 0x41, 0x52, 0x44, 0x5f, 0x50, 0x41, 0x59, 0x4f, 0x55, 0x54, 0x5f,
+	0x46, 0x41, 0x49, 0x4c, 0x55, 0x52, 0x45, 0x5f, 0x52, 0x45, 0x41, 0x53, 0x4f, 0x4e, 0x5f, 0x57,
+	0x4f, 0x52, 0x4b, 0x45, 0x52, 0x5f, 0x49, 0x4e, 0x46, 0x4f, 0x5f, 0x4c, 0x4f, 0x4f, 0x4b, 0x55,
+	0x50, 0x10, 0x05, 0x12, 0x2d, 0x0a, 0x29, 0x52, 0x45, 0x57, 0x41, 0x52, 0x44, 0x5f, 0x50, 0x41,
+	0x59, 0x4f, 0x55, 0x54, 0x5f, 0x46, 0x41, 0x49, 0x4c, 0x55, 0x52, 0x45, 0x5f, 0x52, 0x45, 0x41,
+	0x53, 0x4f, 0x4e, 0x5f, 0x41, 0x43, 0x43, 0x4f, 0x55, 0x4e, 0x54, 0x5f, 0x53, 0x45, 0x4e, 0x44,
+	0x10, 0x06, 0x12, 0x30, 0x0a, 0x2c, 0x52, 0x45, 0x57, 0x41, 0x52, 0x44, 0x5f, 0x50, 0x41, 0x59,
+	0x4f, 0x55, 0x54, 0x5f, 0x46, 0x41, 0x49, 0x4c, 0x55, 0x52, 0x45, 0x5f, 0x52, 0x45, 0x41, 0x53,
+	0x4f, 0x4e, 0x5f, 0x4e, 0x45, 0x47, 0x41, 0x54, 0x49, 0x56, 0x45, 0x5f, 0x52, 0x45, 0x57, 0x41,
+	0x52, 0x44, 0x10, 0x07, 0x2a, 0xc8, 0x02, 0x0a, 0x17, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x53, 0x74,
+	0x61, 0x74, 0x75, 0x73, 0x43, 0x68, 0x61, 0x6e, 0x67, 0x65, 0x52, 0x65, 0x61, 0x73, 0x6f, 0x6e,
+	0x12, 0x2a, 0x0a, 0x26, 0x54, 0x4f, 0x50, 0x49, 0x43, 0x5f, 0x53, 0x54, 0x41, 0x54, 0x55, 0x53,
+	0x5f, 0x43, 0x48, 0x41, 0x4e, 0x47, 0x45, 0x5f, 0x52, 0x45, 0x41, 0x53, 0x4f, 0x4e, 0x5f, 0x55,
+	0x4e, 0x53, 0x50, 0x45, 0x43, 0x49, 0x46, 0x49, 0x45, 0x44, 0x10, 0x00, 0x12, 0x33, 0x0a, 0x2f,
+	0x54, 0x4f, 0x50, 0x49, 0x43, 0x5f, 0x53, 0x54, 0x41, 0x54, 0x55, 0x53, 0x5f, 0x43, 0x48, 0x41,
+	0x4e, 0x47, 0x45, 0x5f, 0x52, 0x45, 0x41, 0x53, 0x4f, 0x4e, 0x5f, 0x57, 0x45, 0x49, 0x47, 0x48,
+	0x54, 0x5f, 0x42, 0x45, 0x4c, 0x4f, 0x57, 0x5f, 0x4d, 0x49, 0x4e, 0x49, 0x4d, 0x55, 0x4d, 0x10,
+	0x01, 0x12, 0x32, 0x0a, 0x2e, 0x54, 0x4f, 0x50, 0x49, 0x43, 0x5f, 0x53, 0x54, 0x41, 0x54, 0x55,
 	0x53, 0x5f, 0x43, 0x48, 0x41, 0x4e, 0x47, 0x45, 0x5f, 0x52, 0x45, 0x41, 0x53, 0x4f, 0x4e, 0x5f,
-	0x41, 0x43, 0x54, 0x49, 0x56, 0x41, 0x54, 0x45, 0x44, 0x5f, 0x42, 0x59, 0x5f, 0x46, 0x55, 0x4e,
-	0x44, 0x49, 0x4e, 0x47, 0x10, 0x04, 0x12, 0x2a, 0x0a, 0x26, 0x54, 0x4f, 0x50, 0x49, 0x43, 0x5f,
-	0x53, 0x54, 0x41, 0x54, 0x55, 0x53, 0x5f, 0x43, 0x48, 0x41, 0x4e, 0x47, 0x45, 0x5f, 0x52, 0x45,
-	0x41, 0x53, 0x4f, 0x4e, 0x5f, 0x52, 0x45, 0x41, 0x43, 0x54, 0x49, 0x56, 0x41, 0x54, 0x45, 0x44,
-	0x10, 0x05, 0x42, 0xc8, 0x01, 0x0a, 0x11, 0x63, 0x6f, 0x6d, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73,
-	0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x31, 0x30, 0x42, 0x0b, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x73,
-	0x50, 0x72, 0x6f, 0x74, 0x6f, 0x50, 0x01, 0x5a, 0x51, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e,
-	0x63, 0x6f, 0x6d, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x6e, 0x65, 0x74, 0x77, 0x6f,
-	0x72, 0x6b, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f,
-	0x78, 0x2f, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x61, 0x70, 0x69, 0x2f,
-	0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x76, 0x31, 0x30, 0x3b, 0x65, 0x6d,
-	0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x76, 0x31, 0x30, 0xa2, 0x02, 0x03, 0x45, 0x58, 0x58,
-	0xaa, 0x02, 0x0d, 0x45, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x56, 0x31, 0x30,
-	0xca, 0x02, 0x0d, 0x45, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x5c, 0x56, 0x31, 0x30,
-	0xe2, 0x02, 0x19, 0x45, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x5c, 0x56, 0x31, 0x30,
-	0x5c, 0x47, 0x50, 0x42, 0x4d, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74, 0x61, 0xea, 0x02, 0x0e, 0x45,
-	0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x3a, 0x3a, 0x56, 0x31, 0x30, 0x62, 0x06, 0x70,
-	0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x52, 0x45, 0x41, 0x43, 0x54, 0x49, 0x56, 0x41, 0x54, 0x49, 0x4f, 0x4e, 0x5f, 0x46, 0x41, 0x49,
+	0x4c, 0x45, 0x44, 0x10, 0x02, 0x12, 0x37, 0x0a, 0x33, 0x54, 0x4f, 0x50, 0x49, 0x43, 0x5f, 0x53,
+	0x54, 0x41, 0x54, 0x55, 0x53, 0x5f, 0x43, 0x48, 0x41, 0x4e, 0x47, 0x45, 0x5f, 0x52, 0x45, 0x41,
+	0x53, 0x4f, 0x4e, 0x5f, 0x45, 0x56, 0x49, 0x43, 0x54, 0x45, 0x44, 0x5f, 0x42, 0x59, 0x5f, 0x48,
+	0x49, 0x47, 0x48, 0x45, 0x52, 0x5f, 0x57, 0x45, 0x49, 0x47, 0x48, 0x54, 0x10, 0x03, 0x12, 0x33,
+	0x0a, 0x2f, 0x54, 0x4f, 0x50, 0x49, 0x43, 0x5f, 0x53, 0x54, 0x41, 0x54, 0x55, 0x53, 0x5f, 0x43,
+	0x48, 0x41, 0x4e, 0x47, 0x45, 0x5f, 0x52, 0x45, 0x41, 0x53, 0x4f, 0x4e, 0x5f, 0x41, 0x43, 0x54,
+	0x49, 0x56, 0x41, 0x54, 0x45, 0x44, 0x5f, 0x42, 0x59, 0x5f, 0x46, 0x55, 0x4e, 0x44, 0x49, 0x4e,
+	0x47, 0x10, 0x04, 0x12, 0x2a, 0x0a, 0x26, 0x54, 0x4f, 0x50, 0x49, 0x43, 0x5f, 0x53, 0x54, 0x41,
+	0x54, 0x55, 0x53, 0x5f, 0x43, 0x48, 0x41, 0x4e, 0x47, 0x45, 0x5f, 0x52, 0x45, 0x41, 0x53, 0x4f,
+	0x4e, 0x5f, 0x52, 0x45, 0x41, 0x43, 0x54, 0x49, 0x56, 0x41, 0x54, 0x45, 0x44, 0x10, 0x05, 0x2a,
+	0xb2, 0x01, 0x0a, 0x12, 0x4e, 0x6f, 0x6e, 0x63, 0x65, 0x45, 0x78, 0x70, 0x69, 0x72, 0x65, 0x64,
+	0x52, 0x65, 0x61, 0x73, 0x6f, 0x6e, 0x12, 0x24, 0x0a, 0x20, 0x4e, 0x4f, 0x4e, 0x43, 0x45, 0x5f,
+	0x45, 0x58, 0x50, 0x49, 0x52, 0x45, 0x44, 0x5f, 0x52, 0x45, 0x41, 0x53, 0x4f, 0x4e, 0x5f, 0x55,
+	0x4e, 0x53, 0x50, 0x45, 0x43, 0x49, 0x46, 0x49, 0x45, 0x44, 0x10, 0x00, 0x12, 0x27, 0x0a, 0x23,
+	0x4e, 0x4f, 0x4e, 0x43, 0x45, 0x5f, 0x45, 0x58, 0x50, 0x49, 0x52, 0x45, 0x44, 0x5f, 0x52, 0x45,
+	0x41, 0x53, 0x4f, 0x4e, 0x5f, 0x45, 0x56, 0x49, 0x43, 0x54, 0x45, 0x44, 0x5f, 0x42, 0x59, 0x5f,
+	0x43, 0x41, 0x50, 0x10, 0x01, 0x12, 0x26, 0x0a, 0x22, 0x4e, 0x4f, 0x4e, 0x43, 0x45, 0x5f, 0x45,
+	0x58, 0x50, 0x49, 0x52, 0x45, 0x44, 0x5f, 0x52, 0x45, 0x41, 0x53, 0x4f, 0x4e, 0x5f, 0x50, 0x52,
+	0x55, 0x4e, 0x45, 0x44, 0x5f, 0x42, 0x59, 0x5f, 0x41, 0x47, 0x45, 0x10, 0x02, 0x12, 0x25, 0x0a,
+	0x21, 0x4e, 0x4f, 0x4e, 0x43, 0x45, 0x5f, 0x45, 0x58, 0x50, 0x49, 0x52, 0x45, 0x44, 0x5f, 0x52,
+	0x45, 0x41, 0x53, 0x4f, 0x4e, 0x5f, 0x43, 0x4c, 0x4f, 0x53, 0x45, 0x5f, 0x46, 0x41, 0x49, 0x4c,
+	0x45, 0x44, 0x10, 0x03, 0x42, 0xc8, 0x01, 0x0a, 0x11, 0x63, 0x6f, 0x6d, 0x2e, 0x65, 0x6d, 0x69,
+	0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x31, 0x30, 0x42, 0x0b, 0x45, 0x76, 0x65, 0x6e,
+	0x74, 0x73, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x50, 0x01, 0x5a, 0x51, 0x67, 0x69, 0x74, 0x68, 0x75,
+	0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x6e, 0x65, 0x74,
+	0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x63, 0x68, 0x61, 0x69,
+	0x6e, 0x2f, 0x78, 0x2f, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x61, 0x70,
+	0x69, 0x2f, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x76, 0x31, 0x30, 0x3b,
+	0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x76, 0x31, 0x30, 0xa2, 0x02, 0x03, 0x45,
+	0x58, 0x58, 0xaa, 0x02, 0x0d, 0x45, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x56,
+	0x31, 0x30, 0xca, 0x02, 0x0d, 0x45, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x5c, 0x56,
+	0x31, 0x30, 0xe2, 0x02, 0x19, 0x45, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x5c, 0x56,
+	0x31, 0x30, 0x5c, 0x47, 0x50, 0x42, 0x4d, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74, 0x61, 0xea, 0x02,
+	0x0e, 0x45, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x3a, 0x3a, 0x56, 0x31, 0x30, 0x62,
+	0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -52033,119 +53956,125 @@ func file_emissions_v10_events_proto_rawDescGZIP() []byte {
 	return file_emissions_v10_events_proto_rawDescData
 }
 
-var file_emissions_v10_events_proto_enumTypes = make([]protoimpl.EnumInfo, 3)
-var file_emissions_v10_events_proto_msgTypes = make([]protoimpl.MessageInfo, 78)
+var file_emissions_v10_events_proto_enumTypes = make([]protoimpl.EnumInfo, 4)
+var file_emissions_v10_events_proto_msgTypes = make([]protoimpl.MessageInfo, 81)
 var file_emissions_v10_events_proto_goTypes = []interface{}{
 	(ActorType)(0),                                           // 0: emissions.v10.ActorType
 	(RewardPayoutFailureReason)(0),                           // 1: emissions.v10.RewardPayoutFailureReason
 	(TopicStatusChangeReason)(0),                             // 2: emissions.v10.TopicStatusChangeReason
-	(*EventScoresSet)(nil),                                   // 3: emissions.v10.EventScoresSet
-	(*EventRewardsSettled)(nil),                              // 4: emissions.v10.EventRewardsSettled
-	(*EventNetworkLossSet)(nil),                              // 5: emissions.v10.EventNetworkLossSet
-	(*EventValueBundle)(nil),                                 // 6: emissions.v10.EventValueBundle
-	(*EventNetworkInferenceBundle)(nil),                      // 7: emissions.v10.EventNetworkInferenceBundle
-	(*EventInsertInfererPayload)(nil),                        // 8: emissions.v10.EventInsertInfererPayload
-	(*EventInsertForecasterPayload)(nil),                     // 9: emissions.v10.EventInsertForecasterPayload
-	(*EventCreateNewTopic)(nil),                              // 10: emissions.v10.EventCreateNewTopic
-	(*EventTopicUpdated)(nil),                                // 11: emissions.v10.EventTopicUpdated
-	(*EventAddStake)(nil),                                    // 12: emissions.v10.EventAddStake
-	(*EventRemoveStake)(nil),                                 // 13: emissions.v10.EventRemoveStake
-	(*EventRequestStakeRemoval)(nil),                         // 14: emissions.v10.EventRequestStakeRemoval
-	(*EventCancelStakeRemoval)(nil),                          // 15: emissions.v10.EventCancelStakeRemoval
-	(*EventReputerStakeUpdated)(nil),                         // 16: emissions.v10.EventReputerStakeUpdated
-	(*EventRewardDelegateStake)(nil),                         // 17: emissions.v10.EventRewardDelegateStake
-	(*EventInsertReputerPayload)(nil),                        // 18: emissions.v10.EventInsertReputerPayload
-	(*EventReputerRegistered)(nil),                           // 19: emissions.v10.EventReputerRegistered
-	(*EventWorkerRegistered)(nil),                            // 20: emissions.v10.EventWorkerRegistered
-	(*EventNodeOwnerUpdated)(nil),                            // 21: emissions.v10.EventNodeOwnerUpdated
-	(*EventReputerUnregistered)(nil),                         // 22: emissions.v10.EventReputerUnregistered
-	(*EventWorkerUnregistered)(nil),                          // 23: emissions.v10.EventWorkerUnregistered
-	(*EventFundTopic)(nil),                                   // 24: emissions.v10.EventFundTopic
-	(*EventParamsSet)(nil),                                   // 25: emissions.v10.EventParamsSet
-	(*EventWhitelistAdminAdded)(nil),                         // 26: emissions.v10.EventWhitelistAdminAdded
-	(*EventWhitelistAdminRemoved)(nil),                       // 27: emissions.v10.EventWhitelistAdminRemoved
-	(*EventGlobalWhitelistAdded)(nil),                        // 28: emissions.v10.EventGlobalWhitelistAdded
-	(*EventGlobalWhitelistRemoved)(nil),                      // 29: emissions.v10.EventGlobalWhitelistRemoved
-	(*EventGlobalWorkerWhitelistAdded)(nil),                  // 30: emissions.v10.EventGlobalWorkerWhitelistAdded
-	(*EventGlobalWorkerWhitelistRemoved)(nil),                // 31: emissions.v10.EventGlobalWorkerWhitelistRemoved
-	(*EventGlobalReputerWhitelistAdded)(nil),                 // 32: emissions.v10.EventGlobalReputerWhitelistAdded
-	(*EventGlobalReputerWhitelistRemoved)(nil),               // 33: emissions.v10.EventGlobalReputerWhitelistRemoved
-	(*EventGlobalAdminWhitelistAdded)(nil),                   // 34: emissions.v10.EventGlobalAdminWhitelistAdded
-	(*EventGlobalAdminWhitelistRemoved)(nil),                 // 35: emissions.v10.EventGlobalAdminWhitelistRemoved
-	(*EventTopicWorkerWhitelistEnabled)(nil),                 // 36: emissions.v10.EventTopicWorkerWhitelistEnabled
-	(*EventTopicWorkerWhitelistDisabled)(nil),                // 37: emissions.v10.EventTopicWorkerWhitelistDisabled
-	(*EventTopicReputerWhitelistEnabled)(nil),                // 38: emissions.v10.EventTopicReputerWhitelistEnabled
-	(*EventTopicReputerWhitelistDisabled)(nil),               // 39: emissions.v10.EventTopicReputerWhitelistDisabled
-	(*EventTopicCreatorWhitelistAdded)(nil),                  // 40: emissions.v10.EventTopicCreatorWhitelistAdded
-	(*EventTopicCreatorWhitelistRemoved)(nil),                // 41: emissions.v10.EventTopicCreatorWhitelistRemoved
-	(*EventTopicWorkerWhitelistAdded)(nil),                   // 42: emissions.v10.EventTopicWorkerWhitelistAdded
-	(*EventTopicWorkerWhitelistRemoved)(nil),                 // 43: emissions.v10.EventTopicWorkerWhitelistRemoved
-	(*EventTopicReputerWhitelistAdded)(nil),                  // 44: emissions.v10.EventTopicReputerWhitelistAdded
-	(*EventTopicReputerWhitelistRemoved)(nil),                // 45: emissions.v10.EventTopicReputerWhitelistRemoved
-	(*EventForecastTaskScoreSet)(nil),                        // 46: emissions.v10.EventForecastTaskScoreSet
-	(*EventWorkerLastCommitSet)(nil),                         // 47: emissions.v10.EventWorkerLastCommitSet
-	(*EventReputerLastCommitSet)(nil),                        // 48: emissions.v10.EventReputerLastCommitSet
-	(*EventTopicRewardsSet)(nil),                             // 49: emissions.v10.EventTopicRewardsSet
-	(*EventEMAScoresSet)(nil),                                // 50: emissions.v10.EventEMAScoresSet
-	(*EventListeningCoefficientsSet)(nil),                    // 51: emissions.v10.EventListeningCoefficientsSet
-	(*EventInfererNetworkRegretSet)(nil),                     // 52: emissions.v10.EventInfererNetworkRegretSet
-	(*EventForecasterNetworkRegretSet)(nil),                  // 53: emissions.v10.EventForecasterNetworkRegretSet
-	(*EventNaiveInfererNetworkRegretSet)(nil),                // 54: emissions.v10.EventNaiveInfererNetworkRegretSet
-	(*EventTopicInitialRegretSet)(nil),                       // 55: emissions.v10.EventTopicInitialRegretSet
-	(*EventTopicInitialEmaScoreSet)(nil),                     // 56: emissions.v10.EventTopicInitialEmaScoreSet
-	(*EventRegretStdNormSet)(nil),                            // 57: emissions.v10.EventRegretStdNormSet
-	(*EventInfererWeightsSet)(nil),                           // 58: emissions.v10.EventInfererWeightsSet
-	(*EventForecasterWeightsSet)(nil),                        // 59: emissions.v10.EventForecasterWeightsSet
-	(*EventPreviousPercentageRewardToStakedReputersSet)(nil), // 60: emissions.v10.EventPreviousPercentageRewardToStakedReputersSet
-	(*EventPruneRecords)(nil),                                // 61: emissions.v10.EventPruneRecords
-	(*EventDelegateRewardShareUpdated)(nil),                  // 62: emissions.v10.EventDelegateRewardShareUpdated
-	(*EventDelegateRewardDistributed)(nil),                   // 63: emissions.v10.EventDelegateRewardDistributed
-	(*EventActiveReputersSet)(nil),                           // 64: emissions.v10.EventActiveReputersSet
-	(*EventActiveInferersSet)(nil),                           // 65: emissions.v10.EventActiveInferersSet
-	(*EventActiveForecastersSet)(nil),                        // 66: emissions.v10.EventActiveForecastersSet
-	(*EventTopicStatusChanged)(nil),                          // 67: emissions.v10.EventTopicStatusChanged
-	(*EventNetworkInferenceInfererWeightsSet)(nil),           // 68: emissions.v10.EventNetworkInferenceInfererWeightsSet
-	(*EventNetworkInferenceForecasterWeightsSet)(nil),        // 69: emissions.v10.EventNetworkInferenceForecasterWeightsSet
-	(*EventNetworkInferenceInfererRegretsUsedSet)(nil),       // 70: emissions.v10.EventNetworkInferenceInfererRegretsUsedSet
-	(*EventNetworkInferenceForecasterRegretsUsedSet)(nil),    // 71: emissions.v10.EventNetworkInferenceForecasterRegretsUsedSet
-	(*EventTopicWeightUpdated)(nil),                          // 72: emissions.v10.EventTopicWeightUpdated
-	(*EventTopicWeightUpdatedAfterStakeChange)(nil),          // 73: emissions.v10.EventTopicWeightUpdatedAfterStakeChange
-	(*EventTopicFeeRevenueDripped)(nil),                      // 74: emissions.v10.EventTopicFeeRevenueDripped
-	(*EventWorkerSubmissionWindowOpened)(nil),                // 75: emissions.v10.EventWorkerSubmissionWindowOpened
-	(*EventWorkerSubmissionWindowClosed)(nil),                // 76: emissions.v10.EventWorkerSubmissionWindowClosed
-	(*EventReputerSubmissionWindowOpened)(nil),               // 77: emissions.v10.EventReputerSubmissionWindowOpened
-	(*EventReputerSubmissionWindowClosed)(nil),               // 78: emissions.v10.EventReputerSubmissionWindowClosed
-	(*EventRewardPayoutFailed)(nil),                          // 79: emissions.v10.EventRewardPayoutFailed
-	(*EventEpochLabelRegistryFrozen)(nil),                    // 80: emissions.v10.EventEpochLabelRegistryFrozen
-	(*v3.ValueBundle)(nil),                                   // 81: emissions.v3.ValueBundle
-	(*InputLabeledValue)(nil),                                // 82: emissions.v10.InputLabeledValue
-	(*Topic)(nil),                                            // 83: emissions.v10.Topic
-	(*v9.Params)(nil),                                        // 84: emissions.v9.Params
-	(*v3.Nonce)(nil),                                         // 85: emissions.v3.Nonce
+	(NonceExpiredReason)(0),                                  // 3: emissions.v10.NonceExpiredReason
+	(*EventScoresSet)(nil),                                   // 4: emissions.v10.EventScoresSet
+	(*EventRewardsSettled)(nil),                              // 5: emissions.v10.EventRewardsSettled
+	(*EventNetworkLossSet)(nil),                              // 6: emissions.v10.EventNetworkLossSet
+	(*EventValueBundle)(nil),                                 // 7: emissions.v10.EventValueBundle
+	(*EventNetworkInferenceBundle)(nil),                      // 8: emissions.v10.EventNetworkInferenceBundle
+	(*EventInsertInfererPayload)(nil),                        // 9: emissions.v10.EventInsertInfererPayload
+	(*EventInsertForecasterPayload)(nil),                     // 10: emissions.v10.EventInsertForecasterPayload
+	(*EventCreateNewTopic)(nil),                              // 11: emissions.v10.EventCreateNewTopic
+	(*EventTopicUpdated)(nil),                                // 12: emissions.v10.EventTopicUpdated
+	(*EventAddStake)(nil),                                    // 13: emissions.v10.EventAddStake
+	(*EventRemoveStake)(nil),                                 // 14: emissions.v10.EventRemoveStake
+	(*EventRequestStakeRemoval)(nil),                         // 15: emissions.v10.EventRequestStakeRemoval
+	(*EventCancelStakeRemoval)(nil),                          // 16: emissions.v10.EventCancelStakeRemoval
+	(*EventReputerStakeUpdated)(nil),                         // 17: emissions.v10.EventReputerStakeUpdated
+	(*EventRewardDelegateStake)(nil),                         // 18: emissions.v10.EventRewardDelegateStake
+	(*EventInsertReputerPayload)(nil),                        // 19: emissions.v10.EventInsertReputerPayload
+	(*EventReputerRegistered)(nil),                           // 20: emissions.v10.EventReputerRegistered
+	(*EventWorkerRegistered)(nil),                            // 21: emissions.v10.EventWorkerRegistered
+	(*EventNodeOwnerUpdated)(nil),                            // 22: emissions.v10.EventNodeOwnerUpdated
+	(*EventReputerUnregistered)(nil),                         // 23: emissions.v10.EventReputerUnregistered
+	(*EventWorkerUnregistered)(nil),                          // 24: emissions.v10.EventWorkerUnregistered
+	(*EventFundTopic)(nil),                                   // 25: emissions.v10.EventFundTopic
+	(*EventParamsSet)(nil),                                   // 26: emissions.v10.EventParamsSet
+	(*EventWhitelistAdminAdded)(nil),                         // 27: emissions.v10.EventWhitelistAdminAdded
+	(*EventWhitelistAdminRemoved)(nil),                       // 28: emissions.v10.EventWhitelistAdminRemoved
+	(*EventGlobalWhitelistAdded)(nil),                        // 29: emissions.v10.EventGlobalWhitelistAdded
+	(*EventGlobalWhitelistRemoved)(nil),                      // 30: emissions.v10.EventGlobalWhitelistRemoved
+	(*EventGlobalWorkerWhitelistAdded)(nil),                  // 31: emissions.v10.EventGlobalWorkerWhitelistAdded
+	(*EventGlobalWorkerWhitelistRemoved)(nil),                // 32: emissions.v10.EventGlobalWorkerWhitelistRemoved
+	(*EventGlobalReputerWhitelistAdded)(nil),                 // 33: emissions.v10.EventGlobalReputerWhitelistAdded
+	(*EventGlobalReputerWhitelistRemoved)(nil),               // 34: emissions.v10.EventGlobalReputerWhitelistRemoved
+	(*EventGlobalAdminWhitelistAdded)(nil),                   // 35: emissions.v10.EventGlobalAdminWhitelistAdded
+	(*EventGlobalAdminWhitelistRemoved)(nil),                 // 36: emissions.v10.EventGlobalAdminWhitelistRemoved
+	(*EventTopicWorkerWhitelistEnabled)(nil),                 // 37: emissions.v10.EventTopicWorkerWhitelistEnabled
+	(*EventTopicWorkerWhitelistDisabled)(nil),                // 38: emissions.v10.EventTopicWorkerWhitelistDisabled
+	(*EventTopicReputerWhitelistEnabled)(nil),                // 39: emissions.v10.EventTopicReputerWhitelistEnabled
+	(*EventTopicReputerWhitelistDisabled)(nil),               // 40: emissions.v10.EventTopicReputerWhitelistDisabled
+	(*EventTopicCreatorWhitelistAdded)(nil),                  // 41: emissions.v10.EventTopicCreatorWhitelistAdded
+	(*EventTopicCreatorWhitelistRemoved)(nil),                // 42: emissions.v10.EventTopicCreatorWhitelistRemoved
+	(*EventTopicWorkerWhitelistAdded)(nil),                   // 43: emissions.v10.EventTopicWorkerWhitelistAdded
+	(*EventTopicWorkerWhitelistRemoved)(nil),                 // 44: emissions.v10.EventTopicWorkerWhitelistRemoved
+	(*EventTopicReputerWhitelistAdded)(nil),                  // 45: emissions.v10.EventTopicReputerWhitelistAdded
+	(*EventTopicReputerWhitelistRemoved)(nil),                // 46: emissions.v10.EventTopicReputerWhitelistRemoved
+	(*EventForecastTaskScoreSet)(nil),                        // 47: emissions.v10.EventForecastTaskScoreSet
+	(*EventWorkerLastCommitSet)(nil),                         // 48: emissions.v10.EventWorkerLastCommitSet
+	(*EventReputerLastCommitSet)(nil),                        // 49: emissions.v10.EventReputerLastCommitSet
+	(*EventTopicRewardsSet)(nil),                             // 50: emissions.v10.EventTopicRewardsSet
+	(*EventEMAScoresSet)(nil),                                // 51: emissions.v10.EventEMAScoresSet
+	(*EventListeningCoefficientsSet)(nil),                    // 52: emissions.v10.EventListeningCoefficientsSet
+	(*EventInfererNetworkRegretSet)(nil),                     // 53: emissions.v10.EventInfererNetworkRegretSet
+	(*EventForecasterNetworkRegretSet)(nil),                  // 54: emissions.v10.EventForecasterNetworkRegretSet
+	(*EventNaiveInfererNetworkRegretSet)(nil),                // 55: emissions.v10.EventNaiveInfererNetworkRegretSet
+	(*EventTopicInitialRegretSet)(nil),                       // 56: emissions.v10.EventTopicInitialRegretSet
+	(*EventTopicInitialEmaScoreSet)(nil),                     // 57: emissions.v10.EventTopicInitialEmaScoreSet
+	(*EventRegretStdNormSet)(nil),                            // 58: emissions.v10.EventRegretStdNormSet
+	(*EventInfererWeightsSet)(nil),                           // 59: emissions.v10.EventInfererWeightsSet
+	(*EventForecasterWeightsSet)(nil),                        // 60: emissions.v10.EventForecasterWeightsSet
+	(*EventPreviousPercentageRewardToStakedReputersSet)(nil), // 61: emissions.v10.EventPreviousPercentageRewardToStakedReputersSet
+	(*EventPruneRecords)(nil),                                // 62: emissions.v10.EventPruneRecords
+	(*EventDelegateRewardShareUpdated)(nil),                  // 63: emissions.v10.EventDelegateRewardShareUpdated
+	(*EventDelegateRewardDistributed)(nil),                   // 64: emissions.v10.EventDelegateRewardDistributed
+	(*EventActiveReputersSet)(nil),                           // 65: emissions.v10.EventActiveReputersSet
+	(*EventActiveInferersSet)(nil),                           // 66: emissions.v10.EventActiveInferersSet
+	(*EventActiveForecastersSet)(nil),                        // 67: emissions.v10.EventActiveForecastersSet
+	(*EventTopicStatusChanged)(nil),                          // 68: emissions.v10.EventTopicStatusChanged
+	(*EventNetworkInferenceInfererWeightsSet)(nil),           // 69: emissions.v10.EventNetworkInferenceInfererWeightsSet
+	(*EventNetworkInferenceForecasterWeightsSet)(nil),        // 70: emissions.v10.EventNetworkInferenceForecasterWeightsSet
+	(*EventNetworkInferenceInfererRegretsUsedSet)(nil),       // 71: emissions.v10.EventNetworkInferenceInfererRegretsUsedSet
+	(*EventNetworkInferenceForecasterRegretsUsedSet)(nil),    // 72: emissions.v10.EventNetworkInferenceForecasterRegretsUsedSet
+	(*EventTopicWeightUpdated)(nil),                          // 73: emissions.v10.EventTopicWeightUpdated
+	(*EventTopicWeightUpdatedAfterStakeChange)(nil),          // 74: emissions.v10.EventTopicWeightUpdatedAfterStakeChange
+	(*EventTopicFeeRevenueDripped)(nil),                      // 75: emissions.v10.EventTopicFeeRevenueDripped
+	(*EventWorkerSubmissionWindowOpened)(nil),                // 76: emissions.v10.EventWorkerSubmissionWindowOpened
+	(*EventWorkerSubmissionWindowClosed)(nil),                // 77: emissions.v10.EventWorkerSubmissionWindowClosed
+	(*EventReputerSubmissionWindowOpened)(nil),               // 78: emissions.v10.EventReputerSubmissionWindowOpened
+	(*EventReputerSubmissionWindowClosed)(nil),               // 79: emissions.v10.EventReputerSubmissionWindowClosed
+	(*EventRewardPayoutFailed)(nil),                          // 80: emissions.v10.EventRewardPayoutFailed
+	(*EventTopicRewardForfeitedNoRewardNonce)(nil),           // 81: emissions.v10.EventTopicRewardForfeitedNoRewardNonce
+	(*EventTopicRewardForfeitedDistributionFailed)(nil),      // 82: emissions.v10.EventTopicRewardForfeitedDistributionFailed
+	(*EventNonceExpired)(nil),                                // 83: emissions.v10.EventNonceExpired
+	(*EventEpochLabelRegistryFrozen)(nil),                    // 84: emissions.v10.EventEpochLabelRegistryFrozen
+	(*v3.ValueBundle)(nil),                                   // 85: emissions.v3.ValueBundle
+	(*InputLabeledValue)(nil),                                // 86: emissions.v10.InputLabeledValue
+	(*Topic)(nil),                                            // 87: emissions.v10.Topic
+	(*v9.Params)(nil),                                        // 88: emissions.v9.Params
+	(*v3.Nonce)(nil),                                         // 89: emissions.v3.Nonce
 }
 var file_emissions_v10_events_proto_depIdxs = []int32{
 	0,  // 0: emissions.v10.EventScoresSet.actor_type:type_name -> emissions.v10.ActorType
 	0,  // 1: emissions.v10.EventRewardsSettled.actor_type:type_name -> emissions.v10.ActorType
-	81, // 2: emissions.v10.EventNetworkLossSet.value_bundle:type_name -> emissions.v3.ValueBundle
-	6,  // 3: emissions.v10.EventNetworkLossSet.bundle:type_name -> emissions.v10.EventValueBundle
-	82, // 4: emissions.v10.EventInsertInfererPayload.values:type_name -> emissions.v10.InputLabeledValue
-	83, // 5: emissions.v10.EventCreateNewTopic.topic:type_name -> emissions.v10.Topic
-	83, // 6: emissions.v10.EventTopicUpdated.topic:type_name -> emissions.v10.Topic
-	6,  // 7: emissions.v10.EventInsertReputerPayload.bundle:type_name -> emissions.v10.EventValueBundle
-	84, // 8: emissions.v10.EventParamsSet.params:type_name -> emissions.v9.Params
-	85, // 9: emissions.v10.EventWorkerLastCommitSet.nonce:type_name -> emissions.v3.Nonce
-	85, // 10: emissions.v10.EventReputerLastCommitSet.nonce:type_name -> emissions.v3.Nonce
+	85, // 2: emissions.v10.EventNetworkLossSet.value_bundle:type_name -> emissions.v3.ValueBundle
+	7,  // 3: emissions.v10.EventNetworkLossSet.bundle:type_name -> emissions.v10.EventValueBundle
+	86, // 4: emissions.v10.EventInsertInfererPayload.values:type_name -> emissions.v10.InputLabeledValue
+	87, // 5: emissions.v10.EventCreateNewTopic.topic:type_name -> emissions.v10.Topic
+	87, // 6: emissions.v10.EventTopicUpdated.topic:type_name -> emissions.v10.Topic
+	7,  // 7: emissions.v10.EventInsertReputerPayload.bundle:type_name -> emissions.v10.EventValueBundle
+	88, // 8: emissions.v10.EventParamsSet.params:type_name -> emissions.v9.Params
+	89, // 9: emissions.v10.EventWorkerLastCommitSet.nonce:type_name -> emissions.v3.Nonce
+	89, // 10: emissions.v10.EventReputerLastCommitSet.nonce:type_name -> emissions.v3.Nonce
 	0,  // 11: emissions.v10.EventEMAScoresSet.actor_type:type_name -> emissions.v10.ActorType
 	0,  // 12: emissions.v10.EventListeningCoefficientsSet.actor_type:type_name -> emissions.v10.ActorType
 	0,  // 13: emissions.v10.EventTopicInitialEmaScoreSet.actor_type:type_name -> emissions.v10.ActorType
 	2,  // 14: emissions.v10.EventTopicStatusChanged.reason:type_name -> emissions.v10.TopicStatusChangeReason
 	0,  // 15: emissions.v10.EventRewardPayoutFailed.actor_type:type_name -> emissions.v10.ActorType
 	1,  // 16: emissions.v10.EventRewardPayoutFailed.reason:type_name -> emissions.v10.RewardPayoutFailureReason
-	17, // [17:17] is the sub-list for method output_type
-	17, // [17:17] is the sub-list for method input_type
-	17, // [17:17] is the sub-list for extension type_name
-	17, // [17:17] is the sub-list for extension extendee
-	0,  // [0:17] is the sub-list for field type_name
+	0,  // 17: emissions.v10.EventNonceExpired.actor_type:type_name -> emissions.v10.ActorType
+	3,  // 18: emissions.v10.EventNonceExpired.reason:type_name -> emissions.v10.NonceExpiredReason
+	19, // [19:19] is the sub-list for method output_type
+	19, // [19:19] is the sub-list for method input_type
+	19, // [19:19] is the sub-list for extension type_name
+	19, // [19:19] is the sub-list for extension extendee
+	0,  // [0:19] is the sub-list for field type_name
 }
 
 func init() { file_emissions_v10_events_proto_init() }
@@ -53081,6 +55010,42 @@ func file_emissions_v10_events_proto_init() {
 			}
 		}
 		file_emissions_v10_events_proto_msgTypes[77].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*EventTopicRewardForfeitedNoRewardNonce); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_emissions_v10_events_proto_msgTypes[78].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*EventTopicRewardForfeitedDistributionFailed); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_emissions_v10_events_proto_msgTypes[79].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*EventNonceExpired); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_emissions_v10_events_proto_msgTypes[80].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*EventEpochLabelRegistryFrozen); i {
 			case 0:
 				return &v.state
@@ -53098,8 +55063,8 @@ func file_emissions_v10_events_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_emissions_v10_events_proto_rawDesc,
-			NumEnums:      3,
-			NumMessages:   78,
+			NumEnums:      4,
+			NumMessages:   81,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

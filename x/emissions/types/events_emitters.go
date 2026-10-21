@@ -630,6 +630,41 @@ func EmitNewWorkerSubmissionWindowClosedEvent(ctx context.Context, topicId Topic
 	}
 }
 
+// EmitNewTopicRewardForfeitedNoRewardNonceEvent notifies that a topic's
+// reward went back to the ecosystem account because the topic had no reward
+// nonce to settle it against.
+func EmitNewTopicRewardForfeitedNoRewardNonceEvent(ctx context.Context, topicId TopicId, epoch int64, amount alloraMath.Dec) {
+	metrics.IncrProducerEventCount(metrics.TOPIC_REWARD_FORFEITED_NO_REWARD_NONCE_EVENT)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	err := sdkCtx.EventManager().EmitTypedEvent(NewTopicRewardForfeitedNoRewardNonceEventBase(topicId, epoch, amount))
+	if err != nil {
+		sdkCtx.Logger().Warn("Error emitting TopicRewardForfeitedNoRewardNonceEvent", "error", err)
+	}
+}
+
+// EmitNewTopicRewardForfeitedDistributionFailedEvent notifies that a topic's
+// reward went back to the ecosystem account because distributing and paying
+// it out to the topic's actors failed.
+func EmitNewTopicRewardForfeitedDistributionFailedEvent(ctx context.Context, topicId TopicId, epoch int64, rewardNonce int64, amount alloraMath.Dec) {
+	metrics.IncrProducerEventCount(metrics.TOPIC_REWARD_FORFEITED_DISTRIBUTION_FAILED_EVENT)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	err := sdkCtx.EventManager().EmitTypedEvent(NewTopicRewardForfeitedDistributionFailedEventBase(topicId, epoch, rewardNonce, amount))
+	if err != nil {
+		sdkCtx.Logger().Warn("Error emitting TopicRewardForfeitedDistributionFailedEvent", "error", err)
+	}
+}
+
+// EmitNewNonceExpiredEvent notifies that one unfulfilled nonce left state
+// without being fulfilled.
+func EmitNewNonceExpiredEvent(ctx context.Context, topicId TopicId, nonce int64, actorType ActorType, reason NonceExpiredReason) {
+	metrics.IncrProducerEventCount(metrics.NONCE_EXPIRED_EVENT)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	err := sdkCtx.EventManager().EmitTypedEvent(NewNonceExpiredEventBase(topicId, nonce, actorType, reason))
+	if err != nil {
+		sdkCtx.Logger().Warn("Error emitting NonceExpiredEvent", "error", err)
+	}
+}
+
 // EmitNewEpochLabelRegistryFrozenEvent notifies offchain consumers that the
 // per-epoch label registry for (topicId, nonce) has been frozen. Emitted
 // exactly once, from closeActiveInferencesSet, after the temporary registry is

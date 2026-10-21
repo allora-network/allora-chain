@@ -76,6 +76,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * [#1009](https://github.com/allora-network/allora-chain/pull/1009) `reason` (why the status changed), `weight` (the topic's weight at the change) and `min_weight` (the active-set minimum that applied) on `EventTopicStatusChanged`
 * [#1009](https://github.com/allora-network/allora-chain/pull/1009) `EventRewardPayoutFailed`, emitted per actor when paying a topic participant's reward fails, carrying `topic_id`, the reward `nonce`, `address`, `actor_type`, `amount` and the failure `reason`
 * [#1009](https://github.com/allora-network/allora-chain/pull/1009) `WORKER_INFO_LOOKUP`, `ACCOUNT_SEND` and `NEGATIVE_REWARD` on `RewardPayoutFailureReason`; `EventRewardPayoutFailed` is now emitted for every payout failure where the actor is not paid
+* [#1009](https://github.com/allora-network/allora-chain/pull/1009) `EventTopicRewardForfeitedNoRewardNonce` and `EventTopicRewardForfeitedDistributionFailed`, emitted when a topic's reward goes back to the ecosystem account, carrying `topic_id`, the just-ended `epoch` and the forfeited `amount`; the latter also carries the `reward_nonce` whose settlement failed
 
 ### Changed
 

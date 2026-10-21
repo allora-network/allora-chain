@@ -85,12 +85,14 @@ func EmitRewards(args EmitRewardsArgs) error {
 	}
 	// Get epoch lengths for sorted rewardable topics
 	epochLengths := make(map[uint64]int64)
+	epochsLastEnded := make(map[uint64]int64)
 	for _, topicId := range sortedRewardableTopics {
 		topic, err := args.K.GetTopicKeeper().GetTopic(args.Ctx, topicId)
 		if err != nil {
 			return errors.Wrapf(err, "failed to get epoch length for topic %d", topicId)
 		}
 		epochLengths[topicId] = topic.EpochLength
+		epochsLastEnded[topicId] = topic.EpochLastEnded
 	}
 
 	// Get current block emission, to be extrapolated to be used in rewards calculation
@@ -133,6 +135,7 @@ func EmitRewards(args EmitRewardsArgs) error {
 				Logger(args.Ctx).Error("Failed to move coins from allora rewards to ecosystem", "topicId", topicId, "error", err)
 				panic(err)
 			}
+			types.EmitNewTopicRewardForfeitedNoRewardNonceEvent(args.Ctx, topicId, epochsLastEnded[topicId], *topicRewards[topicId])
 			*topicRewards[topicId] = alloraMath.ZeroDec()
 
 			Logger(args.Ctx).Info("Topic has no valid reward nonce, skipping", "topicId", topicId)
@@ -161,6 +164,7 @@ func EmitRewards(args EmitRewardsArgs) error {
 				Logger(args.Ctx).Error("Failed to move coins from allora rewards to ecosystem", "topicId", topicId, "error", errMC)
 				panic(errMC)
 			}
+			types.EmitNewTopicRewardForfeitedDistributionFailedEvent(args.Ctx, topicId, epochsLastEnded[topicId], topicRewardNonce, *topicRewards[topicId])
 			*topicRewards[topicId] = alloraMath.ZeroDec()
 
 			Logger(args.Ctx).Error("Failed to process rewards", "topicId", topicId, "error", err)

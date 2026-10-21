@@ -889,6 +889,66 @@ message EventRewardPayoutFailed {
   RewardPayoutFailureReason reason = 6;
 }
 
+// Emitted when a topic's reward goes back to the ecosystem account because
+// the topic had no reward nonce to settle the reward against.
+message EventTopicRewardForfeitedNoRewardNonce {
+  uint64 topic_id = 1;
+  // The topic's EpochLastEnded. For a topic rewarded in this block, this is
+  // the height of the block the event is emitted in.
+  int64 epoch = 2;
+  // The forfeited reward.
+  string amount = 3 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
+}
+
+// Emitted when a topic's reward goes back to the ecosystem account because
+// distributing and paying it out to the topic's actors failed.
+message EventTopicRewardForfeitedDistributionFailed {
+  uint64 topic_id = 1;
+  // The topic's EpochLastEnded. For a topic rewarded in this block, this is
+  // the height of the block the event is emitted in.
+  int64 epoch = 2;
+  // The reward nonce whose settlement failed.
+  int64 reward_nonce = 3;
+  // The forfeited reward.
+  string amount = 4 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
+}
+
+// Why an unfulfilled nonce was removed from state.
+enum NonceExpiredReason {
+  NONCE_EXPIRED_REASON_UNSPECIFIED = 0;
+  // The nonce was the oldest outstanding one, at the tail of the newest-first
+  // unfulfilled list, and was cut when a new nonce pushed the list past the
+  // cap on unfulfilled requests.
+  NONCE_EXPIRED_REASON_EVICTED_BY_CAP = 1;
+  // The nonce aged past the retention threshold and was pruned.
+  NONCE_EXPIRED_REASON_PRUNED_BY_AGE = 2;
+  // Closing the nonce failed (e.g. no usable submissions), and the nonce
+  // left state unfulfilled during cleanup.
+  NONCE_EXPIRED_REASON_CLOSE_FAILED = 3;
+}
+
+// Emitted for each unfulfilled nonce that leaves state without being
+// fulfilled. An unfulfilled nonce leaves state in exactly three ways, each
+// covered here: it is evicted by the cap on unfulfilled requests, it is pruned
+// by age, or its close fails and it is dropped during cleanup. Consumers key
+// on `nonce`, the expired nonce itself, not on the block the event is emitted
+// in. `actor_type` says what kind of nonce expired: a worker nonce (no
+// inferences arrived for that epoch) or a reputer nonce (no losses arrived,
+// so the epoch gets no rewards).
+message EventNonceExpired {
+  uint64 topic_id = 1;
+  // The expired nonce: the epoch the submissions were due for.
+  int64 nonce = 2;
+  ActorType actor_type = 3;
+  NonceExpiredReason reason = 4;
+}
+
 // Emitted once per epoch at CloseWorkerNonce, after the EpochLabelRegistry is
 // finalized from the active set's surviving submissions and written to
 // state. `registry_size` is the number of unique canonical labels in the
