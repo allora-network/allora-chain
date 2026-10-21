@@ -13,7 +13,6 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"cosmossdk.io/log"
-	"github.com/cosmos/cosmos-sdk/codec"
 	codecAddress "github.com/cosmos/cosmos-sdk/codec/address"
 	"github.com/cosmos/cosmos-sdk/runtime"
 	sdktestutil "github.com/cosmos/cosmos-sdk/testutil"
@@ -59,8 +58,8 @@ func newPayoutTestFixture(t *testing.T) payoutTestFixture {
 	}, nil)
 	ctx := testCtx.WithHeaderInfo(header.Info{Height: 1, Time: time.Now()}).WithLogger(log.NewNopLogger()) //nolint:exhaustruct
 
-	encCfg := moduletestutil.MakeTestEncodingConfig(auth.AppModule{}, bank.AppModule{})
-	var cdc codec.Codec = encCfg.Codec
+	encCfg := moduletestutil.MakeTestEncodingConfig(auth.AppModule{AppModuleBasic: auth.AppModuleBasic{}}, bank.AppModule{})
+	cdc := encCfg.Codec
 
 	maccPerms := map[string][]string{
 		"fee_collector":                                  {"minter"},
@@ -141,7 +140,7 @@ func TestPayoutRewardsEmitsFailureReasonPerSite(t *testing.T) {
 		{
 			name:      "negative reward",
 			reward:    types.TaskReward{TopicId: 1, Address: worker, Reward: alloraMath.NewDecFromInt64(-1), Type: types.WorkerInferenceRewardType},
-			setup:     func(t *testing.T, f payoutTestFixture) {},
+			setup:     func(t *testing.T, f payoutTestFixture) { t.Helper() },
 			actorType: types.ActorType_ACTOR_TYPE_INFERER_UNSPECIFIED,
 			reason:    types.RewardPayoutFailureReason_REWARD_PAYOUT_FAILURE_REASON_NEGATIVE_REWARD,
 		},
@@ -149,7 +148,7 @@ func TestPayoutRewardsEmitsFailureReasonPerSite(t *testing.T) {
 			name: "reward conversion",
 			// A NaN cannot be converted to an integer coin amount.
 			reward:    types.TaskReward{TopicId: 1, Address: worker, Reward: alloraMath.NewNaN(), Type: types.WorkerInferenceRewardType},
-			setup:     func(t *testing.T, f payoutTestFixture) {},
+			setup:     func(t *testing.T, f payoutTestFixture) { t.Helper() },
 			actorType: types.ActorType_ACTOR_TYPE_INFERER_UNSPECIFIED,
 			reason:    types.RewardPayoutFailureReason_REWARD_PAYOUT_FAILURE_REASON_REWARD_CONVERSION,
 		},
@@ -157,7 +156,7 @@ func TestPayoutRewardsEmitsFailureReasonPerSite(t *testing.T) {
 			name: "invalid payout address",
 			reward: types.TaskReward{TopicId: 1, Address: "not-a-bech32-address",
 				Reward: alloraMath.NewDecFromInt64(10), Type: types.WorkerForecastRewardType},
-			setup:     func(t *testing.T, f payoutTestFixture) {},
+			setup:     func(t *testing.T, f payoutTestFixture) { t.Helper() },
 			actorType: types.ActorType_ACTOR_TYPE_FORECASTER,
 			reason:    types.RewardPayoutFailureReason_REWARD_PAYOUT_FAILURE_REASON_INVALID_PAYOUT_ADDRESS,
 		},
@@ -166,7 +165,7 @@ func TestPayoutRewardsEmitsFailureReasonPerSite(t *testing.T) {
 			reward: types.TaskReward{TopicId: 1, Address: worker,
 				Reward: alloraMath.NewDecFromInt64(10), Type: types.WorkerInferenceRewardType},
 			// Valid bech32, but no worker registered under it.
-			setup:     func(t *testing.T, f payoutTestFixture) {},
+			setup:     func(t *testing.T, f payoutTestFixture) { t.Helper() },
 			actorType: types.ActorType_ACTOR_TYPE_INFERER_UNSPECIFIED,
 			reason:    types.RewardPayoutFailureReason_REWARD_PAYOUT_FAILURE_REASON_WORKER_INFO_LOOKUP,
 		},
@@ -175,6 +174,7 @@ func TestPayoutRewardsEmitsFailureReasonPerSite(t *testing.T) {
 			reward: types.TaskReward{TopicId: 1, Address: worker,
 				Reward: alloraMath.NewDecFromInt64(10), Type: types.WorkerForecastRewardType},
 			setup: func(t *testing.T, f payoutTestFixture) {
+				t.Helper()
 				require.NoError(t, f.keeper.GetWorkerKeeper().InsertWorker(f.ctx, 1, worker, types.OffchainNode{
 					Owner:       owner,
 					NodeAddress: worker,
@@ -189,7 +189,7 @@ func TestPayoutRewardsEmitsFailureReasonPerSite(t *testing.T) {
 			reward: types.TaskReward{TopicId: 1, Address: reputer,
 				Reward: alloraMath.NewDecFromInt64(10), Type: types.ReputerAndDelegatorRewardType},
 			// The rewards module account holds nothing, so the module-to-module send fails.
-			setup:     func(t *testing.T, f payoutTestFixture) {},
+			setup:     func(t *testing.T, f payoutTestFixture) { t.Helper() },
 			actorType: types.ActorType_ACTOR_TYPE_REPUTER,
 			reason:    types.RewardPayoutFailureReason_REWARD_PAYOUT_FAILURE_REASON_MODULE_SEND,
 		},
@@ -201,6 +201,7 @@ func TestPayoutRewardsEmitsFailureReasonPerSite(t *testing.T) {
 			// account funded the send succeeds and AddReputerStake fails on
 			// SetStakeReputerAuthority's bech32 validation.
 			setup: func(t *testing.T, f payoutTestFixture) {
+				t.Helper()
 				f.fundRewardsAccount(t, cosmosMath.NewInt(1000))
 			},
 			actorType: types.ActorType_ACTOR_TYPE_REPUTER,
