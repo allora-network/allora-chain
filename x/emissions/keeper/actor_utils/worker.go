@@ -44,7 +44,7 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topic types.Topic, nonc
 			)
 		}
 
-		_, fulfillErr := k.GetNonceKeeper().FulfillWorkerNonce(ctx, topic.Id, &nonce)
+		removed, fulfillErr := k.GetNonceKeeper().FulfillWorkerNonce(ctx, topic.Id, &nonce)
 		if fulfillErr != nil {
 			ctx.Logger().Error(
 				"Error fulfilling worker nonce during deferred cleanup",
@@ -52,6 +52,9 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topic types.Topic, nonc
 				"nonce", nonce,
 				"error", fulfillErr,
 			)
+		}
+		if err != nil && removed {
+			types.EmitNewNonceExpiredEvent(ctx, topic.Id, nonce.BlockHeight, types.ActorType_ACTOR_TYPE_INFERER_UNSPECIFIED, types.NonceExpiredReason_NONCE_EXPIRED_REASON_CLOSE_FAILED)
 		}
 
 		resetActiveErr := k.GetWorkerKeeper().ResetActiveWorkersForTopic(ctx, topic.Id)
