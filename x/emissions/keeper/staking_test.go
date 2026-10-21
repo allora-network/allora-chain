@@ -165,10 +165,15 @@ func (s *KeeperTestSuite) TestRemoveStakeEventsEmitPostRemovalTopicStake() {
 		delegatorAddr := s.AddrsStr(1)
 		reputerStake := cosmosMath.NewInt(500)
 		delegateStake := cosmosMath.NewInt(300)
+		extraStake := cosmosMath.NewInt(200)
 
 		em := sdk.NewEventManager()
 		eventCtx := ctx.WithEventManager(em)
 
+		// A second staker keeps the topic stake above the reputer's authority
+		// after the removal, so the event's topic stake can't be read off the
+		// reputer authority.
+		s.Require().NoError(k.AddReputerStake(eventCtx, topicId, s.AddrsStr(2), extraStake))
 		s.Require().NoError(k.AddReputerStake(eventCtx, topicId, reputerAddr, reputerStake))
 		s.Require().NoError(k.AddDelegateStake(eventCtx, topicId, delegatorAddr, reputerAddr, delegateStake))
 
@@ -189,7 +194,7 @@ func (s *KeeperTestSuite) TestRemoveStakeEventsEmitPostRemovalTopicStake() {
 		s.Require().Equal(reputerAddr, event.Reputer)
 		s.Require().Equal(delegatorAddr, event.Delegator)
 		s.Require().Equal(delegateStake, event.Amount)
-		s.Require().Equal(reputerStake, event.TopicStake)
+		s.Require().Equal(extraStake.Add(reputerStake), event.TopicStake)
 	})
 }
 
