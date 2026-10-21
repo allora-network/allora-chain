@@ -336,7 +336,10 @@ func (k *TopicKeeper) emitOpenReputerSubmissionWindowEvents(ctx context.Context,
 			sdkCtx.Logger().Warn("Failed to compute reputer submission window after topic activation", "topicId", topic.Id, "error", err)
 			continue
 		}
-		if block >= windowStart && block < windowEnd {
+		// Inclusive of windowEnd to match admission: submissions are accepted
+		// in the last window block too. The first post-activation churn block
+		// is at or past windowEnd, so the grid path cannot re-emit.
+		if block >= windowStart && block <= windowEnd {
 			types.EmitNewReputerSubmissionWindowOpenedEvent(ctx, topic.Id, nonce.ReputerNonce.BlockHeight, windowEnd)
 		}
 	}
