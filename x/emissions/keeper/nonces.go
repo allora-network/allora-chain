@@ -411,14 +411,6 @@ func (k *NonceKeeper) GetOpenWorkerSubmissionWindows(ctx context.Context, topicI
 	return types.Nonces{Nonces: openNonces}, nil
 }
 
-func (k *NonceKeeper) DeleteUnfulfilledWorkerNonces(ctx context.Context, topicId TopicId) error {
-	return k.unfulfilledWorkerNonces.Remove(ctx, topicId)
-}
-
-func (k *NonceKeeper) DeleteUnfulfilledReputerNonces(ctx context.Context, topicId TopicId) error {
-	return k.unfulfilledReputerNonces.Remove(ctx, topicId)
-}
-
 func (k *NonceKeeper) PruneWorkerNonces(ctx context.Context, topicId uint64, blockHeightThreshold int64) error {
 	if err := types.ValidateTopicId(topicId); err != nil {
 		return errorsmod.Wrap(err, "error validating topic id")
