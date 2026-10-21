@@ -59,6 +59,14 @@ func PruneReputerAndWorkerNonces(ctx sdk.Context, k keeper.Keeper, topic types.T
 			ctx.Logger().Warn("Error pruning reputer nonces", "error", err)
 		}
 
+		// Nonces below the pruning threshold can no longer be closed, so
+		// submissions still stored for them would never be consumed and would
+		// block their reputers from submitting again.
+		err = k.GetReputerLossKeeper().RetireReputerSubmissionsBeforeBlock(ctx, topic.Id, reputerPruningBlock)
+		if err != nil {
+			ctx.Logger().Warn("Error retiring submissions of pruned reputer nonces", "error", err)
+		}
+
 		// Reputer nonces need to check worker nonces from one epoch before
 		workerPruningBlock := reputerPruningBlock - topic.EpochLength
 		if workerPruningBlock > 0 {

@@ -498,6 +498,90 @@ func (k *ReputerLossKeeper) ResetReputersIndividualSubmissionsForTopic(ctx conte
 	return nil
 }
 
+// RetireReputerSubmissionsForNonce removes the pending loss bundle and active
+// marker of every reputer whose stored bundle belongs to the given nonce.
+// Submissions stored for other nonces are left in place so the close of those
+// nonces can consume them.
+func (k *ReputerLossKeeper) RetireReputerSubmissionsForNonce(ctx context.Context, topicId TopicId, nonceHeight BlockHeight) error {
+	return k.retireReputerSubmissions(ctx, topicId, func(bundleNonceHeight BlockHeight) bool {
+		return bundleNonceHeight == nonceHeight
+	})
+}
+
+// RetireReputerSubmissionsBeforeBlock removes the pending loss bundle and
+// active marker of every reputer whose stored bundle belongs to a nonce below
+// the given block height. Submissions for nonces that can no longer be closed
+// would never be consumed and would block their reputers from submitting
+// again, so they are retired alongside the prune that removes their nonces.
+func (k *ReputerLossKeeper) RetireReputerSubmissionsBeforeBlock(ctx context.Context, topicId TopicId, blockHeight BlockHeight) error {
+	return k.retireReputerSubmissions(ctx, topicId, func(bundleNonceHeight BlockHeight) bool {
+		return bundleNonceHeight < blockHeight
+	})
+}
+
+// retireReputerSubmissions walks the topic's active reputers and retires each
+// pending submission that matches the given predicate.
+func (k *ReputerLossKeeper) retireReputerSubmissions(
+	ctx context.Context,
+	topicId TopicId,
+	shouldRetireBundle func(bundleNonceHeight BlockHeight) bool,
+) error {
+	reputerAddresses, err := k.GetActiveReputersForTopic(ctx, topicId)
+	if err != nil {
+		return errorsmod.Wrap(err, "error getting active reputer addresses")
+	}
+	for _, address := range reputerAddresses {
+		err := k.retireReputerSubmission(ctx, topicId, address, shouldRetireBundle)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// retireReputerSubmission retires the pending submission of a single active
+// reputer when its stored bundle belongs to a nonce the caller is retiring.
+// A bundle that is unreadable or carries no nonce can never be consumed by a
+// close and is retired together with the matching ones; a bundle kept for a
+// later nonce is left fully in place for that nonce's close.
+func (k *ReputerLossKeeper) retireReputerSubmission(
+	ctx context.Context,
+	topicId TopicId,
+	address ActorId,
+	shouldRetireBundle func(bundleNonceHeight BlockHeight) bool,
+) error {
+	bundle, err := k.GetReputerLatestLossByTopicId(ctx, topicId, address)
+	// Only a missing entry or a malformed stored value are expected read
+	// errors; anything else is a storage failure and aborts the retirement.
+	if err != nil && !errors.Is(err, collections.ErrNotFound) && !errorsmod.IsOf(err, types.ErrInvalidValue) {
+		return errorsmod.Wrapf(err, "error reading loss bundle for reputer %s", address)
+	}
+	if err != nil || bundle.ReputerRequestNonce == nil || bundle.ReputerRequestNonce.ReputerNonce == nil {
+		// No readable submission remains for this marker, or the stored
+		// bundle cannot be attributed to any nonce: retire what is left so
+		// the reputer is not blocked from submitting again.
+		return k.removeReputerSubmission(ctx, topicId, address)
+	}
+	if !shouldRetireBundle(bundle.ReputerRequestNonce.ReputerNonce.BlockHeight) {
+		return nil
+	}
+	return k.removeReputerSubmission(ctx, topicId, address)
+}
+
+// removeReputerSubmission deletes the active marker and the stored bundle of
+// a reputer. Removing an entry that is not present is a no-op.
+func (k *ReputerLossKeeper) removeReputerSubmission(ctx context.Context, topicId TopicId, address ActorId) error {
+	err := k.RemoveActiveReputer(ctx, topicId, address)
+	if err != nil {
+		return errorsmod.Wrapf(err, "error removing active marker for reputer %s", address)
+	}
+	err = k.RemoveReputerLoss(ctx, topicId, address)
+	if err != nil {
+		return errorsmod.Wrapf(err, "error removing loss bundle for reputer %s", address)
+	}
+	return nil
+}
+
 func (k *ReputerLossKeeper) PruneLossBundles(ctx context.Context, blockRange *collections.PairRange[uint64, int64]) error {
 	return k.allLossBundles.Clear(ctx, blockRange)
 }

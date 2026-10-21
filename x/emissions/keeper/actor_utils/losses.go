@@ -81,21 +81,16 @@ func CloseReputerNonce(
 			)
 		}
 
-		resetActiveErr := k.GetReputerLossKeeper().ResetActiveReputersForTopic(ctx, topic.Id)
-		if resetActiveErr != nil {
+		// Retire only the submissions stored for the nonce being closed;
+		// submissions stored for later nonces must survive so the close of
+		// those nonces can consume them.
+		retireErr := k.GetReputerLossKeeper().RetireReputerSubmissionsForNonce(ctx, topic.Id, nonce.BlockHeight)
+		if retireErr != nil {
 			ctx.Logger().Error(
-				"Error resetting active reputers during deferred cleanup",
+				"Error retiring reputer submissions during deferred cleanup",
 				"topicId", topic.Id,
-				"error", resetActiveErr,
-			)
-		}
-
-		resetSubmissionsErr := k.GetReputerLossKeeper().ResetReputersIndividualSubmissionsForTopic(ctx, topic.Id)
-		if resetSubmissionsErr != nil {
-			ctx.Logger().Error(
-				"Error resetting reputer individual submissions during deferred cleanup",
-				"topicId", topic.Id,
-				"error", resetSubmissionsErr,
+				"nonce", nonce,
+				"error", retireErr,
 			)
 		}
 
@@ -163,6 +158,7 @@ func CloseReputerNonce(
 	}
 
 	if len(lossBundlesByReputer) == 0 {
+		// No valid losses found for reputers - nothing to do, no scores calculated, no rewards paid
 		return errorsmod.Wrapf(sdkerrors.ErrNotFound, "no valid losses found for reputers")
 	}
 
