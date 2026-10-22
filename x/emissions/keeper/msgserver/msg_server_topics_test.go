@@ -383,6 +383,7 @@ func (s *MsgServerTestSuite) TestCreateNewTopicEmitsGateAndFeeEvents() {
 			s.Require().Zero(reputerDisabled)
 			for _, at := range gateEnabledAt {
 				s.Require().Less(createdAt, at, "the creation event must precede the gate events")
+				s.Require().Less(at, fundedAt, "the gate events must precede the fee funding event")
 			}
 			s.Require().Less(createdAt, fundedAt, "the creation event must precede the fee funding event")
 		})
