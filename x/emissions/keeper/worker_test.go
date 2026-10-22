@@ -6,6 +6,7 @@ import (
 
 	errorsmod "cosmossdk.io/errors"
 	cosmosMath "cosmossdk.io/math"
+	abci "github.com/cometbft/cometbft/abci/types"
 	"github.com/cometbft/cometbft/crypto/secp256k1"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
@@ -15,6 +16,24 @@ import (
 	"github.com/allora-network/allora-chain/x/emissions/testutil"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
+
+// inferenceEvictedEvents returns all EventInferenceEvictedFromActiveSet typed
+// events currently on the SDK context's event manager. It reconstructs each
+// event via sdk.ParseTypedEvent so the assertion stays agnostic to the proto
+// package version.
+func inferenceEvictedEvents(ctx sdk.Context) []*types.EventInferenceEvictedFromActiveSet {
+	out := make([]*types.EventInferenceEvictedFromActiveSet, 0)
+	for _, ev := range ctx.EventManager().Events() {
+		msg, err := sdk.ParseTypedEvent(abci.Event(ev))
+		if err != nil {
+			continue
+		}
+		if e, ok := msg.(*types.EventInferenceEvictedFromActiveSet); ok {
+			out = append(out, e)
+		}
+	}
+	return out
+}
 
 func (s *KeeperTestSuite) TestGetInferencesAtBlock() {
 	ctx := s.Ctx()
@@ -742,6 +761,11 @@ func (s *KeeperTestSuite) TestCommitInference() {
 				got, err := s.WorkerKeeper().GetWorkerLatestInferenceByTopicId(ctx, topicId, inferer)
 				s.Require().NoError(err)
 				s.Require().Equal("1", got.Values[0].String())
+				evictionEvents := inferenceEvictedEvents(ctx)
+				s.Require().Len(evictionEvents, 1)
+				s.Require().Equal(topicId, evictionEvents[0].TopicId)
+				s.Require().Equal(s.AddrsStr(1), evictionEvents[0].EvictedInferer)
+				s.Require().Equal(inferer, evictionEvents[0].EvictingInferer)
 			},
 		},
 		{
@@ -1393,8 +1417,9 @@ func (s *KeeperTestSuite) TestAppendForecast() {
 
 	// Append initial forecasts
 	for _, forecast := range allForecasts.Forecasts {
-		err = k.AppendForecast(ctx, topic, nonce.BlockHeight, forecast, params.MaxTopForecastersToReward)
+		outcome, err := k.AppendForecast(ctx, topic, nonce.BlockHeight, forecast, params.MaxTopForecastersToReward)
 		s.Require().NoError(err)
+		s.Require().Equal(types.PayloadAdmissionOutcome_PAYLOAD_ADMISSION_OUTCOME_ADMITTED, outcome)
 	}
 
 	activeForecasters, err := k.GetActiveForecastersForTopic(ctx, topicId)
@@ -1406,9 +1431,11 @@ func (s *KeeperTestSuite) TestAppendForecast() {
 	newForecast.Forecaster = workers[4]
 	newForecast.BlockHeight = blockHeightInferences
 
-	// MaxTopForecastersToReward is 4, so this should not increase active forecasters
-	err = k.AppendForecast(ctx, topic, nonce.BlockHeight, &newForecast, params.MaxTopForecastersToReward)
+	// MaxTopForecastersToReward is 4, so this evicts the lowest-scoring active
+	// forecaster rather than growing the active set
+	outcome, err := k.AppendForecast(ctx, topic, nonce.BlockHeight, &newForecast, params.MaxTopForecastersToReward)
 	s.Require().NoError(err)
+	s.Require().Equal(types.PayloadAdmissionOutcome_PAYLOAD_ADMISSION_OUTCOME_ADMITTED, outcome)
 
 	activeForecasters, err = k.GetActiveForecastersForTopic(ctx, topicId)
 	s.Require().NoError(err)
@@ -1472,7 +1499,7 @@ func (s *KeeperTestSuite) TestAppendForecastWithResetActiveForecasters() {
 	s.Require().NoError(err)
 
 	for _, forecast := range allForecasts.Forecasts {
-		err = k.AppendForecast(ctx, topic, nonce.BlockHeight, forecast, params.MaxTopForecastersToReward)
+		_, err = k.AppendForecast(ctx, topic, nonce.BlockHeight, forecast, params.MaxTopForecastersToReward)
 		s.Require().NoError(err)
 	}
 
@@ -1494,7 +1521,7 @@ func (s *KeeperTestSuite) TestAppendForecastWithResetActiveForecasters() {
 
 	nonce.BlockHeight++
 	for _, forecast := range allForecasts.Forecasts {
-		err = k.AppendForecast(ctx, topic, nonce.BlockHeight, forecast, params.MaxTopForecastersToReward)
+		_, err = k.AppendForecast(ctx, topic, nonce.BlockHeight, forecast, params.MaxTopForecastersToReward)
 		s.Require().NoError(err)
 	}
 
