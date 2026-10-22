@@ -1,6 +1,7 @@
 package fsm_test
 
 import (
+	"context"
 	"testing"
 
 	"github.com/allora-network/allora-chain/fsm"
@@ -28,7 +29,11 @@ func (f *testFSM) CurrentState() fsm.State {
 }
 
 func (f *testFSM) Advance(to fsm.State) {
-	f.state = to.(testState)
+	state, ok := to.(testState)
+	if !ok {
+		panic("test FSM advanced to a non-testState")
+	}
+	f.state = state
 }
 
 func TestNewEngine(t *testing.T) {
@@ -191,23 +196,25 @@ func TestConsume(t *testing.T) {
 			expectState: testState("final"),
 		},
 		{
-			name:      "transition from final state",
-			fromState: testState("final"),
-			symbol:    testSymbol("whatever"),
-			expectErr: true,
+			name:        "transition from final state",
+			fromState:   testState("final"),
+			symbol:      testSymbol("whatever"),
+			expectErr:   true,
+			expectState: nil,
 		},
 		{
-			name:      "unknown symbol",
-			fromState: testState("init"),
-			symbol:    testSymbol("whatever"),
-			expectErr: true,
+			name:        "unknown symbol",
+			fromState:   testState("init"),
+			symbol:      testSymbol("whatever"),
+			expectErr:   true,
+			expectState: nil,
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			mFSM := testFSM{state: tc.fromState}
-			err := eng.Consume(nil, &mFSM, tc.symbol)
+			err := eng.Consume(context.TODO(), &mFSM, tc.symbol)
 			if tc.expectErr {
 				require.Error(t, err)
 			} else {
