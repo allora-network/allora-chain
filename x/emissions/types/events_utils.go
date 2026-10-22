@@ -27,6 +27,7 @@ func NewScoresSetEventBase(actorType ActorType, scores []Score) proto.Message {
 		BlockHeight: blockHeight,
 		Addresses:   addresses,
 		Scores:      clampDecs(scoreValues),
+		Nonce:       blockHeight,
 	}
 }
 
@@ -498,6 +499,7 @@ func NewForecastTaskScoreSetEventBase(topicId TopicId, score alloraMath.Dec, non
 		TopicId:          topicId,
 		Score:            clampDec(score),
 		NonceBlockHeight: nonce,
+		Nonce:            nonce,
 	}
 }
 
@@ -540,6 +542,7 @@ func NewRewardsSetEventBase(actorType ActorType, blockHeight, blockHeightTx Bloc
 		Addresses:     addresses,
 		Rewards:       clampDecs(rewardValues),
 		BlockHeightTx: blockHeightTx,
+		Nonce:         blockHeight,
 	}
 }
 
@@ -582,6 +585,7 @@ func NewListeningCoefficientsSetEventBase(topicID uint64, blockHeight int64, add
 		BlockHeight:  blockHeight,
 		Addresses:    addresses,
 		Coefficients: clampDecs(coefficients),
+		Nonce:        blockHeight,
 	}
 }
 
@@ -593,6 +597,7 @@ func NewInfererNetworkRegretSetEventBase(topicID uint64, blockHeight int64, addr
 		BlockHeight: blockHeight,
 		Addresses:   addresses,
 		Regrets:     clampDecs(regrets),
+		Nonce:       blockHeight,
 	}
 }
 
@@ -602,6 +607,7 @@ func NewForecasterNetworkRegretSetEventBase(topicID uint64, blockHeight int64, a
 		BlockHeight: blockHeight,
 		Addresses:   addresses,
 		Regrets:     clampDecs(regrets),
+		Nonce:       blockHeight,
 	}
 }
 
@@ -611,6 +617,7 @@ func NewNaiveInfererNetworkRegretSetEventBase(topicID uint64, blockHeight int64,
 		BlockHeight: blockHeight,
 		Addresses:   addresses,
 		Regrets:     clampDecs(regrets),
+		Nonce:       blockHeight,
 	}
 }
 
@@ -619,6 +626,7 @@ func NewTopicInitialRegretSetEventBase(topicID uint64, blockHeight int64, regret
 		TopicId:     topicID,
 		BlockHeight: blockHeight,
 		Regret:      clampDec(regret),
+		Nonce:       blockHeight,
 	}
 }
 
@@ -628,6 +636,7 @@ func NewTopicInitialEmaScoreSetEventBase(actorType ActorType, topicId uint64, bl
 		TopicId:     topicId,
 		BlockHeight: blockHeight,
 		Score:       clampDec(score),
+		Nonce:       blockHeight,
 	}
 }
 
@@ -636,6 +645,7 @@ func NewRegretStdNormSetEventBase(topicId uint64, blockHeight int64, stdNorm all
 		TopicId:     topicId,
 		BlockHeight: blockHeight,
 		Stdnorm:     clampDec(stdNorm),
+		Nonce:       blockHeight,
 	}
 }
 
@@ -645,6 +655,7 @@ func NewInfererWeightsSetEventBase(topicId uint64, blockHeight int64, addresses 
 		BlockHeight: blockHeight,
 		Addresses:   addresses,
 		Weights:     clampDecs(weights),
+		Nonce:       blockHeight,
 	}
 }
 
@@ -654,6 +665,7 @@ func NewForecasterWeightsSetEventBase(topicId uint64, blockHeight int64, address
 		BlockHeight: blockHeight,
 		Addresses:   addresses,
 		Weights:     clampDecs(weights),
+		Nonce:       blockHeight,
 	}
 }
 
@@ -695,6 +707,7 @@ func NewActiveReputersSetEventBase(topicId TopicId, nonceBlockHeight int64, addr
 		TopicId:          topicId,
 		Addresses:        addresses,
 		NonceBlockHeight: nonceBlockHeight,
+		Nonce:            nonceBlockHeight,
 	}
 }
 
@@ -703,6 +716,7 @@ func NewActiveInferersSetEventBase(topicId TopicId, nonceBlockHeight int64, addr
 		TopicId:          topicId,
 		Addresses:        addresses,
 		NonceBlockHeight: nonceBlockHeight,
+		Nonce:            nonceBlockHeight,
 	}
 }
 
@@ -711,6 +725,7 @@ func NewActiveForecastersSetEventBase(topicId TopicId, nonceBlockHeight int64, a
 		TopicId:          topicId,
 		Addresses:        addresses,
 		NonceBlockHeight: nonceBlockHeight,
+		Nonce:            nonceBlockHeight,
 	}
 }
 
@@ -725,6 +740,7 @@ func NewNetworkInferenceInfererWeightsSetEventBase(topicId TopicId, blockHeight 
 	return &EventNetworkInferenceInfererWeightsSet{
 		TopicId:          topicId,
 		NonceBlockHeight: blockHeight,
+		Nonce:            blockHeight,
 		Addresses:        addresses,
 		Weights:          clampDecs(weights),
 	}
@@ -734,6 +750,7 @@ func NewNetworkInferenceForecasterWeightsSetEventBase(topicId TopicId, blockHeig
 	return &EventNetworkInferenceForecasterWeightsSet{
 		TopicId:          topicId,
 		NonceBlockHeight: blockHeight,
+		Nonce:            blockHeight,
 		Addresses:        addresses,
 		Weights:          clampDecs(weights),
 	}
@@ -743,6 +760,7 @@ func NewNetworkInferenceInfererRegretsUsedSetEventBase(topicId TopicId, blockHei
 	return &EventNetworkInferenceInfererRegretsUsedSet{
 		TopicId:          topicId,
 		NonceBlockHeight: blockHeight,
+		Nonce:            blockHeight,
 		Addresses:        addresses,
 		Regrets:          clampDecs(regrets),
 	}
@@ -752,6 +770,7 @@ func NewNetworkInferenceForecasterRegretsUsedSetEventBase(topicId TopicId, block
 	return &EventNetworkInferenceForecasterRegretsUsedSet{
 		TopicId:          topicId,
 		NonceBlockHeight: blockHeight,
+		Nonce:            blockHeight,
 		Addresses:        addresses,
 		Regrets:          clampDecs(regrets),
 	}
@@ -780,6 +799,7 @@ func NewWorkerSubmissionWindowOpenedEventBase(topicId TopicId, nonceBlockHeight 
 	return &EventWorkerSubmissionWindowOpened{
 		TopicId:          topicId,
 		NonceBlockHeight: nonceBlockHeight,
+		Nonce:            nonceBlockHeight,
 		WindowEndBlock:   windowEndBlock,
 	}
 }
@@ -788,6 +808,7 @@ func NewWorkerSubmissionWindowClosedEventBase(topicId TopicId, nonceBlockHeight 
 	return &EventWorkerSubmissionWindowClosed{
 		TopicId:          topicId,
 		NonceBlockHeight: nonceBlockHeight,
+		Nonce:            nonceBlockHeight,
 	}
 }
 
@@ -795,6 +816,7 @@ func NewReputerSubmissionWindowOpenedEventBase(topicId TopicId, nonceBlockHeight
 	return &EventReputerSubmissionWindowOpened{
 		TopicId:          topicId,
 		NonceBlockHeight: nonceBlockHeight,
+		Nonce:            nonceBlockHeight,
 		WindowEndBlock:   windowEndBlock,
 	}
 }
@@ -803,6 +825,7 @@ func NewReputerSubmissionWindowClosedEventBase(topicId TopicId, nonceBlockHeight
 	return &EventReputerSubmissionWindowClosed{
 		TopicId:          topicId,
 		NonceBlockHeight: nonceBlockHeight,
+		Nonce:            nonceBlockHeight,
 	}
 }
 
@@ -815,6 +838,7 @@ func NewEpochLabelRegistryFrozenEventBase(topicId TopicId, nonceBlockHeight int6
 	return &EventEpochLabelRegistryFrozen{
 		TopicId:          topicId,
 		NonceBlockHeight: nonceBlockHeight,
+		Nonce:            nonceBlockHeight,
 		RegistrySize:     registrySize,
 	}
 }

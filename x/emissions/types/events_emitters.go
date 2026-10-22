@@ -12,7 +12,10 @@ import (
 
 // Scores
 
-func EmitNewActorScoresSetEvent(ctx context.Context, actorType ActorType, blockHeight BlockHeight, scores []Score) {
+// EmitNewActorScoresSetEvent emits one EventScoresSet for scores, which all
+// belong to one topic and epoch. The event's height is the epoch nonce the
+// scores carry in Score.BlockHeight.
+func EmitNewActorScoresSetEvent(ctx context.Context, actorType ActorType, scores []Score) {
 	if len(scores) < 1 {
 		return
 	}

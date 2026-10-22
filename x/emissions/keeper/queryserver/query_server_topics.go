@@ -189,6 +189,7 @@ func (qs queryServer) GetWorkerSubmissionWindowStatus(ctx context.Context, req *
 	response := &types.GetWorkerSubmissionWindowStatusResponse{
 		IsOpen:                  false,
 		CurrentNonceBlockHeight: 0,
+		Nonce:                   0,
 		WindowStartBlock:        0,
 		WindowEndBlock:          0,
 		NextWindowStartBlock:    0,
@@ -228,6 +229,7 @@ func (qs queryServer) GetWorkerSubmissionWindowStatus(ctx context.Context, req *
 		if currentBlockHeight >= windowStart && currentBlockHeight <= windowEnd {
 			response.IsOpen = true
 			response.CurrentNonceBlockHeight = nonce.BlockHeight
+			response.Nonce = nonce.BlockHeight
 			response.WindowStartBlock = windowStart
 			response.WindowEndBlock = windowEnd
 			break
@@ -270,6 +272,7 @@ func (qs queryServer) GetReputerSubmissionWindowStatus(ctx context.Context, req 
 	response := &types.GetReputerSubmissionWindowStatusResponse{
 		IsOpen:                  false,
 		CurrentNonceBlockHeight: 0,
+		Nonce:                   0,
 		WindowStartBlock:        0,
 		WindowEndBlock:          0,
 		NextWindowStartBlock:    0,
@@ -318,6 +321,7 @@ func (qs queryServer) GetReputerSubmissionWindowStatus(ctx context.Context, req 
 				latestActiveNonce = nonce
 				response.IsOpen = true
 				response.CurrentNonceBlockHeight = nonce.ReputerNonce.BlockHeight
+				response.Nonce = nonce.ReputerNonce.BlockHeight
 				response.WindowStartBlock = windowStart
 				response.WindowEndBlock = windowEnd
 			}
