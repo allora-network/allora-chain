@@ -296,20 +296,23 @@ func (s *KeeperTestSuite) TestAppendReputerLoss() {
 
 	// Append first three reputer losses
 	for i := 0; i < 3; i++ {
-		err = k.AppendReputerLoss(ctx, topic, params, nonce.BlockHeight, reputerValueBundles[i])
+		outcome, err := k.AppendReputerLoss(ctx, topic, params, nonce.BlockHeight, reputerValueBundles[i])
 		s.Require().NoError(err)
+		s.Require().Equal(types.PayloadAdmissionOutcome_PAYLOAD_ADMISSION_OUTCOME_ADMITTED, outcome)
 	}
 
 	// Add fourth reputer and verify active reputers count
-	err = k.AppendReputerLoss(ctx, topic, params, nonce.BlockHeight, reputerValueBundles[3])
+	outcome, err := k.AppendReputerLoss(ctx, topic, params, nonce.BlockHeight, reputerValueBundles[3])
 	s.Require().NoError(err)
+	s.Require().Equal(types.PayloadAdmissionOutcome_PAYLOAD_ADMISSION_OUTCOME_ADMITTED, outcome)
 	activeReputers, err := k.GetActiveReputersForTopic(ctx, topicId)
 	s.Require().NoError(err)
 	s.Require().Equal(params.MaxTopReputersToReward, uint64(len(activeReputers)))
 
 	// Add fifth reputer and verify active reputers count remains at max
-	err = k.AppendReputerLoss(ctx, topic, params, nonce.BlockHeight, reputerValueBundles[4])
+	outcome, err = k.AppendReputerLoss(ctx, topic, params, nonce.BlockHeight, reputerValueBundles[4])
 	s.Require().NoError(err)
+	s.Require().Equal(types.PayloadAdmissionOutcome_PAYLOAD_ADMISSION_OUTCOME_ADMITTED, outcome)
 	activeReputers, err = k.GetActiveReputersForTopic(ctx, topicId)
 	s.Require().NoError(err)
 	s.Require().Equal(params.MaxTopReputersToReward, uint64(len(activeReputers)))
@@ -375,7 +378,7 @@ func (s *KeeperTestSuite) TestAppendReputerLossWithResetActiveReputers() {
 
 	// First round: append all reputer losses
 	for _, reputerValueBundle := range allReputerLosses.ReputerValueBundles {
-		err = k.AppendReputerLoss(ctx, topic, params, nonce.BlockHeight, reputerValueBundle)
+		_, err = k.AppendReputerLoss(ctx, topic, params, nonce.BlockHeight, reputerValueBundle)
 		s.Require().NoError(err)
 	}
 
@@ -395,7 +398,7 @@ func (s *KeeperTestSuite) TestAppendReputerLossWithResetActiveReputers() {
 	// Second round: append all reputer losses again
 	nonce.BlockHeight++
 	for _, reputerValueBundle := range allReputerLosses.ReputerValueBundles {
-		err = k.AppendReputerLoss(ctx, topic, params, nonce.BlockHeight, reputerValueBundle)
+		_, err = k.AppendReputerLoss(ctx, topic, params, nonce.BlockHeight, reputerValueBundle)
 		s.Require().NoError(err)
 	}
 

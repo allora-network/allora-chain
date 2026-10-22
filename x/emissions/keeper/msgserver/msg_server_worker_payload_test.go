@@ -356,6 +356,24 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadWithFewTopElementsPerFore
 	require.Equal(forecasts.ForecastElements[2].Inferer, inferer4)
 }
 
+// infererPayloadEvents returns all EventInsertInfererPayload typed events
+// currently on the SDK context's event manager, reconstructed via
+// sdk.ParseTypedEvent so the assertion stays agnostic to the proto package
+// version.
+func infererPayloadEvents(ctx sdk.Context) []*types.EventInsertInfererPayload {
+	out := make([]*types.EventInsertInfererPayload, 0)
+	for _, ev := range ctx.EventManager().Events() {
+		msg, err := sdk.ParseTypedEvent(abci.Event(ev))
+		if err != nil {
+			continue
+		}
+		if e, ok := msg.(*types.EventInsertInfererPayload); ok {
+			out = append(out, e)
+		}
+	}
+	return out
+}
+
 // forecasterPayloadEvents returns all EventInsertForecasterPayload typed events
 // currently on the SDK context's event manager. It reconstructs each event via
 // sdk.ParseTypedEvent so the assertion stays agnostic to the proto package
@@ -374,12 +392,13 @@ func forecasterPayloadEvents(ctx sdk.Context) []*types.EventInsertForecasterPayl
 	return out
 }
 
-// TestMsgInsertWorkerPayloadNoForecasterEventWhenAllFiltered pins the contract
-// that a forecaster payload event is emitted only when forecast elements were
-// actually stored. With MaxElementsPerForecast == 0, FindTopNByScoreDesc selects
-// no inferers, every element is filtered out, AppendForecast is skipped, and no
-// event must be emitted - mirroring the admission-gated inference path.
-func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadNoForecasterEventWhenAllFiltered() {
+// TestMsgInsertWorkerPayloadForecasterEventNoElementsAccepted pins the
+// contract that a forecaster payload event is emitted for every forecast that
+// passes validation, even when nothing is stored. With
+// MaxElementsPerForecast == 0, FindTopNByScoreDesc selects no inferers, every
+// element is filtered out, AppendForecast is skipped, and the single emitted
+// event carries NO_ELEMENTS_ACCEPTED so indexers still see the submission.
+func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadForecasterEventNoElementsAccepted() {
 	require := s.Require()
 
 	workerPrivateKey := secp256k1.GenPrivKey()
@@ -412,9 +431,11 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadNoForecasterEventWhenAllF
 	// Nothing was stored...
 	require.Equal(0, s.getCountForecastsAtBlock(topicId, workerBlockHeight),
 		"no forecast should be stored when all elements are filtered out")
-	// ...so no forecaster payload event should have been emitted.
-	require.Empty(forecasterPayloadEvents(s.Ctx()),
-		"no forecaster payload event should be emitted when nothing is stored")
+	// ...but the submission is still announced with NO_ELEMENTS_ACCEPTED.
+	events := forecasterPayloadEvents(s.Ctx())
+	require.Len(events, 1, "exactly one forecaster payload event should be emitted")
+	require.Equal(types.PayloadAdmissionOutcome_PAYLOAD_ADMISSION_OUTCOME_NO_ELEMENTS_ACCEPTED,
+		events[0].AdmissionOutcome)
 }
 
 // TestMsgInsertWorkerPayloadEmitsForecasterEventReflectingStoredElements guards
@@ -442,6 +463,8 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadEmitsForecasterEventRefle
 
 	events := forecasterPayloadEvents(s.Ctx())
 	require.Len(events, 1, "exactly one forecaster payload event should be emitted on a successful store")
+	require.Equal(types.PayloadAdmissionOutcome_PAYLOAD_ADMISSION_OUTCOME_ADMITTED,
+		events[0].AdmissionOutcome)
 
 	storedInferers := make([]string, 0, len(stored.ForecastElements))
 	for _, el := range stored.ForecastElements {
@@ -1427,6 +1450,13 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayload_NotAdmittedDoesNotStageI
 	isActive, err := s.WorkerKeeper().IsActiveInferer(s.Ctx(), topicId, msg.WorkerDataBundle.Worker)
 	s.Require().NoError(err)
 	s.Require().False(isActive)
+
+	// The submission passed validation, so indexers still see it - with an
+	// explicit not-admitted outcome.
+	events := infererPayloadEvents(s.Ctx())
+	s.Require().Len(events, 1)
+	s.Require().Equal(types.PayloadAdmissionOutcome_PAYLOAD_ADMISSION_OUTCOME_NOT_ADMITTED,
+		events[0].AdmissionOutcome)
 }
 
 //nolint:exhaustruct
