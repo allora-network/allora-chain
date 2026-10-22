@@ -10,6 +10,66 @@ import (
 	schedulertypes "github.com/allora-network/allora-chain/x/scheduler/types"
 )
 
+func (s *KeeperTestSuite) TestEpochFSMHappyPathWithWorkerAndReputerSubmissions() {
+	s.WithBlockHeight(5_000)
+	topicId := s.CreateTopic(
+		testutil.WithEpochLength(100),
+		testutil.WithGroundTruthLag(100),
+		testutil.WithWorkerSubmissionWindow(10),
+	)
+	s.SetupParticipants(topicId, []int{0, 1}, false)
+	s.SetupParticipants(topicId, []int{2, 3}, true)
+
+	// Reputer stake activates the topic (StartNewEpoch + periodic). A second
+	// StartNewEpoch at the same height would share LegacyNonce and make the
+	// later close-worker task fail as already fulfilled.
+	lastNonce, found, err := s.EmissionsKeeper().GetTopicLastEpochNonce(s.Ctx(), topicId)
+	s.Require().NoError(err)
+	s.Require().True(found, "reputer stake should activate and start an epoch")
+	periodicID := schedulertypes.TaskID(fmt.Sprintf("%s:%d", types.StartNewEpochTask, topicId))
+	s.Require().NoError(s.SchedulerKeeper().CancelTask(s.Ctx(), periodicID))
+	epoch, err := s.EmissionsKeeper().GetEpoch(s.Ctx(), topicId, lastNonce)
+	s.Require().NoError(err)
+	s.Require().Equal(types.EpochState_WORKER_SUBMISSION, epoch.State)
+	legacy := epoch.LegacyNonce()
+
+	s.SetupInferences(topicId, legacy.BlockHeight, []int{0, 1})
+
+	s.WithBlockTime(epoch.WorkerSubmissionWindow.CloseAt.Add(time.Nanosecond))
+	s.Require().NoError(s.SchedulerKeeper().BeginBlock(s.Ctx()))
+
+	epoch, err = s.EmissionsKeeper().GetEpoch(s.Ctx(), topicId, lastNonce)
+	s.Require().NoError(err)
+	s.Require().Equal(types.EpochState_WAITING_GROUND_TRUTH, epoch.State)
+
+	networkInferences, err := s.EmissionsKeeper().GetNetworkInferences(s.Ctx(), topicId, legacy.BlockHeight)
+	s.Require().NoError(err)
+	s.Require().NotEmpty(networkInferences.InfererValues, "close worker must produce network inferences")
+
+	s.WithBlockTime(epoch.ReputerSubmissionWindow.OpenAt.Add(time.Nanosecond))
+	s.Require().NoError(s.SchedulerKeeper().BeginBlock(s.Ctx()))
+
+	epoch, err = s.EmissionsKeeper().GetEpoch(s.Ctx(), topicId, lastNonce)
+	s.Require().NoError(err)
+	s.Require().Equal(types.EpochState_REPUTER_SUBMISSION, epoch.State)
+
+	s.Require().NoError(s.InsertReputerLossBundle(topicId, legacy.BlockHeight, []int{2, 3}))
+
+	s.WithBlockTime(epoch.ReputerSubmissionWindow.CloseAt.Add(time.Nanosecond))
+	s.Require().NoError(s.SchedulerKeeper().BeginBlock(s.Ctx()))
+
+	_, err = s.EmissionsKeeper().GetEpoch(s.Ctx(), topicId, lastNonce)
+	s.Require().ErrorIs(err, collections.ErrNotFound, "completed epoch is removed from store")
+
+	lossBundle, err := s.ReputerLossKeeper().GetNetworkLossBundleAtBlock(s.Ctx(), topicId, legacy.BlockHeight)
+	s.Require().NoError(err)
+	s.Require().NotEmpty(lossBundle.InfererValues, "close reputer must produce network losses")
+
+	rewardable, err := s.TopicKeeper().IsRewardableTopic(s.Ctx(), topicId)
+	s.Require().NoError(err)
+	s.Require().True(rewardable, "complete must mark topic rewardable")
+}
+
 func (s *KeeperTestSuite) TestEpochFSMHappyPathInitToCompletedEmptySubmissions() {
 	ctx := s.Ctx().WithBlockHeight(1_000)
 	topicId := s.CreateTopic(
