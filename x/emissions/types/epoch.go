@@ -27,7 +27,25 @@ func (e *Epoch) Key() collections.Pair[TopicId, NonceV2] {
 	return collections.Join(e.TopicId, e.Nonce)
 }
 
+// TopicExtraLag returns the alignment lag used so reputer windows land on epoch boundaries.
+// Matches the legacy EndBlocker formula: when GroundTruthLag is not a multiple of EpochLength,
+// pad to the next EpochLength multiple.
+func TopicExtraLag(topic Topic) int64 {
+	if topic.EpochLength <= 0 {
+		return 0
+	}
+	rem := topic.GroundTruthLag % topic.EpochLength
+	if rem == 0 {
+		return 0
+	}
+	return topic.EpochLength - rem
+}
+
 func NewEpoch(nonce NonceV2, topic Topic, startAt time.Time) Epoch {
+	extraLag := TopicExtraLag(topic)
+	// Reputer opens at GroundTruthLag (legacy EndBlocker / spec), not GTL+ExtraLag.
+	// ExtraLag extends the close so the window still lands on an epoch boundary.
+	reputerOpenAt := startAt.Add(time.Duration(topic.GroundTruthLag) * time.Second)
 	return Epoch{
 		Nonce:   nonce,
 		TopicId: topic.Id,
@@ -37,8 +55,8 @@ func NewEpoch(nonce NonceV2, topic Topic, startAt time.Time) Epoch {
 			CloseAt: startAt.Add(time.Duration(topic.WorkerSubmissionWindow) * time.Second),
 		},
 		ReputerSubmissionWindow: &Window{
-			OpenAt:  startAt.Add(time.Duration(topic.GroundTruthLag) * time.Second),
-			CloseAt: startAt.Add(time.Duration(topic.GroundTruthLag) * time.Second).Add(time.Duration(topic.EpochLength) * time.Second),
+			OpenAt:  reputerOpenAt,
+			CloseAt: reputerOpenAt.Add(time.Duration(extraLag+topic.EpochLength) * time.Second),
 		},
 		Epsilon: topic.Epsilon,
 	}
