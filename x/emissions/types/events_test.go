@@ -1841,3 +1841,152 @@ func TestEmitNewTopicFeeRevenueDrippedEvent(t *testing.T) {
 	require.True(t, exists)
 	require.Contains(t, val.GetValue(), "50")
 }
+
+func TestEmitNewInsertInfererPayloadEventWithAdmissionOutcome(t *testing.T) {
+	ctx := sdk.Context{}.WithEventManager(sdk.NewEventManager())
+	bundle := &types.InputWorkerDataBundle{
+		Worker:  "worker1",
+		Nonce:   &types.Nonce{BlockHeight: 10},
+		TopicId: 1,
+		InferenceForecastsBundle: &types.InputInferenceForecastBundle{
+			Inference: &types.InputInference{
+				Inferer:     "worker1",
+				TopicId:     1,
+				BlockHeight: 10,
+				Value:       mustNewBoundedExp40DecForEvents(t, "1.23"),
+			},
+		},
+	}
+
+	types.EmitNewInsertInfererPayloadEvent(ctx, bundle, types.PayloadAdmissionOutcome_PAYLOAD_ADMISSION_OUTCOME_NOT_ADMITTED)
+
+	events := ctx.EventManager().Events()
+	require.Len(t, events, 1)
+
+	event := events[0]
+	require.Equal(t, "emissions.v10.EventInsertInfererPayload", event.Type)
+
+	val, exists := event.GetAttribute("admission_outcome")
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), "NOT_ADMITTED")
+}
+
+func TestEmitNewInsertInfererPayloadEventOmitsUnspecifiedAdmissionOutcome(t *testing.T) {
+	ctx := sdk.Context{}.WithEventManager(sdk.NewEventManager())
+	bundle := &types.InputWorkerDataBundle{
+		Worker:  "worker1",
+		Nonce:   &types.Nonce{BlockHeight: 10},
+		TopicId: 1,
+		InferenceForecastsBundle: &types.InputInferenceForecastBundle{
+			Inference: &types.InputInference{
+				Inferer:     "worker1",
+				TopicId:     1,
+				BlockHeight: 10,
+				Value:       mustNewBoundedExp40DecForEvents(t, "1.23"),
+			},
+		},
+	}
+
+	types.EmitNewInsertInfererPayloadEvent(ctx, bundle, types.PayloadAdmissionOutcome_PAYLOAD_ADMISSION_OUTCOME_UNSPECIFIED)
+
+	events := ctx.EventManager().Events()
+	require.Len(t, events, 1)
+
+	// Events emitted before this field existed carry no admission_outcome
+	// attribute at all; the explicit zero value is equivalent for indexers.
+	val, exists := events[0].GetAttribute("admission_outcome")
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), "PAYLOAD_ADMISSION_OUTCOME_UNSPECIFIED")
+}
+
+func TestEmitNewInferenceEvictedFromActiveSetEvent(t *testing.T) {
+	ctx := sdk.Context{}.WithEventManager(sdk.NewEventManager())
+
+	types.EmitNewInferenceEvictedFromActiveSetEvent(ctx, 1, 10, "evicted1", "evicting2")
+
+	events := ctx.EventManager().Events()
+	require.Len(t, events, 1)
+
+	event := events[0]
+	require.Equal(t, "emissions.v10.EventInferenceEvictedFromActiveSet", event.Type)
+
+	val, exists := event.GetAttribute(AttributeKeyTopicId)
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), "1")
+
+	val, exists = event.GetAttribute("nonce")
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), "10")
+
+	val, exists = event.GetAttribute("evicted_inferer")
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), "evicted1")
+
+	val, exists = event.GetAttribute("evicting_inferer")
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), "evicting2")
+}
+
+func TestEmitNewForecastEvictedFromActiveSetEvent(t *testing.T) {
+	ctx := sdk.Context{}.WithEventManager(sdk.NewEventManager())
+
+	types.EmitNewForecastEvictedFromActiveSetEvent(ctx, 1, 10, "evicted1", "evicting2")
+
+	events := ctx.EventManager().Events()
+	require.Len(t, events, 1)
+
+	event := events[0]
+	require.Equal(t, "emissions.v10.EventForecastEvictedFromActiveSet", event.Type)
+
+	val, exists := event.GetAttribute(AttributeKeyTopicId)
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), "1")
+
+	val, exists = event.GetAttribute("nonce")
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), "10")
+
+	val, exists = event.GetAttribute("evicted_forecaster")
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), "evicted1")
+
+	val, exists = event.GetAttribute("evicting_forecaster")
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), "evicting2")
+}
+
+func TestEmitNewReputerLossEvictedFromActiveSetEvent(t *testing.T) {
+	ctx := sdk.Context{}.WithEventManager(sdk.NewEventManager())
+
+	types.EmitNewReputerLossEvictedFromActiveSetEvent(ctx, 1, 10, "evicted1", "evicting2")
+
+	events := ctx.EventManager().Events()
+	require.Len(t, events, 1)
+
+	event := events[0]
+	require.Equal(t, "emissions.v10.EventReputerLossEvictedFromActiveSet", event.Type)
+
+	val, exists := event.GetAttribute(AttributeKeyTopicId)
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), "1")
+
+	val, exists = event.GetAttribute("nonce")
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), "10")
+
+	val, exists = event.GetAttribute("evicted_reputer")
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), "evicted1")
+
+	val, exists = event.GetAttribute("evicting_reputer")
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), "evicting2")
+}
+
+// mustNewBoundedExp40DecForEvents builds a BoundedExp40Dec for event tests.
+func mustNewBoundedExp40DecForEvents(t *testing.T, s string) alloraMath.BoundedExp40Dec {
+	t.Helper()
+	dec, err := alloraMath.NewBoundedExp40DecFromString(s)
+	require.NoError(t, err)
+	return dec
+}
