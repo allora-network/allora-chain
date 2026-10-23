@@ -513,3 +513,35 @@ func (s *EmissionsV16MigrationTestSuite) TestMigrateTotalSumPreviousTopicWeights
 	s.Require().Contains(bucketTopics.TopicIds, topicId)
 	s.Require().Equal(weight.String(), s.totalSum().String())
 }
+
+// A future schedule without its bucket listing is incomplete activity state: the migration
+// fully inactivates the topic. The stored weight is kept and counts exactly once when the
+// topic is activated again.
+func (s *EmissionsV16MigrationTestSuite) TestMigrateTotalSumPreviousTopicWeightsDropsFutureScheduleWithoutListing() {
+	ctx := s.Ctx()
+	topicKeeper := s.TopicKeeper()
+	topicId := s.CreateTopic()
+	s.Require().NoError(topicKeeper.ActivateTopic(ctx, topicId))
+
+	weight := alloraMath.NewDecFromInt64(100)
+	s.Require().NoError(topicKeeper.SetPreviousTopicWeight(ctx, topicId, weight))
+	churningBlock, err := topicKeeper.GetTopicSchedule(ctx, topicId)
+	s.Require().NoError(err)
+
+	// Drop the listing only: schedule, set membership and weight stay.
+	s.Require().NoError(topicKeeper.SetBlockToActiveTopics(ctx, churningBlock, emissionstypes.TopicIds{TopicIds: nil}))
+
+	s.Require().NoError(v16.MigrateTotalSumPreviousTopicWeights(ctx, *s.EmissionsKeeper()))
+
+	scheduled, err := topicKeeper.IsTopicScheduled(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().False(scheduled)
+	activeIds, err := topicKeeper.GetActiveTopicIds(ctx)
+	s.Require().NoError(err)
+	s.Require().NotContains(activeIds, topicId)
+	s.Require().True(s.totalSum().IsZero())
+
+	// The stored weight survives and counts exactly once on re-activation.
+	s.Require().NoError(topicKeeper.ActivateTopic(ctx, topicId))
+	s.Require().Equal(weight.String(), s.totalSum().String())
+}

@@ -56,7 +56,8 @@ func MigrateStore(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 // then recomputes totalSumPreviousTopicWeights from topics with a valid schedule and matching
 // block-bucket entry. A schedule at a block the chain already passed is invalid because its
 // bucket can never be processed again. Topics with invalid or incomplete activity state are
-// made fully inactive.
+// made fully inactive, including a future schedule without its block listing: the topic
+// stays off until re-activated, and its stored weight counts once then.
 func MigrateTotalSumPreviousTopicWeights(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 	topicKeeper := emissionsKeeper.GetTopicKeeper()
 
