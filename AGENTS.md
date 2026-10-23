@@ -12,6 +12,7 @@ Short, high-signal guidance for working in the `allora-chain` repo. Keep context
 - State layout: define keys/prefixes in `types/keys.go`; keep prefix types stable; add indexes for query-heavy data.
 - Params/genesis: validate every param change + authority checks; genesis is deterministic with round-trip tests.
 - Comments: self-contained; no issue/task IDs, PR/review links, or report names — describe the behavior, not the ticket. Applies to comments you copy or move during merges/rebases too. See `Code comments` below.
+- PR comments/replies: written for a public reader — never reference private context (chat labels, local issue numbers, unpublished commits); when referring to another PR comment, review, issue, or piece of code, include a public, resolvable link at least once in the message.
 
 ## Go Conventions
 - Always `gofmt`/`goimports`; `make lint` must always pass clean after producing complete code. Avoid using `nolint` statements if possible, but if you need to use it, add a comment on the reason why.
