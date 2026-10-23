@@ -45,6 +45,7 @@ func initRootCmd(rootCmd *cobra.Command, txConfig client.TxConfig, basicManager 
 		pruning.Cmd(newApp, app.DefaultNodeHome),
 		snapshot.Cmd(newApp),
 		NewInPlaceTestnetCmd(addModuleInitFlags),
+		NewDebugStoreCmd(),
 	)
 
 	server.AddCommands(rootCmd, app.DefaultNodeHome, newApp, appExport, func(startCmd *cobra.Command) {
