@@ -81,21 +81,16 @@ func CloseReputerNonce(
 			)
 		}
 
-		resetActiveErr := k.GetReputerLossKeeper().ResetActiveReputersForTopic(ctx, topic.Id)
-		if resetActiveErr != nil {
+		// Retire only the submissions stored for the nonce being closed;
+		// submissions stored for later nonces must survive so the close of
+		// those nonces can consume them.
+		retireErr := k.GetReputerLossKeeper().RetireReputerSubmissionsForNonce(ctx, topic.Id, nonce.BlockHeight)
+		if retireErr != nil {
 			ctx.Logger().Error(
-				"Error resetting active reputers during deferred cleanup",
+				"Error retiring reputer submissions during deferred cleanup",
 				"topicId", topic.Id,
-				"error", resetActiveErr,
-			)
-		}
-
-		resetSubmissionsErr := k.GetReputerLossKeeper().ResetReputersIndividualSubmissionsForTopic(ctx, topic.Id)
-		if resetSubmissionsErr != nil {
-			ctx.Logger().Error(
-				"Error resetting reputer individual submissions during deferred cleanup",
-				"topicId", topic.Id,
-				"error", resetSubmissionsErr,
+				"nonce", nonce,
+				"error", retireErr,
 			)
 		}
 
@@ -118,11 +113,21 @@ func CloseReputerNonce(
 
 	lossBundlesByReputer := make(types.LossBundles, 0)
 	stakesByReputer := make(map[string]cosmosMath.Int)
+	retainedReputerAddresses := make([]string, 0, len(activeReputerAddresses))
 	for _, address := range activeReputerAddresses {
 		bundle, err := k.GetReputerLossKeeper().GetReputerLatestLossByTopicId(ctx, topic.Id, address)
 		if err != nil {
 			ctx.Logger().Warn("Could not get latest loss bundle for reputer, skipping", "reputer", address, "topicId", topic.Id, "error", err)
 			continue // Skip this reputer
+		}
+
+		// Loss bundles are keyed by (topic, reputer) with no nonce, so a
+		// submission accepted for a later nonce can still be stored here.
+		// It must not be attributed to, persisted under, or scored for this close.
+		if bundle.ReputerRequestNonce == nil || bundle.ReputerRequestNonce.ReputerNonce == nil ||
+			bundle.ReputerRequestNonce.ReputerNonce.BlockHeight != nonce.BlockHeight {
+			ctx.Logger().Warn("Skipping loss bundle submitted for a different nonce", "reputer", address, "topicId", topic.Id, "closingNonce", nonce.BlockHeight)
+			continue
 		}
 
 		// Check that the reputer enough stake in the topic
@@ -149,9 +154,11 @@ func CloseReputerNonce(
 		// / Filtering done now, now write what we must for inclusion
 		lossBundlesByReputer = append(lossBundlesByReputer, filteredBundle)
 		stakesByReputer[bundle.Reputer] = stake
+		retainedReputerAddresses = append(retainedReputerAddresses, bundle.Reputer)
 	}
 
 	if len(lossBundlesByReputer) == 0 {
+		// No valid losses found for reputers - nothing to do, no scores calculated, no rewards paid
 		return errorsmod.Wrapf(sdkerrors.ErrNotFound, "no valid losses found for reputers")
 	}
 
@@ -166,10 +173,7 @@ func CloseReputerNonce(
 	}
 
 	// Emit event for active reputers set for topic nonce
-	types.EmitNewActiveReputersSetEvent(ctx, topic.Id, nonce.BlockHeight, activeReputerAddresses)
-
-	// Check that all network bundles correspond to the nonce requested before calling CalcNetworkLosses.
-	// In case of a mismatch, we should remove that
+	types.EmitNewActiveReputersSetEvent(ctx, topic.Id, nonce.BlockHeight, retainedReputerAddresses)
 
 	networkLossBundle, err := synth.CalcNetworkLosses(ctx, topic.Id, nonce.BlockHeight, stakesByReputer, lossBundlesByReputer)
 	if err != nil {
