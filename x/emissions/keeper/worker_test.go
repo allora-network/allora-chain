@@ -35,6 +35,24 @@ func inferenceEvictedEvents(ctx sdk.Context) []*types.EventInferenceEvictedFromA
 	return out
 }
 
+// forecastEvictedEvents returns all EventForecastEvictedFromActiveSet typed
+// events currently on the SDK context's event manager. It reconstructs each
+// event via sdk.ParseTypedEvent so the assertion stays agnostic to the proto
+// package version.
+func forecastEvictedEvents(ctx sdk.Context) []*types.EventForecastEvictedFromActiveSet {
+	out := make([]*types.EventForecastEvictedFromActiveSet, 0)
+	for _, ev := range ctx.EventManager().Events() {
+		msg, err := sdk.ParseTypedEvent(abci.Event(ev))
+		if err != nil {
+			continue
+		}
+		if e, ok := msg.(*types.EventForecastEvictedFromActiveSet); ok {
+			out = append(out, e)
+		}
+	}
+	return out
+}
+
 func (s *KeeperTestSuite) TestGetInferencesAtBlock() {
 	ctx := s.Ctx()
 	k := s.WorkerKeeper()
@@ -1363,13 +1381,13 @@ func (s *KeeperTestSuite) TestAppendForecast() {
 	nonce := types.Nonce{BlockHeight: 10}
 	blockHeightInferences := int64(10)
 
-	workers := make([]string, 5)
+	workers := make([]string, 6)
 	for i := range workers {
 		workers[i] = s.AddrsStr(i)
 	}
 
-	// Set initial scores
-	scores := []int64{95, 90, 99, 91, 96}
+	// Set initial scores; workers[5] is intentionally below every active score.
+	scores := []int64{95, 90, 99, 91, 96, 1}
 	for i, worker := range workers {
 		score := types.Score{
 			TopicId:     topicId,
@@ -1440,6 +1458,61 @@ func (s *KeeperTestSuite) TestAppendForecast() {
 	activeForecasters, err = k.GetActiveForecastersForTopic(ctx, topicId)
 	s.Require().NoError(err)
 	s.Require().Equal(params.MaxTopForecastersToReward, uint64(len(activeForecasters)))
+
+	// The eviction is announced with both the evicted and the evicting actor.
+	evictionEvents := forecastEvictedEvents(ctx)
+	s.Require().Len(evictionEvents, 1)
+	s.Require().Equal(topicId, evictionEvents[0].TopicId)
+	s.Require().Equal(nonce.BlockHeight, evictionEvents[0].Nonce)
+	s.Require().Equal(workers[1], evictionEvents[0].EvictedForecaster)
+	s.Require().Equal(workers[4], evictionEvents[0].EvictingForecaster)
+
+	// A new forecaster scoring below the current lowest is not admitted and
+	// stores no forecast.
+	notAdmittedForecast := newForecast
+	notAdmittedForecast.Forecaster = workers[5]
+	outcome, err = k.AppendForecast(ctx, topic, nonce.BlockHeight, &notAdmittedForecast, params.MaxTopForecastersToReward)
+	s.Require().NoError(err)
+	s.Require().Equal(types.PayloadAdmissionOutcome_PAYLOAD_ADMISSION_OUTCOME_NOT_ADMITTED, outcome)
+
+	activeForecasters, err = k.GetActiveForecastersForTopic(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().Equal(params.MaxTopForecastersToReward, uint64(len(activeForecasters)))
+	_, err = k.GetWorkerLatestForecastByTopicId(ctx, topicId, workers[5])
+	s.Require().Error(err)
+
+	// No further eviction was announced for the rejected submission.
+	s.Require().Len(forecastEvictedEvents(ctx), 1)
+}
+
+// TestAppendForecastInsertFailureReturnsUnspecifiedOutcome pins the outcome
+// contract: the admission outcome is only reported together with a nil error.
+func (s *KeeperTestSuite) TestAppendForecastInsertFailureReturnsUnspecifiedOutcome() {
+	ctx := s.Ctx()
+	k := s.WorkerKeeper()
+	topicId := s.CreateTopic()
+	topic, err := s.TopicKeeper().GetTopic(ctx, topicId)
+	s.Require().NoError(err)
+
+	params := mockUninitializedParams()
+	params.MaxTopForecastersToReward = 4
+	s.Require().NoError(s.ParamsKeeper().SetParams(ctx, params))
+
+	// The forecaster clears admission (open slot) but the forecast itself is
+	// invalid, so the final store fails after the active-set write.
+	//nolint:exhaustruct
+	forecast := types.Forecast{
+		TopicId:     0, // invalid on purpose: rejected by Forecast.Validate
+		Forecaster:  s.AddrsStr(0),
+		BlockHeight: 10,
+		ForecastElements: []*types.ForecastElement{
+			{Inferer: s.AddrsStr(1), Value: alloraMath.MustNewDecFromString("0.5")},
+		},
+	}
+
+	outcome, err := k.AppendForecast(ctx, topic, 10, &forecast, params.MaxTopForecastersToReward)
+	s.Require().Error(err)
+	s.Require().Equal(types.PayloadAdmissionOutcome_PAYLOAD_ADMISSION_OUTCOME_UNSPECIFIED, outcome)
 }
 
 func (s *KeeperTestSuite) TestAppendForecastWithResetActiveForecasters() {

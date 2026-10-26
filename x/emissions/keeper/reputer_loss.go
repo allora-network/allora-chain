@@ -274,7 +274,10 @@ func (k *ReputerLossKeeper) AppendReputerLoss(
 		if err != nil {
 			return types.PayloadAdmissionOutcome_PAYLOAD_ADMISSION_OUTCOME_UNSPECIFIED, errorsmod.Wrap(err, "error adding active reputer")
 		}
-		return types.PayloadAdmissionOutcome_PAYLOAD_ADMISSION_OUTCOME_ADMITTED, k.InsertReputerLoss(ctx, topic.Id, *reputerLoss)
+		if err := k.InsertReputerLoss(ctx, topic.Id, *reputerLoss); err != nil {
+			return types.PayloadAdmissionOutcome_PAYLOAD_ADMISSION_OUTCOME_UNSPECIFIED, errorsmod.Wrap(err, "error inserting reputer loss")
+		}
+		return types.PayloadAdmissionOutcome_PAYLOAD_ADMISSION_OUTCOME_ADMITTED, nil
 	}
 
 	if previousEmaScore.Score.Gt(lowestEmaScore.Score) {
@@ -325,7 +328,10 @@ func (k *ReputerLossKeeper) AppendReputerLoss(
 			lowestEmaScore.Address,
 			reputerLoss.ValueBundle.Reputer,
 		)
-		return types.PayloadAdmissionOutcome_PAYLOAD_ADMISSION_OUTCOME_ADMITTED, k.InsertReputerLoss(ctx, topic.Id, *reputerLoss)
+		if err := k.InsertReputerLoss(ctx, topic.Id, *reputerLoss); err != nil {
+			return types.PayloadAdmissionOutcome_PAYLOAD_ADMISSION_OUTCOME_UNSPECIFIED, errorsmod.Wrap(err, "error inserting reputer loss")
+		}
+		return types.PayloadAdmissionOutcome_PAYLOAD_ADMISSION_OUTCOME_ADMITTED, nil
 	}
 
 	// Update EMA score for the current reputer, who is the lowest score reputer
