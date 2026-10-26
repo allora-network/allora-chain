@@ -240,21 +240,15 @@ func (ms msgServer) processWorkerForecastPayload(
 	}
 
 	_, _, topNInferer := actorutils.FindTopNByScoreDesc(
-		sdkCtx,
 		moduleParams.MaxElementsPerForecast,
 		latestScoresForForecastedInferers,
 		forecast.BlockHeight,
 	)
 
-	// Remove duplicate forecast elements.
 	acceptedForecastElements := make([]*types.ForecastElement, 0)
-	seenInferers := make(map[string]bool)
 	for _, el := range forecast.ForecastElements {
-		notAlreadySeen := !seenInferers[el.Inferer]
-		_, isTopInferer := topNInferer[el.Inferer]
-		if notAlreadySeen && isTopInferer {
+		if _, isTopInferer := topNInferer[el.Inferer]; isTopInferer {
 			acceptedForecastElements = append(acceptedForecastElements, el)
-			seenInferers[el.Inferer] = true
 		}
 	}
 

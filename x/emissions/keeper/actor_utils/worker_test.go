@@ -23,113 +23,111 @@ func TestWorkerTestSuite(t *testing.T) {
 	})
 }
 
-func (s *WorkerTestSuite) TestCloseWorkerNonce_Multi() {
-	// Create a MULTI topic
-	blockHeight := int64(101)
-	s.WithBlockHeight(blockHeight)
-
-	// Create topic using MsgServer like in rewards_test.go
-	topicId := s.CreateTopic(testutil.WithOutputArity(types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI))
-
-	// Get the topic
-	topic, err := s.TopicKeeper().GetTopic(s.Ctx(), topicId)
-	s.Require().NoError(err)
-
-	// Register workers using MsgServer
-	worker0 := s.AddrsStr(0)
-	worker1 := s.AddrsStr(1)
-
-	workerRegMsg0 := &types.RegisterRequest{
-		Sender:    worker0,
-		TopicId:   topicId,
-		IsReputer: false,
-		Owner:     s.AddrsStr(4),
+func (s *WorkerTestSuite) TestCloseWorkerNonce() {
+	type args struct {
+		blockHeight             int64
+		workerIndexes           []int
+		limitForecasterElements int
 	}
-	_, err = s.EmissionsMsgServer().Register(s.Ctx(), workerRegMsg0)
-	s.Require().NoError(err)
-
-	workerRegMsg1 := &types.RegisterRequest{
-		Sender:    worker1,
-		TopicId:   topicId,
-		IsReputer: false,
-		Owner:     s.AddrsStr(4),
+	type test struct {
+		name            string
+		args            args
+		expectForecasts int
 	}
-	_, err = s.EmissionsMsgServer().Register(s.Ctx(), workerRegMsg1)
-	s.Require().NoError(err)
 
-	// Add worker nonce
-	nonce := types.Nonce{BlockHeight: blockHeight}
-	err = s.NonceKeeper().AddWorkerNonce(s.Ctx(), topicId, &nonce)
-	s.Require().NoError(err)
-
-	// Normalize each worker's input into a dense Inference aligned to the
-	// temporary registry. CloseWorkerNonce then filters and remaps the final
-	// active workers' vectors into the compact final registry.
-	mustBounded := func(x string) alloraMath.BoundedExp40Dec {
-		return alloraMath.MustNewBoundedExp40DecFromString(x)
-	}
-	input0 := types.InputInference{
-		TopicId:     topicId,
-		BlockHeight: blockHeight,
-		Inferer:     worker0,
-		ExtraData:   nil,
-		Proof:       "",
-		Value:       mustBounded("0"),
-		Values: []*types.InputLabeledValue{
-			{Label: "a", Value: mustBounded("-0.035995138925040600")},
-			{Label: "b", Value: mustBounded("0.100000000000000000")},
-			{Label: "c", Value: mustBounded("0.200000000000000000")},
+	tests := []test{
+		{
+			name: "Success",
+			args: args{
+				blockHeight:   alloraMath.DataLimitExponent,
+				workerIndexes: []int{0, 1},
+			},
+			expectForecasts: 1,
+		}, {
+			name: "Not enough inferers",
+			args: args{
+				blockHeight:             alloraMath.DataLimitExponent,
+				workerIndexes:           []int{0, 1},
+				limitForecasterElements: 1,
+			},
+			expectForecasts: 0,
 		},
 	}
-	input1 := types.InputInference{
-		TopicId:     topicId,
-		BlockHeight: blockHeight,
-		Inferer:     worker1,
-		ExtraData:   nil,
-		Proof:       "",
-		Value:       mustBounded("0"),
-		Values: []*types.InputLabeledValue{
-			{Label: "a", Value: mustBounded("-0.07333303938740420")},
-			{Label: "b", Value: mustBounded("0.110000000000000000")},
-			{Label: "c", Value: mustBounded("0.210000000000000000")},
-		},
+	for _, tt := range tests {
+		s.T().Run(tt.name, func(t *testing.T) {
+			// Create a MULTI topic
+			height := tt.args.blockHeight
+			s.WithBlockHeight(height)
+
+			// Create topic using MsgServer like in rewards_test.go
+			topicId := s.CreateTopic(testutil.WithOutputArity(types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI))
+
+			// PRE PASS
+			reputerIndexes := testutil.ReturnIndexes(0, 2)
+			workerIndexes := testutil.ReturnIndexes(2, 2)
+			numLabels := 3
+			workerValues := testutil.GetWorkerMultiValuesFromIndexes(
+				workerIndexes,
+				numLabels,
+				"0.1", "0.2", "0.3",
+			)
+
+			_, height = s.FullTopicPass(
+				workerIndexes,
+				reputerIndexes,
+				testutil.WithTopicID(topicId),
+				testutil.WithWorkerValues(workerValues),
+			)
+
+			height++
+
+			s.WithBlockHeight(height)
+
+			// Add worker nonce
+			nonce := types.Nonce{BlockHeight: height}
+			err := s.NonceKeeper().AddWorkerNonce(s.Ctx(), topicId, &nonce)
+			s.Require().NoError(err)
+
+			s.SetupInferences(
+				topicId,
+				height,
+				workerIndexes,
+				testutil.WithWorkerValues(workerValues),
+				testutil.WithLimitForecastElements(tt.args.limitForecasterElements),
+			)
+
+			// Get the topic
+			topic, err := s.TopicKeeper().GetTopic(s.Ctx(), topicId)
+			s.Require().NoError(err)
+
+			// ------------------------------------------------------------------------------------------------
+			// Move the blockHeight until end of wsw
+			// ------------------------------------------------------------------------------------------------
+			s.WithBlockHeight(height + topic.WorkerSubmissionWindow)
+
+			// Test closing the worker nonce
+			err = actorutils.CloseWorkerNonce(s.EmissionsKeeper(), s.Ctx(), topic, nonce)
+			s.Require().NoError(err)
+
+			// Verify nonce is no longer unfulfilled
+			isUnfulfilled, err := s.NonceKeeper().IsWorkerNonceUnfulfilled(s.Ctx(), topicId, &nonce)
+			s.Require().NoError(err)
+			s.Require().False(isUnfulfilled, "Nonce should no longer be unfulfilled")
+
+			// Verify network inferences were created
+			networkInferences, err := s.EmissionsKeeper().GetNetworkInferences(s.Ctx(), topicId, height)
+			s.Require().NoError(err)
+			s.Require().NotNil(networkInferences, "Network inferences should exist")
+
+			// Verify the expected number of forecasts have made it through
+			s.Require().Equal(tt.expectForecasts, len(networkInferences.ForecasterValues))
+
+			// Verify outlier resistant network inferences were created
+			outlierResistantInferences, err := s.EmissionsKeeper().GetOutlierResistantNetworkInferences(s.Ctx(), topic, height)
+			s.Require().ErrorContains(err, "outlier resistant network inferences are not supported for multi-label topics")
+			s.Require().Nil(outlierResistantInferences, "Outlier resistant network inferences should not exist")
+		})
 	}
-
-	inf0, err := s.WorkerKeeper().NormalizeInputInference(s.Ctx(), topic, blockHeight, &input0)
-	s.Require().NoError(err)
-	s.Require().NoError(s.WorkerKeeper().InsertInference(s.Ctx(), topicId, *inf0))
-	inf1, err := s.WorkerKeeper().NormalizeInputInference(s.Ctx(), topic, blockHeight, &input1)
-	s.Require().NoError(err)
-	s.Require().NoError(s.WorkerKeeper().InsertInference(s.Ctx(), topicId, *inf1))
-
-	err = s.WorkerKeeper().AddActiveInferer(s.Ctx(), topicId, worker0)
-	s.Require().NoError(err)
-	err = s.WorkerKeeper().AddActiveInferer(s.Ctx(), topicId, worker1)
-	s.Require().NoError(err)
-
-	// ------------------------------------------------------------------------------------------------
-	// Move the blockHeight until end of wsw
-	// ------------------------------------------------------------------------------------------------
-	s.WithBlockHeight(blockHeight + topic.WorkerSubmissionWindow)
-
-	// Test closing the worker nonce
-	err = actorutils.CloseWorkerNonce(s.EmissionsKeeper(), s.Ctx(), topic, nonce)
-	s.Require().NoError(err)
-
-	// Verify nonce is no longer unfulfilled
-	isUnfulfilled, err := s.NonceKeeper().IsWorkerNonceUnfulfilled(s.Ctx(), topicId, &nonce)
-	s.Require().NoError(err)
-	s.Require().False(isUnfulfilled, "Nonce should no longer be unfulfilled")
-
-	// Verify network inferences were created
-	networkInferences, err := s.EmissionsKeeper().GetNetworkInferences(s.Ctx(), topicId, blockHeight)
-	s.Require().NoError(err)
-	s.Require().NotNil(networkInferences, "Network inferences should exist")
-
-	// Verify outlier resistant network inferences were created
-	outlierResistantInferences, err := s.EmissionsKeeper().GetOutlierResistantNetworkInferences(s.Ctx(), topic, blockHeight)
-	s.Require().ErrorContains(err, "outlier resistant network inferences are not supported for multi-label topics")
-	s.Require().Nil(outlierResistantInferences, "Outlier resistant network inferences should not exist")
 }
 
 func (s *WorkerTestSuite) TestCloseWorkerNonceFailures() {

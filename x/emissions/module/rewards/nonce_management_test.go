@@ -31,7 +31,7 @@ func (s *RewardsTestSuite) TestCloseReputerNonceTest_DeferExecWhenError() {
 	workerValues := testutil.GetWorkerValuesFromIndexes(workerIndexes, "100")
 
 	// Insert inference from workers
-	workerNonce := s.SetupInferences(topic.Id, currentBlockHeight, workerIndexes, workerValues...)
+	workerNonce := s.SetupInferences(topic.Id, currentBlockHeight, workerIndexes, testutil.WithWorkerValues(workerValues))
 
 	// Move to end of worker submission window
 	s.WithBlockHeight(currentBlockHeight + topic.WorkerSubmissionWindow)
@@ -116,7 +116,7 @@ func (s *RewardsTestSuite) TestCloseWorkerNonce_DeferExecWhenError() {
 	workerValues := testutil.GetWorkerValuesFromIndexes(workerIndexes, "100")
 
 	// Insert inference from workers
-	workerNonce := s.SetupInferences(topic.Id, currentBlockHeight, workerIndexes, workerValues...)
+	workerNonce := s.SetupInferences(topic.Id, currentBlockHeight, workerIndexes, testutil.WithWorkerValues(workerValues))
 
 	// Move to end of worker submission window
 	s.WithBlockHeight(currentBlockHeight + topic.WorkerSubmissionWindow)

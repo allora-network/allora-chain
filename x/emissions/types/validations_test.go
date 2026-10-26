@@ -541,6 +541,20 @@ func TestInputForecast_Validate(t *testing.T) {
 			},
 			wantErr: true,
 		},
+		{
+			name: "duplicate forecast element inferer",
+			input: &InputForecast{
+				TopicId:     1,
+				Forecaster:  "allo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqas6usy",
+				BlockHeight: 100,
+				ForecastElements: []*InputForecastElement{
+					validElement,
+					validElement,
+				},
+				ExtraData: nil,
+			},
+			wantErr: true,
+		},
 	}
 
 	for _, tt := range tests {

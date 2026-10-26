@@ -262,7 +262,7 @@ func (inputInference *InputInference) ValidateWithLimits(
 	return nil
 }
 
-func ValidateForecastContents(topicId uint64, forecaster string, blockHeight BlockHeight) error {
+func ValidateForecastContents(topicId uint64, forecaster string, blockHeight BlockHeight, elements []*ForecastElement) error {
 	if err := ValidateTopicId(topicId); err != nil {
 		return errors.Wrap(err, "forecast topic id is invalid")
 	}
@@ -272,6 +272,27 @@ func ValidateForecastContents(topicId uint64, forecaster string, blockHeight Blo
 	if err := ValidateBlockHeight(blockHeight); err != nil {
 		return errors.Wrap(err, "forecast block height is invalid")
 	}
+
+	if err := ValidateForecastElements(elements); err != nil {
+		return errors.Wrap(err, "forecast elements are invalid")
+	}
+	return nil
+}
+
+func ValidateForecastElements(elements []*ForecastElement) error {
+	if len(elements) == 0 {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "at least one forecast element must be provided")
+	}
+	seenInferers := make(map[string]struct{})
+	for _, el := range elements {
+		if err := el.Validate(); err != nil {
+			return errors.Wrap(err, "forecast element is invalid")
+		}
+		if _, ok := seenInferers[el.Inferer]; ok {
+			return errors.Wrap(sdkerrors.ErrInvalidRequest, "duplicate inferer in forecast")
+		}
+		seenInferers[el.Inferer] = struct{}{}
+	}
 	return nil
 }
 
@@ -280,16 +301,13 @@ func (forecast *Forecast) Validate() error {
 	if forecast == nil {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "forecast cannot be nil")
 	}
-	if err := ValidateForecastContents(forecast.TopicId, forecast.Forecaster, forecast.BlockHeight); err != nil {
+	if err := ValidateForecastContents(
+		forecast.TopicId,
+		forecast.Forecaster,
+		forecast.BlockHeight,
+		forecast.ForecastElements,
+	); err != nil {
 		return errors.Wrap(err, "forecast contents are invalid")
-	}
-	if len(forecast.ForecastElements) == 0 {
-		return errors.Wrap(sdkerrors.ErrInvalidRequest, "at least one forecast element must be provided")
-	}
-	for _, elem := range forecast.ForecastElements {
-		if err := elem.Validate(); err != nil {
-			return errors.Wrap(err, "forecast element is invalid")
-		}
 	}
 	// ExtraData not validated as it is not used by the chain
 	return nil
@@ -299,16 +317,23 @@ func (inputForecast *InputForecast) Validate() error {
 	if inputForecast == nil {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "forecast cannot be nil")
 	}
-	if err := ValidateForecastContents(inputForecast.TopicId, inputForecast.Forecaster, inputForecast.BlockHeight); err != nil {
-		return errors.Wrap(err, "forecast contents are invalid")
-	}
-	if len(inputForecast.ForecastElements) == 0 {
-		return errors.Wrap(sdkerrors.ErrInvalidRequest, "at least one forecast element must be provided")
-	}
-	for _, elem := range inputForecast.ForecastElements {
-		if err := elem.Validate(); err != nil {
-			return errors.Wrap(err, "forecast element is invalid")
+	forecastElements := make([]*ForecastElement, len(inputForecast.ForecastElements))
+	for i, fe := range inputForecast.ForecastElements {
+		if fe == nil {
+			return errors.Wrap(sdkerrors.ErrInvalidRequest, "forecast element cannot be nil")
 		}
+		forecastElements[i] = &ForecastElement{
+			Inferer: fe.Inferer,
+			Value:   fe.Value.ToDec(),
+		}
+	}
+	if err := ValidateForecastContents(
+		inputForecast.TopicId,
+		inputForecast.Forecaster,
+		inputForecast.BlockHeight,
+		forecastElements,
+	); err != nil {
+		return errors.Wrap(err, "forecast contents are invalid")
 	}
 	// ExtraData not validated as it is not used by the chain
 	return nil

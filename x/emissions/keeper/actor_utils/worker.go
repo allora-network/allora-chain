@@ -120,6 +120,11 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topic types.Topic, nonc
 		return err
 	}
 
+	finalActiveForecasterAddresses := make([]string, len(activeForecasts.Forecasts))
+	for i := range activeForecasts.Forecasts {
+		finalActiveForecasterAddresses[i] = activeForecasts.Forecasts[i].Forecaster
+	}
+
 	err = k.GetNonceKeeper().AddReputerNonce(ctx, topic.Id, &nonce)
 	if err != nil {
 		return err
@@ -145,7 +150,7 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topic types.Topic, nonc
 	}
 
 	types.EmitNewActiveInferersSetEvent(ctx, topic.Id, nonce.BlockHeight, activeInfererAddresses)
-	types.EmitNewActiveForecastersSetEvent(ctx, topic.Id, nonce.BlockHeight, activeForecastAddresses)
+	types.EmitNewActiveForecastersSetEvent(ctx, topic.Id, nonce.BlockHeight, finalActiveForecasterAddresses)
 	types.EmitNewWorkerLastCommitSetEvent(ctx, topic.Id, blockHeight, &nonce)
 	return nil
 }
@@ -287,6 +292,10 @@ func closeActiveInferencesSet(
 	return activeInfererAddressesMap, inferences, nil
 }
 
+const (
+	minAcceptedForecastElements = 2
+)
+
 // insert forecasts from top forecasters
 // check forecast elements to ensure they are forecasts made about
 // the active list of inferers.
@@ -320,7 +329,7 @@ func closeActiveForecastsSet(
 		// Examine forecast elements to verify that they're for inferers in the current set.
 		// We assume that set of inferers has been verified above.
 		// We keep what we can, ignoring the forecaster and their contribution (forecast) entirely
-		// if they're left with no valid forecast elements.
+		// if they're left with less than the minimum valid forecast elements.
 		acceptedForecastElements := make([]*types.ForecastElement, 0)
 		for _, el := range forecast.ForecastElements {
 			if _, ok := acceptedInferersOfBatch[el.Inferer]; ok {
@@ -328,8 +337,8 @@ func closeActiveForecastsSet(
 			}
 		}
 
-		// Discard if no accepted forecasts elements found
-		if len(acceptedForecastElements) == 0 {
+		// Discard if minimum accepted forecasts elements is not achieved
+		if len(acceptedForecastElements) < minAcceptedForecastElements {
 			continue
 		}
 

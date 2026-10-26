@@ -219,6 +219,7 @@ type (
 		labelDefaultValue     *alloraMath.Dec
 		reputerStake          *cosmosMath.Int
 		accounts              []account
+		limitForecastElements int
 	}
 )
 
@@ -334,6 +335,12 @@ func WithLabelCaseSensitive(labelCaseSensitive bool) Option {
 func WithLabelDefaultValue(labelDefaultValue alloraMath.Dec) Option {
 	return func(p *customParams) {
 		p.labelDefaultValue = &labelDefaultValue
+	}
+}
+
+func WithLimitForecastElements(limit int) Option {
+	return func(p *customParams) {
+		p.limitForecastElements = limit
 	}
 }
 
@@ -641,12 +648,12 @@ type TestWorkerValue struct {
 //     with InputInference.Values left nil.
 //
 // When neither tv.Values nor tv.Value is set, a random scalar is used.
-func generateWorkerDataBundles(
-	s *TestSuite,
+func (s *TestSuite) generateWorkerDataBundles(
 	nonce int64,
 	topicId uint64,
 	workerIndexes []int,
 	workerValues []TestWorkerValue,
+	limitForecastElements int,
 ) []*types.InputWorkerDataBundle {
 	lwv := len(workerValues)
 	hasWorkerValues := lwv > 0
@@ -726,6 +733,21 @@ func generateWorkerDataBundles(
 			},
 		}
 
+		lnf := len(forecastElements)
+		limit := lnf
+
+		if limitForecastElements > 0 {
+			limit = limitForecastElements
+		}
+
+		forecastElementsFinal := make([]*types.InputForecastElement, 0, lnf)
+
+		for j := 0; j < lnf; j++ {
+			if j+1 <= limit {
+				forecastElementsFinal = append(forecastElementsFinal, forecastElements[j])
+			}
+		}
+
 		inferenceForecastBundle := &types.InputInferenceForecastBundle{
 			Inference: &types.InputInference{
 				TopicId:     topicId,
@@ -740,7 +762,7 @@ func generateWorkerDataBundles(
 				TopicId:          topicId,
 				BlockHeight:      nonce,
 				Forecaster:       s.accounts[workerIdx].addrStr,
-				ForecastElements: forecastElements,
+				ForecastElements: forecastElementsFinal,
 				ExtraData:        nil,
 			},
 		}
@@ -1307,11 +1329,17 @@ func (s *TestSuite) SetupParticipants(topicID uint64, indexes []int, isReputer b
 	}
 }
 
-func (s *TestSuite) SetupInferences(topicID uint64, nonce int64, workerIndexes []int, workerValues ...TestWorkerValue) types.Nonce {
+func (s *TestSuite) SetupInferences(topicID uint64, nonce int64, workerIndexes []int, options ...Option) types.Nonce {
 	if len(workerIndexes) == 0 {
 		return types.Nonce{} //nolint:exhaustruct
 	}
-	inferenceBundles := generateWorkerDataBundles(s, nonce, topicID, workerIndexes, workerValues)
+
+	p := new(customParams)
+	for _, opt := range options {
+		opt(p)
+	}
+
+	inferenceBundles := s.generateWorkerDataBundles(nonce, topicID, workerIndexes, p.workerValues, p.limitForecastElements)
 	for _, payload := range inferenceBundles {
 		_, err := s.emissionsMsgServer.InsertWorkerPayload(s.Ctx(), &types.InsertWorkerPayloadRequest{
 			Sender:           payload.Worker,
@@ -1433,7 +1461,7 @@ func (s *TestSuite) FullTopicPass(workerIndexes, reputerIndexes []int, options .
 	s.Require().NoError(err)
 
 	if len(workerNonces.Nonces) > 0 {
-		s.SetupInferences(p.topicID, workerNonces.Nonces[0].BlockHeight, workerIndexes, p.workerValues...)
+		s.SetupInferences(p.topicID, workerNonces.Nonces[0].BlockHeight, workerIndexes, options...)
 		wswBlock := nonce + topic.WorkerSubmissionWindow
 		s.T().Logf("Moving nonce to end of worker submission window for TopicId: %d, Next block: %v", p.topicID, wswBlock)
 		s.WithBlockHeight(wswBlock)

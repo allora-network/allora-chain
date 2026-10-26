@@ -237,7 +237,7 @@ func (s *RewardsTestSuite) TestPreviousTopicWeightsAfterInactivation() {
 	s.Require().NoError(err)
 
 	// Insert inference
-	s.SetupInferences(topicId, topic.EpochLastEnded, workerIndexes, workerValues...)
+	s.SetupInferences(topicId, topic.EpochLastEnded, workerIndexes, testutil.WithWorkerValues(workerValues))
 
 	// Advance to close the worker window
 	block = block + topic.WorkerSubmissionWindow

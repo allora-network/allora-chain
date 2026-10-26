@@ -81,6 +81,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 * [#1000](https://github.com/allora-network/allora-chain/pull/1000) Fix bug on accumulated topic weight sum which could drift when unstaking from an inactive topic.
+* Drop a forecast that names fewer than two inferers in the final active set when the worker nonce closes, so the one-out loss for that pair is no longer missing and then read as zero. A forecast that names the same inferer twice is rejected. ([PRTCL-26](https://linear.app/alloralabs/issue/PRTCL-26/missing-one-out-inferer-forecaster-loss-pairs-are-read-as-zero-in))
 
 ### Security
 
