@@ -2,10 +2,30 @@ package keeper_test
 
 import (
 	"cosmossdk.io/collections"
+	abci "github.com/cometbft/cometbft/abci/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
+
+// reputerLossEvictedEvents returns all EventReputerLossEvictedFromActiveSet
+// typed events currently on the SDK context's event manager. It reconstructs
+// each event via sdk.ParseTypedEvent so the assertion stays agnostic to the
+// proto package version.
+func reputerLossEvictedEvents(ctx sdk.Context) []*types.EventReputerLossEvictedFromActiveSet {
+	out := make([]*types.EventReputerLossEvictedFromActiveSet, 0)
+	for _, ev := range ctx.EventManager().Events() {
+		msg, err := sdk.ParseTypedEvent(abci.Event(ev))
+		if err != nil {
+			continue
+		}
+		if e, ok := msg.(*types.EventReputerLossEvictedFromActiveSet); ok {
+			out = append(out, e)
+		}
+	}
+	return out
+}
 
 func (s *KeeperTestSuite) TestInsertActiveReputerLosses() {
 	ctx := s.Ctx()
@@ -252,9 +272,10 @@ func (s *KeeperTestSuite) TestAppendReputerLoss() {
 		ReputerNonce: &types.Nonce{BlockHeight: blockHeight},
 	}
 
-	// Create reputers and set their scores
-	reputers := make([]string, 5)
-	scores := []int64{95, 90, 99, 91, 96}
+	// Create reputers and set their scores; reputers[5] is intentionally below
+	// every active score.
+	reputers := make([]string, 6)
+	scores := []int64{95, 90, 99, 91, 96, 1}
 	for i := range reputers {
 		reputers[i] = s.AddrsStr(i)
 		score := types.Score{
@@ -318,6 +339,66 @@ func (s *KeeperTestSuite) TestAppendReputerLoss() {
 	activeReputers, err = k.GetActiveReputersForTopic(ctx, topicId)
 	s.Require().NoError(err)
 	s.Require().Equal(params.MaxTopReputersToReward, uint64(len(activeReputers)))
+
+	// The eviction is announced with both the evicted and the evicting actor.
+	evictionEvents := reputerLossEvictedEvents(ctx)
+	s.Require().Len(evictionEvents, 1)
+	s.Require().Equal(topicId, evictionEvents[0].TopicId)
+	s.Require().Equal(nonce.BlockHeight, evictionEvents[0].Nonce)
+	s.Require().Equal(reputers[1], evictionEvents[0].EvictedReputer)
+	s.Require().Equal(reputers[4], evictionEvents[0].EvictingReputer)
+
+	// A new reputer scoring below the current lowest is not admitted and stores
+	// no loss bundle.
+	outcome, err = k.AppendReputerLoss(ctx, topic, params, nonce.BlockHeight, reputerValueBundles[5])
+	s.Require().NoError(err)
+	s.Require().Equal(types.PayloadAdmissionOutcome_PAYLOAD_ADMISSION_OUTCOME_NOT_ADMITTED, outcome)
+
+	activeReputers, err = k.GetActiveReputersForTopic(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().Equal(params.MaxTopReputersToReward, uint64(len(activeReputers)))
+	_, err = k.GetReputerLatestLossByTopicId(ctx, topicId, reputers[5])
+	s.Require().Error(err)
+
+	// No further eviction was announced for the rejected submission.
+	s.Require().Len(reputerLossEvictedEvents(ctx), 1)
+}
+
+// TestAppendReputerLossInsertFailureReturnsUnspecifiedOutcome pins the outcome
+// contract: the admission outcome is only reported together with a nil error.
+func (s *KeeperTestSuite) TestAppendReputerLossInsertFailureReturnsUnspecifiedOutcome() {
+	ctx := s.Ctx()
+	k := s.ReputerLossKeeper()
+	topicId := s.CreateTopic()
+	topic, err := s.TopicKeeper().GetTopic(ctx, topicId)
+	s.Require().NoError(err)
+
+	params := types.DefaultParams()
+	params.MaxTopReputersToReward = 4
+	s.Require().NoError(s.ParamsKeeper().SetParams(ctx, params))
+
+	reputer := s.AddrsStr(0)
+	// The reputer clears admission (open slot) but the bundle itself is
+	// invalid, so the final store fails after the active-set write.
+	//nolint:exhaustruct
+	valueBundle := types.ValueBundle{
+		TopicId:             0, // invalid on purpose: rejected by ValueBundle.Validate
+		ReputerRequestNonce: &types.ReputerRequestNonce{ReputerNonce: &types.Nonce{BlockHeight: 10}},
+		Reputer:             reputer,
+		CombinedValue:       alloraMath.MustNewDecFromString("0.1"),
+		InfererValues:       s.createDefaultInfererValues(),
+		NaiveValue:          alloraMath.MustNewDecFromString("0.1"),
+	}
+	signature := s.SignValueBundle(&valueBundle, s.PrivKeys(0))
+	reputerLoss := &types.ReputerValueBundle{
+		ValueBundle: &valueBundle,
+		Signature:   signature,
+		Pubkey:      s.PubKeyHexStr(0),
+	}
+
+	outcome, err := k.AppendReputerLoss(ctx, topic, params, 10, reputerLoss)
+	s.Require().Error(err)
+	s.Require().Equal(types.PayloadAdmissionOutcome_PAYLOAD_ADMISSION_OUTCOME_UNSPECIFIED, outcome)
 }
 
 func (s *KeeperTestSuite) TestAppendReputerLossWithResetActiveReputers() {
