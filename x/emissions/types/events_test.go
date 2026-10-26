@@ -1844,12 +1844,13 @@ func TestEmitNewTopicFeeRevenueDrippedEvent(t *testing.T) {
 
 func TestEmitNewInsertInfererPayloadEventWithAdmissionOutcome(t *testing.T) {
 	ctx := sdk.Context{}.WithEventManager(sdk.NewEventManager())
-	bundle := &types.InputWorkerDataBundle{
+	// Only the fields read by the insert-payload event helper are populated.
+	bundle := &types.InputWorkerDataBundle{ //nolint:exhaustruct
 		Worker:  "worker1",
 		Nonce:   &types.Nonce{BlockHeight: 10},
 		TopicId: 1,
-		InferenceForecastsBundle: &types.InputInferenceForecastBundle{
-			Inference: &types.InputInference{
+		InferenceForecastsBundle: &types.InputInferenceForecastBundle{ //nolint:exhaustruct
+			Inference: &types.InputInference{ //nolint:exhaustruct
 				Inferer:     "worker1",
 				TopicId:     1,
 				BlockHeight: 10,
@@ -1873,12 +1874,13 @@ func TestEmitNewInsertInfererPayloadEventWithAdmissionOutcome(t *testing.T) {
 
 func TestEmitNewInsertInfererPayloadEventOmitsUnspecifiedAdmissionOutcome(t *testing.T) {
 	ctx := sdk.Context{}.WithEventManager(sdk.NewEventManager())
-	bundle := &types.InputWorkerDataBundle{
+	// Only the fields read by the insert-payload event helper are populated.
+	bundle := &types.InputWorkerDataBundle{ //nolint:exhaustruct
 		Worker:  "worker1",
 		Nonce:   &types.Nonce{BlockHeight: 10},
 		TopicId: 1,
-		InferenceForecastsBundle: &types.InputInferenceForecastBundle{
-			Inference: &types.InputInference{
+		InferenceForecastsBundle: &types.InputInferenceForecastBundle{ //nolint:exhaustruct
+			Inference: &types.InputInference{ //nolint:exhaustruct
 				Inferer:     "worker1",
 				TopicId:     1,
 				BlockHeight: 10,
