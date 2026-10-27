@@ -181,7 +181,6 @@ func (k *ReputerLossKeeper) ResetActiveReputersForTopic(ctx context.Context, top
 	return nil
 }
 
-// Append loss bundle for a topic and blockHeight
 // AppendReputerLoss appends a reputer loss bundle and returns the sortition
 // outcome for the submission: ADMITTED when it was stored in the active set,
 // NOT_ADMITTED when only score/liveness side effects were recorded, and
