@@ -27,6 +27,24 @@ func reputerLossEvictedEvents(ctx sdk.Context) []*types.EventReputerLossEvictedF
 	return out
 }
 
+// reputerSubmissionRetiredEvents returns all EventReputerSubmissionRetired
+// typed events currently on the SDK context's event manager. It reconstructs
+// each event via sdk.ParseTypedEvent so the assertion stays agnostic to the
+// proto package version.
+func reputerSubmissionRetiredEvents(ctx sdk.Context) []*types.EventReputerSubmissionRetired {
+	out := make([]*types.EventReputerSubmissionRetired, 0)
+	for _, ev := range ctx.EventManager().Events() {
+		msg, err := sdk.ParseTypedEvent(abci.Event(ev))
+		if err != nil {
+			continue
+		}
+		if e, ok := msg.(*types.EventReputerSubmissionRetired); ok {
+			out = append(out, e)
+		}
+	}
+	return out
+}
+
 func (s *KeeperTestSuite) TestInsertActiveReputerLosses() {
 	ctx := s.Ctx()
 	require := s.Require()
@@ -612,6 +630,20 @@ func (s *KeeperTestSuite) TestRetireReputerSubmissions() {
 	s.Require().NoError(err)
 	s.Require().False(isActive)
 
+	// Every existing marker is announced as retired: the submission for the
+	// closing nonce carries its stored nonce, and the marker without a stored
+	// bundle is announced with nonce 0.
+	retiredByReputer := map[string]*types.EventReputerSubmissionRetired{}
+	for _, e := range reputerSubmissionRetiredEvents(ctx) {
+		retiredByReputer[e.Reputer] = e
+	}
+	s.Require().Len(retiredByReputer, 2)
+	s.Require().Contains(retiredByReputer, s.AddrsStr(0))
+	s.Require().Contains(retiredByReputer, s.AddrsStr(2))
+	s.Require().Equal(topicId, retiredByReputer[s.AddrsStr(0)].TopicId)
+	s.Require().Equal(closingNonce, retiredByReputer[s.AddrsStr(0)].Nonce)
+	s.Require().Equal(int64(0), retiredByReputer[s.AddrsStr(2)].Nonce)
+
 	// The submission of a later nonce survives.
 	laterBundle, err := k.GetReputerLatestLossByTopicId(ctx, topicId, s.AddrsStr(1))
 	s.Require().NoError(err)
@@ -625,6 +657,7 @@ func (s *KeeperTestSuite) TestRetireReputerSubmissions() {
 	s.Require().NoError(err)
 	_, err = k.GetReputerLatestLossByTopicId(ctx, topicId, s.AddrsStr(1))
 	s.Require().NoError(err)
+	s.Require().Len(reputerSubmissionRetiredEvents(ctx), 2, "the retained submission was not announced as retired")
 
 	// Retiring before a height past the later nonce removes it.
 	err = k.RetireReputerSubmissionsBeforeBlock(ctx, topicId, laterNonce+1)
@@ -634,4 +667,16 @@ func (s *KeeperTestSuite) TestRetireReputerSubmissions() {
 	isActive, err = k.IsActiveReputer(ctx, topicId, s.AddrsStr(1))
 	s.Require().NoError(err)
 	s.Require().False(isActive)
+
+	// The later-nonce submission is announced with its own nonce.
+	retired := reputerSubmissionRetiredEvents(ctx)
+	s.Require().Len(retired, 3)
+	var laterRetired *types.EventReputerSubmissionRetired
+	for _, e := range retired {
+		if e.Reputer == s.AddrsStr(1) {
+			laterRetired = e
+		}
+	}
+	s.Require().NotNil(laterRetired)
+	s.Require().Equal(laterNonce, laterRetired.Nonce)
 }

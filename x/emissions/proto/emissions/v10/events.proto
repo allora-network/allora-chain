@@ -328,6 +328,19 @@ message EventReputerLossEvictedFromActiveSet {
   string evicting_reputer = 4;
 }
 
+// Emitted when a reputer's pending submission (the active marker and the
+// stored loss bundle) is retired without a sortition eviction, because the
+// nonce it was stored for was closed, or the nonce was pruned and can no
+// longer be closed. Enables block-by-block reconstruction of pending
+// submissions.
+message EventReputerSubmissionRetired {
+  uint64 topic_id = 1;
+  // Nonce the retired submission was stored for; 0 when the stored bundle was
+  // missing or unreadable and the marker was retired without one.
+  int64 nonce = 2;
+  string reputer = 3;
+}
+
 message EventReputerRegistered {
   uint64 topic_id = 1;
   string reputer = 2;

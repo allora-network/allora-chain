@@ -37,6 +37,7 @@ const (
 	REPUTER_SUBMISSION_WINDOW_CLOSED_EVENT                  = "reputer_submission_window_closed_event"
 	INSERT_REPUTER_PAYLOAD_EVENT                            = "insert_reputer_payload_event"
 	REPUTER_LOSS_EVICTED_FROM_ACTIVE_SET_EVENT              = "reputer_loss_evicted_from_active_set_event"
+	REPUTER_SUBMISSION_RETIRED_EVENT                        = "reputer_submission_retired_event"
 	REPUTER_REGISTERED_EVENT                                = "reputer_registered_event"
 	WORKER_REGISTERED_EVENT                                 = "worker_registered_event"
 	REPUTER_UNREGISTERED_EVENT                              = "reputer_unregistered_event"

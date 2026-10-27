@@ -2030,6 +2030,30 @@ func TestEmitNewReputerLossEvictedFromActiveSetEvent(t *testing.T) {
 	require.Contains(t, val.GetValue(), "evicting2")
 }
 
+func TestEmitNewReputerSubmissionRetiredEvent(t *testing.T) {
+	ctx := sdk.Context{}.WithEventManager(sdk.NewEventManager())
+
+	types.EmitNewReputerSubmissionRetiredEvent(ctx, 1, 10, "reputer1")
+
+	events := ctx.EventManager().Events()
+	require.Len(t, events, 1)
+
+	event := events[0]
+	require.Equal(t, "emissions.v10.EventReputerSubmissionRetired", event.Type)
+
+	val, exists := event.GetAttribute(AttributeKeyTopicId)
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), "1")
+
+	val, exists = event.GetAttribute("nonce")
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), "10")
+
+	val, exists = event.GetAttribute("reputer")
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), "reputer1")
+}
+
 // mustNewBoundedExp40DecForEvents builds a BoundedExp40Dec for event tests.
 func mustNewBoundedExp40DecForEvents(t *testing.T, s string) alloraMath.BoundedExp40Dec {
 	t.Helper()

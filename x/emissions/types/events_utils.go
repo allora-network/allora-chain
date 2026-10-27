@@ -261,6 +261,14 @@ func NewReputerLossEvictedFromActiveSetEventBase(topicId TopicId, nonce BlockHei
 	}
 }
 
+func NewReputerSubmissionRetiredEventBase(topicId TopicId, nonce BlockHeight, reputer string) proto.Message {
+	return &EventReputerSubmissionRetired{
+		TopicId: topicId,
+		Nonce:   nonce,
+		Reputer: reputer,
+	}
+}
+
 func ValueBundleToEventValueBundleBase(bundle *ValueBundle) *EventValueBundle {
 	//nolint:exhaustruct
 	evb := &EventValueBundle{

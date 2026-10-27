@@ -180,6 +180,15 @@ func EmitNewReputerLossEvictedFromActiveSetEvent(ctx context.Context, topicId To
 	}
 }
 
+func EmitNewReputerSubmissionRetiredEvent(ctx context.Context, topicId TopicId, nonce BlockHeight, reputer string) {
+	metrics.IncrProducerEventCount(metrics.REPUTER_SUBMISSION_RETIRED_EVENT)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	err := sdkCtx.EventManager().EmitTypedEvent(NewReputerSubmissionRetiredEventBase(topicId, nonce, reputer))
+	if err != nil {
+		sdkCtx.Logger().Warn("Error emitting NewReputerSubmissionRetiredEvent", "error", err)
+	}
+}
+
 func EmitNewReputerRegisteredEvent(ctx context.Context, topicId TopicId, reputer, owner string) {
 	metrics.IncrProducerEventCount(metrics.REPUTER_REGISTERED_EVENT)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
