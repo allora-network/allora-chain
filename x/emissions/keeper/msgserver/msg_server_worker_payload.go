@@ -274,7 +274,9 @@ func (ms msgServer) processWorkerForecastPayload(
 
 	// Emitted for every forecast that passes validation, whether or not any
 	// element survived filtering or the forecast was admitted by sortition;
-	// admission_outcome distinguishes the cases for indexers.
+	// admission_outcome distinguishes the cases for indexers. With
+	// NO_ELEMENTS_ACCEPTED the event still carries the submitted elements;
+	// none of them was accepted.
 	eventBundle := &types.WorkerDataBundle{
 		Worker:  inputBundle.Worker,
 		Nonce:   inputBundle.Nonce,

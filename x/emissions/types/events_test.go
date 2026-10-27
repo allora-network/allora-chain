@@ -12,6 +12,7 @@ import (
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 
+	abci "github.com/cometbft/cometbft/abci/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
 )
@@ -1872,7 +1873,7 @@ func TestEmitNewInsertInfererPayloadEventWithAdmissionOutcome(t *testing.T) {
 	require.Contains(t, val.GetValue(), "NOT_ADMITTED")
 }
 
-func TestEmitNewInsertInfererPayloadEventOmitsUnspecifiedAdmissionOutcome(t *testing.T) {
+func TestEmitNewInsertInfererPayloadEventEmitsUnspecifiedAdmissionOutcome(t *testing.T) {
 	ctx := sdk.Context{}.WithEventManager(sdk.NewEventManager())
 	// Only the fields read by the insert-payload event helper are populated.
 	bundle := &types.InputWorkerDataBundle{ //nolint:exhaustruct
@@ -1894,11 +1895,55 @@ func TestEmitNewInsertInfererPayloadEventOmitsUnspecifiedAdmissionOutcome(t *tes
 	events := ctx.EventManager().Events()
 	require.Len(t, events, 1)
 
-	// Events emitted before this field existed carry no admission_outcome
-	// attribute at all; the explicit zero value is equivalent for indexers.
+	// A zero-valued admission_outcome is rendered explicitly as
+	// PAYLOAD_ADMISSION_OUTCOME_UNSPECIFIED. Events emitted before the field
+	// existed carry no attribute at all; indexers should treat that absent
+	// attribute as the same unknown outcome.
 	val, exists := events[0].GetAttribute("admission_outcome")
 	require.True(t, exists)
 	require.Contains(t, val.GetValue(), "PAYLOAD_ADMISSION_OUTCOME_UNSPECIFIED")
+}
+
+// TestParseLegacyInsertInfererPayloadEventAdmissionOutcomeUnspecified decodes
+// an event shaped like one emitted before admission_outcome existed (the
+// attribute is absent) and verifies it surfaces as UNSPECIFIED rather than a
+// concrete outcome.
+func TestParseLegacyInsertInfererPayloadEventAdmissionOutcomeUnspecified(t *testing.T) {
+	ctx := sdk.Context{}.WithEventManager(sdk.NewEventManager())
+	// Only the fields read by the insert-payload event helper are populated.
+	bundle := &types.InputWorkerDataBundle{ //nolint:exhaustruct
+		Worker:  "worker1",
+		Nonce:   &types.Nonce{BlockHeight: 10},
+		TopicId: 1,
+		InferenceForecastsBundle: &types.InputInferenceForecastBundle{ //nolint:exhaustruct
+			Inference: &types.InputInference{ //nolint:exhaustruct
+				Inferer:     "worker1",
+				TopicId:     1,
+				BlockHeight: 10,
+				Value:       mustNewBoundedExp40DecForEvents(t, "1.23"),
+			},
+		},
+	}
+	types.EmitNewInsertInfererPayloadEvent(ctx, bundle, types.PayloadAdmissionOutcome_PAYLOAD_ADMISSION_OUTCOME_NOT_ADMITTED)
+
+	events := ctx.EventManager().Events()
+	require.Len(t, events, 1)
+
+	// Drop the new attribute to reconstruct a pre-upgrade event, then decode
+	// it through the same path indexers use.
+	legacy := abci.Event{Type: events[0].Type} //nolint:exhaustruct
+	for _, attr := range events[0].Attributes {
+		if attr.Key == "admission_outcome" {
+			continue
+		}
+		legacy.Attributes = append(legacy.Attributes, attr)
+	}
+
+	msg, err := sdk.ParseTypedEvent(legacy)
+	require.NoError(t, err)
+	parsed, ok := msg.(*types.EventInsertInfererPayload)
+	require.True(t, ok)
+	require.Equal(t, types.PayloadAdmissionOutcome_PAYLOAD_ADMISSION_OUTCOME_UNSPECIFIED, parsed.AdmissionOutcome)
 }
 
 func TestEmitNewInferenceEvictedFromActiveSetEvent(t *testing.T) {

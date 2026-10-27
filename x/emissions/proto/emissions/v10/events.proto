@@ -46,7 +46,8 @@ enum PayloadAdmissionOutcome {
   // set; only score/liveness side effects were recorded.
   PAYLOAD_ADMISSION_OUTCOME_NOT_ADMITTED = 2;
   // No forecast element survived filtering to top inferers, so the forecast
-  // never reached sortition.
+  // never reached sortition. The emitted event still carries the submitted
+  // elements, none of them was accepted or stored.
   PAYLOAD_ADMISSION_OUTCOME_NO_ELEMENTS_ACCEPTED = 3;
 }
 

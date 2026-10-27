@@ -989,10 +989,10 @@ func (k *WorkerKeeper) AppendForecast(
 		if err != nil {
 			return types.PayloadAdmissionOutcome_PAYLOAD_ADMISSION_OUTCOME_UNSPECIFIED, errorsmod.Wrap(err, "error getting low score from all forecasts")
 		}
-		types.EmitNewForecastEvictedFromActiveSetEvent(ctx, topic.Id, nonceBlockHeight, lowestEmaScore.Address, forecast.Forecaster)
 		if err := k.InsertForecast(ctx, topic.Id, *forecast); err != nil {
 			return types.PayloadAdmissionOutcome_PAYLOAD_ADMISSION_OUTCOME_UNSPECIFIED, errorsmod.Wrap(err, "error inserting forecast")
 		}
+		types.EmitNewForecastEvictedFromActiveSetEvent(ctx, topic.Id, nonceBlockHeight, lowestEmaScore.Address, forecast.Forecaster)
 		return types.PayloadAdmissionOutcome_PAYLOAD_ADMISSION_OUTCOME_ADMITTED, nil
 	}
 

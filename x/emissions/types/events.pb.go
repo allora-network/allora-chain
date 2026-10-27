@@ -72,7 +72,8 @@ const (
 	// set; only score/liveness side effects were recorded.
 	PayloadAdmissionOutcome_PAYLOAD_ADMISSION_OUTCOME_NOT_ADMITTED PayloadAdmissionOutcome = 2
 	// No forecast element survived filtering to top inferers, so the forecast
-	// never reached sortition.
+	// never reached sortition. The emitted event still carries the submitted
+	// elements, none of them was accepted or stored.
 	PayloadAdmissionOutcome_PAYLOAD_ADMISSION_OUTCOME_NO_ELEMENTS_ACCEPTED PayloadAdmissionOutcome = 3
 )
 

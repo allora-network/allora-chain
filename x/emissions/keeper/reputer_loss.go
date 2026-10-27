@@ -321,6 +321,9 @@ func (k *ReputerLossKeeper) AppendReputerLoss(
 		if err != nil {
 			return types.PayloadAdmissionOutcome_PAYLOAD_ADMISSION_OUTCOME_UNSPECIFIED, errorsmod.Wrap(err, "error getting low score from all reputer losses")
 		}
+		if err := k.InsertReputerLoss(ctx, topic.Id, *reputerLoss); err != nil {
+			return types.PayloadAdmissionOutcome_PAYLOAD_ADMISSION_OUTCOME_UNSPECIFIED, errorsmod.Wrap(err, "error inserting reputer loss")
+		}
 		types.EmitNewReputerLossEvictedFromActiveSetEvent(
 			ctx,
 			topic.Id,
@@ -328,9 +331,6 @@ func (k *ReputerLossKeeper) AppendReputerLoss(
 			lowestEmaScore.Address,
 			reputerLoss.ValueBundle.Reputer,
 		)
-		if err := k.InsertReputerLoss(ctx, topic.Id, *reputerLoss); err != nil {
-			return types.PayloadAdmissionOutcome_PAYLOAD_ADMISSION_OUTCOME_UNSPECIFIED, errorsmod.Wrap(err, "error inserting reputer loss")
-		}
 		return types.PayloadAdmissionOutcome_PAYLOAD_ADMISSION_OUTCOME_ADMITTED, nil
 	}
 
