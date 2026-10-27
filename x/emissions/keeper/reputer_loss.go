@@ -576,17 +576,20 @@ func (k *ReputerLossKeeper) retireReputerSubmission(
 		// No readable submission remains for this marker, or the stored
 		// bundle cannot be attributed to any nonce: retire what is left so
 		// the reputer is not blocked from submitting again.
-		return k.removeReputerSubmission(ctx, topicId, address)
+		return k.removeReputerSubmission(ctx, topicId, address, 0)
 	}
-	if !shouldRetireBundle(bundle.ReputerRequestNonce.ReputerNonce.BlockHeight) {
+	bundleNonce := bundle.ReputerRequestNonce.ReputerNonce.BlockHeight
+	if !shouldRetireBundle(bundleNonce) {
 		return nil
 	}
-	return k.removeReputerSubmission(ctx, topicId, address)
+	return k.removeReputerSubmission(ctx, topicId, address, bundleNonce)
 }
 
-// removeReputerSubmission deletes the active marker and the stored bundle of
-// a reputer. Removing an entry that is not present is a no-op.
-func (k *ReputerLossKeeper) removeReputerSubmission(ctx context.Context, topicId TopicId, address ActorId) error {
+// removeReputerSubmission deletes the active marker and the stored bundle of a
+// reputer and announces the retirement with EventReputerSubmissionRetired.
+// Removing an entry that is not present is a no-op; nonce is the stored
+// bundle's nonce, or 0 when it could not be attributed to one.
+func (k *ReputerLossKeeper) removeReputerSubmission(ctx context.Context, topicId TopicId, address ActorId, nonce BlockHeight) error {
 	err := k.RemoveActiveReputer(ctx, topicId, address)
 	if err != nil {
 		return errorsmod.Wrapf(err, "error removing active marker for reputer %s", address)
@@ -595,6 +598,7 @@ func (k *ReputerLossKeeper) removeReputerSubmission(ctx context.Context, topicId
 	if err != nil {
 		return errorsmod.Wrapf(err, "error removing loss bundle for reputer %s", address)
 	}
+	types.EmitNewReputerSubmissionRetiredEvent(ctx, topicId, nonce, address)
 	return nil
 }
 
