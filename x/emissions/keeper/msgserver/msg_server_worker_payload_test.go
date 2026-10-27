@@ -397,7 +397,8 @@ func forecasterPayloadEvents(ctx sdk.Context) []*types.EventInsertForecasterPayl
 // passes validation, even when nothing is stored. With
 // MaxElementsPerForecast == 0, FindTopNByScoreDesc selects no inferers, every
 // element is filtered out, AppendForecast is skipped, and the single emitted
-// event carries NO_ELEMENTS_ACCEPTED so indexers still see the submission.
+// event carries NO_ELEMENTS_ACCEPTED while still reporting the submitted
+// (un-filtered) elements, so indexers still see the submission.
 func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadForecasterEventNoElementsAccepted() {
 	require := s.Require()
 
@@ -436,6 +437,18 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadForecasterEventNoElements
 	require.Len(events, 1, "exactly one forecaster payload event should be emitted")
 	require.Equal(types.PayloadAdmissionOutcome_PAYLOAD_ADMISSION_OUTCOME_NO_ELEMENTS_ACCEPTED,
 		events[0].AdmissionOutcome)
+
+	// The outcome says nothing was accepted, yet the event still carries the
+	// submitted (un-filtered) elements for indexers.
+	submitted := workerMsg.WorkerDataBundle.InferenceForecastsBundle.Forecast.ForecastElements
+	submittedInferers := make([]string, 0, len(submitted))
+	for _, el := range submitted {
+		submittedInferers = append(submittedInferers, el.Inferer)
+	}
+	require.Equal(submittedInferers, events[0].InfererAddresses,
+		"the fully-filtered event should carry the submitted elements")
+	require.Len(events[0].InfererValues, len(submittedInferers),
+		"the fully-filtered event should carry the submitted element values")
 }
 
 // TestMsgInsertWorkerPayloadEmitsForecasterEventReflectingStoredElements guards
