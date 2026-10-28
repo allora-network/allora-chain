@@ -121,7 +121,9 @@ func (k *Keeper) StartEpoch(ctx context.Context, topicID TopicId) error {
 	}
 
 	epoch := types.NewEpoch(nonce, topic, sdkCtx.BlockTime())
-	k.epochFSMEngine.Init(&epoch) // Unnecessary but more formal
+	if err := k.epochFSMEngine.Init(&epoch); err != nil {
+		return err
+	}
 
 	if err := k.epochs.Set(ctx, epoch.Key(), epoch); err != nil {
 		return err
