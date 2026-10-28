@@ -48,8 +48,9 @@ func (s *KeeperTestSuite) TestArbitrateStartNewEpochPostponesLowerWeightTopics()
 	s.Require().NoError(err)
 	s.Require().True(found)
 
-	// Both periodic StartNewEpoch tasks become due.
-	ctx = ctx.WithBlockTime(ctx.BlockTime().Add(60*time.Second + time.Nanosecond))
+	// Both periodic StartNewEpoch tasks become due. Height moves with time so the
+	// new epoch does not reuse the live epoch's start block.
+	ctx = ctx.WithBlockHeight(ctx.BlockHeight() + 1).WithBlockTime(ctx.BlockTime().Add(60*time.Second + time.Nanosecond))
 	s.Require().NoError(s.SchedulerKeeper().BeginBlock(ctx))
 
 	heavyNonceAfter, _, err := s.EmissionsKeeper().GetTopicLastEpochNonce(ctx, heavyTopic)
@@ -225,4 +226,38 @@ func (s *KeeperTestSuite) TestArbitrateStartNewEpochWaitsForSameTopicDeferredCom
 	lightNonceRetried, _, err := s.EmissionsKeeper().GetTopicLastEpochNonce(ctx, lightTopic)
 	s.Require().NoError(err)
 	s.Require().Equal(lightNonce.NextNonce(), lightNonceRetried, "start should run after complete succeeds")
+}
+
+func (s *KeeperTestSuite) TestMaxActiveTopicsPerBlockZeroPostponesEpochWork() {
+	ctx := s.Ctx()
+	params, err := s.ParamsKeeper().GetParams(ctx)
+	s.Require().NoError(err)
+	params.MaxActiveTopicsPerBlock = 0
+	s.Require().NoError(params.Validate())
+
+	params.MaxActiveTopicsPerBlock = 1
+	s.Require().NoError(s.ParamsKeeper().SetParams(ctx, params))
+
+	topicID := s.CreateTopic(testutil.WithEpochLength(60), testutil.WithGroundTruthLag(60), testutil.WithWorkerSubmissionWindow(10))
+	s.Require().NoError(s.StakingKeeper().SetTopicStake(ctx, topicID, cosmosMath.NewInt(1)))
+	s.Require().NoError(s.TopicKeeper().ActivateTopic(ctx, topicID))
+
+	nonceBefore, found, err := s.EmissionsKeeper().GetTopicLastEpochNonce(ctx, topicID)
+	s.Require().NoError(err)
+	s.Require().True(found)
+
+	params.MaxActiveTopicsPerBlock = 0
+	s.Require().NoError(s.ParamsKeeper().SetParams(ctx, params))
+
+	ctx = ctx.WithBlockHeight(ctx.BlockHeight() + 1).WithBlockTime(ctx.BlockTime().Add(60*time.Second + time.Nanosecond))
+	s.Require().NoError(s.SchedulerKeeper().BeginBlock(ctx))
+
+	nonceAfter, found, err := s.EmissionsKeeper().GetTopicLastEpochNonce(ctx, topicID)
+	s.Require().NoError(err)
+	s.Require().True(found)
+	s.Require().Equal(nonceBefore, nonceAfter)
+
+	periodicID := schedulertypes.TaskID(fmt.Sprintf("%s:%d", types.StartNewEpochTask, topicID))
+	_, err = s.SchedulerKeeper().GetTask(ctx, periodicID)
+	s.Require().NoError(err, "the postponed start task must stay scheduled")
 }

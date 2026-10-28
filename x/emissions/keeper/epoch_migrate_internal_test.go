@@ -26,6 +26,7 @@ func TestInferMigratedEpochState(t *testing.T) {
 		{"worker open past close waiting gtl", 1020, true, false, types.EpochState_WAITING_GROUND_TRUTH},
 		{"reputer open mid window", 1160, false, true, types.EpochState_REPUTER_SUBMISSION},
 		{"reputer past close", 1400, false, true, types.EpochState_PENDING_COMPLETION},
+		{"neither nonce open", 1005, false, false, types.EpochState_COMPLETED},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {

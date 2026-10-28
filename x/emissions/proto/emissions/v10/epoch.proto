@@ -25,7 +25,6 @@ message Epoch {
   // The reputer submission window
   Window reputer_submission_window = 5;
 
-  // Potential other properties needed...
   // The topic's epsilon at the time the epoch was created
   string epsilon = 6 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
@@ -36,6 +35,12 @@ message Epoch {
   // BlockHeight-keyed submission/inference/reward data plane (LegacyNonce).
   // Canonical epoch id remains nonce (NonceV2).
   int64 start_block_height = 7;
+
+  // Topic timing copied when the epoch is created. Close heights use these
+  // values so a later topic update does not move this epoch.
+  int64 topic_worker_submission_window = 8;
+  int64 topic_ground_truth_lag = 9;
+  int64 topic_epoch_length = 10;
 }
 
 enum EpochState {

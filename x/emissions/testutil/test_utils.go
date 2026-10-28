@@ -199,8 +199,8 @@ func (s *TestSuite) WithBlockHeight(height int64) {
 	s.ctx = s.ctx.WithBlockHeight(height)
 }
 
-func (s *TestSuite) WithBlockTime(t time.Time) {
-	s.ctx = s.ctx.WithBlockTime(t)
+func (s *TestSuite) WithBlockTime(blockTime time.Time) {
+	s.ctx = s.ctx.WithBlockTime(blockTime)
 }
 
 const (

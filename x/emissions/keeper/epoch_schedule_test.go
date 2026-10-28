@@ -52,6 +52,25 @@ func (s *KeeperTestSuite) TestStartNewEpochOpensWorkerWindowAndSchedulesLaterTra
 	s.Require().Equal(epoch.ReputerSubmissionWindow.OpenAt, *openReputer.ScheduledFor)
 }
 
+func (s *KeeperTestSuite) TestStartNewEpochSkipsWhenLiveEpochHasSameStartHeight() {
+	ctx := s.Ctx().WithBlockHeight(2_500)
+	topicID := s.CreateTopic(
+		testutil.WithEpochLength(100),
+		testutil.WithGroundTruthLag(100),
+		testutil.WithWorkerSubmissionWindow(10),
+	)
+	s.Require().NoError(s.EmissionsKeeper().StartNewEpoch(ctx, topicID))
+	lastNonce, found, err := s.EmissionsKeeper().GetTopicLastEpochNonce(ctx, topicID)
+	s.Require().NoError(err)
+	s.Require().True(found)
+
+	s.Require().NoError(s.EmissionsKeeper().StartNewEpoch(ctx, topicID))
+	lastAfter, found, err := s.EmissionsKeeper().GetTopicLastEpochNonce(ctx, topicID)
+	s.Require().NoError(err)
+	s.Require().True(found)
+	s.Require().Equal(lastNonce, lastAfter)
+}
+
 func (s *KeeperTestSuite) TestStartNewEpochRecordsStartBlockHeightBridge() {
 	ctx := s.Ctx().WithBlockHeight(1_234)
 	topicId := s.CreateTopic(testutil.WithEpochLength(60), testutil.WithGroundTruthLag(60), testutil.WithWorkerSubmissionWindow(10))
@@ -90,7 +109,8 @@ func (s *KeeperTestSuite) TestActivateTopicStartsEpochAndPeriodicTask() {
 	s.Require().Equal(ctx.BlockTime().Add(60*time.Second), *periodic.ScheduledFor)
 
 	// Advance past ScheduledFor (due check uses BlockTime.After, so equality is not enough).
-	ctx = ctx.WithBlockTime(ctx.BlockTime().Add(60*time.Second + time.Nanosecond))
+	// Height moves with time so the new epoch does not reuse the live epoch's start block.
+	ctx = ctx.WithBlockHeight(ctx.BlockHeight() + 1).WithBlockTime(ctx.BlockTime().Add(60*time.Second + time.Nanosecond))
 	s.Require().NoError(s.SchedulerKeeper().BeginBlock(ctx))
 
 	nextNonce, found, err := s.EmissionsKeeper().GetTopicLastEpochNonce(ctx, topicId)

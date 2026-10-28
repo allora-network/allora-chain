@@ -31,18 +31,19 @@ func (k *Keeper) SetEpochCloseHandlers(closeWorker, closeReputer CloseNonceFn) {
 	k.epochCloseHandlers.closeReputer = closeReputer
 }
 
-func (k *Keeper) openWorkerWindow(ctx context.Context, epoch types.Epoch) error {
-	topic, err := k.topicKeeper.GetTopic(ctx, epoch.TopicId)
-	if err != nil {
-		return err
-	}
+// sdkCtxAtHeight returns a context with BlockHeight overridden so height-gated
+// legacy close APIs can run when the scheduler fires on wall-clock time.
+func sdkCtxAtHeight(ctx context.Context, height int64) sdk.Context {
+	return sdk.UnwrapSDKContext(ctx).WithBlockHeight(height)
+}
 
+func (k *Keeper) openWorkerWindow(ctx context.Context, epoch types.Epoch) error {
 	legacyNonce := epoch.LegacyNonce()
 	if err := k.nonceKeeper.AddWorkerNonce(ctx, epoch.TopicId, &legacyNonce); err != nil {
 		return errorsmod.Wrap(err, "open worker window: add worker nonce")
 	}
 
-	windowEndBlock := legacyNonce.BlockHeight + topic.WorkerSubmissionWindow
+	windowEndBlock := legacyNonce.BlockHeight + epoch.TopicWorkerSubmissionWindow
 	types.EmitNewWorkerSubmissionWindowOpenedEvent(ctx, epoch.TopicId, legacyNonce.BlockHeight, windowEndBlock)
 	return nil
 }
@@ -58,7 +59,13 @@ func (k *Keeper) closeWorkerWindow(ctx context.Context, epoch types.Epoch) error
 	}
 
 	legacyNonce := epoch.LegacyNonce()
-	err = k.epochCloseHandlers.closeWorker(sdk.UnwrapSDKContext(ctx), topic, legacyNonce)
+	topic = withEpochTiming(topic, epoch)
+	closeHeight := legacyNonce.BlockHeight + epoch.TopicWorkerSubmissionWindow
+	if closeHeight <= legacyNonce.BlockHeight {
+		closeHeight = legacyNonce.BlockHeight + 1
+	}
+
+	err = k.epochCloseHandlers.closeWorker(sdkCtxAtHeight(ctx, closeHeight), topic, legacyNonce)
 	if err != nil && !errors.Is(err, types.ErrNoQualifiedInferers) {
 		return errorsmod.Wrap(err, "close worker window")
 	}
@@ -66,11 +73,6 @@ func (k *Keeper) closeWorkerWindow(ctx context.Context, epoch types.Epoch) error
 }
 
 func (k *Keeper) openReputerWindow(ctx context.Context, epoch types.Epoch) error {
-	topic, err := k.topicKeeper.GetTopic(ctx, epoch.TopicId)
-	if err != nil {
-		return err
-	}
-
 	legacyNonce := epoch.LegacyNonce()
 	// CloseWorkerNonce normally adds the reputer nonce; ensure it exists if worker
 	// close soft-failed (e.g. no qualified inferers).
@@ -78,8 +80,8 @@ func (k *Keeper) openReputerWindow(ctx context.Context, epoch types.Epoch) error
 		return errorsmod.Wrap(err, "open reputer window: add reputer nonce")
 	}
 
-	extraLag := types.TopicExtraLag(topic)
-	windowEndBlock := legacyNonce.BlockHeight + topic.GroundTruthLag + extraLag + topic.EpochLength
+	extraLag := types.ExtraLag(epoch.TopicGroundTruthLag, epoch.TopicEpochLength)
+	windowEndBlock := legacyNonce.BlockHeight + epoch.TopicGroundTruthLag + extraLag + epoch.TopicEpochLength
 	types.EmitNewReputerSubmissionWindowOpenedEvent(ctx, epoch.TopicId, legacyNonce.BlockHeight, windowEndBlock)
 	return nil
 }
@@ -95,13 +97,24 @@ func (k *Keeper) closeReputerWindow(ctx context.Context, epoch types.Epoch) erro
 	}
 
 	legacyNonce := epoch.LegacyNonce()
-	err = k.epochCloseHandlers.closeReputer(sdk.UnwrapSDKContext(ctx), topic, legacyNonce)
+	topic = withEpochTiming(topic, epoch)
+	extraLag := types.ExtraLag(epoch.TopicGroundTruthLag, epoch.TopicEpochLength)
+	closeHeight := legacyNonce.BlockHeight + epoch.TopicGroundTruthLag + extraLag
+	if epoch.TopicEpochLength > 0 {
+		closeHeight += epoch.TopicEpochLength
+	}
+	if closeHeight < legacyNonce.BlockHeight+epoch.TopicGroundTruthLag {
+		closeHeight = legacyNonce.BlockHeight + epoch.TopicGroundTruthLag
+	}
+
+	err = k.epochCloseHandlers.closeReputer(sdkCtxAtHeight(ctx, closeHeight), topic, legacyNonce)
 	if err != nil {
 		// Soft-fail empty / already-closed sets so the FSM can still complete during
 		// the parallel-run period when submissions may be absent.
 		if errors.Is(err, sdkerrors.ErrNotFound) ||
 			errors.Is(err, types.ErrNotFound) ||
-			errors.Is(err, types.ErrUnfulfilledNonceNotFound) {
+			errors.Is(err, types.ErrUnfulfilledNonceNotFound) ||
+			errors.Is(err, types.ErrNoQualifiedInferers) {
 			sdk.UnwrapSDKContext(ctx).Logger().Info(
 				"close reputer window soft-failed; continuing epoch lifecycle",
 				"topicId", epoch.TopicId,
@@ -117,9 +130,15 @@ func (k *Keeper) closeReputerWindow(ctx context.Context, epoch types.Epoch) erro
 
 func (k *Keeper) completeEpoch(ctx context.Context, epoch types.Epoch) error {
 	// Losses/weights/TopicRewardNonce are produced in closeReputerWindow via CloseReputerNonce
-	// when submissions exist. During the parallel EndBlocker period, coin payout + prune remain
-	// in rewards.EmitRewards so we do not delete TopicRewardNonce here (that would race EndBlocker).
-	// Mark the topic rewardable as a signal for reward selection.
+	// when submissions exist. EmitRewards pays that nonce and then deletes it. Marking the
+	// topic rewardable for any other nonce, including a missing one, would queue a second payout.
+	rewardNonce, err := k.topicKeeper.GetTopicRewardNonce(ctx, epoch.TopicId)
+	if err != nil {
+		return err
+	}
+	if rewardNonce != epoch.StartBlockHeight {
+		return nil
+	}
 	if err := k.topicKeeper.SetRewardableTopic(ctx, epoch.TopicId); err != nil {
 		return errorsmod.Wrap(err, "complete epoch: set rewardable topic")
 	}
@@ -152,4 +171,13 @@ func (k *Keeper) cancelEpoch(ctx context.Context, epoch types.Epoch) error {
 	}
 
 	return k.unscheduleEpochLifecycle(ctx, epoch)
+}
+
+// withEpochTiming returns a copy of topic whose timing fields are the values
+// stored on the epoch at creation.
+func withEpochTiming(topic types.Topic, epoch types.Epoch) types.Topic {
+	topic.WorkerSubmissionWindow = epoch.TopicWorkerSubmissionWindow
+	topic.GroundTruthLag = epoch.TopicGroundTruthLag
+	topic.EpochLength = epoch.TopicEpochLength
+	return topic
 }

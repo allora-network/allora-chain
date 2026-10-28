@@ -30,22 +30,28 @@ func (e *Epoch) Key() collections.Pair[TopicId, NonceV2] {
 // LegacyNonce returns the transitional BlockHeight-keyed nonce for the legacy data plane
 // (submissions, inference/loss stores, rewards, existing window events).
 // Canonical epoch identity remains Nonce (NonceV2); do not coerce Nonce.Payload() to a height.
+// A zero StartBlockHeight is the zero nonce. An epoch has to have its start height set
+// before a transition reads this.
 func (e Epoch) LegacyNonce() Nonce {
 	return Nonce{BlockHeight: e.StartBlockHeight}
 }
 
-// TopicExtraLag returns the alignment lag used so reputer windows land on epoch boundaries.
-// Matches the legacy EndBlocker formula: when GroundTruthLag is not a multiple of EpochLength,
-// pad to the next EpochLength multiple.
-func TopicExtraLag(topic Topic) int64 {
-	if topic.EpochLength <= 0 {
+// ExtraLag returns the alignment lag used so reputer windows land on epoch boundaries.
+// When groundTruthLag is not a multiple of epochLength, pad to the next epochLength multiple.
+func ExtraLag(groundTruthLag, epochLength int64) int64 {
+	if epochLength <= 0 {
 		return 0
 	}
-	rem := topic.GroundTruthLag % topic.EpochLength
+	rem := groundTruthLag % epochLength
 	if rem == 0 {
 		return 0
 	}
-	return topic.EpochLength - rem
+	return epochLength - rem
+}
+
+// TopicExtraLag returns ExtraLag for the topic's current timing fields.
+func TopicExtraLag(topic Topic) int64 {
+	return ExtraLag(topic.GroundTruthLag, topic.EpochLength)
 }
 
 func NewEpoch(nonce NonceV2, topic Topic, startAt time.Time) Epoch {
@@ -65,6 +71,9 @@ func NewEpoch(nonce NonceV2, topic Topic, startAt time.Time) Epoch {
 			OpenAt:  reputerOpenAt,
 			CloseAt: reputerOpenAt.Add(time.Duration(extraLag+topic.EpochLength) * time.Second),
 		},
-		Epsilon: topic.Epsilon,
+		Epsilon:                     topic.Epsilon,
+		TopicWorkerSubmissionWindow: topic.WorkerSubmissionWindow,
+		TopicGroundTruthLag:         topic.GroundTruthLag,
+		TopicEpochLength:            topic.EpochLength,
 	}
 }

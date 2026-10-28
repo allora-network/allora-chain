@@ -1,11 +1,13 @@
 package keeper_test
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	"github.com/allora-network/allora-chain/x/emissions/testutil"
 	"github.com/allora-network/allora-chain/x/emissions/types"
+	schedulertypes "github.com/allora-network/allora-chain/x/scheduler/types"
 )
 
 func (s *KeeperTestSuite) TestTimeWithinWindowInclusive() {
@@ -61,11 +63,16 @@ func (s *KeeperTestSuite) TestCheckWorkerSubmissionWindowUsesWallClock() {
 	s.Require().NoError(err)
 	s.Require().True(found)
 
-	// After CloseAt, wall-clock check fails even if block height would still be valid.
+	// After CloseAt, wall-clock check fails while the close task is still pending.
+	closeTaskID := schedulertypes.TaskID(fmt.Sprintf("%s:%d-%d", types.CloseEpochWorkerWindowTask, topicId, lastNonce))
+	_, err = s.SchedulerKeeper().GetTask(ctx, closeTaskID)
+	s.Require().NoError(err)
 	ctx = ctx.WithBlockTime(start.Add(10*time.Second + time.Nanosecond))
 	found, err = s.EmissionsKeeper().CheckWorkerSubmissionWindow(ctx, topicId, legacy)
 	s.Require().ErrorIs(err, types.ErrWorkerNonceWindowNotAvailable)
 	s.Require().True(found)
+	_, err = s.SchedulerKeeper().GetTask(ctx, closeTaskID)
+	s.Require().NoError(err, "a late close task must not keep the window open")
 }
 
 func (s *KeeperTestSuite) TestCheckWorkerSubmissionWindowRejectsWrongState() {
@@ -113,10 +120,15 @@ func (s *KeeperTestSuite) TestCheckReputerSubmissionWindowUsesWallClock() {
 	s.Require().NoError(err)
 	s.Require().True(found)
 
+	closeTaskID := schedulertypes.TaskID(fmt.Sprintf("%s:%d-%d", types.CloseEpochReputerWindowTask, topicId, lastNonce))
+	_, err = s.SchedulerKeeper().GetTask(ctx, closeTaskID)
+	s.Require().NoError(err)
 	ctx = ctx.WithBlockTime(epoch.ReputerSubmissionWindow.CloseAt.Add(time.Nanosecond))
 	found, err = s.EmissionsKeeper().CheckReputerSubmissionWindow(ctx, topicId, legacy)
 	s.Require().ErrorIs(err, types.ErrReputerNonceWindowNotAvailable)
 	s.Require().True(found)
+	_, err = s.SchedulerKeeper().GetTask(ctx, closeTaskID)
+	s.Require().NoError(err, "a late close task must not keep the reputer window open")
 }
 
 func (s *KeeperTestSuite) TestCheckWorkerSubmissionWindowFallsThroughWithoutEpoch() {
