@@ -38,17 +38,12 @@ func sdkCtxAtHeight(ctx context.Context, height int64) sdk.Context {
 }
 
 func (k *Keeper) openWorkerWindow(ctx context.Context, epoch types.Epoch) error {
-	topic, err := k.topicKeeper.GetTopic(ctx, epoch.TopicId)
-	if err != nil {
-		return err
-	}
-
 	legacyNonce := epoch.LegacyNonce()
 	if err := k.nonceKeeper.AddWorkerNonce(ctx, epoch.TopicId, &legacyNonce); err != nil {
 		return errorsmod.Wrap(err, "open worker window: add worker nonce")
 	}
 
-	windowEndBlock := legacyNonce.BlockHeight + topic.WorkerSubmissionWindow
+	windowEndBlock := legacyNonce.BlockHeight + epoch.TopicWorkerSubmissionWindow
 	types.EmitNewWorkerSubmissionWindowOpenedEvent(ctx, epoch.TopicId, legacyNonce.BlockHeight, windowEndBlock)
 	return nil
 }
@@ -64,7 +59,8 @@ func (k *Keeper) closeWorkerWindow(ctx context.Context, epoch types.Epoch) error
 	}
 
 	legacyNonce := epoch.LegacyNonce()
-	closeHeight := legacyNonce.BlockHeight + topic.WorkerSubmissionWindow
+	topic = withEpochTiming(topic, epoch)
+	closeHeight := legacyNonce.BlockHeight + epoch.TopicWorkerSubmissionWindow
 	if closeHeight <= legacyNonce.BlockHeight {
 		closeHeight = legacyNonce.BlockHeight + 1
 	}
@@ -77,11 +73,6 @@ func (k *Keeper) closeWorkerWindow(ctx context.Context, epoch types.Epoch) error
 }
 
 func (k *Keeper) openReputerWindow(ctx context.Context, epoch types.Epoch) error {
-	topic, err := k.topicKeeper.GetTopic(ctx, epoch.TopicId)
-	if err != nil {
-		return err
-	}
-
 	legacyNonce := epoch.LegacyNonce()
 	// CloseWorkerNonce normally adds the reputer nonce; ensure it exists if worker
 	// close soft-failed (e.g. no qualified inferers).
@@ -89,8 +80,8 @@ func (k *Keeper) openReputerWindow(ctx context.Context, epoch types.Epoch) error
 		return errorsmod.Wrap(err, "open reputer window: add reputer nonce")
 	}
 
-	extraLag := types.TopicExtraLag(topic)
-	windowEndBlock := legacyNonce.BlockHeight + topic.GroundTruthLag + extraLag + topic.EpochLength
+	extraLag := types.ExtraLag(epoch.TopicGroundTruthLag, epoch.TopicEpochLength)
+	windowEndBlock := legacyNonce.BlockHeight + epoch.TopicGroundTruthLag + extraLag + epoch.TopicEpochLength
 	types.EmitNewReputerSubmissionWindowOpenedEvent(ctx, epoch.TopicId, legacyNonce.BlockHeight, windowEndBlock)
 	return nil
 }
@@ -106,13 +97,14 @@ func (k *Keeper) closeReputerWindow(ctx context.Context, epoch types.Epoch) erro
 	}
 
 	legacyNonce := epoch.LegacyNonce()
-	extraLag := types.TopicExtraLag(topic)
-	closeHeight := legacyNonce.BlockHeight + topic.GroundTruthLag + extraLag
-	if topic.EpochLength > 0 {
-		closeHeight += topic.EpochLength
+	topic = withEpochTiming(topic, epoch)
+	extraLag := types.ExtraLag(epoch.TopicGroundTruthLag, epoch.TopicEpochLength)
+	closeHeight := legacyNonce.BlockHeight + epoch.TopicGroundTruthLag + extraLag
+	if epoch.TopicEpochLength > 0 {
+		closeHeight += epoch.TopicEpochLength
 	}
-	if closeHeight < legacyNonce.BlockHeight+topic.GroundTruthLag {
-		closeHeight = legacyNonce.BlockHeight + topic.GroundTruthLag
+	if closeHeight < legacyNonce.BlockHeight+epoch.TopicGroundTruthLag {
+		closeHeight = legacyNonce.BlockHeight + epoch.TopicGroundTruthLag
 	}
 
 	err = k.epochCloseHandlers.closeReputer(sdkCtxAtHeight(ctx, closeHeight), topic, legacyNonce)
@@ -121,7 +113,8 @@ func (k *Keeper) closeReputerWindow(ctx context.Context, epoch types.Epoch) erro
 		// the parallel-run period when submissions may be absent.
 		if errors.Is(err, sdkerrors.ErrNotFound) ||
 			errors.Is(err, types.ErrNotFound) ||
-			errors.Is(err, types.ErrUnfulfilledNonceNotFound) {
+			errors.Is(err, types.ErrUnfulfilledNonceNotFound) ||
+			errors.Is(err, types.ErrNoQualifiedInferers) {
 			sdk.UnwrapSDKContext(ctx).Logger().Info(
 				"close reputer window soft-failed; continuing epoch lifecycle",
 				"topicId", epoch.TopicId,
@@ -172,4 +165,13 @@ func (k *Keeper) cancelEpoch(ctx context.Context, epoch types.Epoch) error {
 	}
 
 	return k.unscheduleEpochLifecycle(ctx, epoch)
+}
+
+// withEpochTiming returns a copy of topic whose timing fields are the values
+// stored on the epoch at creation.
+func withEpochTiming(topic types.Topic, epoch types.Epoch) types.Topic {
+	topic.WorkerSubmissionWindow = epoch.TopicWorkerSubmissionWindow
+	topic.GroundTruthLag = epoch.TopicGroundTruthLag
+	topic.EpochLength = epoch.TopicEpochLength
+	return topic
 }
