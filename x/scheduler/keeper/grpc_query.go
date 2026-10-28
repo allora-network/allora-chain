@@ -87,14 +87,23 @@ func (q Querier) ScheduledTasks(ctx context.Context, req *types.QueryScheduledTa
 		return nil, status.Error(codes.InvalidArgument, "empty typename")
 	}
 
+	pagination := req.Pagination
 	if req.From != nil {
+		if pagination == nil {
+			pagination = &query.PageRequest{}
+		} else {
+			copied := *pagination
+			pagination = &copied
+		}
+
 		// offset pagination is not supported with from filter
-		if req.Pagination.Offset != 0 {
+		if pagination.Offset != 0 {
 			return nil, status.Error(codes.InvalidArgument, "cannot use offset pagination with from filter")
 		}
 
 		// If a from filter is provided without a pagination key, we need to set the key
-		if req.Pagination.Key == nil {
+		// on the local copy. The caller's request is left unchanged.
+		if pagination.Key == nil {
 			prefix := make([]byte, collections.StringKey.Size(req.Typename))
 			if _, err := collections.StringKey.Encode(prefix, req.Typename); err != nil {
 				return nil, status.Error(codes.Internal, err.Error())
@@ -103,14 +112,14 @@ func (q Querier) ScheduledTasks(ctx context.Context, req *types.QueryScheduledTa
 			if err != nil {
 				return nil, status.Error(codes.Internal, err.Error())
 			}
-			req.Pagination.Key = key
+			pagination.Key = key
 		}
 	}
 
 	tasks, page, err := query.CollectionPaginate(
 		ctx,
 		q.tasksSchedule,
-		req.Pagination,
+		pagination,
 		func(key collections.Triple[string, time.Time, types.TaskID], _ collections.NoValue) (types.Task, error) {
 			return q.tasks.Get(ctx, key.K3())
 		},

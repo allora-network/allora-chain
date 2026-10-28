@@ -313,6 +313,12 @@ func buildLegacyAlignedMigratedEpoch(
 		},
 		Epsilon:          topic.Epsilon,
 		StartBlockHeight: legacyHeight,
+		// Block counts the windows above were built from. Close heights add
+		// these to the legacy nonce height. The topic fields are scaled to
+		// seconds after this epoch is stored.
+		TopicWorkerSubmissionWindow: topic.WorkerSubmissionWindow,
+		TopicGroundTruthLag:         topic.GroundTruthLag,
+		TopicEpochLength:            topic.EpochLength,
 	}
 	return epoch
 }
