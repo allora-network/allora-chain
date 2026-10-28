@@ -88,7 +88,9 @@ func (k *Keeper) StartEpoch(ctx context.Context, topicID TopicId) error {
 	nonce := lastNonce.NextNonce()
 
 	epoch := types.NewEpoch(nonce, topic, sdkCtx.BlockTime())
-	k.epochFSMEngine.Init(&epoch) // Unnecessary but more formal
+	if err := k.epochFSMEngine.Init(&epoch); err != nil {
+		return err
+	}
 
 	// TODO: persist topic last nonce once that field/store exists, then write the topic back.
 

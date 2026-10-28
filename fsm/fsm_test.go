@@ -118,8 +118,12 @@ func TestInit(t *testing.T) {
 	require.NoError(t, err)
 
 	var mFSM testFSM
-	eng.Init(&mFSM)
+	require.NoError(t, eng.Init(&mFSM))
 	require.Equal(t, testState("init"), mFSM.CurrentState())
+
+	mFSM.Advance(testState("final"))
+	require.Error(t, eng.Init(&mFSM))
+	require.Equal(t, testState("final"), mFSM.CurrentState())
 }
 
 func TestRunning(t *testing.T) {
@@ -135,7 +139,7 @@ func TestRunning(t *testing.T) {
 	require.NoError(t, err)
 
 	var mFSM testFSM
-	eng.Init(&mFSM)
+	require.NoError(t, eng.Init(&mFSM))
 	require.True(t, eng.Running(&mFSM))
 
 	// Move to final state
@@ -156,7 +160,7 @@ func TestTerminated(t *testing.T) {
 	require.NoError(t, err)
 
 	var mFSM testFSM
-	eng.Init(&mFSM)
+	require.NoError(t, eng.Init(&mFSM))
 	require.False(t, eng.Terminated(&mFSM))
 
 	// Move to final state
