@@ -39,7 +39,9 @@ func (s *QueryServerTestSuite) TestGetEpochAndGetTopicEpochs() {
 	s.Require().Len(list.Epochs, 1)
 	s.Require().Equal(lastNonce, list.Epochs[0].Nonce)
 
-	// Start a second epoch so the topic has two live records.
+	// A live epoch already starts at this height, so the next one has to begin on a later block.
+	s.WithBlockHeight(ctx.BlockHeight() + 1)
+	ctx = s.Ctx()
 	s.Require().NoError(s.EmissionsKeeper().StartNewEpoch(ctx, topicID))
 	list, err = queryServer.GetTopicEpochs(ctx, &types.GetTopicEpochsRequest{TopicId: topicID})
 	s.Require().NoError(err)
