@@ -34,6 +34,12 @@ func TestNextNonce(t *testing.T) {
 	n = NextNonce(NewNonceFromUint64(19345))
 	require.Equal(t, NonceVersionV1, n.Version())
 	require.Equal(t, NewNonceFromUint64(19346), n)
+
+	// A V0 nonce is incremented and re-tagged as V1.
+	v0 := NonceV2(0x0000000000000005)
+	n = v0.NextNonce()
+	require.Equal(t, NonceVersionV1, n.Version())
+	require.Equal(t, uint64(6), n.Payload())
 }
 
 func TestVersion(t *testing.T) {

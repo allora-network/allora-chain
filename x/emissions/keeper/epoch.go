@@ -124,6 +124,18 @@ func (k *Keeper) StartNewEpoch(ctx context.Context, topicID TopicId) error {
 	if err != nil {
 		return err
 	}
+	clash, err := k.topicHasEpochAtStartHeight(ctx, topicID, sdkCtx.BlockHeight())
+	if err != nil {
+		return err
+	}
+	if clash {
+		sdkCtx.Logger().Info(
+			"skipping StartNewEpoch because a live epoch already starts at this block",
+			"topicId", topicID,
+			"blockHeight", sdkCtx.BlockHeight(),
+		)
+		return nil
+	}
 
 	nonce, err := k.AllocateNextEpochNonce(ctx, topicID)
 	if err != nil {
@@ -135,7 +147,9 @@ func (k *Keeper) StartNewEpoch(ctx context.Context, topicID TopicId) error {
 	epoch.TopicId = topicID
 	// Transitional bridge into height-keyed APIs (see Epoch.LegacyNonce).
 	epoch.StartBlockHeight = sdkCtx.BlockHeight()
-	k.epochFSMEngine.Init(&epoch) // Unnecessary but more formal
+	if err := k.epochFSMEngine.Init(&epoch); err != nil {
+		return err
+	}
 
 	if err := k.epochs.Set(ctx, epoch.Key(), epoch); err != nil {
 		return err

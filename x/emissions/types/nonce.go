@@ -33,6 +33,8 @@ func ZeroNonce() NonceV2 {
 }
 
 // NextNonce returns the next nonce by incrementing the payload of the given nonce.
+// The result is always V1, including when n is V0. V0 payloads are block heights and
+// V1 payloads are a per-topic sequence, so those spaces do not collide in practice.
 func NextNonce(n NonceV2) NonceV2 {
 	return newNonce(NonceVersionV1, n.Payload()+1)
 }
