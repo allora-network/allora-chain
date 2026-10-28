@@ -83,8 +83,14 @@ func NewEngine[T FSM](initialState State, finalStates []State, transitions Trans
 }
 
 // Init initializes the FSM to its initial state.
-func (e *Engine[T]) Init(fsm T) {
+// A call on an FSM that has already left its zero state returns an error and leaves the state unchanged.
+func (e *Engine[T]) Init(fsm T) error {
+	current := fsm.CurrentState()
+	if current != nil && current.Name() != "" && current != e.initState {
+		return fmt.Errorf("fsm already initialized in state %s", current.Name())
+	}
 	fsm.Advance(e.initState)
+	return nil
 }
 
 // Running checks if the FSM is currently in a running state (i.e., not in a final state).
