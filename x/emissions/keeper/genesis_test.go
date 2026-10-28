@@ -1062,3 +1062,37 @@ func (s *KeeperTestSuite) TestGenesisMultiInferenceRequiresSufficientTopicLabelR
 	s.Require().Error(err)
 	s.Require().Contains(err.Error(), "live MULTI inference is incompatible with topic label registry")
 }
+
+func (s *KeeperTestSuite) TestTopicLastEpochNonceRoundTrip() {
+	ctx := s.Ctx()
+	topicID := s.CreateTopic()
+	s.Require().NoError(s.EmissionsKeeper().StartNewEpoch(ctx, topicID))
+	nonce, found, err := s.EmissionsKeeper().GetTopicLastEpochNonce(ctx, topicID)
+	s.Require().NoError(err)
+	s.Require().True(found)
+
+	exported, err := s.EmissionsKeeper().ExportGenesis(ctx)
+	s.Require().NoError(err)
+	s.Require().NotEmpty(exported.TopicLastEpochNonces)
+
+	fresh := s.newFreshGenesisSuite()
+	s.Require().NoError(fresh.EmissionsKeeper().InitGenesis(fresh.Ctx(), exported))
+	got, found, err := fresh.EmissionsKeeper().GetTopicLastEpochNonce(fresh.Ctx(), topicID)
+	s.Require().NoError(err)
+	s.Require().True(found)
+	s.Require().Equal(nonce, got)
+}
+
+func (s *KeeperTestSuite) TestInitGenesisWithoutTopicLastEpochNonces() {
+	ctx := s.Ctx()
+	topicID := s.CreateTopic()
+	exported, err := s.EmissionsKeeper().ExportGenesis(ctx)
+	s.Require().NoError(err)
+	exported.TopicLastEpochNonces = nil
+
+	fresh := s.newFreshGenesisSuite()
+	s.Require().NoError(fresh.EmissionsKeeper().InitGenesis(fresh.Ctx(), exported))
+	_, found, err := fresh.EmissionsKeeper().GetTopicLastEpochNonce(fresh.Ctx(), topicID)
+	s.Require().NoError(err)
+	s.Require().False(found)
+}

@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/hex"
 	"math/rand"
+	"time"
 
 	cosmossdk_io_math "cosmossdk.io/math"
 	alloraMath "github.com/allora-network/allora-chain/math"
@@ -46,10 +47,12 @@ func doInferenceAndReputation(
 	}
 	topic := resp.Topic
 	iterLog(m.T, iteration, "Inference topic epoch last ended ", topic.EpochLastEnded, " epoch length ", topic.EpochLength)
-	// Height-based nonce (EpochLastEnded+EpochLength) is the unmanaged EndBlocker
-	// path. Scheduler-managed topics use GetTopicEpochs + StartBlockHeight, with
-	// EpochLength as seconds; mixing the two is a time/task-order flake source.
-	workerNonce := topic.EpochLastEnded + topic.EpochLength
+	workerNonce, managedEpoch, err := submissionNonce(m, topic)
+	failIfOnErr(m.T, data.failOnErr, err)
+	if err != nil {
+		iterFailLog(m.T, iteration, "failed to choose submission nonce for topic id ", topicId, err)
+		return false
+	}
 	blockHeightNow, err := m.Client.BlockHeight(ctx)
 	failIfOnErr(m.T, data.failOnErr, err)
 	if err != nil {
@@ -63,7 +66,7 @@ func doInferenceAndReputation(
 		)
 		return false
 	}
-	if blockHeightNow < workerNonce+1 {
+	if managedEpoch == nil && blockHeightNow < workerNonce+1 {
 		iterLog(m.T, iteration, "waiting for next epoch to start so we can produce inferences for the current epoch: ", workerNonce+1)
 		err = m.Client.WaitForBlockHeight(ctx, workerNonce+1)
 		failIfOnErr(m.T, data.failOnErr, err)
@@ -106,9 +109,15 @@ func doInferenceAndReputation(
 		return false
 	}
 	iterLog(m.T, iteration, "produced worker inference for topic id", topicId)
-	reputerWaitBlocks := blockHeightNow + topic.GroundTruthLag + 1
-	iterLog(m.T, iteration, "waiting for reputer ground truth block", reputerWaitBlocks)
-	err = m.Client.WaitForBlockHeight(ctx, reputerWaitBlocks)
+	var reputerWaitBlocks int64
+	if managedEpoch != nil && managedEpoch.ReputerSubmissionWindow != nil {
+		err = waitUntilBlockTime(m, managedEpoch.ReputerSubmissionWindow.OpenAt)
+		reputerWaitBlocks = managedEpoch.StartBlockHeight
+	} else {
+		reputerWaitBlocks = blockHeightNow + topic.GroundTruthLag + 1
+		iterLog(m.T, iteration, "waiting for reputer ground truth block", reputerWaitBlocks)
+		err = m.Client.WaitForBlockHeight(ctx, reputerWaitBlocks)
+	}
 	failIfOnErr(m.T, data.failOnErr, err)
 	if err != nil {
 		iterFailLog(
@@ -166,6 +175,55 @@ func findActiveTopicsAtThisBlock(
 	}
 
 	return ourTopics
+}
+
+// submissionNonce uses the live epoch's start block when the topic has one.
+// Otherwise it keeps the unmanaged height formula EpochLastEnded + EpochLength.
+func submissionNonce(
+	m *testcommon.TestConfig,
+	topic *emissionstypes.Topic,
+) (int64, *emissionstypes.Epoch, error) {
+	ctx := context.Background()
+	resp, err := m.Client.QueryEmissions().GetTopicEpochs(ctx, &emissionstypes.GetTopicEpochsRequest{
+		TopicId: topic.Id,
+	})
+	if err != nil {
+		return 0, nil, err
+	}
+	if resp == nil || len(resp.Epochs) == 0 {
+		return topic.EpochLastEnded + topic.EpochLength, nil, nil
+	}
+	chosen := resp.Epochs[0]
+	for _, epoch := range resp.Epochs {
+		if epoch != nil && epoch.State == emissionstypes.EpochState_WORKER_SUBMISSION {
+			chosen = epoch
+			break
+		}
+	}
+	if chosen == nil {
+		return topic.EpochLastEnded + topic.EpochLength, nil, nil
+	}
+	return chosen.StartBlockHeight, chosen, nil
+}
+
+func waitUntilBlockTime(m *testcommon.TestConfig, openAt time.Time) error {
+	ctx := context.Background()
+	for {
+		now, err := m.Client.LatestBlockTime(ctx)
+		if err != nil {
+			return err
+		}
+		if !now.Before(openAt) {
+			return nil
+		}
+		height, err := m.Client.BlockHeight(ctx)
+		if err != nil {
+			return err
+		}
+		if err := m.Client.WaitForBlockHeight(ctx, height+1); err != nil {
+			return err
+		}
+	}
 }
 
 // Inserts inference and forecast data for each worker

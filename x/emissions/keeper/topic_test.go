@@ -85,6 +85,12 @@ func (s *KeeperTestSuite) TestInactivateAndActivateTopic() {
 	err = k.ActivateTopic(ctx, topicId)
 	s.Require().NoError(err, "Reactivating topic should not fail")
 
+	firstNonce, found, err := s.EmissionsKeeper().GetTopicLastEpochNonce(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().True(found)
+	firstEpoch, err := s.EmissionsKeeper().GetEpoch(ctx, topicId, firstNonce)
+	s.Require().NoError(err)
+
 	// Check if topic is active
 	topicActive, err := k.IsTopicActive(ctx, topicId)
 	s.Require().NoError(err, "Getting topic should not fail after reactivation")
@@ -93,15 +99,27 @@ func (s *KeeperTestSuite) TestInactivateAndActivateTopic() {
 	// Inactivate the topic
 	err = k.InactivateTopic(ctx, topicId)
 	s.Require().NoError(err, "Inactivating topic should not fail")
+	_, err = s.EmissionsKeeper().GetEpoch(ctx, topicId, firstNonce)
+	s.Require().Error(err, "inactivation removes the live epoch")
 
 	// Check if topic is inactive
 	topicActive, err = k.IsTopicActive(ctx, topicId)
 	s.Require().NoError(err, "Getting topic should not fail after inactivation")
 	s.Require().False(topicActive, "Topic should be inactive")
 
-	// Activate the topic
+	// Reactivate on the next block so the new epoch does not reuse the cancelled start height.
+	ctx = ctx.WithBlockHeight(ctx.BlockHeight() + 1)
 	err = k.ActivateTopic(ctx, topicId)
 	s.Require().NoError(err, "Reactivating topic should not fail")
+
+	secondNonce, found, err := s.EmissionsKeeper().GetTopicLastEpochNonce(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().True(found)
+	secondEpoch, err := s.EmissionsKeeper().GetEpoch(ctx, topicId, secondNonce)
+	s.Require().NoError(err)
+	s.Require().NotEqual(firstNonce, secondNonce)
+	s.Require().NotEqual(firstEpoch.StartBlockHeight, secondEpoch.StartBlockHeight)
+	s.Require().Equal(ctx.BlockHeight(), secondEpoch.StartBlockHeight)
 
 	// Check if topic is active again
 	topicActive, err = k.IsTopicActive(ctx, topicId)
