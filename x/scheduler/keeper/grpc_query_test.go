@@ -499,6 +499,10 @@ func TestGRPCQueryScheduledTasks(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
+			var keyBefore []byte
+			if tc.req.Pagination != nil {
+				keyBefore = append([]byte(nil), tc.req.Pagination.Key...)
+			}
 			resp, err := querier.ScheduledTasks(ctx, tc.req)
 
 			if tc.expectErr {
@@ -506,6 +510,9 @@ func TestGRPCQueryScheduledTasks(t *testing.T) {
 			} else {
 				require.NoError(t, err)
 				require.Equal(t, tc.expectResp, resp)
+			}
+			if tc.req.Pagination != nil {
+				require.Equal(t, keyBefore, tc.req.Pagination.Key)
 			}
 		})
 	}
