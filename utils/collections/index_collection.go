@@ -92,7 +92,7 @@ func (w multiIndexCollectionWrapper[R, P, V]) decodeKey(key []byte) (collections
 
 	read, k1, err := pkc1.DecodeNonTerminal(key)
 	if err != nil {
-		return p, nil
+		return p, err
 	}
 
 	remainingKey := key[read:]
@@ -102,7 +102,7 @@ func (w multiIndexCollectionWrapper[R, P, V]) decodeKey(key []byte) (collections
 
 	_, k2, err := pkc2.Decode(remainingKey)
 	if err != nil {
-		return p, nil
+		return p, err
 	}
 
 	return collections.Join(k1, k2), nil
