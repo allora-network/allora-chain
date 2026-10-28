@@ -8,6 +8,7 @@ import (
 	abci "github.com/cometbft/cometbft/abci/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
+	alloraMath "github.com/allora-network/allora-chain/math"
 	actorutils "github.com/allora-network/allora-chain/x/emissions/keeper/actor_utils"
 	"github.com/allora-network/allora-chain/x/emissions/testutil"
 	"github.com/allora-network/allora-chain/x/emissions/types"
@@ -103,6 +104,34 @@ func (s *KeeperTestSuite) TestEpochFSMCancelFromWorkerSubmissionUnschedulesTasks
 	s.Require().Equal(types.EpochState_WORKER_SUBMISSION, epoch.State)
 
 	legacyNonce := epoch.LegacyNonce()
+	topic, err := s.TopicKeeper().GetTopic(ctx, topicId)
+	s.Require().NoError(err)
+
+	epochInferences := types.Inferences{
+		Inferences: []*types.Inference{
+			{
+				TopicId:     topicId,
+				BlockHeight: legacyNonce.BlockHeight,
+				Values:      []alloraMath.Dec{alloraMath.NewDecFromInt64(1)},
+				Inferer:     s.AddrsStr(0),
+			},
+		},
+	}
+	s.Require().NoError(s.WorkerKeeper().InsertActiveInferences(ctx, topicId, legacyNonce.BlockHeight, epochInferences))
+
+	otherHeight := legacyNonce.BlockHeight + 1
+	otherInferences := types.Inferences{
+		Inferences: []*types.Inference{
+			{
+				TopicId:     topicId,
+				BlockHeight: otherHeight,
+				Values:      []alloraMath.Dec{alloraMath.NewDecFromInt64(2)},
+				Inferer:     s.AddrsStr(1),
+			},
+		},
+	}
+	s.Require().NoError(s.WorkerKeeper().InsertActiveInferences(ctx, topicId, otherHeight, otherInferences))
+
 	s.Require().NoError(s.EmissionsKeeper().CancelEpoch(ctx, topicId, lastNonce))
 
 	_, err = s.EmissionsKeeper().GetEpoch(ctx, topicId, lastNonce)
@@ -111,6 +140,14 @@ func (s *KeeperTestSuite) TestEpochFSMCancelFromWorkerSubmissionUnschedulesTasks
 	workerUnfulfilled, err := s.NonceKeeper().IsWorkerNonceUnfulfilled(ctx, topicId, &legacyNonce)
 	s.Require().NoError(err)
 	s.Require().False(workerUnfulfilled, "cancel must fulfill leftover worker nonce")
+
+	pruned, err := s.WorkerKeeper().GetInferencesAtBlock(ctx, topic, legacyNonce.BlockHeight, false)
+	s.Require().NoError(err)
+	s.Require().Empty(pruned.Inferences, "cancel must prune this epoch's records")
+
+	kept, err := s.WorkerKeeper().GetInferencesAtBlock(ctx, topic, otherHeight, false)
+	s.Require().NoError(err)
+	s.Require().Len(kept.Inferences, 1, "cancel must not prune other epochs' heights")
 
 	taskIDSuffix := fmt.Sprintf(":%d-%d", topicId, lastNonce)
 	for _, taskType := range []string{
@@ -122,6 +159,93 @@ func (s *KeeperTestSuite) TestEpochFSMCancelFromWorkerSubmissionUnschedulesTasks
 		_, err = s.SchedulerKeeper().GetTask(ctx, schedulertypes.TaskID(taskType+taskIDSuffix))
 		s.Require().ErrorIs(err, collections.ErrNotFound, "cancel must unschedule %s", taskType)
 	}
+}
+
+func (s *KeeperTestSuite) TestCancelOneLiveEpochLeavesTheOtherEpochRecords() {
+	ctx := s.Ctx().WithBlockHeight(5_000)
+	topicId := s.CreateTopic(
+		testutil.WithEpochLength(100),
+		testutil.WithGroundTruthLag(100),
+		testutil.WithWorkerSubmissionWindow(10),
+	)
+
+	s.Require().NoError(s.EmissionsKeeper().StartNewEpoch(ctx, topicId))
+	firstNonce, found, err := s.EmissionsKeeper().GetTopicLastEpochNonce(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().True(found)
+	first, err := s.EmissionsKeeper().GetEpoch(ctx, topicId, firstNonce)
+	s.Require().NoError(err)
+	s.Require().Equal(int64(5_000), first.StartBlockHeight)
+
+	later := ctx.WithBlockHeight(5_100)
+	s.Require().NoError(s.EmissionsKeeper().StartNewEpoch(later, topicId))
+	secondNonce, found, err := s.EmissionsKeeper().GetTopicLastEpochNonce(later, topicId)
+	s.Require().NoError(err)
+	s.Require().True(found)
+	s.Require().NotEqual(firstNonce, secondNonce)
+	second, err := s.EmissionsKeeper().GetEpoch(later, topicId, secondNonce)
+	s.Require().NoError(err)
+	s.Require().Equal(int64(5_100), second.StartBlockHeight)
+	s.Require().Equal(types.EpochState_WORKER_SUBMISSION, second.State)
+
+	topic, err := s.TopicKeeper().GetTopic(ctx, topicId)
+	s.Require().NoError(err)
+	s.insertHeightRecords(ctx, topicId, first.StartBlockHeight, 1)
+	s.insertHeightRecords(ctx, topicId, second.StartBlockHeight, 2)
+
+	s.Require().NoError(s.EmissionsKeeper().CancelEpoch(ctx, topicId, firstNonce))
+
+	_, err = s.EmissionsKeeper().GetEpoch(ctx, topicId, firstNonce)
+	s.Require().ErrorIs(err, collections.ErrNotFound, "cancelled epoch is removed")
+	keptEpoch, err := s.EmissionsKeeper().GetEpoch(ctx, topicId, secondNonce)
+	s.Require().NoError(err)
+	s.Require().Equal(types.EpochState_WORKER_SUBMISSION, keptEpoch.State)
+	s.Require().Equal(second.StartBlockHeight, keptEpoch.StartBlockHeight)
+
+	prunedInferences, err := s.WorkerKeeper().GetInferencesAtBlock(ctx, topic, first.StartBlockHeight, false)
+	s.Require().NoError(err)
+	s.Require().Empty(prunedInferences.Inferences)
+	keptInferences, err := s.WorkerKeeper().GetInferencesAtBlock(ctx, topic, second.StartBlockHeight, false)
+	s.Require().NoError(err)
+	s.Require().Len(keptInferences.Inferences, 1)
+	s.Require().True(keptInferences.Inferences[0].Values[0].Equal(alloraMath.NewDecFromInt64(2)))
+
+	prunedLoss, err := s.ReputerLossKeeper().GetNetworkLossBundleAtBlock(ctx, topicId, first.StartBlockHeight)
+	s.Require().NoError(err)
+	s.Require().Empty(prunedLoss.InfererValues)
+	keptLoss, err := s.ReputerLossKeeper().GetNetworkLossBundleAtBlock(ctx, topicId, second.StartBlockHeight)
+	s.Require().NoError(err)
+	s.Require().NotEmpty(keptLoss.InfererValues)
+	s.Require().True(keptLoss.CombinedValue.Equal(alloraMath.NewDecFromInt64(2)))
+}
+
+func (s *KeeperTestSuite) insertHeightRecords(ctx sdk.Context, topicId uint64, height int64, value int64) {
+	inferences := types.Inferences{
+		Inferences: []*types.Inference{
+			{
+				TopicId:     topicId,
+				BlockHeight: height,
+				Values:      []alloraMath.Dec{alloraMath.NewDecFromInt64(value)},
+				Inferer:     s.AddrsStr(0),
+			},
+		},
+	}
+	s.Require().NoError(s.WorkerKeeper().InsertActiveInferences(ctx, topicId, height, inferences))
+
+	//nolint:exhaustruct // only the fields the prune check reads back
+	loss := types.ValueBundle{
+		TopicId:       topicId,
+		Reputer:       s.AddrsStr(4),
+		CombinedValue: alloraMath.NewDecFromInt64(value),
+		NaiveValue:    alloraMath.NewDecFromInt64(0),
+		ReputerRequestNonce: &types.ReputerRequestNonce{
+			ReputerNonce: &types.Nonce{BlockHeight: height},
+		},
+		InfererValues: []*types.WorkerAttributedValue{
+			{Worker: s.AddrsStr(0), Value: alloraMath.NewDecFromInt64(value)},
+		},
+	}
+	s.Require().NoError(s.ReputerLossKeeper().InsertNetworkLossBundleAtBlock(ctx, topicId, height, loss))
 }
 
 func (s *KeeperTestSuite) TestEpochFSMCancelFromReputerSubmission() {
