@@ -126,7 +126,9 @@ func (k *Keeper) StartNewEpoch(ctx context.Context, topicID TopicId) error {
 	epoch.TopicId = topicID
 	// Transitional bridge into height-keyed APIs (see Epoch.LegacyNonce).
 	epoch.StartBlockHeight = sdkCtx.BlockHeight()
-	k.epochFSMEngine.Init(&epoch) // Unnecessary but more formal
+	if err := k.epochFSMEngine.Init(&epoch); err != nil {
+		return err
+	}
 
 	if err := k.epochs.Set(ctx, epoch.Key(), epoch); err != nil {
 		return err
