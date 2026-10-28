@@ -117,9 +117,15 @@ func (k *Keeper) closeReputerWindow(ctx context.Context, epoch types.Epoch) erro
 
 func (k *Keeper) completeEpoch(ctx context.Context, epoch types.Epoch) error {
 	// Losses/weights/TopicRewardNonce are produced in closeReputerWindow via CloseReputerNonce
-	// when submissions exist. During the parallel EndBlocker period, coin payout + prune remain
-	// in rewards.EmitRewards so we do not delete TopicRewardNonce here (that would race EndBlocker).
-	// Mark the topic rewardable as a signal for reward selection.
+	// when submissions exist. EmitRewards pays that nonce and then deletes it. Marking the
+	// topic rewardable for any other nonce, including a missing one, would queue a second payout.
+	rewardNonce, err := k.topicKeeper.GetTopicRewardNonce(ctx, epoch.TopicId)
+	if err != nil {
+		return err
+	}
+	if rewardNonce != epoch.StartBlockHeight {
+		return nil
+	}
 	if err := k.topicKeeper.SetRewardableTopic(ctx, epoch.TopicId); err != nil {
 		return errorsmod.Wrap(err, "complete epoch: set rewardable topic")
 	}

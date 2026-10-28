@@ -27,8 +27,9 @@ message Params {
     (amino.dont_omitempty) = true
   ]; // minimum amount of tokens to send to stake as a reputer or worker
   int64 remove_stake_delay_window = 6; // how long to wait (blocks) before allowed to remove stake
-  int64 min_epoch_length = 7; // fastest allowable topic epoch and cadence of a
-  // repeating inference request
+  // Fastest topic epoch creators may set. Block count before the scheduler
+  // migration; seconds afterward, scaled by the same assumed block time.
+  int64 min_epoch_length = 7;
   string beta_entropy = 8 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false

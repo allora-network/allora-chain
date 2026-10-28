@@ -16,7 +16,7 @@ func DefaultParams() Params {
 		MinTopicWeight:                  alloraMath.MustNewDecFromString("100"),       // total weight for a topic < this => don't run inference solicitation or loss update
 		RequiredMinimumStake:            cosmosMath.NewInt(10000),                     // minimum stake required to be a worker or reputer
 		RemoveStakeDelayWindow:          int64((60 * 60 * 24 * 7 * 3) / 3),            // ~approx 3 weeks assuming 3 second block time, number of blocks to wait before finalizing a stake withdrawal
-		MinEpochLength:                  12,                                           // shortest number of blocks per epoch topics are allowed to set as their cadence
+		MinEpochLength:                  12,                                           // shortest epoch topics may set; blocks before the scheduler migration, seconds after it
 		BetaEntropy:                     alloraMath.MustNewDecFromString("0.25"),      // controls resilience of reward payouts against copycat workers
 		LearningRate:                    alloraMath.MustNewDecFromString("0.05"),      // speed of gradient descent
 		GradientDescentMaxIters:         uint64(10),                                   // max iterations on gradient descent
@@ -400,7 +400,7 @@ func validateRemoveStakeDelayWindow(i int64) error {
 	return nil
 }
 
-// Minimum number of blocks per epoch a topic can set.
+// Minimum epoch a topic can set. Blocks before the scheduler migration, seconds after it.
 // Should be >= 0.
 func validateMinEpochLength(i BlockHeight) error {
 	if i < 1 {
@@ -656,8 +656,8 @@ func validateMaxElementsPerForecast(_ uint64) error {
 	return nil
 }
 
-// maximum number of active topics per block
-// Should be zero or positive. Enforced by uint type
+// maximum number of active topics per block.
+// Zero is accepted. Arbitration then postpones every epoch task in that block.
 func validateMaxActiveTopicsPerBlock(_ uint64) error { return nil }
 
 // max this many top reputers by score are rewarded for a topic

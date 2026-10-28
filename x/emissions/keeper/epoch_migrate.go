@@ -169,6 +169,11 @@ func (k *Keeper) reconstructTopicInFlightEpochs(
 		// Topic timing fields are still in blocks here (conversion runs after reconstruct).
 		state := inferMigratedEpochState(topic, legacyHeight, currentHeight, workerOpen, reputerOpen)
 		if state == types.EpochState_COMPLETED || state == types.EpochState_CANCELLED {
+			// The topic is scheduler-managed after this migration, so EndBlocker will
+			// not close these nonces. Fulfill them here.
+			if err := k.fulfillMigratedLeftoverNonce(ctx, topicID, legacyHeight); err != nil {
+				return err
+			}
 			continue
 		}
 
@@ -181,8 +186,26 @@ func (k *Keeper) reconstructTopicInFlightEpochs(
 		if blocksElapsed < 0 {
 			blocksElapsed = 0
 		}
+		// Window times use blocksElapsed * assumed block time. That matches the
+		// height-based state above only when the chain's real block time equals
+		// the assumption. Log the inputs so a divergence is visible at upgrade.
+		sdkCtx.Logger().Info(
+			"reconstructing migrated epoch windows from assumed block time",
+			"topicId", topicID,
+			"legacyHeight", legacyHeight,
+			"blocksElapsed", blocksElapsed,
+			"assumedBlockTime", blockTime.String(),
+		)
 		startAt := now.Add(-time.Duration(blocksElapsed) * blockTime)
 		epoch := buildLegacyAlignedMigratedEpoch(nonce, topic, topicID, legacyHeight, startAt, state, blockTime)
+		// Height already passed ground-truth lag, but the assumed block time can
+		// place the reputer open in the future. Open it now so submissions are
+		// not stuck between the two clocks.
+		if state == types.EpochState_WAITING_GROUND_TRUTH &&
+			currentHeight >= legacyHeight+topic.GroundTruthLag &&
+			epoch.ReputerSubmissionWindow.OpenAt.After(now) {
+			epoch.ReputerSubmissionWindow.OpenAt = now
+		}
 		if err := k.epochs.Set(ctx, epoch.Key(), epoch); err != nil {
 			return err
 		}
@@ -201,6 +224,8 @@ func (k *Keeper) reconstructTopicInFlightEpochs(
 	return nil
 }
 
+// Runs while topic timing is still in blocks, so the close's height check
+// stays in block units. Conversion to seconds happens after every topic is reconstructed.
 func (k *Keeper) closeMigratedWorkerNonceIfUnfulfilled(
 	ctx context.Context,
 	topic types.Topic,
@@ -222,6 +247,10 @@ func (k *Keeper) closeMigratedWorkerNonceIfUnfulfilled(
 	return nil
 }
 
+// inferMigratedEpochState decides the epoch state from block height.
+// scheduleRemainingEpochLifecycle places the tasks on the wall clock using the
+// assumed block time. The two agree only when that assumption matches the
+// chain's real block time.
 func inferMigratedEpochState(
 	topic types.Topic,
 	legacyHeight, currentHeight int64,
@@ -266,6 +295,8 @@ func buildLegacyAlignedMigratedEpoch(
 	state types.EpochState,
 	blockTime time.Duration,
 ) types.Epoch {
+	// ExtraLag uses the pre-conversion block counts. The remainder is unchanged
+	// if both fields are later scaled by the same block time.
 	extraLag := types.TopicExtraLag(topic)
 	reputerOpenAt := startAt.Add(time.Duration(topic.GroundTruthLag) * blockTime)
 	epoch := types.Epoch{
@@ -297,7 +328,14 @@ func (k *Keeper) scheduleRemainingEpochLifecycle(ctx context.Context, epoch type
 		Nonce:   epoch.Nonce,
 	}
 
+	now := sdk.UnwrapSDKContext(ctx).BlockTime()
 	schedule := func(taskType string, at time.Time) error {
+		// The height path can already be inside or past a window while the
+		// 6s estimate still places that instant in the past. The scheduler
+		// rejects a past time, so run the task on this block instead.
+		if at.Before(now) {
+			at = now
+		}
 		return k.schedulerKeeper.ScheduleTask(
 			ctx,
 			taskType,
@@ -387,6 +425,29 @@ func mulPositiveOrZero(value, factor int64) (int64, error) {
 	return value * factor, nil
 }
 
+func (k *Keeper) fulfillMigratedLeftoverNonce(ctx context.Context, topicID TopicId, legacyHeight int64) error {
+	legacyNonce := types.Nonce{BlockHeight: legacyHeight}
+	workerUnfulfilled, err := k.nonceKeeper.IsWorkerNonceUnfulfilled(ctx, topicID, &legacyNonce)
+	if err != nil {
+		return err
+	}
+	if workerUnfulfilled {
+		if _, err := k.nonceKeeper.FulfillWorkerNonce(ctx, topicID, &legacyNonce); err != nil {
+			return err
+		}
+	}
+	reputerUnfulfilled, err := k.nonceKeeper.IsReputerNonceUnfulfilled(ctx, topicID, &legacyNonce)
+	if err != nil {
+		return err
+	}
+	if reputerUnfulfilled {
+		if _, err := k.nonceKeeper.FulfillReputerNonce(ctx, topicID, &legacyNonce); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func (k *Keeper) enrollActiveTopicAfterMigration(ctx context.Context, topicID TopicId) error {
 	hasLive, err := k.topicHasLiveEpoch(ctx, topicID)
 	if err != nil {
@@ -398,6 +459,25 @@ func (k *Keeper) enrollActiveTopicAfterMigration(ctx context.Context, topicID To
 		}
 	}
 	return k.schedulePeriodicNewEpoch(ctx, topicID)
+}
+
+func (k *Keeper) topicHasEpochAtStartHeight(ctx context.Context, topicID TopicId, height int64) (bool, error) {
+	rng := collections.NewPrefixedPairRange[TopicId, types.NonceV2](topicID)
+	iter, err := k.epochs.Iterate(ctx, rng)
+	if err != nil {
+		return false, err
+	}
+	defer iter.Close()
+	for ; iter.Valid(); iter.Next() {
+		epoch, err := iter.Value()
+		if err != nil {
+			return false, err
+		}
+		if epoch.StartBlockHeight == height {
+			return true, nil
+		}
+	}
+	return false, nil
 }
 
 func (k *Keeper) topicHasLiveEpoch(ctx context.Context, topicID TopicId) (bool, error) {

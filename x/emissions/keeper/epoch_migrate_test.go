@@ -328,6 +328,13 @@ func (s *KeeperTestSuite) TestMigrateThenPeriodicStartOverlapsReconstructedEpoch
 	oldEpoch, err = s.EmissionsKeeper().GetEpoch(s.Ctx(), topicID, oldNonce)
 	s.Require().NoError(err)
 	s.Require().Equal(types.EpochState_REPUTER_SUBMISSION, oldEpoch.State)
+	found, err = s.EmissionsKeeper().CheckReputerSubmissionWindow(s.Ctx(), topicID, oldEpoch.LegacyNonce())
+	s.Require().NoError(err)
+	s.Require().True(found, "reputer payloads follow the migrated epoch's legacy nonce")
+	found, err = s.EmissionsKeeper().CheckWorkerSubmissionWindow(s.Ctx(), topicID, newEpoch.LegacyNonce())
+	s.Require().Error(err, "the new epoch has left worker submission")
+	found, err = s.EmissionsKeeper().CheckReputerSubmissionWindow(s.Ctx(), topicID, newEpoch.LegacyNonce())
+	s.Require().Error(err, "the new epoch is not in its reputer window yet")
 	newEpoch, err = s.EmissionsKeeper().GetEpoch(s.Ctx(), topicID, newNonce)
 	s.Require().NoError(err)
 	s.Require().Equal(types.EpochState_WAITING_GROUND_TRUTH, newEpoch.State)
@@ -339,4 +346,184 @@ func (s *KeeperTestSuite) TestMigrateThenPeriodicStartOverlapsReconstructedEpoch
 	newEpoch, err = s.EmissionsKeeper().GetEpoch(s.Ctx(), topicID, newNonce)
 	s.Require().NoError(err, "newer epoch must still be in-flight after the leftover completes")
 	s.Require().Equal(types.EpochState_WAITING_GROUND_TRUTH, newEpoch.State)
+}
+
+func (s *KeeperTestSuite) countLiveEpochs(ctx sdk.Context, topicID uint64) int {
+	last, found, err := s.EmissionsKeeper().GetTopicLastEpochNonce(ctx, topicID)
+	s.Require().NoError(err)
+	if !found {
+		return 0
+	}
+	n := 0
+	nonce := types.ZeroNonce()
+	for {
+		nonce = nonce.NextNonce()
+		_, err := s.EmissionsKeeper().GetEpoch(ctx, topicID, nonce)
+		if err == nil {
+			n++
+		}
+		if nonce == last {
+			break
+		}
+	}
+	return n
+}
+
+func (s *KeeperTestSuite) assertMigratedWorkerWindow(blockTimeSecs int64) {
+	legacyHeight := int64(1_000)
+	ctx := s.Ctx().WithBlockHeight(legacyHeight + 5).WithBlockTime(time.Date(2026, 10, 1, 0, 0, 0, 0, time.UTC))
+	topicID := s.CreateTopic(
+		testutil.WithEpochLength(100),
+		testutil.WithGroundTruthLag(100),
+		testutil.WithWorkerSubmissionWindow(10),
+	)
+	s.markTopicActiveWithoutScheduler(ctx, topicID)
+	s.Require().NoError(s.NonceKeeper().AddWorkerNonce(ctx, topicID, &types.Nonce{BlockHeight: legacyHeight}))
+	s.Require().NoError(s.EmissionsKeeper().MigrateToSchedulerEpochsWithBlockTime(ctx, blockTimeSecs))
+
+	topic, err := s.TopicKeeper().GetTopic(ctx, topicID)
+	s.Require().NoError(err)
+	s.Require().Equal(int64(100*blockTimeSecs), topic.EpochLength)
+
+	lastNonce, found, err := s.EmissionsKeeper().GetTopicLastEpochNonce(ctx, topicID)
+	s.Require().NoError(err)
+	s.Require().True(found)
+	epoch, err := s.EmissionsKeeper().GetEpoch(ctx, topicID, lastNonce)
+	s.Require().NoError(err)
+	startAt := ctx.BlockTime().Add(-time.Duration(5*blockTimeSecs) * time.Second)
+	s.Require().Equal(startAt.Add(time.Duration(10*blockTimeSecs)*time.Second), epoch.WorkerSubmissionWindow.CloseAt)
+	s.Require().Equal(1, s.countLiveEpochs(ctx, topicID))
+}
+
+func (s *KeeperTestSuite) TestMigrateWindowsAtFiveSecondBlockTime() {
+	s.assertMigratedWorkerWindow(5)
+}
+
+func (s *KeeperTestSuite) TestMigrateWindowsAtSevenSecondBlockTime() {
+	s.assertMigratedWorkerWindow(7)
+}
+
+func (s *KeeperTestSuite) TestMigrateWaitingGroundTruthOpenIsNotInTheFuture() {
+	legacyHeight := int64(1_000)
+	now := time.Date(2026, 10, 2, 0, 0, 0, 0, time.UTC)
+	ctx := s.Ctx().WithBlockHeight(legacyHeight + 110).WithBlockTime(now)
+	topicID := s.CreateTopic(
+		testutil.WithEpochLength(100),
+		testutil.WithGroundTruthLag(100),
+		testutil.WithWorkerSubmissionWindow(10),
+	)
+	s.markTopicActiveWithoutScheduler(ctx, topicID)
+	s.Require().NoError(s.NonceKeeper().AddWorkerNonce(ctx, topicID, &types.Nonce{BlockHeight: legacyHeight}))
+	s.Require().NoError(s.EmissionsKeeper().MigrateToSchedulerEpochsWithBlockTime(ctx, 6))
+
+	lastNonce, found, err := s.EmissionsKeeper().GetTopicLastEpochNonce(ctx, topicID)
+	s.Require().NoError(err)
+	s.Require().True(found)
+	epoch, err := s.EmissionsKeeper().GetEpoch(ctx, topicID, lastNonce)
+	s.Require().NoError(err)
+	s.Require().Equal(types.EpochState_WAITING_GROUND_TRUTH, epoch.State)
+	s.Require().False(epoch.ReputerSubmissionWindow.OpenAt.After(now))
+
+	taskID := schedulertypes.TaskID(fmt.Sprintf("%s:%d-%d", types.OpenEpochReputerWindowTask, topicID, lastNonce))
+	task, err := s.SchedulerKeeper().GetTask(ctx, taskID)
+	s.Require().NoError(err)
+	s.Require().False(task.ScheduledFor.After(now))
+}
+
+func (s *KeeperTestSuite) TestMigrateActiveTopicWithNoNonceStartsOneEpoch() {
+	ctx := s.Ctx().WithBlockHeight(3_000).WithBlockTime(time.Date(2026, 10, 3, 0, 0, 0, 0, time.UTC))
+	topicID := s.CreateTopic(
+		testutil.WithEpochLength(100),
+		testutil.WithGroundTruthLag(100),
+		testutil.WithWorkerSubmissionWindow(10),
+	)
+	s.markTopicActiveWithoutScheduler(ctx, topicID)
+	s.Require().NoError(s.EmissionsKeeper().MigrateToSchedulerEpochsWithBlockTime(ctx, 6))
+	s.Require().Equal(1, s.countLiveEpochs(ctx, topicID))
+}
+
+func (s *KeeperTestSuite) TestStartNewEpochSkipsMigratedEpochAtSameHeight() {
+	height := int64(4_000)
+	ctx := s.Ctx().WithBlockHeight(height).WithBlockTime(time.Date(2026, 10, 4, 0, 0, 0, 0, time.UTC))
+	topicID := s.CreateTopic(
+		testutil.WithEpochLength(100),
+		testutil.WithGroundTruthLag(100),
+		testutil.WithWorkerSubmissionWindow(10),
+	)
+	s.markTopicActiveWithoutScheduler(ctx, topicID)
+	s.Require().NoError(s.NonceKeeper().AddWorkerNonce(ctx, topicID, &types.Nonce{BlockHeight: height}))
+	s.Require().NoError(s.EmissionsKeeper().MigrateToSchedulerEpochsWithBlockTime(ctx, 6))
+
+	lastNonce, found, err := s.EmissionsKeeper().GetTopicLastEpochNonce(ctx, topicID)
+	s.Require().NoError(err)
+	s.Require().True(found)
+	s.Require().NoError(s.EmissionsKeeper().StartNewEpoch(ctx, topicID))
+	lastAfter, found, err := s.EmissionsKeeper().GetTopicLastEpochNonce(ctx, topicID)
+	s.Require().NoError(err)
+	s.Require().True(found)
+	s.Require().Equal(lastNonce, lastAfter)
+	s.Require().Equal(1, s.countLiveEpochs(ctx, topicID))
+}
+
+func (s *KeeperTestSuite) TestMigrateThreeUnfulfilledHeightsBuildsThreeEpochs() {
+	ctx := s.Ctx().WithBlockHeight(1_205).WithBlockTime(time.Date(2026, 10, 5, 0, 0, 0, 0, time.UTC))
+	topicID := s.CreateTopic(
+		testutil.WithEpochLength(100),
+		testutil.WithGroundTruthLag(100),
+		testutil.WithWorkerSubmissionWindow(10),
+	)
+	s.markTopicActiveWithoutScheduler(ctx, topicID)
+	for _, height := range []int64{1_000, 1_100, 1_200} {
+		s.Require().NoError(s.NonceKeeper().AddWorkerNonce(ctx, topicID, &types.Nonce{BlockHeight: height}))
+	}
+	rewardNonce, err := s.TopicKeeper().GetTopicRewardNonce(ctx, topicID)
+	s.Require().NoError(err)
+	s.Require().Zero(rewardNonce)
+
+	s.Require().NoError(s.EmissionsKeeper().MigrateToSchedulerEpochsWithBlockTime(ctx, 6))
+	s.Require().Equal(3, s.countLiveEpochs(ctx, topicID))
+
+	// Migration does not choose a reward height. A later reputer close stores one
+	// TopicRewardNonce, and EndBlocker pays that stored height.
+	rewardNonce, err = s.TopicKeeper().GetTopicRewardNonce(ctx, topicID)
+	s.Require().NoError(err)
+	s.Require().Zero(rewardNonce)
+
+	for _, height := range []int64{1_000, 1_100} {
+		open, err := s.NonceKeeper().IsWorkerNonceUnfulfilled(ctx, topicID, &types.Nonce{BlockHeight: height})
+		s.Require().NoError(err)
+		s.Require().False(open)
+	}
+	open, err := s.NonceKeeper().IsWorkerNonceUnfulfilled(ctx, topicID, &types.Nonce{BlockHeight: 1_200})
+	s.Require().NoError(err)
+	s.Require().True(open)
+}
+
+func (s *KeeperTestSuite) TestMinEpochLengthBoundaryAfterMigration() {
+	ctx := s.Ctx().WithBlockHeight(1_000).WithBlockTime(time.Date(2026, 10, 6, 0, 0, 0, 0, time.UTC))
+	topicID := s.CreateTopic(
+		testutil.WithEpochLength(100),
+		testutil.WithGroundTruthLag(100),
+		testutil.WithWorkerSubmissionWindow(10),
+	)
+	s.markTopicActiveWithoutScheduler(ctx, topicID)
+	s.Require().NoError(s.EmissionsKeeper().MigrateToSchedulerEpochsWithBlockTime(ctx, 6))
+
+	params, err := s.ParamsKeeper().GetParams(ctx)
+	s.Require().NoError(err)
+	s.Require().Greater(params.MinEpochLength, int64(12))
+
+	okMsg := s.MockTopicMsg()
+	okMsg.Creator = s.AddrsStr(0)
+	okMsg.EpochLength = params.MinEpochLength
+	okMsg.GroundTruthLag = params.MinEpochLength
+	_, err = s.EmissionsMsgServer().CreateNewTopic(s.Ctx(), okMsg)
+	s.Require().NoError(err)
+
+	shortMsg := s.MockTopicMsg()
+	shortMsg.Creator = s.AddrsStr(0)
+	shortMsg.EpochLength = params.MinEpochLength - 1
+	shortMsg.GroundTruthLag = params.MinEpochLength - 1
+	_, err = s.EmissionsMsgServer().CreateNewTopic(s.Ctx(), shortMsg)
+	s.Require().ErrorIs(err, types.ErrTopicCadenceBelowMinimum)
 }

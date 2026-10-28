@@ -5,6 +5,8 @@ import (
 	"time"
 
 	"cosmossdk.io/collections"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	"github.com/allora-network/allora-chain/x/emissions/testutil"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	schedulertypes "github.com/allora-network/allora-chain/x/scheduler/types"
@@ -66,7 +68,7 @@ func (s *KeeperTestSuite) TestEpochFSMHappyPathInitToCompletedEmptySubmissions()
 
 	rewardable, err := s.TopicKeeper().IsRewardableTopic(ctx, topicId)
 	s.Require().NoError(err)
-	s.Require().True(rewardable, "complete must mark topic rewardable")
+	s.Require().False(rewardable, "empty close produces no reward nonce, so complete must not queue a payout")
 
 	taskIDSuffix := fmt.Sprintf(":%d-%d", topicId, lastNonce)
 	for _, taskType := range []string{
@@ -163,6 +165,62 @@ func (s *KeeperTestSuite) TestEpochFSMCancelFromReputerSubmission() {
 	reputerUnfulfilled, err = s.NonceKeeper().IsReputerNonceUnfulfilled(ctx, topicId, &legacyNonce)
 	s.Require().NoError(err)
 	s.Require().False(reputerUnfulfilled, "cancel must fulfill leftover reputer nonce")
+}
+
+func (s *KeeperTestSuite) driveEpochToReputerClose(topicId uint64) (sdk.Context, types.Epoch) {
+	ctx := s.Ctx().WithBlockHeight(5_000)
+	s.Require().NoError(s.EmissionsKeeper().StartNewEpoch(ctx, topicId))
+	lastNonce, found, err := s.EmissionsKeeper().GetTopicLastEpochNonce(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().True(found)
+	epoch, err := s.EmissionsKeeper().GetEpoch(ctx, topicId, lastNonce)
+	s.Require().NoError(err)
+
+	ctx = ctx.WithBlockTime(epoch.WorkerSubmissionWindow.CloseAt.Add(time.Nanosecond))
+	s.Require().NoError(s.SchedulerKeeper().BeginBlock(ctx))
+	epoch, err = s.EmissionsKeeper().GetEpoch(ctx, topicId, lastNonce)
+	s.Require().NoError(err)
+
+	ctx = ctx.WithBlockTime(epoch.ReputerSubmissionWindow.OpenAt.Add(time.Nanosecond))
+	s.Require().NoError(s.SchedulerKeeper().BeginBlock(ctx))
+	epoch, err = s.EmissionsKeeper().GetEpoch(ctx, topicId, lastNonce)
+	s.Require().NoError(err)
+	return ctx, epoch
+}
+
+func (s *KeeperTestSuite) TestCompleteEpochMarksRewardableWhenNonceMatchesStartHeight() {
+	topicId := s.CreateTopic(
+		testutil.WithEpochLength(100),
+		testutil.WithGroundTruthLag(100),
+		testutil.WithWorkerSubmissionWindow(10),
+	)
+	ctx, epoch := s.driveEpochToReputerClose(topicId)
+	s.Require().NoError(s.TopicKeeper().SetTopicRewardNonce(ctx, topicId, epoch.StartBlockHeight))
+
+	ctx = ctx.WithBlockTime(epoch.ReputerSubmissionWindow.CloseAt.Add(time.Nanosecond))
+	s.Require().NoError(s.SchedulerKeeper().BeginBlock(ctx))
+
+	rewardable, err := s.TopicKeeper().IsRewardableTopic(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().True(rewardable)
+}
+
+func (s *KeeperTestSuite) TestCompleteEpochDoesNotRemarkAfterRewardNonceRemoved() {
+	topicId := s.CreateTopic(
+		testutil.WithEpochLength(100),
+		testutil.WithGroundTruthLag(100),
+		testutil.WithWorkerSubmissionWindow(10),
+	)
+	ctx, epoch := s.driveEpochToReputerClose(topicId)
+	s.Require().NoError(s.TopicKeeper().SetTopicRewardNonce(ctx, topicId, epoch.StartBlockHeight))
+	s.Require().NoError(s.TopicKeeper().DeleteTopicRewardNonce(ctx, topicId))
+
+	ctx = ctx.WithBlockTime(epoch.ReputerSubmissionWindow.CloseAt.Add(time.Nanosecond))
+	s.Require().NoError(s.SchedulerKeeper().BeginBlock(ctx))
+
+	rewardable, err := s.TopicKeeper().IsRewardableTopic(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().False(rewardable)
 }
 
 func (s *KeeperTestSuite) TestStartNewEpochOpensWorkerNonceViaSideEffect() {
