@@ -125,6 +125,9 @@ var UpgradeScenarios = map[string]UpgradeScenario{
 			},
 		},
 	},
+	// v0.18.0 runs the emissions v17 migration. Reconstruction of an in-flight
+	// nonce, the seconds conversion, and a submission on the next epoch are
+	// exercised by TestMigrateStoreReconstructsInFlightNonceThenSubmitsNextEpoch.
 	v0_18_0.UpgradeName: {
 		UpgradeName:     v0_18_0.UpgradeName,
 		PlanHeightDelta: DefaultPlanHeightDelta,
