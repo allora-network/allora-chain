@@ -1931,7 +1931,8 @@ func TestParseLegacyInsertInfererPayloadEventAdmissionOutcomeUnspecified(t *test
 
 	// Drop the new attribute to reconstruct a pre-upgrade event, then decode
 	// it through the same path indexers use.
-	legacy := abci.Event{Type: events[0].Type} //nolint:exhaustruct
+	var legacy abci.Event
+	legacy.Type = events[0].Type
 	for _, attr := range events[0].Attributes {
 		if attr.Key == "admission_outcome" {
 			continue
