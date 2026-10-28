@@ -254,7 +254,14 @@ type QueryServiceClient interface {
 	GetReputerSubmissionWindowStatus(ctx context.Context, in *GetReputerSubmissionWindowStatusRequest, opts ...grpc.CallOption) (*GetReputerSubmissionWindowStatusResponse, error)
 	// GetEpoch returns a single in-flight epoch by topic id and NonceV2.
 	GetEpoch(ctx context.Context, in *GetEpochRequest, opts ...grpc.CallOption) (*GetEpochResponse, error)
-	// GetTopicEpochs returns all in-flight epochs for a topic (completed/cancelled are pruned).
+	// GetTopicEpochs lists the topic's live epochs, oldest NonceV2 first.
+	// Completed and cancelled epochs are removed. Past inferences and losses
+	// remain in the height-keyed stores.
+	//
+	// During the migration overlap a topic can have a migrated epoch in
+	// reputer submission and a new epoch in worker submission at the same time.
+	// Submit at that epoch's start_block_height. EpochLastEnded and EpochLength
+	// are seconds after the migration, so adding them does not produce a nonce.
 	GetTopicEpochs(ctx context.Context, in *GetTopicEpochsRequest, opts ...grpc.CallOption) (*GetTopicEpochsResponse, error)
 }
 
@@ -1480,7 +1487,14 @@ type QueryServiceServer interface {
 	GetReputerSubmissionWindowStatus(context.Context, *GetReputerSubmissionWindowStatusRequest) (*GetReputerSubmissionWindowStatusResponse, error)
 	// GetEpoch returns a single in-flight epoch by topic id and NonceV2.
 	GetEpoch(context.Context, *GetEpochRequest) (*GetEpochResponse, error)
-	// GetTopicEpochs returns all in-flight epochs for a topic (completed/cancelled are pruned).
+	// GetTopicEpochs lists the topic's live epochs, oldest NonceV2 first.
+	// Completed and cancelled epochs are removed. Past inferences and losses
+	// remain in the height-keyed stores.
+	//
+	// During the migration overlap a topic can have a migrated epoch in
+	// reputer submission and a new epoch in worker submission at the same time.
+	// Submit at that epoch's start_block_height. EpochLastEnded and EpochLength
+	// are seconds after the migration, so adding them does not produce a nonce.
 	GetTopicEpochs(context.Context, *GetTopicEpochsRequest) (*GetTopicEpochsResponse, error)
 	mustEmbedUnimplementedQueryServiceServer()
 }

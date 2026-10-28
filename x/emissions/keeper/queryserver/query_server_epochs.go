@@ -28,8 +28,11 @@ func (qs queryServer) GetEpoch(ctx context.Context, req *types.GetEpochRequest) 
 
 func (qs queryServer) GetTopicEpochs(ctx context.Context, req *types.GetTopicEpochsRequest) (_ *types.GetTopicEpochsResponse, err error) {
 	defer metrics.RecordMetrics("GetTopicEpochs", time.Now(), &err)
+	if req == nil {
+		return nil, status.Error(codes.InvalidArgument, "empty request")
+	}
 
-	epochs, err := qs.k.GetTopicEpochs(ctx, req.TopicId)
+	epochs, page, err := qs.k.GetTopicEpochsPage(ctx, req.TopicId, req.Pagination)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
@@ -38,5 +41,5 @@ func (qs queryServer) GetTopicEpochs(ctx context.Context, req *types.GetTopicEpo
 	for i := range epochs {
 		out = append(out, &epochs[i])
 	}
-	return &types.GetTopicEpochsResponse{Epochs: out}, nil
+	return &types.GetTopicEpochsResponse{Epochs: out, Pagination: page}, nil
 }

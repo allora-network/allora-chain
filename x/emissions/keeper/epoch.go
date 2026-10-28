@@ -8,6 +8,7 @@ import (
 	"github.com/allora-network/allora-chain/fsm"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/query"
 )
 
 type EpochFSMSymbol int
@@ -163,8 +164,9 @@ func (k *Keeper) GetEpoch(ctx context.Context, topicID TopicId, nonce types.Nonc
 	return k.epochs.Get(ctx, collections.Join(topicID, nonce))
 }
 
-// GetTopicEpochs returns all in-flight epochs for a topic, ordered by NonceV2 ascending.
-// Completed and cancelled epochs are removed from the store, so this is the live set only.
+// GetTopicEpochs returns the topic's live epochs, ordered by NonceV2 ascending.
+// Completed and cancelled epochs are removed from the store. Past inferences
+// and losses stay in the height-keyed stores.
 func (k *Keeper) GetTopicEpochs(ctx context.Context, topicID TopicId) ([]types.Epoch, error) {
 	rng := collections.NewPrefixedPairRange[TopicId, types.NonceV2](topicID)
 	iter, err := k.epochs.Iterate(ctx, rng)
@@ -182,6 +184,24 @@ func (k *Keeper) GetTopicEpochs(ctx context.Context, topicID TopicId) ([]types.E
 		epochs = append(epochs, epoch)
 	}
 	return epochs, nil
+}
+
+// GetTopicEpochsPage returns the same live set as GetTopicEpochs, one page at a time.
+// The store key orders NonceV2 ascending within a topic.
+func (k *Keeper) GetTopicEpochsPage(
+	ctx context.Context,
+	topicID TopicId,
+	pageReq *query.PageRequest,
+) ([]types.Epoch, *query.PageResponse, error) {
+	return query.CollectionPaginate(
+		ctx,
+		k.epochs,
+		pageReq,
+		func(_ collections.Pair[TopicId, types.NonceV2], epoch types.Epoch) (types.Epoch, error) {
+			return epoch, nil
+		},
+		query.WithCollectionPaginationPairPrefix[TopicId, types.NonceV2](topicID),
+	)
 }
 
 // OnTopicActivated starts the first epoch and registers the periodic new-epoch task for the topic.

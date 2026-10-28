@@ -955,7 +955,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				{
 					RpcMethod: "GetTopicEpochs",
 					Use:       "topic-epochs [topic_id]",
-					Short:     "List all in-flight epochs for a topic",
+					Short:     "List live epochs for a topic, oldest nonce first. Submit at start_block_height.",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "topic_id"},
 					},

@@ -2,6 +2,7 @@ syntax = "proto3";
 package emissions.v10;
 
 import "amino/amino.proto";
+import "cosmos/base/query/v1beta1/pagination.proto";
 import "cosmos/query/v1/query.proto";
 import "cosmos_proto/cosmos.proto";
 import "emissions/v10/inference.proto";
@@ -572,7 +573,14 @@ service QueryService {
     option (google.api.http).get = "/emissions/v10/epochs/{topic_id}/{nonce}";
   }
 
-  // GetTopicEpochs returns all in-flight epochs for a topic (completed/cancelled are pruned).
+  // GetTopicEpochs lists the topic's live epochs, oldest NonceV2 first.
+  // Completed and cancelled epochs are removed. Past inferences and losses
+  // remain in the height-keyed stores.
+  //
+  // During the migration overlap a topic can have a migrated epoch in
+  // reputer submission and a new epoch in worker submission at the same time.
+  // Submit at that epoch's start_block_height. EpochLastEnded and EpochLength
+  // are seconds after the migration, so adding them does not produce a nonce.
   rpc GetTopicEpochs(GetTopicEpochsRequest) returns (GetTopicEpochsResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v10/epochs/{topic_id}";
@@ -1679,8 +1687,10 @@ message GetEpochResponse {
 
 message GetTopicEpochsRequest {
   uint64 topic_id = 1;
+  cosmos.base.query.v1beta1.PageRequest pagination = 2;
 }
 
 message GetTopicEpochsResponse {
   repeated Epoch epochs = 1;
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
 }

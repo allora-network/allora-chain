@@ -3,6 +3,7 @@ package queryserver_test
 import (
 	"github.com/allora-network/allora-chain/x/emissions/testutil"
 	"github.com/allora-network/allora-chain/x/emissions/types"
+	"github.com/cosmos/cosmos-sdk/types/query"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -44,6 +45,27 @@ func (s *QueryServerTestSuite) TestGetEpochAndGetTopicEpochs() {
 	s.Require().NoError(err)
 	s.Require().Len(list.Epochs, 2)
 	s.Require().True(list.Epochs[0].Nonce < list.Epochs[1].Nonce)
+
+	firstPage, err := queryServer.GetTopicEpochs(ctx, &types.GetTopicEpochsRequest{
+		TopicId:    topicID,
+		Pagination: &query.PageRequest{Limit: 1},
+	})
+	s.Require().NoError(err)
+	s.Require().Len(firstPage.Epochs, 1)
+	s.Require().Equal(list.Epochs[0].Nonce, firstPage.Epochs[0].Nonce)
+	s.Require().NotEmpty(firstPage.Pagination.NextKey)
+
+	secondPage, err := queryServer.GetTopicEpochs(ctx, &types.GetTopicEpochsRequest{
+		TopicId: topicID,
+		Pagination: &query.PageRequest{
+			Key:   firstPage.Pagination.NextKey,
+			Limit: 1,
+		},
+	})
+	s.Require().NoError(err)
+	s.Require().Len(secondPage.Epochs, 1)
+	s.Require().Equal(list.Epochs[1].Nonce, secondPage.Epochs[0].Nonce)
+	s.Require().Empty(secondPage.Pagination.NextKey)
 }
 
 func (s *QueryServerTestSuite) TestGetEpochNotFound() {
