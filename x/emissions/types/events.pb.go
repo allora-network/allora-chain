@@ -5002,8 +5002,10 @@ func (m *EventTopicRewardForfeitedDistributionFailed) GetRewardNonce() int64 {
 // by age, or its close fails and it is dropped during cleanup. Consumers key
 // on `nonce`, the expired nonce itself, not on the block the event is emitted
 // in. `actor_type` says what kind of nonce expired: a worker nonce (no
-// inferences arrived for that epoch) or a reputer nonce (no losses arrived,
-// so the epoch gets no rewards).
+// inferences arrived for that epoch) carries ACTOR_TYPE_INFERER_UNSPECIFIED,
+// the zero value, and a reputer nonce (no losses arrived, so the epoch gets no
+// rewards) carries ACTOR_TYPE_REPUTER. The zero value here is meaningful, not
+// unset: key on the enum name.
 type EventNonceExpired struct {
 	TopicId uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
 	// The expired nonce: the epoch the submissions were due for.
