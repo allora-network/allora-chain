@@ -128,4 +128,7 @@ var (
 	// updated with a non-zero max_top_inferers_to_reward below the global
 	// Params.MinTopInferersToReward.
 	ErrTopicMaxTopInferersToRewardTooSmall = errors.Register(ModuleName, 102, "topic max_top_inferers_to_reward is below the global minimum")
+	// ErrDuplicateActorInValueBundle is raised when a value bundle names the
+	// same worker or forecaster more than once in a slice keyed by that actor.
+	ErrDuplicateActorInValueBundle = errors.Register(ModuleName, 103, "duplicate actor in value bundle")
 )

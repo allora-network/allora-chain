@@ -1400,3 +1400,129 @@ func TestInputInference_ValidateWithLimits_RejectsInvalidLabel(t *testing.T) {
 	}
 	require.Error(t, in4.ValidateWithLimits(4, nil, 64, false))
 }
+
+func validInputValueBundleForDupTests() *InputValueBundle {
+	return &InputValueBundle{ //nolint:exhaustruct // only the fields needed by the duplicate-actor tests are set
+		TopicId:             1,
+		ReputerRequestNonce: &ReputerRequestNonce{ReputerNonce: &Nonce{BlockHeight: 100}},
+		Reputer:             "allo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqas6usy",
+		CombinedValue:       alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("1")),
+		NaiveValue:          alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("1")),
+		InfererValues: []*InputWorkerAttributedValue{{
+			Worker: "allo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqas6usy",
+			Value:  alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("1")),
+		}},
+	}
+}
+
+func TestInputValueBundle_ValidateRejectsDuplicateActors(t *testing.T) {
+	addr := "allo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqas6usy"
+	other := "allo10ljt8c3nuky75nnca4gnt9sqaxrmmyaz4d520a"
+	val := alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("1"))
+	dupWorker := []*InputWorkerAttributedValue{
+		{Worker: addr, Value: val},
+		{Worker: addr, Value: val},
+	}
+	dupWithheld := []*InputWithheldWorkerAttributedValue{
+		{Worker: addr, Value: val},
+		{Worker: addr, Value: val},
+	}
+
+	tests := []struct {
+		name   string
+		mutate func(*InputValueBundle)
+	}{
+		{
+			name: "duplicate inferer",
+			mutate: func(b *InputValueBundle) {
+				b.InfererValues = dupWorker
+			},
+		},
+		{
+			name: "duplicate forecaster",
+			mutate: func(b *InputValueBundle) {
+				b.ForecasterValues = dupWorker
+			},
+		},
+		{
+			name: "duplicate one-out inferer",
+			mutate: func(b *InputValueBundle) {
+				b.OneOutInfererValues = dupWithheld
+			},
+		},
+		{
+			name: "duplicate one-out forecaster",
+			mutate: func(b *InputValueBundle) {
+				b.OneOutForecasterValues = dupWithheld
+			},
+		},
+		{
+			name: "duplicate one-in forecaster",
+			mutate: func(b *InputValueBundle) {
+				b.OneInForecasterValues = dupWorker
+			},
+		},
+		{
+			name: "duplicate one-out inferer-forecaster row",
+			mutate: func(b *InputValueBundle) {
+				row := &InputOneOutInfererForecasterValues{
+					Forecaster: addr,
+					OneOutInfererValues: []*InputWithheldWorkerAttributedValue{
+						{Worker: addr, Value: val},
+					},
+				}
+				b.OneOutInfererForecasterValues = []*InputOneOutInfererForecasterValues{row, {
+					Forecaster: addr,
+					OneOutInfererValues: []*InputWithheldWorkerAttributedValue{
+						{Worker: other, Value: val},
+					},
+				}}
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			b := validInputValueBundleForDupTests()
+			tt.mutate(b)
+			require.ErrorIs(t, b.Validate(), ErrDuplicateActorInValueBundle)
+		})
+	}
+
+	distinct := validInputValueBundleForDupTests()
+	distinct.InfererValues = []*InputWorkerAttributedValue{
+		{Worker: addr, Value: val},
+		{Worker: other, Value: val},
+	}
+	require.NoError(t, distinct.Validate())
+}
+
+func TestInputOneOutInfererForecasterValues_ValidateRejectsDuplicateInferers(t *testing.T) {
+	addr := "allo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqas6usy"
+	val := alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("1"))
+	row := &InputOneOutInfererForecasterValues{
+		Forecaster: addr,
+		OneOutInfererValues: []*InputWithheldWorkerAttributedValue{
+			{Worker: addr, Value: val},
+			{Worker: addr, Value: val},
+		},
+	}
+	require.ErrorIs(t, row.Validate(), ErrDuplicateActorInValueBundle)
+}
+
+func TestValueBundle_ValidateRejectsDuplicateActors(t *testing.T) {
+	addr := "allo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqas6usy"
+	dec := alloraMath.MustNewDecFromString("1")
+	bundle := &ValueBundle{ //nolint:exhaustruct // only the fields needed by the duplicate-actor test are set
+		TopicId:             1,
+		ReputerRequestNonce: &ReputerRequestNonce{ReputerNonce: &Nonce{BlockHeight: 100}},
+		Reputer:             addr,
+		CombinedValue:       dec,
+		NaiveValue:          dec,
+		InfererValues: []*WorkerAttributedValue{
+			{Worker: addr, Value: dec},
+			{Worker: addr, Value: dec},
+		},
+	}
+	require.ErrorIs(t, bundle.Validate(), ErrDuplicateActorInValueBundle)
+}

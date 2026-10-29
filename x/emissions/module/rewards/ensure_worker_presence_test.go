@@ -24,8 +24,10 @@ func withheldValuesByWorker(values []*types.WithheldWorkerAttributedValue) map[s
 	return byWorker
 }
 
+// Note from v0.18.0 onwards, these tests (first-seen deduping) will be exercised over previously-stored legacy data,
+// since validations are stricter and duplicates are disallowed from that point forward.
 func TestEnsureWorkerPresenceKeepsFirstForecasterRow(t *testing.T) {
-	bundle := &types.LossBundle{
+	bundle := &types.LossBundle{ //nolint:exhaustruct // only the one-out-inferer forecaster rows are under test
 		OneOutInfererForecasterValues: []*types.OneOutInfererForecasterValues{
 			{
 				Forecaster: presenceForecaster,
@@ -61,7 +63,7 @@ func TestEnsureWorkerPresenceKeepsFirstForecasterRow(t *testing.T) {
 }
 
 func TestEnsureWorkerPresenceAlignsDroppedWorkerWithNaN(t *testing.T) {
-	first := &types.LossBundle{
+	first := &types.LossBundle{ //nolint:exhaustruct // only the one-out-inferer forecaster rows are under test
 		OneOutInfererForecasterValues: []*types.OneOutInfererForecasterValues{
 			{
 				Forecaster: presenceForecaster,
@@ -77,7 +79,7 @@ func TestEnsureWorkerPresenceAlignsDroppedWorkerWithNaN(t *testing.T) {
 			},
 		},
 	}
-	second := &types.LossBundle{
+	second := &types.LossBundle{ //nolint:exhaustruct // only the one-out-inferer forecaster rows are under test
 		OneOutInfererForecasterValues: []*types.OneOutInfererForecasterValues{
 			{
 				Forecaster: presenceForecaster,
@@ -106,7 +108,7 @@ func TestEnsureWorkerPresenceAlignsDroppedWorkerWithNaN(t *testing.T) {
 }
 
 func TestEnsureWorkerPresenceEmptyRowDoesNotShadowLaterRow(t *testing.T) {
-	bundle := &types.LossBundle{
+	bundle := &types.LossBundle{ //nolint:exhaustruct // only the one-out-inferer forecaster rows are under test
 		OneOutInfererForecasterValues: []*types.OneOutInfererForecasterValues{
 			{
 				Forecaster:          presenceForecaster,
