@@ -70,6 +70,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * [#968](https://github.com/allora-network/allora-chain/pull/968) Per-topic `max_top_inferers_to_reward`, required within the global range, with migration v16
 * [#969](https://github.com/allora-network/allora-chain/pull/969) New global `min_top_inferers_to_reward` as the floor for the per-topic inferer cap (default `5`)
 * [#1005](https://github.com/allora-network/allora-chain/pull/1005) `nonce`, the epoch nonce, on every `emissions.v10` event that carries the epoch under `block_height` or `nonce_block_height` (listed under Deprecated), and on the `Get{Worker,Reputer}SubmissionWindowStatus` responses
+* [#1007](https://github.com/allora-network/allora-chain/pull/1007) `labels` on `EventEpochLabelRegistryFrozen`: the frozen registry's label names in compact-id order (`labels[i]` has id `i+1`)
 
 ### Changed
 
