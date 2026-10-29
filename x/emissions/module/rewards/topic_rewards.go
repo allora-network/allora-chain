@@ -210,6 +210,19 @@ func GetAndUpdateActiveTopicWeights(
 			ctx.Logger().Debug("Topic inactivated at block", "topicId", topic.Id, "block", block)
 			continue
 		}
+
+		// A refused reactivation inactivates the topic, like the below-minimum-weight branch
+		// above: it must not be rewarded or given a new nonce for an epoch it will not run.
+		// Only a topic that still has a schedule after the attempt is rewardable.
+		isScheduled, err := k.GetTopicKeeper().IsTopicScheduled(ctx, topicId)
+		if err != nil {
+			return nil, alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to check whether topic %d is scheduled", topicId)
+		}
+		if !isScheduled {
+			ctx.Logger().Debug("Topic was inactivated by a refused reactivation, skipping rewards", "topicId", topicId, "block", block)
+			continue
+		}
+
 		totalRevenue = totalRevenue.Add(topicFeeRevenue)
 		weights[topic.Id] = &weight
 		sumWeight, err = sumWeight.Add(weight)

@@ -3,7 +3,11 @@ package keeper_test
 import (
 	"context"
 
+	abci "github.com/cometbft/cometbft/abci/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	"github.com/allora-network/allora-chain/x/emissions/testutil"
+	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
 //nolint:exhaustruct
@@ -187,6 +191,73 @@ func (s *KeeperTestSuite) TestWhitelistEnableDisableOperations() {
 			s.Require().False(enabled)
 		})
 	}
+}
+
+// TestTopicWhitelistGateEventsAreTransitionGuarded pins that the keeper emits
+// exactly one Enabled/Disabled event per actual gate transition: a no-op
+// re-enable or disable-on-disabled emits nothing.
+func (s *KeeperTestSuite) TestTopicWhitelistGateEventsAreTransitionGuarded() {
+	k := s.WhitelistsKeeper()
+	topicId := uint64(2)
+
+	testCases := []struct {
+		name    string
+		enable  func(context.Context, uint64) error
+		disable func(context.Context, uint64) error
+	}{
+		{
+			name:    "worker gate",
+			enable:  k.EnableTopicWorkerWhitelist,
+			disable: k.DisableTopicWorkerWhitelist,
+		},
+		{
+			name:    "reputer gate",
+			enable:  k.EnableTopicReputerWhitelist,
+			disable: k.DisableTopicReputerWhitelist,
+		},
+	}
+
+	for _, tc := range testCases {
+		s.Run(tc.name, func() {
+			ctx := s.Ctx().WithEventManager(sdk.NewEventManager())
+
+			s.Require().NoError(tc.enable(ctx, topicId))
+			enabled, disabled := countTopicGateEvents(ctx)
+			s.Require().Equal(1, enabled, "enable must emit one Enabled event")
+			s.Require().Zero(disabled, "enable must not emit a Disabled event")
+
+			s.Require().NoError(tc.enable(ctx, topicId))
+			enabled, disabled = countTopicGateEvents(ctx)
+			s.Require().Equal(1, enabled, "no-op re-enable must not emit")
+			s.Require().Zero(disabled)
+
+			s.Require().NoError(tc.disable(ctx, topicId))
+			enabled, disabled = countTopicGateEvents(ctx)
+			s.Require().Equal(1, enabled)
+			s.Require().Equal(1, disabled, "disable must emit one Disabled event")
+
+			s.Require().NoError(tc.disable(ctx, topicId))
+			enabled, disabled = countTopicGateEvents(ctx)
+			s.Require().Equal(1, enabled)
+			s.Require().Equal(1, disabled, "no-op disable must not emit")
+		})
+	}
+}
+
+func countTopicGateEvents(ctx sdk.Context) (enabled, disabled int) {
+	for _, ev := range ctx.EventManager().Events() {
+		parsed, err := sdk.ParseTypedEvent(abci.Event(ev))
+		if err != nil {
+			continue
+		}
+		switch parsed.(type) {
+		case *types.EventTopicWorkerWhitelistEnabled, *types.EventTopicReputerWhitelistEnabled:
+			enabled++
+		case *types.EventTopicWorkerWhitelistDisabled, *types.EventTopicReputerWhitelistDisabled:
+			disabled++
+		}
+	}
+	return enabled, disabled
 }
 
 func (s *KeeperTestSuite) TestWhitelistEnabledOperations() {
