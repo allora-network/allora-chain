@@ -73,20 +73,72 @@ func (k *WhitelistsKeeper) RemoveWhitelistAdmin(ctx context.Context, admin Actor
 	return k.whitelistAdmins.Remove(ctx, admin)
 }
 
+// EnableTopicWorkerWhitelist turns on the worker gate and emits an Enabled
+// event only when the gate actually changes state.
 func (k *WhitelistsKeeper) EnableTopicWorkerWhitelist(ctx context.Context, topicId TopicId) error {
-	return k.topicWorkerWhitelistEnabled.Set(ctx, topicId)
+	enabled, err := k.topicWorkerWhitelistEnabled.Has(ctx, topicId)
+	if err != nil {
+		return errorsmod.Wrap(err, "error checking topic worker whitelist enabled")
+	}
+	if enabled {
+		return nil
+	}
+	if err := k.topicWorkerWhitelistEnabled.Set(ctx, topicId); err != nil {
+		return err
+	}
+	types.EmitNewTopicWorkerWhitelistEnabledEvent(ctx, topicId)
+	return nil
 }
 
+// DisableTopicWorkerWhitelist turns off the worker gate and emits a Disabled
+// event only when the gate actually changes state.
 func (k *WhitelistsKeeper) DisableTopicWorkerWhitelist(ctx context.Context, topicId TopicId) error {
-	return k.topicWorkerWhitelistEnabled.Remove(ctx, topicId)
+	enabled, err := k.topicWorkerWhitelistEnabled.Has(ctx, topicId)
+	if err != nil {
+		return errorsmod.Wrap(err, "error checking topic worker whitelist enabled")
+	}
+	if !enabled {
+		return nil
+	}
+	if err := k.topicWorkerWhitelistEnabled.Remove(ctx, topicId); err != nil {
+		return err
+	}
+	types.EmitNewTopicWorkerWhitelistDisabledEvent(ctx, topicId)
+	return nil
 }
 
+// EnableTopicReputerWhitelist turns on the reputer gate and emits an Enabled
+// event only when the gate actually changes state.
 func (k *WhitelistsKeeper) EnableTopicReputerWhitelist(ctx context.Context, topicId TopicId) error {
-	return k.topicReputerWhitelistEnabled.Set(ctx, topicId)
+	enabled, err := k.topicReputerWhitelistEnabled.Has(ctx, topicId)
+	if err != nil {
+		return errorsmod.Wrap(err, "error checking topic reputer whitelist enabled")
+	}
+	if enabled {
+		return nil
+	}
+	if err := k.topicReputerWhitelistEnabled.Set(ctx, topicId); err != nil {
+		return err
+	}
+	types.EmitNewTopicReputerWhitelistEnabledEvent(ctx, topicId)
+	return nil
 }
 
+// DisableTopicReputerWhitelist turns off the reputer gate and emits a Disabled
+// event only when the gate actually changes state.
 func (k *WhitelistsKeeper) DisableTopicReputerWhitelist(ctx context.Context, topicId TopicId) error {
-	return k.topicReputerWhitelistEnabled.Remove(ctx, topicId)
+	enabled, err := k.topicReputerWhitelistEnabled.Has(ctx, topicId)
+	if err != nil {
+		return errorsmod.Wrap(err, "error checking topic reputer whitelist enabled")
+	}
+	if !enabled {
+		return nil
+	}
+	if err := k.topicReputerWhitelistEnabled.Remove(ctx, topicId); err != nil {
+		return err
+	}
+	types.EmitNewTopicReputerWhitelistDisabledEvent(ctx, topicId)
+	return nil
 }
 
 func (k *WhitelistsKeeper) AddToGlobalWhitelist(ctx context.Context, actor ActorId) error {
