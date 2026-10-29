@@ -737,6 +737,8 @@ func (s *WorkerTestSuite) TestCloseWorkerNonceFailedEmitsNonceExpired() {
 			Values: []*types.InputLabeledValue{
 				{Label: "a", Value: mustBounded("0.1")},
 			},
+			ExtraData: nil,
+			Proof:     "",
 		}
 		inf, err := s.WorkerKeeper().NormalizeInputInference(s.Ctx(), topic, blockHeight, &input)
 		s.Require().NoError(err)
