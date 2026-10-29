@@ -61,6 +61,17 @@ func ValidateDecs(values []alloraMath.Dec) error {
 	return nil
 }
 
+// rejectDuplicateActor fails if actor was already recorded in seen. Slices
+// keyed by worker or forecaster must name each actor at most once; a second
+// occurrence is rejected rather than silently dropped later.
+func rejectDuplicateActor(seen map[string]struct{}, actor, field string) error {
+	if _, exists := seen[actor]; exists {
+		return errors.Wrapf(ErrDuplicateActorInValueBundle, "duplicate %s %q", field, actor)
+	}
+	seen[actor] = struct{}{}
+	return nil
+}
+
 // ValidateSdkInt checks if the given value is a valid cosmosMath.Int
 // according to our needs / standards
 func ValidateSdkInt(value cosmosMath.Int) error {
@@ -554,49 +565,73 @@ func (bundle *InputValueBundle) Validate() error {
 
 	// nil values for bundle.InfererValues are interpreted to mean that there
 	// are no inferer values for this bundle, and are allowed
+	infererSeen := make(map[string]struct{}, len(bundle.InfererValues))
 	for _, infererValue := range bundle.InfererValues {
 		if err := infererValue.Validate(); err != nil {
 			return errors.Wrap(err, "value bundle inferer value is invalid")
+		}
+		if err := rejectDuplicateActor(infererSeen, infererValue.Worker, "inferer"); err != nil {
+			return errors.Wrap(err, "value bundle inferer values")
 		}
 	}
 
 	// nil values for bundle.ForecasterValues are interpreted to mean that there
 	// are no forecaster values for this bundle, and are allowed
+	forecasterSeen := make(map[string]struct{}, len(bundle.ForecasterValues))
 	for _, forecasterValue := range bundle.ForecasterValues {
 		if err := forecasterValue.Validate(); err != nil {
 			return errors.Wrap(err, "value bundle forecaster value is invalid")
+		}
+		if err := rejectDuplicateActor(forecasterSeen, forecasterValue.Worker, "forecaster"); err != nil {
+			return errors.Wrap(err, "value bundle forecaster values")
 		}
 	}
 
 	// nil values for bundle.OneOutInfererValues are interpreted to mean that there
 	// are no one out inferer values for this bundle, and are allowed
+	oneOutInfererSeen := make(map[string]struct{}, len(bundle.OneOutInfererValues))
 	for _, oneOutInfererValue := range bundle.OneOutInfererValues {
 		if err := oneOutInfererValue.Validate(); err != nil {
 			return errors.Wrap(err, "value bundle one out inferer value is invalid")
+		}
+		if err := rejectDuplicateActor(oneOutInfererSeen, oneOutInfererValue.Worker, "inferer"); err != nil {
+			return errors.Wrap(err, "value bundle one out inferer values")
 		}
 	}
 
 	// nil values for bundle.OneOutForecasterValues are interpreted to mean that there
 	// are no one out forecaster values for this bundle, and are allowed
+	oneOutForecasterSeen := make(map[string]struct{}, len(bundle.OneOutForecasterValues))
 	for _, oneOutForecasterValue := range bundle.OneOutForecasterValues {
 		if err := oneOutForecasterValue.Validate(); err != nil {
 			return errors.Wrap(err, "value bundle one out forecaster value is invalid")
+		}
+		if err := rejectDuplicateActor(oneOutForecasterSeen, oneOutForecasterValue.Worker, "forecaster"); err != nil {
+			return errors.Wrap(err, "value bundle one out forecaster values")
 		}
 	}
 
 	// nil values for bundle.OneInForecasterValues are interpreted to mean that there
 	// are no one in forecaster values for this bundle, and are allowed
+	oneInForecasterSeen := make(map[string]struct{}, len(bundle.OneInForecasterValues))
 	for _, oneInForecasterValue := range bundle.OneInForecasterValues {
 		if err := oneInForecasterValue.Validate(); err != nil {
 			return errors.Wrap(err, "value bundle one in forecaster value is invalid")
+		}
+		if err := rejectDuplicateActor(oneInForecasterSeen, oneInForecasterValue.Worker, "forecaster"); err != nil {
+			return errors.Wrap(err, "value bundle one in forecaster values")
 		}
 	}
 
 	// nil values for bundle.OneOutInfererForecasterValues are interpreted to mean that there
 	// are no one out inferer forecaster values for this bundle, and are allowed
+	ooifForecasterSeen := make(map[string]struct{}, len(bundle.OneOutInfererForecasterValues))
 	for _, oneOutInfererForecaster := range bundle.OneOutInfererForecasterValues {
 		if err := oneOutInfererForecaster.Validate(); err != nil {
 			return errors.Wrap(err, "value bundle one out inferer forecaster value is invalid")
+		}
+		if err := rejectDuplicateActor(ooifForecasterSeen, oneOutInfererForecaster.Forecaster, "forecaster"); err != nil {
+			return errors.Wrap(err, "value bundle one out inferer forecaster values")
 		}
 	}
 	return nil
@@ -635,17 +670,25 @@ func (bundle *ValueBundle) Validate() error {
 
 	// nil values for bundle.InfererValues are interpreted to mean that there
 	// are no inferer values for this bundle, and are allowed
+	infererSeen := make(map[string]struct{}, len(bundle.InfererValues))
 	for _, infererValue := range bundle.InfererValues {
 		if err := infererValue.Validate(); err != nil {
 			return errors.Wrap(err, "value bundle inferer value is invalid")
+		}
+		if err := rejectDuplicateActor(infererSeen, infererValue.Worker, "inferer"); err != nil {
+			return errors.Wrap(err, "value bundle inferer values")
 		}
 	}
 
 	// nil values for bundle.ForecasterValues are interpreted to mean that there
 	// are no forecaster values for this bundle, and are allowed
+	forecasterSeen := make(map[string]struct{}, len(bundle.ForecasterValues))
 	for _, forecasterValue := range bundle.ForecasterValues {
 		if err := forecasterValue.Validate(); err != nil {
 			return errors.Wrap(err, "value bundle forecaster value is invalid")
+		}
+		if err := rejectDuplicateActor(forecasterSeen, forecasterValue.Worker, "forecaster"); err != nil {
+			return errors.Wrap(err, "value bundle forecaster values")
 		}
 	}
 
@@ -655,33 +698,49 @@ func (bundle *ValueBundle) Validate() error {
 
 	// nil values for bundle.OneOutInfererValues are interpreted to mean that there
 	// are no one out inferer values for this bundle, and are allowed
+	oneOutInfererSeen := make(map[string]struct{}, len(bundle.OneOutInfererValues))
 	for _, oneOutInfererValue := range bundle.OneOutInfererValues {
 		if err := oneOutInfererValue.Validate(); err != nil {
 			return errors.Wrap(err, "value bundle one out inferer value is invalid")
+		}
+		if err := rejectDuplicateActor(oneOutInfererSeen, oneOutInfererValue.Worker, "inferer"); err != nil {
+			return errors.Wrap(err, "value bundle one out inferer values")
 		}
 	}
 
 	// nil values for bundle.OneOutForecasterValues are interpreted to mean that there
 	// are no one out forecaster values for this bundle, and are allowed
+	oneOutForecasterSeen := make(map[string]struct{}, len(bundle.OneOutForecasterValues))
 	for _, oneOutForecasterValue := range bundle.OneOutForecasterValues {
 		if err := oneOutForecasterValue.Validate(); err != nil {
 			return errors.Wrap(err, "value bundle one out forecaster value is invalid")
+		}
+		if err := rejectDuplicateActor(oneOutForecasterSeen, oneOutForecasterValue.Worker, "forecaster"); err != nil {
+			return errors.Wrap(err, "value bundle one out forecaster values")
 		}
 	}
 
 	// nil values for bundle.OneInForecasterValues are interpreted to mean that there
 	// are no one in forecaster values for this bundle, and are allowed
+	oneInForecasterSeen := make(map[string]struct{}, len(bundle.OneInForecasterValues))
 	for _, oneInForecasterValue := range bundle.OneInForecasterValues {
 		if err := oneInForecasterValue.Validate(); err != nil {
 			return errors.Wrap(err, "value bundle one in forecaster value is invalid")
+		}
+		if err := rejectDuplicateActor(oneInForecasterSeen, oneInForecasterValue.Worker, "forecaster"); err != nil {
+			return errors.Wrap(err, "value bundle one in forecaster values")
 		}
 	}
 
 	// nil values for bundle.OneOutInfererForecasterValues are interpreted to mean that there
 	// are no one out inferer forecaster values for this bundle, and are allowed
+	ooifForecasterSeen := make(map[string]struct{}, len(bundle.OneOutInfererForecasterValues))
 	for _, oneOutInfererForecaster := range bundle.OneOutInfererForecasterValues {
 		if err := oneOutInfererForecaster.Validate(); err != nil {
 			return errors.Wrap(err, "value bundle one out inferer forecaster value is invalid")
+		}
+		if err := rejectDuplicateActor(ooifForecasterSeen, oneOutInfererForecaster.Forecaster, "forecaster"); err != nil {
+			return errors.Wrap(err, "value bundle one out inferer forecaster values")
 		}
 	}
 	return nil
@@ -924,9 +983,13 @@ func (inputOneOutInfererForecasterValues *InputOneOutInfererForecasterValues) Va
 	if inputOneOutInfererForecasterValues.OneOutInfererValues == nil {
 		return errors.Wrap(sdkerrors.ErrInvalidType, "one out inferer forecaster values one out inferer values cannot be nil")
 	}
+	seen := make(map[string]struct{}, len(inputOneOutInfererForecasterValues.OneOutInfererValues))
 	for _, oneOutInfererValue := range inputOneOutInfererForecasterValues.OneOutInfererValues {
 		if err := oneOutInfererValue.Validate(); err != nil {
 			return errors.Wrap(err, "one out inferer forecaster values one out inferer value is invalid")
+		}
+		if err := rejectDuplicateActor(seen, oneOutInfererValue.Worker, "inferer"); err != nil {
+			return errors.Wrap(err, "one out inferer forecaster values")
 		}
 	}
 	return nil
@@ -943,9 +1006,13 @@ func (oneOutInfererForecasterValues *OneOutInfererForecasterValues) Validate() e
 	if oneOutInfererForecasterValues.OneOutInfererValues == nil {
 		return errors.Wrap(sdkerrors.ErrInvalidType, "one out inferer forecaster values one out inferer values cannot be nil")
 	}
+	seen := make(map[string]struct{}, len(oneOutInfererForecasterValues.OneOutInfererValues))
 	for _, oneOutInfererValue := range oneOutInfererForecasterValues.OneOutInfererValues {
 		if err := oneOutInfererValue.Validate(); err != nil {
 			return errors.Wrap(err, "one out inferer forecaster values one out inferer value is invalid")
+		}
+		if err := rejectDuplicateActor(seen, oneOutInfererValue.Worker, "inferer"); err != nil {
+			return errors.Wrap(err, "one out inferer forecaster values")
 		}
 	}
 	return nil

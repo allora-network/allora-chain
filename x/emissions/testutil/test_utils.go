@@ -1058,6 +1058,7 @@ func NetworkInferenceBundleToLossBundleSkeleton(b *types.NetworkInferenceBundle)
 	}
 
 	ooif := make([]*types.OneOutInfererForecasterValues, 0, len(b.OneOutInfererForecasterValues))
+	forecasterRows := make(map[string]*types.OneOutInfererForecasterValues)
 	for _, x := range b.OneOutInfererForecasterValues {
 		if x == nil {
 			continue
@@ -1066,14 +1067,15 @@ func NetworkInferenceBundleToLossBundleSkeleton(b *types.NetworkInferenceBundle)
 		if len(x.CombinedInference) > 0 {
 			val = x.CombinedInference[0].Value
 		}
-		ooif = append(ooif, &types.OneOutInfererForecasterValues{
-			Forecaster: x.Forecaster,
-			OneOutInfererValues: []*types.WithheldWorkerAttributedValue{
-				{
-					Worker: x.WithheldInferer,
-					Value:  val,
-				},
-			},
+		row, ok := forecasterRows[x.Forecaster]
+		if !ok {
+			row = &types.OneOutInfererForecasterValues{Forecaster: x.Forecaster}
+			forecasterRows[x.Forecaster] = row
+			ooif = append(ooif, row)
+		}
+		row.OneOutInfererValues = append(row.OneOutInfererValues, &types.WithheldWorkerAttributedValue{
+			Worker: x.WithheldInferer,
+			Value:  val,
 		})
 	}
 	combVal := alloraMath.ZeroDec()
