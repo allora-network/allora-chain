@@ -78,6 +78,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * [#1009](https://github.com/allora-network/allora-chain/pull/1009) `WORKER_INFO_LOOKUP`, `ACCOUNT_SEND` and `NEGATIVE_REWARD` on `RewardPayoutFailureReason`; `EventRewardPayoutFailed` is now emitted for every payout failure where the actor is not paid
 * [#1009](https://github.com/allora-network/allora-chain/pull/1009) `EventTopicRewardForfeitedNoRewardNonce` and `EventTopicRewardForfeitedDistributionFailed`, emitted when a topic's reward goes back to the ecosystem account, carrying `topic_id`, the just-ended `epoch` and the forfeited `amount`; the latter also carries the `reward_nonce` whose settlement failed
 * [#1009](https://github.com/allora-network/allora-chain/pull/1009) `EventNonceExpired`, emitted per unfulfilled nonce that leaves state without being fulfilled, carrying `topic_id`, the expired `nonce`, `actor_type` and the `reason` (`EVICTED_BY_CAP` when a new nonce pushes the list past the unfulfilled-request cap, `PRUNED_BY_AGE` when it ages past the retention threshold, `CLOSE_FAILED` when settlement of the nonce fails and the nonce is cleared in the close path)
+* [#1007](https://github.com/allora-network/allora-chain/pull/1007) `labels` on `EventEpochLabelRegistryFrozen`: the frozen registry's label names in compact-id order (`labels[i]` has id `i+1`)
 
 ### Changed
 
