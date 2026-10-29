@@ -291,7 +291,12 @@ func WorkerInferenceAndForecastChecks(m testCommon.TestConfig) {
 	}
 
 	m.T.Log(time.Now(), "--- Insert Reputer Bundle ---")
-	err = InsertReputerBundle(m, topic, blockHeightNonce)
+	// The reputer window opens at exactly the block waited for above, and the
+	// client spreads calls across nodes, so the node that checks the payload
+	// can still be one block behind. Retry for about a block's time.
+	_, err = RunWithRetry(m, 3, 5*time.Second, func() (int64, error) {
+		return 0, InsertReputerBundle(m, topic, blockHeightNonce)
+	})
 	if err != nil {
 		m.T.Log(time.Now(), "--- Failed inserting reputer payload ---")
 		require.NoError(m.T, err)
