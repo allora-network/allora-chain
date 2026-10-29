@@ -394,8 +394,12 @@ func FilterUnacceptedWorkersFromReputerValueBundle(
 	}
 
 	acceptedOneOutInfererForecasterValues := make([]*types.OneOutInfererForecasterValues, 0)
+	forecasterRowAlreadySeen := make(map[string]bool)
 	for _, forecasterVal := range reputerValueBundle.OneOutInfererForecasterValues {
 		if _, ok := acceptedForecastersOfBatch[forecasterVal.Forecaster]; ok {
+			if forecasterRowAlreadySeen[forecasterVal.Forecaster] {
+				continue // keep one row per forecaster => no duplicates
+			}
 			// Filter out unaccepted workers for this forecaster
 			acceptedWorkers := make([]*types.WithheldWorkerAttributedValue, 0)
 			workerAlreadySeen := make(map[string]bool)
@@ -409,6 +413,7 @@ func FilterUnacceptedWorkersFromReputerValueBundle(
 			}
 			// Only add forecaster if it has at least one accepted worker
 			if len(acceptedWorkers) > 0 {
+				forecasterRowAlreadySeen[forecasterVal.Forecaster] = true
 				acceptedOneOutInfererForecasterValues = append(acceptedOneOutInfererForecasterValues, &types.OneOutInfererForecasterValues{
 					Forecaster:          forecasterVal.Forecaster,
 					OneOutInfererValues: acceptedWorkers,
