@@ -36,8 +36,32 @@ func GenerateTestAccounts(count int) (
 	return privKeys, pubKeyHexStr, addrs, addrsStr
 }
 
-//nolint:gosec
-func GenerateTestStakes(count int) []cosmosMath.Int {
+// GenerateDeterministicTestAccounts derives count accounts from namespace, so
+// every run of a test sees the same keys and addresses in the same order. Two
+// calls with the same namespace return the same accounts; use distinct
+// namespaces for account sets that must not overlap.
+func GenerateDeterministicTestAccounts(namespace string, count int) (
+	privKeys []secp256k1.PrivKey,
+	pubKeyHexStr []string,
+	addrs []sdk.AccAddress,
+	addrsStr []string,
+) {
+	privKeys = make([]secp256k1.PrivKey, count)
+	pubKeyHexStr = make([]string, count)
+	addrs = make([]sdk.AccAddress, count)
+	addrsStr = make([]string, count)
+	for i := 0; i < count; i++ {
+		privKeys[i] = secp256k1.GenPrivKeySecp256k1([]byte(fmt.Sprintf("%s/%d", namespace, i)))
+		addrs[i] = sdk.AccAddress(privKeys[i].PubKey().Address())
+		pubKeyHexStr[i] = hex.EncodeToString(privKeys[i].PubKey().Bytes())
+		addrsStr[i] = addrs[i].String()
+	}
+	return privKeys, pubKeyHexStr, addrs, addrsStr
+}
+
+// GenerateTestStakes draws count stakes from source, so a seeded source gives
+// the same stakes on every run.
+func GenerateTestStakes(source *rand.Rand, count int) []cosmosMath.Int {
 	minStake := int64(200000)
 	maxStake := int64(1200000)
 
@@ -45,7 +69,7 @@ func GenerateTestStakes(count int) []cosmosMath.Int {
 	cosmosOneE18 := inferencesynthesis.CosmosIntOneE18()
 
 	for i := 0; i < count; i++ {
-		randomValue := minStake + rand.Int63n(maxStake-minStake)
+		randomValue := minStake + source.Int63n(maxStake-minStake)
 
 		stakes[i] = cosmosMath.NewInt(randomValue).Mul(cosmosOneE18)
 	}
