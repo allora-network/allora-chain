@@ -66,6 +66,10 @@ type TestSuite struct {
 	emissionsQueryServer  types.QueryServiceServer
 	emissionsMsgServer    types.MsgServiceServer
 	accounts              []account
+	// valueSource supplies the worker values and reputer stakes a test leaves
+	// unset. It is reseeded in SetupTest, so every run of a test sees the same
+	// values.
+	valueSource *rand.Rand
 }
 
 type account struct {
@@ -338,6 +342,8 @@ func WithLabelDefaultValue(labelDefaultValue alloraMath.Dec) Option {
 }
 
 func (s *TestSuite) SetupTest() {
+	//nolint:gosec // test values, not secrets
+	s.valueSource = rand.New(rand.NewSource(1))
 	var (
 		keyEmissions        = storetypes.NewKVStoreKey("emissions")
 		keyAccount          = storetypes.NewKVStoreKey("account")
@@ -448,7 +454,7 @@ func (s *TestSuite) SetupTest() {
 
 	s.accounts = make([]account, numAccounts)
 
-	privKeys, pubKeyHexStr, addrs, addrsStr := alloratestutil.GenerateTestAccounts(numAccounts)
+	privKeys, pubKeyHexStr, addrs, addrsStr := alloratestutil.GenerateDeterministicTestAccounts("emissions-test-suite", numAccounts)
 	for i, addr := range addrs {
 		s.accounts[i] = account{
 			addr:         addr,
@@ -640,7 +646,8 @@ type TestWorkerValue struct {
 //   - SINGLE topics: set tv.Value; the scalar is carried on InputInference.Value
 //     with InputInference.Values left nil.
 //
-// When neither tv.Values nor tv.Value is set, a random scalar is used.
+// When neither tv.Values nor tv.Value is set, a scalar is drawn from the
+// suite's seeded value source.
 func generateWorkerDataBundles(
 	s *TestSuite,
 	nonce int64,
@@ -671,8 +678,7 @@ func generateWorkerDataBundles(
 	singleScalarValue := func(tv TestWorkerValue) alloraMath.BoundedExp40Dec {
 		inferenceValueStr := tv.Value
 		if inferenceValueStr == "" {
-			//nolint:gosec
-			inferenceValueStr = strconv.FormatFloat(0.1+rand.Float64()*0.15, 'f', 5, 64)
+			inferenceValueStr = strconv.FormatFloat(0.1+s.valueSource.Float64()*0.15, 'f', 5, 64)
 		}
 		return alloraMath.MustNewBoundedExp40DecFromString(inferenceValueStr)
 	}
@@ -685,8 +691,7 @@ func generateWorkerDataBundles(
 		if tv.Value != "" {
 			return tv.Value
 		}
-		//nolint:gosec
-		return strconv.FormatFloat(0.1+rand.Float64()*0.15, 'f', 5, 64)
+		return strconv.FormatFloat(0.1+s.valueSource.Float64()*0.15, 'f', 5, 64)
 	}
 
 	var bundles []*types.InputWorkerDataBundle
@@ -1288,7 +1293,7 @@ func (s *TestSuite) SetupParticipants(topicID uint64, indexes []int, isReputer b
 	}
 
 	// Add Stake for reputers
-	stakes := alloratestutil.GenerateTestStakes(len(addresses))
+	stakes := alloratestutil.GenerateTestStakes(s.valueSource, len(addresses))
 	for i, addr := range addresses {
 		stake := stakes[i]
 		if p.reputerStake != nil {
@@ -1420,6 +1425,7 @@ func (s *TestSuite) FullTopicPass(workerIndexes, reputerIndexes []int, options .
 	if nonce == 0 {
 		nonce, _, err = s.TopicKeeper().GetNextPossibleChurningBlockByTopicId(s.Ctx(), p.topicID)
 		s.Require().NoError(err)
+		s.Require().NotZero(nonce, "topic %d has no churning block, so it has no epoch to run", p.topicID)
 		s.T().Logf("Moving nonce to post inferences for TopicId: %d, Next block: %v", p.topicID, nonce)
 		s.WithBlockHeight(nonce)
 		s.EndBlock()
