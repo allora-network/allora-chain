@@ -32,6 +32,25 @@ enum ActorType {
   ACTOR_TYPE_REPUTER = 2;
 }
 
+// Outcome of merit-based sortition for a worker or reputer payload submission.
+// UNSPECIFIED is the zero value so events emitted before this field existed
+// decode as "unknown" rather than as a specific outcome.
+enum PayloadAdmissionOutcome {
+  // Legacy events emitted before the field existed; the outcome is unknown.
+  PAYLOAD_ADMISSION_OUTCOME_UNSPECIFIED = 0;
+  // The payload was admitted into the active set at submission time. This is
+  // not a guarantee of final-set membership: the actor can still be evicted
+  // later in the same window by a higher-scoring submission.
+  PAYLOAD_ADMISSION_OUTCOME_ADMITTED = 1;
+  // The submission passed validation but was not admitted into the active
+  // set; only score/liveness side effects were recorded.
+  PAYLOAD_ADMISSION_OUTCOME_NOT_ADMITTED = 2;
+  // No forecast element survived filtering to top inferers, so the forecast
+  // never reached sortition. The emitted event still carries the submitted
+  // elements, none of them was accepted or stored.
+  PAYLOAD_ADMISSION_OUTCOME_NO_ELEMENTS_ACCEPTED = 3;
+}
+
 message EventScoresSet {
   ActorType actor_type = 1;
   uint64 topic_id = 2;
@@ -170,6 +189,9 @@ message EventInsertInfererPayload {
   ];
   bytes extra_data = 5;
   repeated InputLabeledValue values = 6;
+  // Outcome of sortition for this submission. Final membership of the active
+  // set is published at window close by EventActiveInferersSet.
+  PayloadAdmissionOutcome admission_outcome = 7;
 }
 
 message EventInsertForecasterPayload {
@@ -183,6 +205,29 @@ message EventInsertForecasterPayload {
     (gogoproto.nullable) = false
   ];
   bytes extra_data = 6;
+  // Outcome of sortition for this submission. Final membership of the active
+  // set is published at window close by EventActiveForecastersSet.
+  PayloadAdmissionOutcome admission_outcome = 7;
+}
+
+// Emitted when an admitted inferer's inference is removed from the active set
+// because a higher-scoring inferer took its slot during the same submission
+// window. Enables block-by-block reconstruction of the active set.
+message EventInferenceEvictedFromActiveSet {
+  uint64 topic_id = 1;
+  int64 nonce = 2;
+  string evicted_inferer = 3;
+  string evicting_inferer = 4;
+}
+
+// Emitted when an admitted forecaster's forecast is removed from the active
+// set because a higher-scoring forecaster took its slot during the same
+// submission window. Enables block-by-block reconstruction of the active set.
+message EventForecastEvictedFromActiveSet {
+  uint64 topic_id = 1;
+  int64 nonce = 2;
+  string evicted_forecaster = 3;
+  string evicting_forecaster = 4;
 }
 
 message EventCreateNewTopic {
@@ -263,10 +308,37 @@ message EventRewardDelegateStake {
 }
 
 message EventInsertReputerPayload {
+  reserved 4;
   uint64 topic_id = 1;
   int64 nonce = 2;
   string reputer = 3;
   EventValueBundle bundle = 5;
+  // Outcome of sortition for this submission. Final membership of the active
+  // set is published at window close by EventActiveReputersSet.
+  PayloadAdmissionOutcome admission_outcome = 6;
+}
+
+// Emitted when an admitted reputer's loss bundle is removed from the active
+// set because a higher-scoring reputer took its slot during the same
+// submission window. Enables block-by-block reconstruction of the active set.
+message EventReputerLossEvictedFromActiveSet {
+  uint64 topic_id = 1;
+  int64 nonce = 2;
+  string evicted_reputer = 3;
+  string evicting_reputer = 4;
+}
+
+// Emitted when a reputer's pending submission (the active marker and the
+// stored loss bundle) is retired without a sortition eviction, because the
+// nonce it was stored for was closed, or the nonce was pruned and can no
+// longer be closed. Enables block-by-block reconstruction of pending
+// submissions.
+message EventReputerSubmissionRetired {
+  uint64 topic_id = 1;
+  // Nonce the retired submission was stored for; 0 when the stored bundle was
+  // missing or unreadable and the marker was retired without one.
+  int64 nonce = 2;
+  string reputer = 3;
 }
 
 message EventReputerRegistered {

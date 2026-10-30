@@ -152,6 +152,9 @@ func (ms msgServer) processWorkerInferencePayload(
 		if err := ms.wk.CommitNonAdmittedInference(sdkCtx, topic, nonceBlockHeight, plan); err != nil {
 			return errorsmod.Wrap(err, "Error committing non-admitted inference")
 		}
+		// The submission passed validation, so it is visible to indexers even
+		// though its inference was not stored.
+		types.EmitNewInsertInfererPayloadEvent(ctx, msg.WorkerDataBundle, types.PayloadAdmissionOutcome_PAYLOAD_ADMISSION_OUTCOME_NOT_ADMITTED)
 		return nil
 	}
 
@@ -170,8 +173,9 @@ func (ms msgServer) processWorkerInferencePayload(
 	if err := ms.wk.CommitAdmittedInference(sdkCtx, topic, nonceBlockHeight, inference, plan); err != nil {
 		return errorsmod.Wrap(err, "Error committing admitted inference")
 	}
-	// Emitted only on admission: a not-admitted inferer returns above without an event.
-	types.EmitNewInsertInfererPayloadEvent(ctx, msg.WorkerDataBundle)
+	// Emitted for every inference submission that passes validation, admitted
+	// or not; admission_outcome distinguishes the cases for indexers.
+	types.EmitNewInsertInfererPayloadEvent(ctx, msg.WorkerDataBundle, types.PayloadAdmissionOutcome_PAYLOAD_ADMISSION_OUTCOME_ADMITTED)
 	return nil
 }
 
@@ -258,25 +262,30 @@ func (ms msgServer) processWorkerForecastPayload(
 		}
 	}
 
+	admissionOutcome := types.PayloadAdmissionOutcome_PAYLOAD_ADMISSION_OUTCOME_NO_ELEMENTS_ACCEPTED
 	if len(acceptedForecastElements) > 0 {
 		forecast.ForecastElements = acceptedForecastElements
-		if err := ms.wk.AppendForecast(sdkCtx, topic, nonceBlockHeight, forecast, moduleParams.MaxTopForecastersToReward); err != nil {
+		var err error
+		admissionOutcome, err = ms.wk.AppendForecast(sdkCtx, topic, nonceBlockHeight, forecast, moduleParams.MaxTopForecastersToReward)
+		if err != nil {
 			return errorsmod.Wrapf(err, "Error appending forecast")
 		}
-
-		// Emitted only when forecast elements were actually stored: a fully
-		// filtered-out forecast returns without an event, mirroring the
-		// admission-gated inference path in processWorkerInferencePayload.
-		eventBundle := &types.WorkerDataBundle{
-			Worker:  inputBundle.Worker,
-			Nonce:   inputBundle.Nonce,
-			TopicId: inputBundle.TopicId,
-			InferenceForecastsBundle: &types.InferenceForecastBundle{
-				Inference: nil,
-				Forecast:  forecast,
-			},
-		}
-		types.EmitNewInsertForecasterPayloadEvent(ctx, eventBundle)
 	}
+
+	// Emitted for every forecast that passes validation, whether or not any
+	// element survived filtering or the forecast was admitted by sortition;
+	// admission_outcome distinguishes the cases for indexers. With
+	// NO_ELEMENTS_ACCEPTED the event still carries the submitted elements;
+	// none of them was accepted.
+	eventBundle := &types.WorkerDataBundle{
+		Worker:  inputBundle.Worker,
+		Nonce:   inputBundle.Nonce,
+		TopicId: inputBundle.TopicId,
+		InferenceForecastsBundle: &types.InferenceForecastBundle{
+			Inference: nil,
+			Forecast:  forecast,
+		},
+	}
+	types.EmitNewInsertForecasterPayloadEvent(ctx, eventBundle, admissionOutcome)
 	return nil
 }

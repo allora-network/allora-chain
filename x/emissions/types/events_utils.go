@@ -128,18 +128,19 @@ func groupOneOutInfererForecaster(
 	return out
 }
 
-func NewInsertInfererPayloadEventBase(bundle *InputWorkerDataBundle) proto.Message {
+func NewInsertInfererPayloadEventBase(bundle *InputWorkerDataBundle, admissionOutcome PayloadAdmissionOutcome) proto.Message {
 	return &EventInsertInfererPayload{
-		Inferer:   bundle.Worker,
-		Nonce:     bundle.Nonce.BlockHeight,
-		TopicId:   bundle.TopicId,
-		Value:     bundle.InferenceForecastsBundle.Inference.Value,
-		Values:    bundle.InferenceForecastsBundle.Inference.Values,
-		ExtraData: bundle.InferenceForecastsBundle.Inference.ExtraData,
+		Inferer:          bundle.Worker,
+		Nonce:            bundle.Nonce.BlockHeight,
+		TopicId:          bundle.TopicId,
+		Value:            bundle.InferenceForecastsBundle.Inference.Value,
+		Values:           bundle.InferenceForecastsBundle.Inference.Values,
+		ExtraData:        bundle.InferenceForecastsBundle.Inference.ExtraData,
+		AdmissionOutcome: admissionOutcome,
 	}
 }
 
-func NewInsertForecasterPayloadEventBase(bundle *WorkerDataBundle) proto.Message {
+func NewInsertForecasterPayloadEventBase(bundle *WorkerDataBundle, admissionOutcome PayloadAdmissionOutcome) proto.Message {
 	infererAddresses := make([]string, 0, len(bundle.InferenceForecastsBundle.Forecast.ForecastElements))
 	infererValues := make([]alloraMath.Dec, 0, len(bundle.InferenceForecastsBundle.Forecast.ForecastElements))
 	for _, infVal := range bundle.InferenceForecastsBundle.Forecast.ForecastElements {
@@ -153,6 +154,25 @@ func NewInsertForecasterPayloadEventBase(bundle *WorkerDataBundle) proto.Message
 		InfererAddresses: infererAddresses,
 		InfererValues:    infererValues,
 		ExtraData:        bundle.InferenceForecastsBundle.Forecast.ExtraData,
+		AdmissionOutcome: admissionOutcome,
+	}
+}
+
+func NewInferenceEvictedFromActiveSetEventBase(topicId TopicId, nonce BlockHeight, evictedInferer, evictingInferer string) proto.Message {
+	return &EventInferenceEvictedFromActiveSet{
+		TopicId:         topicId,
+		Nonce:           nonce,
+		EvictedInferer:  evictedInferer,
+		EvictingInferer: evictingInferer,
+	}
+}
+
+func NewForecastEvictedFromActiveSetEventBase(topicId TopicId, nonce BlockHeight, evictedForecaster, evictingForecaster string) proto.Message {
+	return &EventForecastEvictedFromActiveSet{
+		TopicId:            topicId,
+		Nonce:              nonce,
+		EvictedForecaster:  evictedForecaster,
+		EvictingForecaster: evictingForecaster,
 	}
 }
 
@@ -222,12 +242,30 @@ func NewRewardDelegateStakeEventBase(topicId TopicId, reputer, delegator string,
 	}
 }
 
-func NewInsertReputerPayloadEventBase(bundle *LossBundle) proto.Message {
+func NewInsertReputerPayloadEventBase(bundle *LossBundle, admissionOutcome PayloadAdmissionOutcome) proto.Message {
 	return &EventInsertReputerPayload{
-		TopicId: bundle.TopicId,
-		Nonce:   bundle.ReputerRequestNonce.ReputerNonce.BlockHeight,
-		Reputer: bundle.Reputer,
-		Bundle:  ValueBundleToEventValueBundleBase(bundle),
+		TopicId:          bundle.TopicId,
+		Nonce:            bundle.ReputerRequestNonce.ReputerNonce.BlockHeight,
+		Reputer:          bundle.Reputer,
+		Bundle:           ValueBundleToEventValueBundleBase(bundle),
+		AdmissionOutcome: admissionOutcome,
+	}
+}
+
+func NewReputerLossEvictedFromActiveSetEventBase(topicId TopicId, nonce BlockHeight, evictedReputer, evictingReputer string) proto.Message {
+	return &EventReputerLossEvictedFromActiveSet{
+		TopicId:         topicId,
+		Nonce:           nonce,
+		EvictedReputer:  evictedReputer,
+		EvictingReputer: evictingReputer,
+	}
+}
+
+func NewReputerSubmissionRetiredEventBase(topicId TopicId, nonce BlockHeight, reputer string) proto.Message {
+	return &EventReputerSubmissionRetired{
+		TopicId: topicId,
+		Nonce:   nonce,
+		Reputer: reputer,
 	}
 }
 

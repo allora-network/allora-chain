@@ -62,21 +62,39 @@ func EmitNewOutlierResistantNetworkInferencesEvent(ctx context.Context, networkI
 	}
 }
 
-func EmitNewInsertInfererPayloadEvent(ctx context.Context, bundle *InputWorkerDataBundle) {
+func EmitNewInsertInfererPayloadEvent(ctx context.Context, bundle *InputWorkerDataBundle, admissionOutcome PayloadAdmissionOutcome) {
 	metrics.IncrProducerEventCount(metrics.INSERT_INFERER_PAYLOAD_EVENT)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	err := sdkCtx.EventManager().EmitTypedEvent(NewInsertInfererPayloadEventBase(bundle))
+	err := sdkCtx.EventManager().EmitTypedEvent(NewInsertInfererPayloadEventBase(bundle, admissionOutcome))
+	if err != nil {
+		sdkCtx.Logger().Warn("Error emitting NewInfererPayloadEvent", "error", err)
+	}
+}
+
+func EmitNewInsertForecasterPayloadEvent(ctx context.Context, bundle *WorkerDataBundle, admissionOutcome PayloadAdmissionOutcome) {
+	metrics.IncrProducerEventCount(metrics.INSERT_FORECASTER_PAYLOAD_EVENT)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	err := sdkCtx.EventManager().EmitTypedEvent(NewInsertForecasterPayloadEventBase(bundle, admissionOutcome))
 	if err != nil {
 		sdkCtx.Logger().Warn("Error emitting NewForecasterPayloadEvent", "error", err)
 	}
 }
 
-func EmitNewInsertForecasterPayloadEvent(ctx context.Context, bundle *WorkerDataBundle) {
-	metrics.IncrProducerEventCount(metrics.INSERT_FORECASTER_PAYLOAD_EVENT)
+func EmitNewInferenceEvictedFromActiveSetEvent(ctx context.Context, topicId TopicId, nonce BlockHeight, evictedInferer, evictingInferer string) {
+	metrics.IncrProducerEventCount(metrics.INFERENCE_EVICTED_FROM_ACTIVE_SET_EVENT)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	err := sdkCtx.EventManager().EmitTypedEvent(NewInsertForecasterPayloadEventBase(bundle))
+	err := sdkCtx.EventManager().EmitTypedEvent(NewInferenceEvictedFromActiveSetEventBase(topicId, nonce, evictedInferer, evictingInferer))
 	if err != nil {
-		sdkCtx.Logger().Warn("Error emitting NewInfererPayloadEvent", "error", err)
+		sdkCtx.Logger().Warn("Error emitting NewInferenceEvictedFromActiveSetEvent", "error", err)
+	}
+}
+
+func EmitNewForecastEvictedFromActiveSetEvent(ctx context.Context, topicId TopicId, nonce BlockHeight, evictedForecaster, evictingForecaster string) {
+	metrics.IncrProducerEventCount(metrics.FORECAST_EVICTED_FROM_ACTIVE_SET_EVENT)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	err := sdkCtx.EventManager().EmitTypedEvent(NewForecastEvictedFromActiveSetEventBase(topicId, nonce, evictedForecaster, evictingForecaster))
+	if err != nil {
+		sdkCtx.Logger().Warn("Error emitting NewForecastEvictedFromActiveSetEvent", "error", err)
 	}
 }
 
@@ -144,12 +162,30 @@ func EmitNewRewardDelegateStakeEvent(ctx context.Context, topicId TopicId, reput
 	}
 }
 
-func EmitNewInsertReputerPayloadEvent(ctx context.Context, bundle *LossBundle) {
+func EmitNewInsertReputerPayloadEvent(ctx context.Context, bundle *LossBundle, admissionOutcome PayloadAdmissionOutcome) {
 	metrics.IncrProducerEventCount(metrics.INSERT_REPUTER_PAYLOAD_EVENT)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	err := sdkCtx.EventManager().EmitTypedEvent(NewInsertReputerPayloadEventBase(bundle))
+	err := sdkCtx.EventManager().EmitTypedEvent(NewInsertReputerPayloadEventBase(bundle, admissionOutcome))
 	if err != nil {
 		sdkCtx.Logger().Warn("Error emitting NewInsertReputerPayloadEvent", "error", err)
+	}
+}
+
+func EmitNewReputerLossEvictedFromActiveSetEvent(ctx context.Context, topicId TopicId, nonce BlockHeight, evictedReputer, evictingReputer string) {
+	metrics.IncrProducerEventCount(metrics.REPUTER_LOSS_EVICTED_FROM_ACTIVE_SET_EVENT)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	err := sdkCtx.EventManager().EmitTypedEvent(NewReputerLossEvictedFromActiveSetEventBase(topicId, nonce, evictedReputer, evictingReputer))
+	if err != nil {
+		sdkCtx.Logger().Warn("Error emitting NewReputerLossEvictedFromActiveSetEvent", "error", err)
+	}
+}
+
+func EmitNewReputerSubmissionRetiredEvent(ctx context.Context, topicId TopicId, nonce BlockHeight, reputer string) {
+	metrics.IncrProducerEventCount(metrics.REPUTER_SUBMISSION_RETIRED_EVENT)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	err := sdkCtx.EventManager().EmitTypedEvent(NewReputerSubmissionRetiredEventBase(topicId, nonce, reputer))
+	if err != nil {
+		sdkCtx.Logger().Warn("Error emitting NewReputerSubmissionRetiredEvent", "error", err)
 	}
 }
 

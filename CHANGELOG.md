@@ -67,12 +67,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+* [#1011](https://github.com/allora-network/allora-chain/pull/1011) `admission_outcome` (`PAYLOAD_ADMISSION_OUTCOME_*`) on the three insert-payload events; new `EventInferenceEvictedFromActiveSet`, `EventForecastEvictedFromActiveSet`, `EventReputerLossEvictedFromActiveSet` and `EventReputerSubmissionRetired` events.
 * [#968](https://github.com/allora-network/allora-chain/pull/968) Per-topic `max_top_inferers_to_reward`, required within the global range, with migration v16
 * [#969](https://github.com/allora-network/allora-chain/pull/969) New global `min_top_inferers_to_reward` as the floor for the per-topic inferer cap (default `5`)
 
 ### Changed
 
 * [#968](https://github.com/allora-network/allora-chain/pull/968) The global `max_top_inferers_to_reward` now rejects zero and serves as the live ceiling for the per-topic cap; score-history retention still uses the global value.
+* [#1011](https://github.com/allora-network/allora-chain/pull/1011) Additive API change: `types.EmitNewInsert{Inferer,Forecaster,Reputer}PayloadEvent` and their `New*EventBase` constructors take a `PayloadAdmissionOutcome`; `AppendForecast` and `AppendReputerLoss` return it.
 
 ### Deprecated
 
@@ -85,6 +87,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * [#1002](https://github.com/allora-network/allora-chain/pull/1002) Fix epoch-end topic reactivation bookkeeping: a refused reschedule now fully inactivates the topic instead of leaving it in the active set without a schedule, so its weight is not double-counted on a later activation. Migration fixes potential misalignment.
 * [#993](https://github.com/allora-network/allora-chain/pull/993) Open the reputer submission window at the end of the reveal epoch, and retire only the closing nonce's reputer submissions when closing it, fixing a permanent loss of network losses and rewards on fractional-lag topics.
 * [#1003](https://github.com/allora-network/allora-chain/pull/1003) Topic creation now emits its events in order — create, whitelist gates, fee — with the creation fee reported as `EventFundTopic` (creator as funder). Gate enable/disable emits once per state transition, and zero-fee payments skip no-op bank writes but still attempt activation.
+* [#1011](https://github.com/allora-network/allora-chain/pull/1011) Restore `EventInsertInfererPayload` for not-admitted submissions and `EventInsertForecasterPayload` for fully-filtered forecasts (regression from #942 in v0.17.0).
 
 ### Security
 
