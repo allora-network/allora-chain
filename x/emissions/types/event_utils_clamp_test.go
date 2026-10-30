@@ -99,7 +99,11 @@ func TestEventClamp_ScalarFields(t *testing.T) {
 		{"PreviousPercentageReward/inRange", NewPreviousPercentageRewardToStakedReputersSetEventBase(1, cMid).(*EventPreviousPercentageRewardToStakedReputersSet).Percentage, cMid},
 		{"RewardDelegateStake/huge", NewRewardDelegateStakeEventBase(1, "r", "d", cHuge).(*EventRewardDelegateStake).Amount, cMax},
 		{"TopicWeightUpdated/tiny", NewTopicWeightUpdatedEventBase(1, cTiny, one, one).(*EventTopicWeightUpdated).NewWeight, cMin},
-		{"DelegateRewardShareUpdated/tiny", NewDelegateRewardShareUpdatedEventBase(1, "r", cTiny).(*EventDelegateRewardShareUpdated).RewardPerShare, cMin},
+		{"TopicWeightUpdatedAfterStakeChange/huge", NewTopicWeightUpdatedAfterStakeChangeEventBase(1, cHuge, one, one).(*EventTopicWeightUpdatedAfterStakeChange).NewWeight, cMax},
+		{"TopicStatusChanged/weight", NewTopicStatusChangedEventBase(1, false, TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_WEIGHT_BELOW_MINIMUM, cTiny, cMid).(*EventTopicStatusChanged).Weight, cMin},
+		{"TopicStatusChanged/minWeight", NewTopicStatusChangedEventBase(1, false, TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_WEIGHT_BELOW_MINIMUM, cMid, cHuge).(*EventTopicStatusChanged).MinWeight, cMax},
+		{"RewardPayoutFailed/amount", NewRewardPayoutFailedEventBase(1, 1, "a", actor, cHuge, RewardPayoutFailureReason_REWARD_PAYOUT_FAILURE_REASON_ADD_STAKE).(*EventRewardPayoutFailed).Amount, cMax},
+		{"DelegateRewardShareUpdated/tiny", NewDelegateRewardShareUpdatedEventBase(1, "r", cTiny, 1).(*EventDelegateRewardShareUpdated).RewardPerShare, cMin},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {

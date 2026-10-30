@@ -156,6 +156,7 @@ func GetRewardForReputerFromTotalReward(
 	keeper keeper.Keeper,
 	topicId uint64,
 	reputerDelegatorRewards []types.TaskReward,
+	nonce int64,
 ) ([]types.TaskReward, error) {
 	var reputerRewards []types.TaskReward
 	for _, reputerReward := range reputerDelegatorRewards {
@@ -215,7 +216,7 @@ func GetRewardForReputerFromTotalReward(
 				return nil, err
 			}
 			// Emit event for delegate reward share updated
-			types.EmitNewDelegateRewardShareUpdatedEvent(ctx, topicId, reputer, newShare)
+			types.EmitNewDelegateRewardShareUpdatedEvent(ctx, topicId, reputer, newShare, nonce)
 
 			err = keeper.GetBankingKeeper().SendCoinsFromModuleToModule(
 				ctx,
@@ -227,7 +228,7 @@ func GetRewardForReputerFromTotalReward(
 				return nil, errors.Wrapf(err, "failed to send coins to allora pend reward account")
 			}
 			// Emit event for delegate reward distributed
-			types.EmitNewDelegateRewardDistributedEvent(ctx, topicId, reputer, delegatorRewardInt)
+			types.EmitNewDelegateRewardDistributedEvent(ctx, topicId, reputer, delegatorRewardInt, nonce)
 		}
 		// Send remain rewards to reputer
 		// delegatorRewardDec has already been trimmed.
@@ -256,6 +257,7 @@ func GetRewardPerReputer(
 	totalReputerRewards alloraMath.Dec,
 	reputerAddresses []string,
 	reputersFractions []alloraMath.Dec,
+	nonce int64,
 ) ([]types.TaskReward, error) {
 	var reputerDelegatorTotalRewards []types.TaskReward
 	for i, reputerFraction := range reputersFractions {
@@ -276,6 +278,7 @@ func GetRewardPerReputer(
 		keeper,
 		topicId,
 		reputerDelegatorTotalRewards,
+		nonce,
 	)
 	return reputerRewards, err
 }

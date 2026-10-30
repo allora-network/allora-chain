@@ -204,7 +204,7 @@ func (s *QueryServerTestSuite) TestIsTopicActive() {
 	_ = keeper.SetTopic(ctx, topicId, initialTopic)
 
 	// Activate the topic
-	err := keeper.ActivateTopic(ctx, topicId)
+	err := keeper.ActivateTopic(ctx, topicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec())
 	s.Require().NoError(err, "Reactivating topic should not fail")
 
 	// Check if topic is active
@@ -216,7 +216,7 @@ func (s *QueryServerTestSuite) TestIsTopicActive() {
 	s.Require().True(topicActive, "Topic should be active again")
 
 	// Inactivate the topic
-	err = keeper.InactivateTopic(ctx, topicId)
+	err = keeper.InactivateTopic(ctx, topicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec())
 	s.Require().NoError(err, "Inactivating topic should not fail")
 
 	// Check if topic is inactive
@@ -227,7 +227,7 @@ func (s *QueryServerTestSuite) TestIsTopicActive() {
 	s.Require().False(topicActive, "Topic should be inactive")
 
 	// Activate the topic
-	err = keeper.ActivateTopic(ctx, topicId)
+	err = keeper.ActivateTopic(ctx, topicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec())
 	s.Require().NoError(err, "Reactivating topic should not fail")
 
 	// Check if topic is active again
@@ -381,7 +381,8 @@ func (s *QueryServerTestSuite) TestGetWorkerSubmissionWindowStatus() {
 	response, err = queryServer.GetWorkerSubmissionWindowStatus(ctx, req)
 	s.Require().NoError(err)
 	s.Require().True(response.IsOpen)
-	s.Require().Equal(nonce2.BlockHeight, response.CurrentNonceBlockHeight) // Should be latest active
+	s.Require().Equal(nonce2.BlockHeight, response.Nonce) // Should be latest active
+	s.Require().Equal(nonce2.BlockHeight, response.CurrentNonceBlockHeight)
 
 	// Verify window calculations for the latest active window
 	expectedWindowStart := nonce2.BlockHeight
@@ -511,9 +512,10 @@ func (s *QueryServerTestSuite) TestGetReputerSubmissionWindowStatus() {
 	response, err = queryServer.GetReputerSubmissionWindowStatus(ctx, req)
 	s.Require().NoError(err)
 	s.Require().True(response.IsOpen)
-	s.Require().Equal(reputerNonce2.BlockHeight, response.CurrentNonceBlockHeight) // Should be latest active
-	s.Require().Equal(int64(45), response.WindowStartBlock)                        // 5 + 30 + 10
-	s.Require().Equal(int64(65), response.WindowEndBlock)                          // 45 + 20
+	s.Require().Equal(reputerNonce2.BlockHeight, response.Nonce) // Should be latest active
+	s.Require().Equal(reputerNonce2.BlockHeight, response.CurrentNonceBlockHeight)
+	s.Require().Equal(int64(45), response.WindowStartBlock) // 5 + 30 + 10
+	s.Require().Equal(int64(65), response.WindowEndBlock)   // 45 + 20
 
 	// Next window: [20+30+10, +20] = [60, 80]
 	expectedNextStart := int64(60) // From reputerNonce3 (BlockHeight=20)

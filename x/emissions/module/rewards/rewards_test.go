@@ -6,7 +6,10 @@ import (
 	"strings"
 	"testing"
 
+	"cosmossdk.io/collections"
 	cosmosMath "cosmossdk.io/math"
+	abci "github.com/cometbft/cometbft/abci/types"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/stretchr/testify/suite"
 
 	"github.com/allora-network/allora-chain/app/params"
@@ -25,10 +28,164 @@ type RewardsTestSuite struct {
 	testutil.TestSuite
 }
 
+// typedEvents collects every typed event of type T the manager holds, in
+// emission order.
+func typedEvents[T any](em sdk.EventManagerI) []T {
+	out := make([]T, 0)
+	for _, ev := range em.Events() {
+		msg, err := sdk.ParseTypedEvent(abci.Event(ev))
+		if err != nil {
+			continue
+		}
+		if typed, ok := msg.(T); ok {
+			out = append(out, typed)
+		}
+	}
+	return out
+}
+
 func TestRewardsTestSuite(t *testing.T) {
 	suite.Run(t, &RewardsTestSuite{
 		testutil.NewTestSuite("rewards"),
 	})
+}
+
+// EmitRewards emits one EventTopicRewardForfeitedDistributionFailed for a
+// topic whose reward nonce is valid but whose reward cannot be distributed:
+// its network loss bundle is undecodable, so distribution fails and the
+// reward goes back to the ecosystem account. The emitted amount equals the
+// balance that actually lands there. EmitRewards is driven directly so no
+// EndBlock close refreshes the corrupted bundle.
+func (s *RewardsTestSuite) TestEmitRewardsEmitsDistributionFailedForfeit() {
+	s.SetParamsForTest()
+
+	reputerIndexes := testutil.ReturnIndexes(0, 5)
+	workerIndexes := testutil.ReturnIndexes(5, 5)
+
+	// Settle a reward nonce so the topic is rewardable, then re-arm that
+	// nonce and corrupt its network loss bundle.
+	topicId, _ := s.FullTopicPass(workerIndexes, reputerIndexes, testutil.WithEpochLength(3))
+	s.FullTopicPass(workerIndexes, reputerIndexes, testutil.WithTopicID(topicId), testutil.WithEpochLength(3))
+
+	openWorkerNonces, err := s.NonceKeeper().GetUnfulfilledWorkerNonces(s.Ctx(), topicId)
+	s.Require().NoError(err)
+	s.Require().NotEmpty(openWorkerNonces.Nonces)
+	rewardNonce := openWorkerNonces.Nonces[0].BlockHeight
+	s.Require().NoError(s.TopicKeeper().SetTopicRewardNonce(s.Ctx(), topicId, rewardNonce))
+
+	// Write an undecodable value under the same prefix and pair codec the
+	// keeper's networkLossBundles map uses.
+	lossKey := collections.Join(topicId, rewardNonce)
+	lossKeyCodec := collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key)
+	encodedLossKey := make([]byte, lossKeyCodec.Size(lossKey))
+	_, encErr := lossKeyCodec.Encode(encodedLossKey, lossKey)
+	s.Require().NoError(encErr)
+	lossStore := s.StoreServiceEmissions().OpenKVStore(s.Ctx())
+	s.Require().NoError(lossStore.Set(append(types.NetworkLossBundlesKey.Bytes(), encodedLossKey...), []byte{0xff}))
+
+	ecosystemAddr := authtypes.NewModuleAddress(minttypes.EcosystemModuleName)
+	ecosystemBefore := s.BankKeeper().GetBalance(s.Ctx(), ecosystemAddr, params.DefaultBondDenom)
+
+	// Drive EmitRewards directly with the topic as the only rewardable one.
+	moduleParams, err := s.ParamsKeeper().GetParams(s.Ctx())
+	s.Require().NoError(err)
+	topic, err := s.TopicKeeper().GetTopic(s.Ctx(), topicId)
+	s.Require().NoError(err)
+	weight := alloraMath.NewDecFromInt64(1)
+	s.Require().NoError(s.EmissionsKeeper().SetRewardCurrentBlockEmission(s.Ctx(), cosmosMath.NewInt(100)))
+	err = rewards.EmitRewards(rewards.EmitRewardsArgs{
+		Ctx:          s.Ctx(),
+		K:            *s.EmissionsKeeper(),
+		ModuleParams: moduleParams,
+		BlockHeight:  topic.EpochLastEnded,
+		Weights:      map[uint64]*alloraMath.Dec{topicId: &weight},
+		SumWeight:    weight,
+		TotalRevenue: cosmosMath.NewInt(1000),
+	})
+	s.Require().NoError(err)
+
+	distEvents := typedEvents[*types.EventTopicRewardForfeitedDistributionFailed](s.Ctx().EventManager())
+	s.Require().Len(distEvents, 1)
+	event := distEvents[0]
+	s.Require().Equal(topicId, event.TopicId)
+	s.Require().Equal(topic.EpochLastEnded, event.Epoch)
+	s.Require().Equal(rewardNonce, event.RewardNonce)
+	s.Require().False(event.Amount.IsZero())
+
+	// The emitted amount is exactly what the ecosystem account received.
+	ecosystemAfter := s.BankKeeper().GetBalance(s.Ctx(), ecosystemAddr, params.DefaultBondDenom)
+	forfeitedInt, err := event.Amount.SdkIntTrim()
+	s.Require().NoError(err)
+	s.Require().Equal(ecosystemBefore.Amount.Add(forfeitedInt), ecosystemAfter.Amount,
+		"the emitted forfeiture equals the amount the ecosystem account received")
+}
+
+// EmitRewards emits one EventTopicRewardForfeitedNoRewardNonce per topic
+// whose reward goes back to the ecosystem account for lack of a reward nonce,
+// and no distribution-failure forfeiture while another topic settles. The
+// emitted amount equals the balance that actually lands in the ecosystem
+// account.
+func (s *RewardsTestSuite) TestEmitRewardsEmitsForfeitureForTopicsWithoutRewardNonce() {
+	s.SetParamsForTest()
+
+	reputerIndexes := testutil.ReturnIndexes(0, 5)
+	workerIndexes := testutil.ReturnIndexes(5, 5)
+	reputerIndexes2 := testutil.ReturnIndexes(10, 5)
+	workerIndexes2 := testutil.ReturnIndexes(15, 5)
+
+	// The events EndBlock emits accumulate on the suite context's event
+	// manager across each EndBlock in the passes below.
+	ecosystemAddr := authtypes.NewModuleAddress(minttypes.EcosystemModuleName)
+	ecosystemBefore := s.BankKeeper().GetBalance(s.Ctx(), ecosystemAddr, params.DefaultBondDenom)
+
+	// Topic 1's first pass has no losses to close a nonce with, so its reward
+	// is forfeited. Topic 2's second pass settles the nonce the first closed.
+	topic1Id, _ := s.FullTopicPass(workerIndexes, reputerIndexes, testutil.WithEpochLength(3))
+	topic2Id, _ := s.FullTopicPass(workerIndexes2, reputerIndexes2, testutil.WithEpochLength(3))
+	s.FullTopicPass(workerIndexes2, reputerIndexes2, testutil.WithTopicID(topic2Id), testutil.WithEpochLength(3))
+
+	em := s.Ctx().EventManager()
+	noNonceEvents := typedEvents[*types.EventTopicRewardForfeitedNoRewardNonce](em)
+	s.Require().NotEmpty(noNonceEvents)
+
+	forfeitByTopic := make(map[uint64]*types.EventTopicRewardForfeitedNoRewardNonce)
+	forfeitedTotal := alloraMath.ZeroDec()
+	for _, event := range noNonceEvents {
+		forfeitByTopic[event.TopicId] = event
+		s.Require().False(event.Amount.IsZero())
+		var addErr error
+		forfeitedTotal, addErr = forfeitedTotal.Add(event.Amount)
+		s.Require().NoError(addErr)
+	}
+	forfeitedTopic1, ok := forfeitByTopic[topic1Id]
+	s.Require().True(ok, "topic 1 must have forfeited at least one reward")
+
+	topic1After, err := s.TopicKeeper().GetTopic(s.Ctx(), topic1Id)
+	s.Require().NoError(err)
+	s.Require().Equal(topic1After.EpochLastEnded, forfeitedTopic1.Epoch,
+		"the emitted epoch is the topic's last-ended epoch")
+
+	// Topic 2 forfeits only before its first nonce settles: its final forfeit
+	// predates the epoch its second pass settles at.
+	topic2After, err := s.TopicKeeper().GetTopic(s.Ctx(), topic2Id)
+	s.Require().NoError(err)
+	if topic2LastForfeit, ok := forfeitByTopic[topic2Id]; ok {
+		s.Require().Less(topic2LastForfeit.Epoch, topic2After.EpochLastEnded,
+			"the settling topic's last forfeit predates its last-ended epoch")
+	}
+
+	// No distribution ever fails in this scenario.
+	s.Require().Empty(typedEvents[*types.EventTopicRewardForfeitedDistributionFailed](em))
+
+	// The forfeited amounts move to the ecosystem account, which also receives
+	// the settling topic's remainders, so the account grows by at least the
+	// forfeited total.
+	ecosystemAfter := s.BankKeeper().GetBalance(s.Ctx(), ecosystemAddr, params.DefaultBondDenom)
+	forfeitedInt, err := forfeitedTotal.SdkIntTrim()
+	s.Require().NoError(err)
+	s.Require().True(ecosystemAfter.Amount.GTE(ecosystemBefore.Amount.Add(forfeitedInt)),
+		"the ecosystem account gained at least the forfeited total: before %s, forfeited %s, after %s",
+		ecosystemBefore.Amount, forfeitedInt, ecosystemAfter.Amount)
 }
 
 func (s *RewardsTestSuite) GenerateRewards(topicId uint64, block int64) ([]types.TaskReward, alloraMath.Dec) {
