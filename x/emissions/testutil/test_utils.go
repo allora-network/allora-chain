@@ -11,6 +11,7 @@ import (
 	"strconv"
 	"time"
 
+	"cosmossdk.io/collections"
 	"cosmossdk.io/core/header"
 	"cosmossdk.io/core/store"
 	"cosmossdk.io/log"
@@ -48,6 +49,7 @@ import (
 	mintkeeper "github.com/allora-network/allora-chain/x/mint/keeper"
 	minttypes "github.com/allora-network/allora-chain/x/mint/types"
 	schedulerkeeper "github.com/allora-network/allora-chain/x/scheduler/keeper"
+	schedulertypes "github.com/allora-network/allora-chain/x/scheduler/types"
 )
 
 type TestSuite struct {
@@ -1443,7 +1445,12 @@ func (s *TestSuite) FullTopicPass(workerIndexes, reputerIndexes []int, options .
 
 	p.topicID = topic.Id
 
-	var err error
+	managed, err := s.EmissionsKeeper().IsTopicSchedulerManaged(s.Ctx(), topic.Id)
+	s.Require().NoError(err)
+	if managed {
+		return s.fullTopicPassManaged(topic, workerIndexes, reputerIndexes, p, options...)
+	}
+
 	nonce := p.block
 	if nonce == 0 {
 		nonce, _, err = s.TopicKeeper().GetNextPossibleChurningBlockByTopicId(s.Ctx(), p.topicID)
@@ -1489,4 +1496,160 @@ func (s *TestSuite) FullTopicPass(workerIndexes, reputerIndexes []int, options .
 	s.EndBlock()
 
 	return topic.GetId(), nonce
+}
+
+// fullTopicPassManaged runs one epoch for a topic whose lifecycle is owned by the scheduler.
+// Activation already opened a worker nonce at the epoch start height. EndBlocker will not
+// open another one, so submissions and closes follow that epoch's wall-clock windows.
+// The returned nonce is the epoch start height, where the inference and loss records live.
+func (s *TestSuite) fullTopicPassManaged(
+	topic types.Topic,
+	workerIndexes, reputerIndexes []int,
+	p *customParams,
+	options ...Option,
+) (uint64, int64) {
+	// A previous pass, or activation, may have left a live epoch whose close is still
+	// scheduled. BeginBlock runs every due task, so that close would finalize inferences
+	// at the wrong height once this pass jumps time forward.
+	s.cancelLiveEpochs(topic.Id)
+	if p.block > 0 {
+		s.WithBlockHeight(p.block)
+	}
+
+	epoch := s.openWorkerEpoch(topic.Id)
+	// StartNewEpoch does not schedule the periodic task, but activation does.
+	// Keep it cancelled so the jump to the reputer window does not open a second epoch.
+	s.cancelPeriodicNewEpoch(topic.Id)
+	nonce := epoch.StartBlockHeight
+
+	if len(workerIndexes) > 0 {
+		s.SetupInferences(topic.Id, nonce, workerIndexes, p.workerValues...)
+	}
+	s.runSchedulerAt(epoch.WorkerSubmissionWindow.CloseAt.Add(time.Nanosecond))
+
+	epoch, err := s.EmissionsKeeper().GetEpoch(s.Ctx(), topic.Id, epoch.Nonce)
+	s.Require().NoError(err)
+	s.runSchedulerAt(epoch.ReputerSubmissionWindow.OpenAt.Add(time.Nanosecond))
+
+	if len(reputerIndexes) > 0 {
+		err = s.InsertReputerLossBundle(topic.Id, nonce, reputerIndexes, options...)
+		s.Require().NoError(err)
+	}
+
+	epoch, err = s.EmissionsKeeper().GetEpoch(s.Ctx(), topic.Id, epoch.Nonce)
+	s.Require().NoError(err)
+	s.runSchedulerAt(epoch.ReputerSubmissionWindow.CloseAt.Add(time.Nanosecond))
+	// The close above completes this epoch. Drop anything a concurrent task opened
+	// so later height walks and the next topic's time jump do not close it.
+	s.cancelLiveEpochs(topic.Id)
+
+	// Walk the same churn heights the height-based pass used to, so topic weights
+	// and the active-set schedule keep moving.
+	churn, found, err := s.TopicKeeper().GetNextPossibleChurningBlockByTopicId(s.Ctx(), topic.Id)
+	s.Require().NoError(err)
+	if found && churn > 0 {
+		topic, err = s.TopicKeeper().GetTopic(s.Ctx(), topic.Id)
+		s.Require().NoError(err)
+		for _, height := range []int64{
+			churn,
+			churn + topic.EpochLength,
+			churn + topic.GroundTruthLag + topic.EpochLength,
+		} {
+			if height < s.Ctx().BlockHeight() {
+				continue
+			}
+			s.WithBlockHeight(height)
+			s.EndBlock()
+		}
+	}
+
+	return topic.Id, nonce
+}
+
+func (s *TestSuite) openWorkerEpoch(topicID uint64) types.Epoch {
+	if epoch, ok := s.workerEpochOpenNow(topicID); ok {
+		if epoch.StartBlockHeight > 0 {
+			return epoch
+		}
+		// A payload nonce of 0 is rejected. Drop the epoch opened at genesis height
+		// and start the next one on a positive block.
+		s.Require().NoError(s.EmissionsKeeper().CancelEpoch(s.Ctx(), topicID, epoch.Nonce))
+	}
+	if s.Ctx().BlockHeight() <= 0 {
+		s.WithBlockHeight(1)
+	}
+	before, _, err := s.EmissionsKeeper().GetTopicLastEpochNonce(s.Ctx(), topicID)
+	s.Require().NoError(err)
+	s.Require().NoError(s.EmissionsKeeper().StartNewEpoch(s.Ctx(), topicID))
+	after, found, err := s.EmissionsKeeper().GetTopicLastEpochNonce(s.Ctx(), topicID)
+	s.Require().NoError(err)
+	s.Require().True(found)
+	if after == before {
+		s.WithBlockHeight(s.Ctx().BlockHeight() + 1)
+		s.Require().NoError(s.EmissionsKeeper().StartNewEpoch(s.Ctx(), topicID))
+		after, found, err = s.EmissionsKeeper().GetTopicLastEpochNonce(s.Ctx(), topicID)
+		s.Require().NoError(err)
+		s.Require().True(found)
+	}
+	epoch, err := s.EmissionsKeeper().GetEpoch(s.Ctx(), topicID, after)
+	s.Require().NoError(err)
+	return epoch
+}
+
+func (s *TestSuite) workerEpochOpenNow(topicID uint64) (types.Epoch, bool) {
+	nonce, found, err := s.EmissionsKeeper().GetTopicLastEpochNonce(s.Ctx(), topicID)
+	s.Require().NoError(err)
+	if !found {
+		return types.Epoch{}, false
+	}
+	epoch, err := s.EmissionsKeeper().GetEpoch(s.Ctx(), topicID, nonce)
+	if err != nil {
+		return types.Epoch{}, false
+	}
+	if epoch.State != types.EpochState_WORKER_SUBMISSION {
+		return types.Epoch{}, false
+	}
+	if !submissionWindowOpen(s.Ctx().BlockTime(), epoch.WorkerSubmissionWindow) {
+		return types.Epoch{}, false
+	}
+	return epoch, true
+}
+
+func (s *TestSuite) runSchedulerAt(at time.Time) {
+	s.WithBlockTime(at)
+	s.Require().NoError(s.SchedulerKeeper().BeginBlock(s.Ctx()))
+}
+
+func (s *TestSuite) cancelLiveEpochs(topicID uint64) {
+	last, found, err := s.EmissionsKeeper().GetTopicLastEpochNonce(s.Ctx(), topicID)
+	s.Require().NoError(err)
+	if found {
+		// Nonce payloads are a per-topic sequence. Cancel every still-stored epoch
+		// so a later time jump cannot close one against another epoch's inferences.
+		for payload := uint64(1); payload <= last.Payload(); payload++ {
+			nonce := types.NewNonceFromUint64(payload)
+			if _, err := s.EmissionsKeeper().GetEpoch(s.Ctx(), topicID, nonce); err != nil {
+				continue
+			}
+			s.Require().NoError(s.EmissionsKeeper().CancelEpoch(s.Ctx(), topicID, nonce))
+		}
+	}
+	s.cancelPeriodicNewEpoch(topicID)
+}
+
+func submissionWindowOpen(now time.Time, window *types.Window) bool {
+	if window == nil {
+		return false
+	}
+	return !now.Before(window.OpenAt) && !now.After(window.CloseAt)
+}
+
+func (s *TestSuite) cancelPeriodicNewEpoch(topicID uint64) {
+	err := s.SchedulerKeeper().CancelTask(
+		s.Ctx(),
+		schedulertypes.TaskID(fmt.Sprintf("%s:%d", types.StartNewEpochTask, topicID)),
+	)
+	if err != nil && !errors.Is(err, collections.ErrNotFound) {
+		s.Require().NoError(err)
+	}
 }

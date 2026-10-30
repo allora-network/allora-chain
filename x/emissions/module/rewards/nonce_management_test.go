@@ -1,6 +1,8 @@
 package rewards_test
 
 import (
+	"time"
+
 	"cosmossdk.io/collections"
 
 	actorutils "github.com/allora-network/allora-chain/x/emissions/keeper/actor_utils"
@@ -16,39 +18,27 @@ func (s *RewardsTestSuite) TestCloseReputerNonceTest_DeferExecWhenError() {
 	reputerIndexes := testutil.ReturnIndexes(0, 5)
 	workerIndexes := testutil.ReturnIndexes(5, 5)
 
-	// Create topic
+	// Create topic. Activation opens the worker nonce at this height.
 	topic := s.FullTopicSetup(workerIndexes, reputerIndexes)
-	// Insert unfullfiled nonces
-	err := s.NonceKeeper().AddWorkerNonce(s.Ctx(), topic.Id, &types.Nonce{
-		BlockHeight: currentBlockHeight,
-	})
+	nonceV2, found, err := s.EmissionsKeeper().GetTopicLastEpochNonce(s.Ctx(), topic.Id)
 	s.Require().NoError(err)
-	err = s.NonceKeeper().AddReputerNonce(s.Ctx(), topic.Id, &types.Nonce{
-		BlockHeight: currentBlockHeight,
-	})
+	s.Require().True(found)
+	epoch, err := s.EmissionsKeeper().GetEpoch(s.Ctx(), topic.Id, nonceV2)
 	s.Require().NoError(err)
 
 	workerValues := testutil.GetWorkerValuesFromIndexes(workerIndexes, "100")
+	s.SetupInferences(topic.Id, epoch.StartBlockHeight, workerIndexes, workerValues...)
 
-	// Insert inference from workers
-	workerNonce := s.SetupInferences(topic.Id, currentBlockHeight, workerIndexes, workerValues...)
+	s.WithBlockTime(epoch.WorkerSubmissionWindow.CloseAt.Add(time.Nanosecond))
+	s.Require().NoError(s.SchedulerKeeper().BeginBlock(s.Ctx()))
+	s.WithBlockTime(epoch.ReputerSubmissionWindow.OpenAt.Add(time.Nanosecond))
+	s.Require().NoError(s.SchedulerKeeper().BeginBlock(s.Ctx()))
 
-	// Move to end of worker submission window
-	s.WithBlockHeight(currentBlockHeight + topic.WorkerSubmissionWindow)
-	err = actorutils.CloseWorkerNonce(s.EmissionsKeeper(), s.Ctx(), topic, workerNonce)
-	s.Require().NoError(err)
-
-	newBlockheight := currentBlockHeight + topic.GroundTruthLag
-	s.WithBlockHeight(newBlockheight)
-	// Trigger end block - rewards distribution
-	s.EndBlock()
-
-	// Insert loss bundle from reputer
-	// Use different indexes to enforce different workers are used
-	// This will trigger an error and test if the defer execution of CloseReputerNonce works properly
+	// Use different indexes to enforce different workers are used.
+	// This triggers an error so the defer in CloseReputerNonce still cleans up.
 	workerIndexes = testutil.ReturnIndexes(10, 5)
 	reputerValues := s.GetReputerValuesFromIndexes(reputerIndexes, workerIndexes, "0.1")
-	reputerNonce := types.Nonce{BlockHeight: currentBlockHeight}
+	reputerNonce := types.Nonce{BlockHeight: epoch.StartBlockHeight}
 
 	err = s.InsertReputerLossBundle(
 		topic.Id,

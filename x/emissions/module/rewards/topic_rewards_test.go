@@ -1,6 +1,8 @@
 package rewards_test
 
 import (
+	"time"
+
 	cosmosMath "cosmossdk.io/math"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
@@ -115,6 +117,12 @@ func (s *RewardsTestSuite) TestGetRewardAndRemovedRewardableTopics() {
 	epochLength := int64(100)
 	topic := s.FullTopicSetup(workerIndexes, reputerIndexes, testutil.WithAlphaRegret(alphaRegret), testutil.WithEpochLength(epochLength))
 	topicId := topic.Id
+	nonceV2, found, err := s.EmissionsKeeper().GetTopicLastEpochNonce(s.Ctx(), topicId)
+	s.Require().NoError(err)
+	s.Require().True(found)
+	epoch, err := s.EmissionsKeeper().GetEpoch(s.Ctx(), topicId, nonceV2)
+	s.Require().NoError(err)
+	submissionNonce := epoch.StartBlockHeight
 
 	// mint some rewards to give out
 	s.MintTokensToModule(types.AlloraRewardsAccountName, cosmosMath.NewInt(100000))
@@ -130,8 +138,10 @@ func (s *RewardsTestSuite) TestGetRewardAndRemovedRewardableTopics() {
 	topic, err = s.TopicKeeper().GetTopic(s.Ctx(), topicId)
 	s.Require().NoError(err)
 
-	// Insert inference
-	s.SetupInferences(topicId, topic.EpochLastEnded, workerIndexes)
+	// Insert inference on the live epoch, then close that window. EndBlocker no longer does it.
+	s.SetupInferences(topicId, submissionNonce, workerIndexes)
+	s.WithBlockTime(epoch.WorkerSubmissionWindow.CloseAt.Add(time.Nanosecond))
+	s.Require().NoError(s.SchedulerKeeper().BeginBlock(s.Ctx()))
 
 	// Advance to close the window
 	block = block + topic.WorkerSubmissionWindow
@@ -160,7 +170,9 @@ func (s *RewardsTestSuite) TestGetRewardAndRemovedRewardableTopics() {
 	block = block + 1
 	s.WithBlockHeight(block)
 
-	err = s.InsertReputerLossBundle(topicId, topic.EpochLastEnded, reputerIndexes)
+	s.WithBlockTime(epoch.ReputerSubmissionWindow.OpenAt.Add(time.Nanosecond))
+	s.Require().NoError(s.SchedulerKeeper().BeginBlock(s.Ctx()))
+	err = s.InsertReputerLossBundle(topicId, submissionNonce, reputerIndexes)
 	s.Require().NoError(err)
 
 	block = block + 1
@@ -203,6 +215,12 @@ func (s *RewardsTestSuite) TestPreviousTopicWeightsAfterInactivation() {
 		testutil.WithGroundTruthLag(groundTruthLag),
 	)
 	topicId := topic.Id
+	nonceV2, found, err := s.EmissionsKeeper().GetTopicLastEpochNonce(s.Ctx(), topicId)
+	s.Require().NoError(err)
+	s.Require().True(found)
+	epoch, err := s.EmissionsKeeper().GetEpoch(s.Ctx(), topicId, nonceV2)
+	s.Require().NoError(err)
+	submissionNonce := epoch.StartBlockHeight
 
 	reputerValues := s.GetReputerValuesFromIndexes(reputerIndexes, workerIndexes, "0.2")
 	workerValues := testutil.GetWorkerValuesFromIndexes(workerIndexes, "0.2")
@@ -236,8 +254,10 @@ func (s *RewardsTestSuite) TestPreviousTopicWeightsAfterInactivation() {
 	topic, err = s.TopicKeeper().GetTopic(s.Ctx(), topicId)
 	s.Require().NoError(err)
 
-	// Insert inference
-	s.SetupInferences(topicId, topic.EpochLastEnded, workerIndexes, workerValues...)
+	// Insert inference on the live epoch, then close that window. EndBlocker no longer does it.
+	s.SetupInferences(topicId, submissionNonce, workerIndexes, workerValues...)
+	s.WithBlockTime(epoch.WorkerSubmissionWindow.CloseAt.Add(time.Nanosecond))
+	s.Require().NoError(s.SchedulerKeeper().BeginBlock(s.Ctx()))
 
 	// Advance to close the worker window
 	block = block + topic.WorkerSubmissionWindow
@@ -259,7 +279,9 @@ func (s *RewardsTestSuite) TestPreviousTopicWeightsAfterInactivation() {
 	s.T().Logf("****  Moved to next block %d", block)
 
 	// Generate and insert loss data
-	err = s.InsertReputerLossBundle(topicId, topic.EpochLastEnded, reputerIndexes, testutil.WithReputerValues(reputerValues))
+	s.WithBlockTime(epoch.ReputerSubmissionWindow.OpenAt.Add(time.Nanosecond))
+	s.Require().NoError(s.SchedulerKeeper().BeginBlock(s.Ctx()))
+	err = s.InsertReputerLossBundle(topicId, submissionNonce, reputerIndexes, testutil.WithReputerValues(reputerValues))
 	s.Require().NoError(err)
 	s.T().Logf("Inserted loss data for topic %d at block %d", topicId, block)
 
