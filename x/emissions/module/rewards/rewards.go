@@ -85,12 +85,14 @@ func EmitRewards(args EmitRewardsArgs) error {
 	}
 	// Get epoch lengths for sorted rewardable topics
 	epochLengths := make(map[uint64]int64)
+	epochsLastEnded := make(map[uint64]int64)
 	for _, topicId := range sortedRewardableTopics {
 		topic, err := args.K.GetTopicKeeper().GetTopic(args.Ctx, topicId)
 		if err != nil {
 			return errors.Wrapf(err, "failed to get epoch length for topic %d", topicId)
 		}
 		epochLengths[topicId] = topic.EpochLength
+		epochsLastEnded[topicId] = topic.EpochLastEnded
 	}
 
 	// Get current block emission, to be extrapolated to be used in rewards calculation
@@ -133,6 +135,7 @@ func EmitRewards(args EmitRewardsArgs) error {
 				Logger(args.Ctx).Error("Failed to move coins from allora rewards to ecosystem", "topicId", topicId, "error", err)
 				panic(err)
 			}
+			types.EmitNewTopicRewardForfeitedNoRewardNonceEvent(args.Ctx, topicId, epochsLastEnded[topicId], *topicRewards[topicId])
 			*topicRewards[topicId] = alloraMath.ZeroDec()
 
 			Logger(args.Ctx).Info("Topic has no valid reward nonce, skipping", "topicId", topicId)
@@ -161,6 +164,7 @@ func EmitRewards(args EmitRewardsArgs) error {
 				Logger(args.Ctx).Error("Failed to move coins from allora rewards to ecosystem", "topicId", topicId, "error", errMC)
 				panic(errMC)
 			}
+			types.EmitNewTopicRewardForfeitedDistributionFailedEvent(args.Ctx, topicId, epochsLastEnded[topicId], topicRewardNonce, *topicRewards[topicId])
 			*topicRewards[topicId] = alloraMath.ZeroDec()
 
 			Logger(args.Ctx).Error("Failed to process rewards", "topicId", topicId, "error", err)
@@ -540,6 +544,7 @@ func GenerateRewardsDistributionByTopicParticipant(
 		taskReputerReward,
 		reputers,
 		reputersRewardFractions,
+		args.BlockHeight,
 	)
 	if err != nil {
 		return []types.TaskReward{}, alloraMath.Dec{}, errors.Wrapf(err, "failed to get reputer rewards")
@@ -575,6 +580,26 @@ func GenerateRewardsDistributionByTopicParticipant(
 	return totalRewardsDistribution, taskReputerReward, nil
 }
 
+// emitRewardPayoutFailedEvent maps the task reward type to its actor type and
+// emits the per-actor payout failure event.
+func emitRewardPayoutFailedEvent(
+	ctx sdk.Context,
+	reward types.TaskReward,
+	nonce BlockHeight,
+	reason types.RewardPayoutFailureReason,
+) {
+	var actorType types.ActorType
+	switch reward.Type {
+	case types.ReputerAndDelegatorRewardType:
+		actorType = types.ActorType_ACTOR_TYPE_REPUTER
+	case types.WorkerInferenceRewardType:
+		actorType = types.ActorType_ACTOR_TYPE_INFERER_UNSPECIFIED
+	case types.WorkerForecastRewardType:
+		actorType = types.ActorType_ACTOR_TYPE_FORECASTER
+	}
+	types.EmitNewRewardPayoutFailedEvent(ctx, reward.TopicId, nonce, reward.Address, actorType, reward.Reward, reason)
+}
+
 // pay out the rewards to the participants
 // this function moves tokens from the rewards module to the participants
 // if it fails to pay a particular participant, it will continue to the next participant
@@ -602,12 +627,14 @@ func payoutRewards(
 				reward.TopicId,
 				reward.Type,
 			))
+			emitRewardPayoutFailedEvent(ctx, reward, nonce, types.RewardPayoutFailureReason_REWARD_PAYOUT_FAILURE_REASON_NEGATIVE_REWARD)
 			continue
 		}
 
 		rewardInt, err := reward.Reward.SdkIntTrim()
 		if err != nil {
 			ret = append(ret, errors.Wrapf(err, "failed to convert reward to sdk.Int: %s", reward.Reward.String()))
+			emitRewardPayoutFailedEvent(ctx, reward, nonce, types.RewardPayoutFailureReason_REWARD_PAYOUT_FAILURE_REASON_REWARD_CONVERSION)
 			continue
 		}
 		if rewardInt.IsZero() {
@@ -623,11 +650,13 @@ func payoutRewards(
 					"failed to send coins from rewards module to staking module: %s",
 					coins.String(),
 				))
+				emitRewardPayoutFailedEvent(ctx, reward, nonce, types.RewardPayoutFailureReason_REWARD_PAYOUT_FAILURE_REASON_MODULE_SEND)
 				continue
 			}
 			err = k.GetStakingKeeper().AddReputerStake(ctx, reward.TopicId, reward.Address, rewardInt)
 			if err != nil {
 				ret = append(ret, errors.Wrapf(err, "failed to add stake %s: %s", reward.Address, rewardInt.String()))
+				emitRewardPayoutFailedEvent(ctx, reward, nonce, types.RewardPayoutFailureReason_REWARD_PAYOUT_FAILURE_REASON_ADD_STAKE)
 				continue
 			}
 
@@ -636,12 +665,14 @@ func payoutRewards(
 			_, err := sdk.AccAddressFromBech32(reward.Address)
 			if err != nil {
 				ret = append(ret, errors.Wrapf(err, "failed to decode payout address: %s", reward.Address))
+				emitRewardPayoutFailedEvent(ctx, reward, nonce, types.RewardPayoutFailureReason_REWARD_PAYOUT_FAILURE_REASON_INVALID_PAYOUT_ADDRESS)
 				continue
 			}
 
 			nodeInfo, err := k.GetWorkerKeeper().GetWorkerInfo(ctx, reward.Address)
 			if err != nil {
 				ret = append(ret, errors.Wrapf(err, "failed to get worker info: %s", reward.Address))
+				emitRewardPayoutFailedEvent(ctx, reward, nonce, types.RewardPayoutFailureReason_REWARD_PAYOUT_FAILURE_REASON_WORKER_INFO_LOOKUP)
 				continue
 			}
 
@@ -658,6 +689,7 @@ func payoutRewards(
 					types.AlloraRewardsAccountName,
 					nodeInfo.Owner,
 				))
+				emitRewardPayoutFailedEvent(ctx, reward, nonce, types.RewardPayoutFailureReason_REWARD_PAYOUT_FAILURE_REASON_ACCOUNT_SEND)
 				continue
 			}
 

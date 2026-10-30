@@ -1834,6 +1834,292 @@ func TestEmitNewNetworkInferenceForecasterWeightsSetEvent(t *testing.T) {
 	require.Contains(t, val.GetValue(), `["0.5","0.3"]`)
 }
 
+func TestEmitNewDelegateRewardShareUpdatedEvent(t *testing.T) {
+	ctx := sdk.Context{}.WithEventManager(sdk.NewEventManager())
+	topicId := uint64(1)
+	reputer := "address1"
+	rewardPerShare := alloraMath.MustNewDecFromString("0.25")
+	nonce := int64(1003)
+
+	types.EmitNewDelegateRewardShareUpdatedEvent(ctx, topicId, reputer, rewardPerShare, nonce)
+
+	events := ctx.EventManager().Events()
+	require.Len(t, events, 1)
+
+	event := events[0]
+	require.Equal(t, "emissions.v10.EventDelegateRewardShareUpdated", event.Type)
+
+	val, exists := event.GetAttribute(AttributeKeyTopicId)
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), "1")
+
+	val, exists = event.GetAttribute("reputer")
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), reputer)
+
+	val, exists = event.GetAttribute("reward_per_share")
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), rewardPerShare.String())
+
+	val, exists = event.GetAttribute(AttributeKeyNonce)
+	require.True(t, exists)
+	require.Equal(t, `"1003"`, val.GetValue())
+}
+
+func TestEmitNewDelegateRewardDistributedEvent(t *testing.T) {
+	ctx := sdk.Context{}.WithEventManager(sdk.NewEventManager())
+	topicId := uint64(1)
+	reputer := "address1"
+	amount := cosmosMath.NewInt(1234)
+	nonce := int64(1003)
+
+	types.EmitNewDelegateRewardDistributedEvent(ctx, topicId, reputer, amount, nonce)
+
+	events := ctx.EventManager().Events()
+	require.Len(t, events, 1)
+
+	event := events[0]
+	require.Equal(t, "emissions.v10.EventDelegateRewardDistributed", event.Type)
+
+	val, exists := event.GetAttribute(AttributeKeyTopicId)
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), "1")
+
+	val, exists = event.GetAttribute("reputer")
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), reputer)
+
+	val, exists = event.GetAttribute("amount")
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), amount.String())
+
+	val, exists = event.GetAttribute(AttributeKeyNonce)
+	require.True(t, exists)
+	require.Equal(t, `"1003"`, val.GetValue())
+}
+
+func TestEmitNewAddStakeEvent(t *testing.T) {
+	ctx := sdk.Context{}.WithEventManager(sdk.NewEventManager())
+	topicId := uint64(1)
+	reputer := "address1"
+	delegator := "address2"
+	amount := cosmosMath.NewInt(100)
+	totalStake := cosmosMath.NewInt(150)
+	topicStake := cosmosMath.NewInt(400)
+
+	types.EmitNewAddStakeEvent(ctx, topicId, reputer, delegator, amount, totalStake, topicStake)
+
+	events := ctx.EventManager().Events()
+	require.Len(t, events, 2)
+
+	event := events[0]
+	require.Equal(t, "emissions.v10.EventAddStake", event.Type)
+
+	val, exists := event.GetAttribute(AttributeKeyTopicId)
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), "1")
+
+	val, exists = event.GetAttribute("reputer")
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), reputer)
+
+	val, exists = event.GetAttribute("delegator")
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), delegator)
+
+	val, exists = event.GetAttribute("amount")
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), amount.String())
+
+	val, exists = event.GetAttribute("topic_stake")
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), topicStake.String())
+
+	// The derived reputer stake update follows with the reputer's own total.
+	updated := events[1]
+	require.Equal(t, "emissions.v10.EventReputerStakeUpdated", updated.Type)
+	val, exists = updated.GetAttribute("amount")
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), totalStake.String())
+}
+
+func TestEmitNewRemoveStakeEvent(t *testing.T) {
+	ctx := sdk.Context{}.WithEventManager(sdk.NewEventManager())
+	topicId := uint64(1)
+	reputer := "address1"
+	delegator := "address2"
+	amount := cosmosMath.NewInt(100)
+	totalStake := cosmosMath.NewInt(50)
+	topicStake := cosmosMath.NewInt(300)
+
+	types.EmitNewRemoveStakeEvent(ctx, topicId, reputer, delegator, amount, totalStake, topicStake)
+
+	events := ctx.EventManager().Events()
+	require.Len(t, events, 2)
+
+	event := events[0]
+	require.Equal(t, "emissions.v10.EventRemoveStake", event.Type)
+
+	val, exists := event.GetAttribute(AttributeKeyTopicId)
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), "1")
+
+	val, exists = event.GetAttribute("reputer")
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), reputer)
+
+	val, exists = event.GetAttribute("delegator")
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), delegator)
+
+	val, exists = event.GetAttribute("amount")
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), amount.String())
+
+	val, exists = event.GetAttribute("topic_stake")
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), topicStake.String())
+}
+
+func TestEmitNewRewardPayoutFailedEvent(t *testing.T) {
+	ctx := sdk.Context{}.WithEventManager(sdk.NewEventManager())
+	topicId := uint64(1)
+	nonce := int64(940)
+	address := "address1"
+	amount := alloraMath.NewDecFromInt64(10)
+
+	types.EmitNewRewardPayoutFailedEvent(ctx, topicId, nonce, address, types.ActorType_ACTOR_TYPE_REPUTER, amount, types.RewardPayoutFailureReason_REWARD_PAYOUT_FAILURE_REASON_ADD_STAKE)
+
+	events := ctx.EventManager().Events()
+	require.Len(t, events, 1)
+
+	event := events[0]
+	require.Equal(t, "emissions.v10.EventRewardPayoutFailed", event.Type)
+
+	val, exists := event.GetAttribute(AttributeKeyTopicId)
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), "1")
+
+	val, exists = event.GetAttribute(AttributeKeyNonce)
+	require.True(t, exists)
+	require.Equal(t, `"940"`, val.GetValue())
+
+	val, exists = event.GetAttribute("address")
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), address)
+
+	val, exists = event.GetAttribute(AttributeKeyActorType)
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), "REPUTER")
+
+	val, exists = event.GetAttribute("amount")
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), amount.String())
+
+	val, exists = event.GetAttribute("reason")
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), "ADD_STAKE")
+}
+
+func TestEmitNewTopicStatusChangedEvent(t *testing.T) {
+	ctx := sdk.Context{}.WithEventManager(sdk.NewEventManager())
+	topicId := uint64(1)
+	weight := alloraMath.MustNewDecFromString("0.4")
+	minWeight := alloraMath.MustNewDecFromString("0.5")
+
+	types.EmitNewTopicStatusChangedEvent(ctx, topicId, false, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_WEIGHT_BELOW_MINIMUM, weight, minWeight)
+
+	events := ctx.EventManager().Events()
+	require.Len(t, events, 1)
+
+	event := events[0]
+	require.Equal(t, "emissions.v10.EventTopicStatusChanged", event.Type)
+
+	val, exists := event.GetAttribute(AttributeKeyTopicId)
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), "1")
+
+	val, exists = event.GetAttribute("is_active")
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), "false")
+
+	val, exists = event.GetAttribute("reason")
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), "WEIGHT_BELOW_MINIMUM")
+
+	val, exists = event.GetAttribute("weight")
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), weight.String())
+
+	val, exists = event.GetAttribute("min_weight")
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), minWeight.String())
+}
+
+func TestEmitNewTopicWeightUpdatedEvent(t *testing.T) {
+	ctx := sdk.Context{}.WithEventManager(sdk.NewEventManager())
+	topicId := uint64(1)
+	newWeight := alloraMath.MustNewDecFromString("0.625")
+	topicStake := cosmosMath.NewInt(1000)
+	topicFeeRevenue := cosmosMath.NewInt(500)
+
+	types.EmitNewTopicWeightUpdatedEvent(ctx, topicId, newWeight, topicStake, topicFeeRevenue)
+
+	events := ctx.EventManager().Events()
+	require.Len(t, events, 1)
+
+	event := events[0]
+	require.Equal(t, "emissions.v10.EventTopicWeightUpdated", event.Type)
+
+	val, exists := event.GetAttribute(AttributeKeyTopicId)
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), "1")
+
+	val, exists = event.GetAttribute("new_weight")
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), newWeight.String())
+
+	val, exists = event.GetAttribute("topic_stake")
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), topicStake.String())
+
+	val, exists = event.GetAttribute("topic_fee_revenue")
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), topicFeeRevenue.String())
+}
+
+func TestEmitNewTopicWeightUpdatedAfterStakeChangeEvent(t *testing.T) {
+	ctx := sdk.Context{}.WithEventManager(sdk.NewEventManager())
+	topicId := uint64(1)
+	newWeight := alloraMath.MustNewDecFromString("0.625")
+	topicStake := cosmosMath.NewInt(1000)
+	topicFeeRevenue := cosmosMath.NewInt(500)
+
+	types.EmitNewTopicWeightUpdatedAfterStakeChangeEvent(ctx, topicId, newWeight, topicStake, topicFeeRevenue)
+
+	events := ctx.EventManager().Events()
+	require.Len(t, events, 1)
+
+	event := events[0]
+	require.Equal(t, "emissions.v10.EventTopicWeightUpdatedAfterStakeChange", event.Type)
+
+	val, exists := event.GetAttribute(AttributeKeyTopicId)
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), "1")
+
+	val, exists = event.GetAttribute("new_weight")
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), newWeight.String())
+
+	val, exists = event.GetAttribute("topic_stake")
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), topicStake.String())
+
+	val, exists = event.GetAttribute("topic_fee_revenue")
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), topicFeeRevenue.String())
+}
+
 func TestEmitNewTopicFeeRevenueDrippedEvent(t *testing.T) {
 	ctx := sdk.Context{}.WithEventManager(sdk.NewEventManager())
 	topicId := uint64(1)

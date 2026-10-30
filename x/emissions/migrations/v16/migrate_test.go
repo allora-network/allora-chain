@@ -322,7 +322,7 @@ func (s *EmissionsV16MigrationTestSuite) seedTopicWeights(active []bool) alloraM
 		topicId := s.CreateTopic()
 		weight := alloraMath.NewDecFromInt64(int64((i + 1) * 100))
 		if isActive {
-			s.Require().NoError(s.TopicKeeper().ActivateTopic(s.Ctx(), topicId))
+			s.Require().NoError(s.TopicKeeper().ActivateTopic(s.Ctx(), topicId, emissionstypes.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec()))
 			expected, err = expected.Add(weight)
 			s.Require().NoError(err)
 		}
@@ -391,7 +391,7 @@ func (s *EmissionsV16MigrationTestSuite) TestMigrateTotalSumPreviousTopicWeights
 	ctx := s.Ctx()
 	topicKeeper := s.TopicKeeper()
 	topicId := s.CreateTopic()
-	s.Require().NoError(topicKeeper.ActivateTopic(ctx, topicId))
+	s.Require().NoError(topicKeeper.ActivateTopic(ctx, topicId, emissionstypes.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec()))
 
 	weight := alloraMath.NewDecFromInt64(100)
 	s.Require().NoError(topicKeeper.SetPreviousTopicWeight(ctx, topicId, weight))
@@ -423,7 +423,7 @@ func (s *EmissionsV16MigrationTestSuite) TestMigrateTotalSumPreviousTopicWeights
 	s.Require().NoError(err)
 	s.Require().True(noPriorLowestWeight)
 
-	s.Require().NoError(topicKeeper.ActivateTopic(ctx, topicId))
+	s.Require().NoError(topicKeeper.ActivateTopic(ctx, topicId, emissionstypes.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec()))
 	s.Require().Equal(weight.String(), s.totalSum().String())
 }
 
@@ -431,7 +431,7 @@ func (s *EmissionsV16MigrationTestSuite) TestMigrateTotalSumPreviousTopicWeights
 	ctx := s.Ctx()
 	topicKeeper := s.TopicKeeper()
 	topicId := s.CreateTopic()
-	s.Require().NoError(topicKeeper.ActivateTopic(ctx, topicId))
+	s.Require().NoError(topicKeeper.ActivateTopic(ctx, topicId, emissionstypes.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec()))
 	churningBlock, err := topicKeeper.GetTopicSchedule(ctx, topicId)
 	s.Require().NoError(err)
 
@@ -455,7 +455,7 @@ func (s *EmissionsV16MigrationTestSuite) TestMigrateTotalSumPreviousTopicWeights
 	ctx := s.Ctx()
 	topicKeeper := s.TopicKeeper()
 	topicId := s.CreateTopic()
-	s.Require().NoError(topicKeeper.ActivateTopic(ctx, topicId))
+	s.Require().NoError(topicKeeper.ActivateTopic(ctx, topicId, emissionstypes.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec()))
 
 	weight := alloraMath.NewDecFromInt64(100)
 	s.Require().NoError(topicKeeper.SetPreviousTopicWeight(ctx, topicId, weight))
@@ -490,7 +490,7 @@ func (s *EmissionsV16MigrationTestSuite) TestMigrateTotalSumPreviousTopicWeights
 	ctx := s.Ctx()
 	topicKeeper := s.TopicKeeper()
 	topicId := s.CreateTopic()
-	s.Require().NoError(topicKeeper.ActivateTopic(ctx, topicId))
+	s.Require().NoError(topicKeeper.ActivateTopic(ctx, topicId, emissionstypes.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec()))
 
 	weight := alloraMath.NewDecFromInt64(100)
 	s.Require().NoError(topicKeeper.SetPreviousTopicWeight(ctx, topicId, weight))
@@ -521,7 +521,7 @@ func (s *EmissionsV16MigrationTestSuite) TestMigrateTotalSumPreviousTopicWeights
 	ctx := s.Ctx()
 	topicKeeper := s.TopicKeeper()
 	topicId := s.CreateTopic()
-	s.Require().NoError(topicKeeper.ActivateTopic(ctx, topicId))
+	s.Require().NoError(topicKeeper.ActivateTopic(ctx, topicId, emissionstypes.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec()))
 
 	weight := alloraMath.NewDecFromInt64(100)
 	s.Require().NoError(topicKeeper.SetPreviousTopicWeight(ctx, topicId, weight))
@@ -542,6 +542,6 @@ func (s *EmissionsV16MigrationTestSuite) TestMigrateTotalSumPreviousTopicWeights
 	s.Require().True(s.totalSum().IsZero())
 
 	// The stored weight survives and counts exactly once on re-activation.
-	s.Require().NoError(topicKeeper.ActivateTopic(ctx, topicId))
+	s.Require().NoError(topicKeeper.ActivateTopic(ctx, topicId, emissionstypes.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec()))
 	s.Require().Equal(weight.String(), s.totalSum().String())
 }

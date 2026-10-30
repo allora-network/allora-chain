@@ -204,7 +204,7 @@ func (s *QueryServerTestSuite) TestIsTopicActive() {
 	_ = keeper.SetTopic(ctx, topicId, initialTopic)
 
 	// Activate the topic
-	err := keeper.ActivateTopic(ctx, topicId)
+	err := keeper.ActivateTopic(ctx, topicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec())
 	s.Require().NoError(err, "Reactivating topic should not fail")
 
 	// Check if topic is active
@@ -216,7 +216,7 @@ func (s *QueryServerTestSuite) TestIsTopicActive() {
 	s.Require().True(topicActive, "Topic should be active again")
 
 	// Inactivate the topic
-	err = keeper.InactivateTopic(ctx, topicId)
+	err = keeper.InactivateTopic(ctx, topicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec())
 	s.Require().NoError(err, "Inactivating topic should not fail")
 
 	// Check if topic is inactive
@@ -227,7 +227,7 @@ func (s *QueryServerTestSuite) TestIsTopicActive() {
 	s.Require().False(topicActive, "Topic should be inactive")
 
 	// Activate the topic
-	err = keeper.ActivateTopic(ctx, topicId)
+	err = keeper.ActivateTopic(ctx, topicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec())
 	s.Require().NoError(err, "Reactivating topic should not fail")
 
 	// Check if topic is active again

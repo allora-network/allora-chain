@@ -170,21 +170,23 @@ func NewTopicUpdatedEventBase(topic *Topic) proto.Message {
 	}
 }
 
-func NewAddStakeEventBase(topicId TopicId, reputer, delegator string, amount math.Int) proto.Message {
+func NewAddStakeEventBase(topicId TopicId, reputer, delegator string, amount math.Int, topicStake math.Int) proto.Message {
 	return &EventAddStake{
-		TopicId:   topicId,
-		Reputer:   reputer,
-		Delegator: delegator,
-		Amount:    amount,
+		TopicId:    topicId,
+		Reputer:    reputer,
+		Delegator:  delegator,
+		Amount:     amount,
+		TopicStake: topicStake,
 	}
 }
 
-func NewRemoveStakeEventBase(topicId TopicId, reputer string, delegator string, amount math.Int) proto.Message {
+func NewRemoveStakeEventBase(topicId TopicId, reputer string, delegator string, amount math.Int, topicStake math.Int) proto.Message {
 	return &EventRemoveStake{
-		TopicId:   topicId,
-		Reputer:   reputer,
-		Delegator: delegator,
-		Amount:    amount,
+		TopicId:    topicId,
+		Reputer:    reputer,
+		Delegator:  delegator,
+		Amount:     amount,
+		TopicStake: topicStake,
 	}
 }
 
@@ -686,19 +688,21 @@ func NewPruneRecordsSetEventBase(blockHeight int64, topicId TopicId) proto.Messa
 	}
 }
 
-func NewDelegateRewardShareUpdatedEventBase(topicId TopicId, reputer string, rewardPerShare alloraMath.Dec) proto.Message {
+func NewDelegateRewardShareUpdatedEventBase(topicId TopicId, reputer string, rewardPerShare alloraMath.Dec, nonce int64) proto.Message {
 	return &EventDelegateRewardShareUpdated{
 		TopicId:        topicId,
 		Reputer:        reputer,
 		RewardPerShare: clampDec(rewardPerShare),
+		Nonce:          nonce,
 	}
 }
 
-func NewDelegateRewardDistributedEventBase(topicId TopicId, reputer string, amount math.Int) proto.Message {
+func NewDelegateRewardDistributedEventBase(topicId TopicId, reputer string, amount math.Int, nonce int64) proto.Message {
 	return &EventDelegateRewardDistributed{
 		TopicId: topicId,
 		Reputer: reputer,
 		Amount:  amount,
+		Nonce:   nonce,
 	}
 }
 
@@ -729,10 +733,24 @@ func NewActiveForecastersSetEventBase(topicId TopicId, nonceBlockHeight int64, a
 	}
 }
 
-func NewTopicStatusChangedEventBase(topicId TopicId, isActive bool) proto.Message {
+func NewRewardPayoutFailedEventBase(topicId TopicId, nonce int64, address string, actorType ActorType, amount alloraMath.Dec, reason RewardPayoutFailureReason) proto.Message {
+	return &EventRewardPayoutFailed{
+		TopicId:   topicId,
+		Nonce:     nonce,
+		Address:   address,
+		ActorType: actorType,
+		Amount:    clampDec(amount),
+		Reason:    reason,
+	}
+}
+
+func NewTopicStatusChangedEventBase(topicId TopicId, isActive bool, reason TopicStatusChangeReason, weight, minWeight alloraMath.Dec) proto.Message {
 	return &EventTopicStatusChanged{
-		TopicId:  topicId,
-		IsActive: isActive,
+		TopicId:   topicId,
+		IsActive:  isActive,
+		Reason:    reason,
+		Weight:    clampDec(weight),
+		MinWeight: clampDec(minWeight),
 	}
 }
 
@@ -776,12 +794,41 @@ func NewNetworkInferenceForecasterRegretsUsedSetEventBase(topicId TopicId, block
 	}
 }
 
-func NewTopicWeightUpdatedEventBase(topicId TopicId, newWeight alloraMath.Dec, topicStake math.Int, topicFeeRevenue math.Int) proto.Message {
-	return &EventTopicWeightUpdated{
+// topicWeightFields holds the payload both topic weight events share, so the
+// two stay in lockstep.
+type topicWeightFields struct {
+	TopicId         TopicId
+	NewWeight       alloraMath.Dec
+	TopicStake      math.Int
+	TopicFeeRevenue math.Int
+}
+
+func newTopicWeightFields(topicId TopicId, newWeight alloraMath.Dec, topicStake math.Int, topicFeeRevenue math.Int) topicWeightFields {
+	return topicWeightFields{
 		TopicId:         topicId,
 		NewWeight:       clampDec(newWeight),
 		TopicStake:      topicStake,
 		TopicFeeRevenue: topicFeeRevenue,
+	}
+}
+
+func NewTopicWeightUpdatedEventBase(topicId TopicId, newWeight alloraMath.Dec, topicStake math.Int, topicFeeRevenue math.Int) proto.Message {
+	f := newTopicWeightFields(topicId, newWeight, topicStake, topicFeeRevenue)
+	return &EventTopicWeightUpdated{
+		TopicId:         f.TopicId,
+		NewWeight:       f.NewWeight,
+		TopicStake:      f.TopicStake,
+		TopicFeeRevenue: f.TopicFeeRevenue,
+	}
+}
+
+func NewTopicWeightUpdatedAfterStakeChangeEventBase(topicId TopicId, newWeight alloraMath.Dec, topicStake math.Int, topicFeeRevenue math.Int) proto.Message {
+	f := newTopicWeightFields(topicId, newWeight, topicStake, topicFeeRevenue)
+	return &EventTopicWeightUpdatedAfterStakeChange{
+		TopicId:         f.TopicId,
+		NewWeight:       f.NewWeight,
+		TopicStake:      f.TopicStake,
+		TopicFeeRevenue: f.TopicFeeRevenue,
 	}
 }
 
@@ -826,6 +873,32 @@ func NewReputerSubmissionWindowClosedEventBase(topicId TopicId, nonceBlockHeight
 		TopicId:          topicId,
 		NonceBlockHeight: nonceBlockHeight,
 		Nonce:            nonceBlockHeight,
+	}
+}
+
+func NewTopicRewardForfeitedNoRewardNonceEventBase(topicId TopicId, epoch int64, amount alloraMath.Dec) proto.Message {
+	return &EventTopicRewardForfeitedNoRewardNonce{
+		TopicId: topicId,
+		Epoch:   epoch,
+		Amount:  clampDec(amount),
+	}
+}
+
+func NewTopicRewardForfeitedDistributionFailedEventBase(topicId TopicId, epoch int64, rewardNonce int64, amount alloraMath.Dec) proto.Message {
+	return &EventTopicRewardForfeitedDistributionFailed{
+		TopicId:     topicId,
+		Epoch:       epoch,
+		RewardNonce: rewardNonce,
+		Amount:      clampDec(amount),
+	}
+}
+
+func NewNonceExpiredEventBase(topicId TopicId, nonce int64, actorType ActorType, reason NonceExpiredReason) proto.Message {
+	return &EventNonceExpired{
+		TopicId:   topicId,
+		Nonce:     nonce,
+		ActorType: actorType,
+		Reason:    reason,
 	}
 }
 
