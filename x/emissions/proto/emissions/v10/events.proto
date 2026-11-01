@@ -983,6 +983,8 @@ message EventEpochLabelRegistryFrozen {
   // The epoch nonce.
   int64 nonce = 4;
   // The frozen registry's canonical label names in compact-id order:
-  // labels[i] is the label with id i+1.
+  // labels[i] is the label with id i+1. The size grows with the registry, about
+  // 2 MiB at 32768 labels of 64 bytes; MaxEpochLabelRegistrySize has no upper
+  // bound.
   repeated string labels = 5;
 }

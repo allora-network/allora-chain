@@ -5106,7 +5106,9 @@ type EventEpochLabelRegistryFrozen struct {
 	// The epoch nonce.
 	Nonce int64 `protobuf:"varint,4,opt,name=nonce,proto3" json:"nonce,omitempty"`
 	// The frozen registry's canonical label names in compact-id order:
-	// labels[i] is the label with id i+1.
+	// labels[i] is the label with id i+1. The size grows with the registry, about
+	// 2 MiB at 32768 labels of 64 bytes; MaxEpochLabelRegistrySize has no upper
+	// bound.
 	Labels []string `protobuf:"bytes,5,rep,name=labels,proto3" json:"labels,omitempty"`
 }
 
