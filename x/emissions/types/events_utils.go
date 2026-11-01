@@ -877,20 +877,20 @@ func NewReputerSubmissionWindowClosedEventBase(topicId TopicId, nonceBlockHeight
 	}
 }
 
-func NewTopicRewardForfeitedNoRewardNonceEventBase(topicId TopicId, epoch int64, amount alloraMath.Dec) proto.Message {
+func NewTopicRewardForfeitedNoRewardNonceEventBase(topicId TopicId, epoch int64, amount math.Int) proto.Message {
 	return &EventTopicRewardForfeitedNoRewardNonce{
 		TopicId: topicId,
 		Epoch:   epoch,
-		Amount:  clampDec(amount),
+		Amount:  amount,
 	}
 }
 
-func NewTopicRewardForfeitedDistributionFailedEventBase(topicId TopicId, epoch int64, rewardNonce int64, amount alloraMath.Dec) proto.Message {
+func NewTopicRewardForfeitedDistributionFailedEventBase(topicId TopicId, epoch int64, rewardNonce int64, amount math.Int) proto.Message {
 	return &EventTopicRewardForfeitedDistributionFailed{
 		TopicId:     topicId,
 		Epoch:       epoch,
 		RewardNonce: rewardNonce,
-		Amount:      clampDec(amount),
+		Amount:      amount,
 	}
 }
 
