@@ -115,9 +115,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 #### Added
 
+* [#1004](https://github.com/allora-network/allora-chain/pull/1004) `types.EmitNewTopicRewardForfeitedNoRewardNonceEvent`, `types.EmitNewTopicRewardForfeitedDistributionFailedEvent` and their `types.New...EventBase` constructors, whose `amount` is a `cosmos.Int`.
+
 #### Changed
 
 * [#1004](https://github.com/allora-network/allora-chain/pull/1004) `types.EmitNewActorScoresSetEvent` drops its unused `blockHeight` parameter; callers passing a height no longer compile.
+* [#1004](https://github.com/allora-network/allora-chain/pull/1004) `types.EmitNewTopicStatusChangedEvent` and `types.NewTopicStatusChangedEventBase` take `reason`, `weight`, `minWeight` and `thresholdWeight`.
+* [#1004](https://github.com/allora-network/allora-chain/pull/1004) `types.EmitNewAddStakeEvent`, `types.EmitNewRemoveStakeEvent`, `types.NewAddStakeEventBase` and `types.NewRemoveStakeEventBase` take `topicStake`.
+* [#1004](https://github.com/allora-network/allora-chain/pull/1004) `types.EmitNewDelegateRewardShareUpdatedEvent`, `types.EmitNewDelegateRewardDistributedEvent`, `types.NewDelegateRewardShareUpdatedEventBase` and `types.NewDelegateRewardDistributedEventBase` take `nonce`.
+* [#1004](https://github.com/allora-network/allora-chain/pull/1004) `types.EmitNewEpochLabelRegistryFrozenEvent` and `types.NewEpochLabelRegistryFrozenEventBase` take `labels` in place of `registrySize`, which is derived from `labels`.
+* [#1004](https://github.com/allora-network/allora-chain/pull/1004) `TopicKeeper.InactivateTopic` takes `reason`, `weight`, `minWeight` and `thresholdWeight`; `TopicKeeper.ActivateTopic` takes `reason`, `weight` and `minWeight`; `TopicKeeper.AttemptTopicReactivation` takes `weight` and `minWeight`.
+* [#1004](https://github.com/allora-network/allora-chain/pull/1004) `BankingKeeper.MoveCoinsFromAlloraRewardsToEcosystem` returns the `cosmos.Int` amount it moved along with its error.
 
 # [Released]
 
