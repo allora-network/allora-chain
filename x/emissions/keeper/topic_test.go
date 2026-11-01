@@ -93,7 +93,7 @@ func (s *KeeperTestSuite) TestInactivateAndActivateTopic() {
 	s.Require().True(topicActive, "Topic should be active again")
 
 	// Inactivate the topic
-	err = k.InactivateTopic(ctx, topicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec())
+	err = k.InactivateTopic(ctx, topicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec(), alloraMath.ZeroDec())
 	s.Require().NoError(err, "Inactivating topic should not fail")
 
 	// Check if topic is inactive
@@ -845,7 +845,7 @@ func (s *KeeperTestSuite) TestUpdateTopicWeightAfterStakeChangeOnInactiveTopic()
 			sumWhileBothActive, err := k.GetTotalSumPreviousTopicWeights(ctx)
 			s.Require().NoError(err)
 
-			err = k.InactivateTopic(ctx, churnedTopicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec())
+			err = k.InactivateTopic(ctx, churnedTopicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec(), alloraMath.ZeroDec())
 			s.Require().NoError(err)
 			sumAfterInactivation, err := k.GetTotalSumPreviousTopicWeights(ctx)
 			s.Require().NoError(err)
@@ -913,7 +913,7 @@ func (s *KeeperTestSuite) TestRemoveStakeFromInactiveTopicWhenSumIsSmaller() {
 	err = k.SetPreviousTopicWeight(ctx, topicId, weight)
 	s.Require().NoError(err)
 
-	err = k.InactivateTopic(ctx, topicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec())
+	err = k.InactivateTopic(ctx, topicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec(), alloraMath.ZeroDec())
 	s.Require().NoError(err)
 	sum, err := k.GetTotalSumPreviousTopicWeights(ctx)
 	s.Require().NoError(err)
@@ -1330,7 +1330,21 @@ func (s *KeeperTestSuite) TestActivateTopicInactivatesStaleTopicRefusedAtNewBloc
 	lightWeightNow, err := k.GetTopicWeightFromTopicId(ctx, lightTopicId)
 	s.Require().NoError(err)
 	s.Require().True(lightWeightNow.Lt(heavyWeight), "the refused topic must be the lighter one")
-	s.Require().NoError(k.ActivateTopic(ctx, lightTopicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec()))
+	lowestAtNewBlock, noPrior, err := k.GetLowestActiveTopicWeightAtBlock(ctx, 40)
+	s.Require().NoError(err)
+	s.Require().False(noPrior, "the full block must have a stored lowest weight")
+	em := sdk.NewEventManager()
+	s.Require().NoError(k.ActivateTopic(ctx.WithEventManager(em), lightTopicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_ACTIVATED_BY_FUNDING, lightWeightNow, params.MinTopicWeight))
+
+	// The event reports the comparison that refused the topic.
+	event := lastTopicStatusChangedEvent(em)
+	s.Require().NotNil(event)
+	s.Require().Equal(lightTopicId, event.TopicId)
+	s.Require().False(event.IsActive)
+	s.Require().Equal(types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_REACTIVATION_FAILED, event.Reason)
+	s.Require().True(lightWeightNow.Equal(event.Weight), "expected weight %s, got %s", lightWeightNow.String(), event.Weight.String())
+	s.Require().True(params.MinTopicWeight.Equal(event.MinWeight), "expected min %s, got %s", params.MinTopicWeight.String(), event.MinWeight.String())
+	s.Require().True(lowestAtNewBlock.Weight.Equal(event.ThresholdWeight), "expected threshold %s, got %s", lowestAtNewBlock.Weight.String(), event.ThresholdWeight.String())
 
 	scheduled, err := k.IsTopicScheduled(ctx, lightTopicId)
 	s.Require().NoError(err)

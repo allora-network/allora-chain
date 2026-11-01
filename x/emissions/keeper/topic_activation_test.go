@@ -27,8 +27,8 @@ func lastTopicStatusChangedEvent(em *sdk.EventManager) *types.EventTopicStatusCh
 	return out
 }
 
-// Deactivations carry the reason the caller passed, plus the topic's weight
-// and the active-set minimum that applied.
+// Deactivations carry the reason the caller passed, plus the weight, minimum
+// and threshold the caller decided on.
 func (s *KeeperTestSuite) TestInactivateTopicEmitsReasonAndWeights() {
 	ctx := s.Ctx()
 	k := s.TopicKeeper()
@@ -50,7 +50,7 @@ func (s *KeeperTestSuite) TestInactivateTopicEmitsReasonAndWeights() {
 
 	weight := alloraMath.MustNewDecFromString("0.4")
 	em := sdk.NewEventManager()
-	err = k.InactivateTopic(ctx.WithEventManager(em), topicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_WEIGHT_BELOW_MINIMUM, weight, params.MinTopicWeight)
+	err = k.InactivateTopic(ctx.WithEventManager(em), topicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_WEIGHT_BELOW_MINIMUM, weight, params.MinTopicWeight, params.MinTopicWeight)
 	s.Require().NoError(err)
 
 	event := lastTopicStatusChangedEvent(em)
@@ -60,9 +60,11 @@ func (s *KeeperTestSuite) TestInactivateTopicEmitsReasonAndWeights() {
 	s.Require().Equal(types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_WEIGHT_BELOW_MINIMUM, event.Reason)
 	s.Require().Equal(params.MinTopicWeight, event.MinWeight)
 	s.Require().True(weight.Equal(event.Weight), "expected weight %s, got %s", weight.String(), event.Weight.String())
+	s.Require().True(params.MinTopicWeight.Equal(event.ThresholdWeight), "expected threshold %s, got %s", params.MinTopicWeight.String(), event.ThresholdWeight.String())
 }
 
-// Activations carry the caller's reason and the weights that applied.
+// An activation into a free slot carries the caller's reason and weight, with
+// the minimum as both min_weight and threshold_weight.
 func (s *KeeperTestSuite) TestActivateTopicEmitsReasonAndWeights() {
 	ctx := s.Ctx()
 	k := s.TopicKeeper()
@@ -86,10 +88,13 @@ func (s *KeeperTestSuite) TestActivateTopicEmitsReasonAndWeights() {
 	s.Require().Equal(types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_ACTIVATED_BY_FUNDING, event.Reason)
 	s.Require().Equal(params.MinTopicWeight, event.MinWeight)
 	s.Require().True(weight.Equal(event.Weight), "expected weight %s, got %s", weight.String(), event.Weight.String())
+	s.Require().True(params.MinTopicWeight.Equal(event.ThresholdWeight), "expected threshold %s, got %s", params.MinTopicWeight.String(), event.ThresholdWeight.String())
 }
 
 // When a full active set admits a higher-weight topic, the displaced topic's
-// deactivation event says it was evicted by the higher weight.
+// deactivation event says it was evicted by the higher weight and is measured
+// against the challenger's weight, while the challenger's activation event is
+// measured against the block's lowest weight.
 func (s *KeeperTestSuite) TestEvictedTopicEmitsEvictedByHigherWeight() {
 	ctx := s.Ctx()
 	k := s.TopicKeeper()
@@ -152,11 +157,14 @@ func (s *KeeperTestSuite) TestEvictedTopicEmitsEvictedByHigherWeight() {
 	// The evicted topic's event carries the stored lowest-weight snapshot the
 	// eviction read, not a recompute.
 	s.Require().True(storedLowest.Weight.Equal(evicted.Weight), "expected weight %s, got %s", storedLowest.Weight.String(), evicted.Weight.String())
+	s.Require().True(highWeight.Equal(evicted.ThresholdWeight), "expected threshold %s, got %s", highWeight.String(), evicted.ThresholdWeight.String())
 	s.Require().NotNil(activated)
 	s.Require().True(activated.IsActive)
 	s.Require().Equal(types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_ACTIVATED_BY_FUNDING, activated.Reason)
 	s.Require().Equal(params.MinTopicWeight, activated.MinWeight)
 	s.Require().True(highWeight.Equal(activated.Weight), "expected weight %s, got %s", highWeight.String(), activated.Weight.String())
+	s.Require().True(storedLowest.Weight.Equal(activated.ThresholdWeight), "expected threshold %s, got %s", storedLowest.Weight.String(), activated.ThresholdWeight.String())
+	s.Require().False(storedLowest.Weight.Equal(highWeight), "the weights must differ for the assertions to tell them apart")
 }
 
 // TestInactivateTopicWithoutMinWeightReset_TopicNotFoundInBlockRemovesAllTopics
@@ -212,7 +220,7 @@ func (s *KeeperTestSuite) TestInactivateTopicWithoutMinWeightReset_TopicNotFound
 		"Topic should NOT be in the block's active topics list")
 
 	// Inactivate topic that is not in the block's active topics list
-	err = k.InactivateTopic(ctx, nonExistentInBlockTopicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec())
+	err = k.InactivateTopic(ctx, nonExistentInBlockTopicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec(), alloraMath.ZeroDec())
 	s.Require().Error(err, "InactivateTopic should error when topic not found in block")
 	s.Require().ErrorIs(err, types.ErrNotFound, "Error should be ErrNotFound")
 
@@ -268,7 +276,7 @@ func (s *KeeperTestSuite) TestInactivateTopicWithoutMinWeightReset_TopicFoundInB
 	s.Require().Contains(retrievedTopics.TopicIds, topicId2)
 
 	// Inactivate topicId2 which is in the block's active topics list
-	err = k.InactivateTopic(ctx, topicId2, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec())
+	err = k.InactivateTopic(ctx, topicId2, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec(), alloraMath.ZeroDec())
 	s.Require().NoError(err)
 
 	// Verify only topicId2 was removed, others remain
@@ -311,7 +319,7 @@ func (s *KeeperTestSuite) TestInactivateTopicWithoutMinWeightReset_EmptyBlockLis
 	s.Require().Empty(retrievedTopics.TopicIds, "Block should have no active topics")
 
 	// Inactivate topic when block has no active topics
-	err = k.InactivateTopic(ctx, topicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec())
+	err = k.InactivateTopic(ctx, topicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec(), alloraMath.ZeroDec())
 	s.Require().Error(err, "InactivateTopic should error when topic not found in block")
 	s.Require().ErrorIs(err, types.ErrNotFound, "Error should be ErrNotFound")
 
@@ -349,7 +357,7 @@ func (s *KeeperTestSuite) TestActivateTopicEmitsOpenReputerWindowEvent() {
 	}
 	s.Require().Equal(1, openedEvents)
 
-	err = k.InactivateTopic(s.Ctx(), topic.Id, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec())
+	err = k.InactivateTopic(s.Ctx(), topic.Id, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec(), alloraMath.ZeroDec())
 	s.Require().NoError(err)
 }
 
@@ -388,7 +396,7 @@ func (s *KeeperTestSuite) TestActivateTopicEmitsOpenReputerWindowEventAtWindowEn
 	s.Require().NoError(err)
 	s.Require().Equal(1, countReputerSubmissionWindowOpenedEvents(s, eventStart))
 
-	err = k.InactivateTopic(s.Ctx(), topic.Id, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec())
+	err = k.InactivateTopic(s.Ctx(), topic.Id, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec(), alloraMath.ZeroDec())
 	s.Require().NoError(err)
 
 	// Past the window end no event is emitted.
