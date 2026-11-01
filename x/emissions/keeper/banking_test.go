@@ -2,6 +2,7 @@ package keeper_test
 
 import (
 	cosmosMath "cosmossdk.io/math"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 
 	"github.com/allora-network/allora-chain/app/params"
@@ -22,6 +23,19 @@ func (s *KeeperTestSuite) TestMoveCoinsFromAlloraRewardsToEcosystemReturnsTrimme
 
 	after := s.BankKeeper().GetBalance(s.Ctx(), ecosystemAddr, params.DefaultBondDenom)
 	s.Require().Equal(moved.String(), after.Amount.Sub(before.Amount).String())
+}
+
+// A send that fails reports its error and no coins moved.
+func (s *KeeperTestSuite) TestMoveCoinsFromAlloraRewardsToEcosystemSendFailureMovesNothing() {
+	bk := s.EmissionsKeeper().GetBankingKeeper()
+	rewardsAddr := authtypes.NewModuleAddress(types.AlloraRewardsAccountName)
+	balance := s.BankKeeper().GetBalance(s.Ctx(), rewardsAddr, params.DefaultBondDenom)
+	s.Require().NoError(bk.SendCoinsFromModuleToModule(s.Ctx(), types.AlloraRewardsAccountName, minttypes.EcosystemModuleName, sdk.NewCoins(balance)))
+	s.Require().True(s.BankKeeper().GetBalance(s.Ctx(), rewardsAddr, params.DefaultBondDenom).IsZero())
+
+	moved, err := bk.MoveCoinsFromAlloraRewardsToEcosystem(s.Ctx(), alloraMath.OneDec())
+	s.Require().Error(err)
+	s.Require().True(moved.IsZero(), "got %s", moved.String())
 }
 
 func (s *KeeperTestSuite) TestMoveCoinsFromAlloraRewardsToEcosystemSubOneToken() {
