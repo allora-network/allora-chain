@@ -267,9 +267,6 @@ func (c *populatedStateChecks) SeedBaseline(m testCommon.TestConfig) {
 
 	c.seedPendingRemovals(m)
 
-	m.T.Logf("--- Seed: global max_top_inferers_to_reward = %d ---", c.seedCeiling)
-	updateEmissionsParams(m, emissionstypes.OptionalParams{MaxTopInferersToReward: []uint64{c.seedCeiling}}) //nolint:exhaustruct // a params update names only the fields it changes
-
 	c.baseline = c.snapshot(m, context.Background())
 	c.requireSeedReachesMigration(m, c.baseline)
 }
@@ -451,7 +448,6 @@ func (c *populatedStateChecks) seedPendingRemovals(m testCommon.TestConfig) {
 // every migration input that the seed is responsible for.
 func (c *populatedStateChecks) requireSeedReachesMigration(m testCommon.TestConfig, snapshot stateSnapshot) {
 	require.Equal(m.T, "0", snapshot[staticKeyPrefix+"params/min_top_inferers_to_reward"], "the floor must be unset on the baseline")
-	require.Equal(m.T, strconv.FormatUint(c.seedCeiling, 10), snapshot[staticKeyPrefix+"params/max_top_inferers_to_reward"])
 	for _, topicId := range c.topicIds {
 		require.Equalf(m.T, "0", snapshot[fmt.Sprintf("%stopic/%d/max_top_inferers_to_reward", staticKeyPrefix, topicId)], "topic %d must decode with a zero cap", topicId)
 	}
@@ -703,6 +699,12 @@ func (c *populatedStateChecks) BeforeUpgradeBlock(m testCommon.TestConfig, planH
 	require.Equal(m.T, planHeight-seedEpochLength, response.Topic.EpochLastEnded)
 	require.NoError(m.T, InsertSingleWorkerPayload(regression, response.Topic, planHeight-seedEpochLength))
 
+	// The ceiling changes only after this worker window closes: a zero ceiling admits no
+	// inferer on the baseline, so the payload above would open no reputer nonce.
+	waitForHeight(m, planHeight-seedEpochLength+seedWorkerWindow+1)
+	m.T.Logf("--- Seed: global max_top_inferers_to_reward = %d ---", c.seedCeiling)
+	updateEmissionsParams(m, emissionstypes.OptionalParams{MaxTopInferersToReward: []uint64{c.seedCeiling}}) //nolint:exhaustruct // a params update names only the fields it changes
+
 	waitForHeight(m, planHeight-1)
 	deadline := time.Now().Add(snapshotRetryWindow)
 	for {
@@ -715,6 +717,7 @@ func (c *populatedStateChecks) BeforeUpgradeBlock(m testCommon.TestConfig, planH
 		time.Sleep(upgradePollInterval)
 	}
 	c.requireSeedReachesMigration(m, c.lastOld)
+	require.Equal(m.T, strconv.FormatUint(c.seedCeiling, 10), c.lastOld[staticKeyPrefix+"params/max_top_inferers_to_reward"])
 	reputerNoncesKey := fmt.Sprintf("%s%d/unfulfilled_reputer_nonces", runtimeTopicPrefix, c.regressionTopic)
 	require.Containsf(m.T, c.lastOld[reputerNoncesKey], fmt.Sprintf("block_height:%d", planHeight-seedEpochLength), "the regression topic must hold an unfulfilled reputer nonce")
 	workerNoncesKey := fmt.Sprintf("%s%d/unfulfilled_worker_nonces", runtimeTopicPrefix, c.blockerTopic)
