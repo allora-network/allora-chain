@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	abci "github.com/cometbft/cometbft/abci/types"
-	cmttypes "github.com/cometbft/cometbft/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	grpctypes "github.com/cosmos/cosmos-sdk/types/grpc"
 	"github.com/cosmos/gogoproto/proto"
@@ -68,11 +67,8 @@ func isTypedEventType(eventType string) bool {
 }
 
 // decodeTypedEvent parses an emissions or mint event into its proto type with
-// the SDK's typed event parser. It returns nil for any other event type.
+// the SDK's typed event parser.
 func decodeTypedEvent(event abci.Event) (proto.Message, error) {
-	if !isTypedEventType(event.Type) {
-		return nil, nil
-	}
 	payload := abci.Event{Type: event.Type, Attributes: make([]abci.EventAttribute, 0, len(event.Attributes))}
 	for _, attribute := range event.Attributes {
 		if attribute.Key != modeAttribute && attribute.Key != msgIndexAttribute {
@@ -177,7 +173,7 @@ func readChainBlock(ctx context.Context, m testCommon.TestConfig, height int64, 
 			return block, fmt.Errorf("node 0 /block at %d: %w", height, err)
 		}
 		for i, rawTx := range committed.Block.Txs {
-			hash := cmttypes.Tx(rawTx).Hash()
+			hash := rawTx.Hash()
 			for node := range m.Client.Clients {
 				indexed, err := m.Client.Clients[node].RPC.Tx(ctx, hash, false)
 				if err != nil {
@@ -193,6 +189,10 @@ func readChainBlock(ctx context.Context, m testCommon.TestConfig, height int64, 
 	begin, end := splitBlockEvents(reference.FinalizeBlockEvents)
 	appendEvents := func(phase eventPhase, txIndex int, events []abci.Event) {
 		for _, event := range events {
+			if !isTypedEventType(event.Type) {
+				block.events = append(block.events, chainEvent{phase: phase, txIndex: txIndex, raw: event, typed: nil})
+				continue
+			}
 			typed, err := decodeTypedEvent(event)
 			if err != nil {
 				fail("undecodable %s event %s: %v", phase, event.Type, err)

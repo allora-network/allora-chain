@@ -112,6 +112,7 @@ func EventLiveChecks(m testCommon.TestConfig, fromHeight int64, requiredCoverage
 	require.NoError(m.T, m.Client.WaitForBlockHeight(ctx, toHeight+1))
 
 	audit := newEventAudit(ctx, m)
+	audit.auditMonthlyResetBlock()
 	audit.run(fromHeight, toHeight)
 	m.T.Logf("event audit of blocks %d..%d: coverage %s; comparisons skipped %s",
 		fromHeight, toHeight, renderCounts(audit.coverage), renderCounts(audit.skipped))
@@ -175,6 +176,23 @@ func renderCounts(counts map[string]int) string {
 
 func (a *eventAudit) failf(height int64, format string, args ...any) {
 	a.violations = append(a.violations, fmt.Sprintf("height %d: %s", height, fmt.Sprintf(format, args...)))
+}
+
+// auditMonthlyResetBlock audits EventPreviousPercentageRewardToStakedReputersSet in
+// block 1, the one block of a test chain where the monthly reset runs. Block 1 has
+// no predecessor, so only the rule for this event applies.
+func (a *eventAudit) auditMonthlyResetBlock() {
+	const monthlyResetHeight = 1
+	block, err := readChainBlock(a.ctx, a.m, monthlyResetHeight, func(format string, args ...any) {
+		a.failf(monthlyResetHeight, format, args...)
+	})
+	require.NoError(a.m.T, err)
+	for _, event := range block.events {
+		if _, ok := event.typed.(*emissionstypes.EventPreviousPercentageRewardToStakedReputersSet); ok {
+			a.coverage[proto.MessageName(event.typed)]++
+			a.auditEvent(monthlyResetHeight, newBlockContext(block), event)
+		}
+	}
 }
 
 func (a *eventAudit) run(fromHeight, toHeight int64) {

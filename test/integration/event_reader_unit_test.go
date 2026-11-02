@@ -53,10 +53,10 @@ func TestDecodeTypedEventKeepsZeroValueEnum(t *testing.T) {
 	require.Equal(t, emissionstypes.NonceExpiredReason_NONCE_EXPIRED_REASON_CLOSE_FAILED, expired.Reason)
 }
 
-func TestDecodeTypedEventIgnoresOtherModules(t *testing.T) {
-	decoded, err := decodeTypedEvent(abci.Event{Type: "transfer", Attributes: nil})
-	require.NoError(t, err)
-	require.Nil(t, decoded)
+func TestIsTypedEventTypeCoversOnlyChainModules(t *testing.T) {
+	require.True(t, isTypedEventType("emissions.v10.EventAddStake"))
+	require.True(t, isTypedEventType("mint.v3.EventEmissionInfo"))
+	require.False(t, isTypedEventType("transfer"))
 }
 
 func TestDecodeTypedEventReportsUnknownEmissionsType(t *testing.T) {
