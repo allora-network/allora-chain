@@ -61,6 +61,7 @@ var UpgradeScenarios = map[string]UpgradeScenario{
 		PlanHeightDelta:        DefaultPlanHeightDelta,
 		BaselineAppVersion:     "",
 		BaselineModuleVersions: nil,
+		NewStateChecks:         nil,
 		ModuleChecks: []ModuleCheck{
 			{
 				ModuleName: "scheduler",
@@ -93,6 +94,7 @@ var UpgradeScenarios = map[string]UpgradeScenario{
 		PlanHeightDelta:        DefaultPlanHeightDelta,
 		BaselineAppVersion:     "",
 		BaselineModuleVersions: nil,
+		NewStateChecks:         nil,
 		ModuleChecks: []ModuleCheck{
 			{
 				ModuleName: "scheduler",
@@ -125,6 +127,7 @@ var UpgradeScenarios = map[string]UpgradeScenario{
 		PlanHeightDelta:        DefaultPlanHeightDelta,
 		BaselineAppVersion:     "",
 		BaselineModuleVersions: nil,
+		NewStateChecks:         nil,
 		ModuleChecks: []ModuleCheck{
 			{
 				ModuleName: "scheduler",
