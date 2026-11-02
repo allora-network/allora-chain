@@ -36,6 +36,8 @@ func TestExternalTestSuite(t *testing.T) {
 	testConfig.TopicID = CreateTopic(testConfig)
 	t.Log(">>> Test Distribution Checks <<<")
 	DistributionChecks(testConfig)
+	t.Log(">>> Test Allora Rewards Balance Goes Up Before Any Topic Is Active <<<")
+	CheckAlloraRewardsBalanceGoesUpOnNewBlock(testConfig)
 	t.Log(">>> Test Actor Registration <<<")
 	RegistrationChecks(testConfig)
 	t.Log(">>> Test Reputer Staking <<<")
