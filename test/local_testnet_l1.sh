@@ -45,14 +45,21 @@ ENV_L1="${LOCALNET_DATADIR}/.env"
 L1_COMPOSE=${LOCALNET_DATADIR}/compose_l1.yaml
 
 
+# LOCALNET_RESET=true replaces an existing localnet without prompting.
 if [ -d "$LOCALNET_DATADIR" ]; then
-    echo "Folder $LOCALNET_DATADIR already exist, need to delete it before running the script."
-    read -p "Stop validators and Delete $LOCALNET_DATADIR folder??[y/N] " -n 1 -r
-    echo    # (optional) move to a new line
+    if [ "${LOCALNET_RESET:-false}" == "true" ]; then
+        REPLY=y
+    else
+        echo "Folder $LOCALNET_DATADIR already exist, need to delete it before running the script."
+        read -p "Stop validators and Delete $LOCALNET_DATADIR folder??[y/N] " -n 1 -r
+        echo    # (optional) move to a new line
+    fi
     if [[ $REPLY =~ ^[Yy]$ ]]; then
-        # Stop if containers are already up
-        [ $(docker ps |wc -l) -gt 1 ]  && docker compose -f $L1_COMPOSE down
-        rm -rf $LOCALNET_DATADIR
+        # An earlier run can stop before it writes the compose file.
+        if [ -f "$L1_COMPOSE" ]; then
+            docker compose -f "$L1_COMPOSE" down
+        fi
+        rm -rf "$LOCALNET_DATADIR"
     fi
 fi
 mkdir -p $LOCALNET_DATADIR
@@ -76,10 +83,16 @@ UID_GID="$(id -u):$(id -g)"
 echo "CHAIN_ID=$CHAIN_ID" >> ${ENV_L1}
 echo "ALLORA_RPC=http://${NETWORK_PREFIX}.${VALIDATORS_IP_START}:26657" >> ${ENV_L1}  # Take validator0
 
-echo "Build the docker image"
-pushd ..
-docker build -t $DOCKER_IMAGE -f $DOCKERFILE .
-popd
+# LOCALNET_REUSE_IMAGE=true starts from the image an earlier run built.
+if [ "${LOCALNET_REUSE_IMAGE:-false}" == "true" ]; then
+    echo "Reuse the docker image"
+    docker image inspect "$DOCKER_IMAGE" > /dev/null
+else
+    echo "Build the docker image"
+    pushd ..
+    docker build -t $DOCKER_IMAGE -f $DOCKERFILE .
+    popd
+fi
 
 echo "Copy generate_genesis.sh into localnet data directory so it can go into the container"
 cp generate_genesis.sh ${LOCALNET_DATADIR}/generate_genesis.sh

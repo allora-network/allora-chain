@@ -124,7 +124,11 @@ duplicate-routes:
 .PHONY: integration-test
 integration-test:
 	@echo "--> Running tests"
-	@bash test/local_testnet_l1.sh  <<< "y"
-	INTEGRATION=TRUE go test -timeout 30m ./test/integration/ -v
+	@status=0; \
+	LOCALNET_RESET=true bash test/local_testnet_l1.sh || exit 1; \
+	INTEGRATION=TRUE go test -count=1 -timeout 30m -run '^TestExternalTestSuite$$' ./test/integration/ -v || status=1; \
+	LOCALNET_RESET=true LOCALNET_REUSE_IMAGE=true bash test/local_testnet_l1.sh || exit 1; \
+	INTEGRATION=TRUE go test -count=1 -timeout 30m -run '^TestExternalMultiTestSuite$$' ./test/integration/ -v || status=1; \
+	exit $$status
 
 .PHONY: all install build lint build-maprange-linter maprange duplicate-routes
