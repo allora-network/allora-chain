@@ -282,7 +282,7 @@ INTEGRATION=TRUE go test -timeout 10m ./test/integration/ -v
 
 ## Run Upgrade Tests
 
-To run upgrade tests, execute the following commands:
+To run upgrade tests, execute the following commands from a full clone (`Dockerfile.upgrade` cannot build from a linked git worktree):
 
 ```bash
 DO_UPGRADE=true bash test/local_testnet_l1.sh
