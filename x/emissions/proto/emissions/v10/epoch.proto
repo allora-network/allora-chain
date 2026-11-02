@@ -1,6 +1,7 @@
 syntax = "proto3";
 package emissions.v10;
 
+import "emissions/v10/topic.proto";
 import "gogoproto/gogo.proto";
 import "google/protobuf/timestamp.proto";
 
@@ -41,6 +42,23 @@ message Epoch {
   int64 topic_worker_submission_window = 8;
   int64 topic_ground_truth_lag = 9;
   int64 topic_epoch_length = 10;
+
+  // Scoring settings copied when the epoch is created. Close uses these
+  // values so a later topic update does not change this epoch's regrets,
+  // weights, or output shape.
+  string alpha_regret = 11 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
+  string p_norm = 12 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
+  string c_norm = 13 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
+  TopicOutputArity output_arity = 14;
 }
 
 enum EpochState {

@@ -59,7 +59,7 @@ func (k *Keeper) closeWorkerWindow(ctx context.Context, epoch types.Epoch) error
 	}
 
 	legacyNonce := epoch.LegacyNonce()
-	topic = withEpochTiming(topic, epoch)
+	topic = applyEpochTopicSnapshot(topic, epoch)
 	closeHeight := legacyNonce.BlockHeight + epoch.TopicWorkerSubmissionWindow
 	if closeHeight <= legacyNonce.BlockHeight {
 		closeHeight = legacyNonce.BlockHeight + 1
@@ -97,7 +97,7 @@ func (k *Keeper) closeReputerWindow(ctx context.Context, epoch types.Epoch) erro
 	}
 
 	legacyNonce := epoch.LegacyNonce()
-	topic = withEpochTiming(topic, epoch)
+	topic = applyEpochTopicSnapshot(topic, epoch)
 	extraLag := types.ExtraLag(epoch.TopicGroundTruthLag, epoch.TopicEpochLength)
 	closeHeight := legacyNonce.BlockHeight + epoch.TopicGroundTruthLag + extraLag
 	if epoch.TopicEpochLength > 0 {
@@ -167,11 +167,16 @@ func (k *Keeper) cancelEpoch(ctx context.Context, epoch types.Epoch) error {
 	return k.unscheduleEpochLifecycle(ctx, epoch)
 }
 
-// withEpochTiming returns a copy of topic whose timing fields are the values
-// stored on the epoch at creation.
-func withEpochTiming(topic types.Topic, epoch types.Epoch) types.Topic {
+// applyEpochTopicSnapshot returns a copy of topic whose timing and scoring
+// fields are the values stored on the epoch at creation.
+func applyEpochTopicSnapshot(topic types.Topic, epoch types.Epoch) types.Topic {
 	topic.WorkerSubmissionWindow = epoch.TopicWorkerSubmissionWindow
 	topic.GroundTruthLag = epoch.TopicGroundTruthLag
 	topic.EpochLength = epoch.TopicEpochLength
+	topic.Epsilon = epoch.Epsilon
+	topic.AlphaRegret = epoch.AlphaRegret
+	topic.PNorm = epoch.PNorm
+	topic.CNorm = epoch.CNorm
+	topic.OutputArity = epoch.OutputArity
 	return topic
 }
