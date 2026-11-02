@@ -42,6 +42,8 @@ else
 fi
 
 ACCOUNTS_TOKENS=1000000
+ADDRESS_REGEX='^allo1[02-9ac-hj-np-z]{38}$'
+NODE_ID_REGEX='^[0-9a-f]{40}$'
 
 ENV_L1="${LOCALNET_DATADIR}/.env"
 L1_COMPOSE=${LOCALNET_DATADIR}/compose_l1.yaml
@@ -137,14 +139,8 @@ echo "Updating remove_stake_delay_window in genesis.json"
 jq '.app_state.emissions.params.remove_stake_delay_window = "10"' "$genesis_file" > "$tmp_file" && mv "$tmp_file" "$genesis_file"
 
 echo "Whitelist faucet account"
-FAUCET_ADDRESS=$(docker run -t \
-    -u $(id -u):$(id -g) \
-    -v ${LOCALNET_DATADIR}:/data \
-    --entrypoint=allorad \
-    -e HOME=/data/genesis \
-    $DOCKER_IMAGE \
-        --home=/data/genesis keys show faucet -a --keyring-backend=test)
-FAUCET_ADDRESS="${FAUCET_ADDRESS%%[[:cntrl:]]}"
+FAUCET_ADDRESS=$(capture_allorad "faucet address" "$ADDRESS_REGEX" /data/genesis \
+    keys show faucet -a --keyring-backend=test)
 
 echo FAUCET_ADDRESS=$FAUCET_ADDRESS >> ${ENV_L1}
 docker run -t \
@@ -192,14 +188,8 @@ PEERS=""
 for ((i=0; i<$VALIDATOR_NUMBER; i++)); do
     valName="${VALIDATOR_PREFIX}${i}"
     ipAddress="${NETWORK_PREFIX}.$((VALIDATORS_IP_START+i))"
-    addr=$(docker run -t \
-        -v ${LOCALNET_DATADIR}:/data \
-        -u $(id -u):$(id -g) \
-        --entrypoint=allorad \
-        -e HOME=/data/${valName} \
-        $DOCKER_IMAGE \
-        --home=/data/${valName} tendermint show-node-id)
-    addr="${addr%%[[:cntrl:]]}"
+    addr=$(capture_allorad "$valName node ID" "$NODE_ID_REGEX" "/data/${valName}" \
+        tendermint show-node-id)
     delim=$([ $i -lt $(($VALIDATOR_NUMBER - 1)) ] && printf "," || printf "")
     PEERS="${PEERS}${addr}@${ipAddress}:26656${delim}"
 done

@@ -40,3 +40,45 @@ build_image_with_retry() {
         attempt=$((attempt + 1))
     done
 }
+
+# capture_allorad prints the stdout of an allorad command run in the localnet image, for
+# use as a value in generated config. Its arguments are a description for error messages,
+# the regex the value must match, the allorad home, then the allorad arguments.
+#
+# It fails, naming the cause, on a non-zero exit, on a value that does not match, and on
+# any stderr output: these commands are silent on stderr when the binary is healthy, and
+# output there points at a real defect such as a duplicate proto registration. Lines
+# starting with "WARNING: " come from the docker CLI and do not count.
+#
+# It reads DOCKER_IMAGE and LOCALNET_DATADIR.
+capture_allorad() {
+    local description="$1" value_regex="$2" home="$3"
+    shift 3
+    local stderr_log value status=0 diagnostics
+    stderr_log=$(mktemp)
+    value=$(docker run \
+        -u "$(id -u):$(id -g)" \
+        -v "${LOCALNET_DATADIR}:/data" \
+        --entrypoint=allorad \
+        -e "HOME=$home" \
+        "$DOCKER_IMAGE" \
+        "--home=$home" "$@" 2>"$stderr_log") || status=$?
+    diagnostics=$(grep -av '^WARNING: ' "$stderr_log" || true)
+    rm -f "$stderr_log"
+
+    if [ "$status" -ne 0 ]; then
+        echo "Error: allorad failed getting $description (exit $status). Its stderr:" >&2
+        echo "$diagnostics" | head -n 20 >&2
+        return 1
+    fi
+    if [ -n "$diagnostics" ]; then
+        echo "Error: allorad wrote to stderr while getting $description, so the binary has a startup problem. First lines:" >&2
+        echo "$diagnostics" | head -n 20 >&2
+        return 1
+    fi
+    if ! [[ "$value" =~ $value_regex ]]; then
+        echo "Error: allorad returned an invalid $description: '$value' does not match $value_regex" >&2
+        return 1
+    fi
+    printf '%s\n' "$value"
+}

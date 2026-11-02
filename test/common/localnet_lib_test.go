@@ -141,3 +141,67 @@ func TestBuildImageWithRetry(t *testing.T) {
 	}
 }
 
+func TestCaptureAllorad(t *testing.T) {
+	const (
+		address      = "allo1qypqxpq9qcrsszg2pvxq6rs0zqg3yyc5lzv7xu"
+		protoWarning = "2026/09/24 16:45:33 proto: duplicate proto type registered: emissions.v2.Nonce\n"
+		snippet      = `DOCKER_IMAGE=allorad LOCALNET_DATADIR=/tmp
+value=$(capture_allorad "faucet address" '^allo1[02-9ac-hj-np-z]{38}$' /data/genesis keys show faucet -a)
+printf 'captured=[%s]' "$value"`
+	)
+
+	tests := []struct {
+		name       string
+		result     fakeDockerResult
+		wantOut    string
+		wantFailed bool
+	}{
+		{
+			name:       "clean address",
+			result:     fakeDockerResult{stdout: address + "\n"}, //nolint:exhaustruct // no stderr, zero exit
+			wantOut:    "captured=[" + address + "]",
+			wantFailed: false,
+		},
+		{
+			name:       "docker cli warning stays out of the value",
+			result:     fakeDockerResult{stdout: address + "\n", stderr: "WARNING: Your kernel does not support swap limit capabilities\n"}, //nolint:exhaustruct // zero exit
+			wantOut:    "captured=[" + address + "]",
+			wantFailed: false,
+		},
+		{
+			name:       "proto registration failure is named with a valid address on stdout",
+			result:     fakeDockerResult{stdout: address + "\n", stderr: protoWarning}, //nolint:exhaustruct // zero exit
+			wantOut:    "duplicate proto type registered",
+			wantFailed: true,
+		},
+		{
+			name:       "non-zero exit names the exit and stderr",
+			result:     fakeDockerResult{stderr: "key not found\n", exitCode: 3}, //nolint:exhaustruct // no stdout
+			wantOut:    "failed getting faucet address (exit 3)",
+			wantFailed: true,
+		},
+		{
+			name:       "value that is not an address",
+			result:     fakeDockerResult{stdout: "not-an-address\n"}, //nolint:exhaustruct // no stderr, zero exit
+			wantOut:    "invalid faucet address: 'not-an-address'",
+			wantFailed: true,
+		},
+		{
+			name:       "multi-line value",
+			result:     fakeDockerResult{stdout: address + "\nsecond line\n"}, //nolint:exhaustruct // no stderr, zero exit
+			wantOut:    "invalid faucet address",
+			wantFailed: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			out, exitCode, calls := runLocalnetLib(t, snippet, tt.result)
+			require.Equal(t, 1, calls, out)
+			require.Equal(t, tt.wantFailed, exitCode != 0, out)
+			require.Contains(t, out, tt.wantOut)
+			if tt.wantFailed {
+				require.NotContains(t, out, "captured=")
+			}
+		})
+	}
+}
