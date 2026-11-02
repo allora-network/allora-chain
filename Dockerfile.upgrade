@@ -2,33 +2,28 @@ FROM golang:1.22-bookworm AS builder
 
 ENV GO111MODULE=on
 ENV GOMODCACHE=/gocache
-ENV BASELINE_VERSION_TAG=v0.17.0
+ENV BASELINE_VERSION_TAG=v0.17.2
 ENV UPGRADE_VERSION_TAG=v0.18.0
-ENV GIT_STASH_MESSAGE="Docker build"
-
 
 ADD . /src
 WORKDIR /src
 
-# Save the uncommited changes
-RUN git stash -u -m "$GIT_STASH_MESSAGE"
-# Switch to the baseline version
-RUN git checkout $BASELINE_VERSION_TAG
+# The baseline comes from a tag in the build context's git history, and the context's
+# .git must be a directory: a linked worktree's .git file points outside the context.
+RUN test -d .git || (echo "Dockerfile.upgrade needs a full clone: .git is not a directory" >&2; exit 1)
+RUN git worktree add --detach /baseline $BASELINE_VERSION_TAG
 
-# Build the baseline version
 RUN mkdir -p $GOMODCACHE
 RUN --mount=type=cache,target=/gocache \
     --mount=type=cache,target=/root/.cache/go-build \
     go install cosmossdk.io/tools/cosmovisor/cmd/cosmovisor@v1.6.0
+
+# Build the baseline version
 RUN --mount=type=cache,target=/gocache \
     --mount=type=cache,target=/root/.cache/go-build \
-    make install
+    make -C /baseline install
 
-# Restore the current version
-RUN git switch -
-RUN sh -c 'git stash list | grep "$GIT_STASH_MESSAGE" && git stash pop'; true
-
-# Build the current version
+# Build the upgrade binary from the build context, including any uncommitted changes
 RUN --mount=type=cache,target=/gocache \
     --mount=type=cache,target=/root/.cache/go-build \
     make build-local-edits
