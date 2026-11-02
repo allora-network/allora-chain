@@ -65,8 +65,9 @@ func voteOnProposal(m testCommon.TestConfig, proposalId uint64) {
 	}
 }
 
-// propose an upgrade to the specified software version
-func proposeUpgrade(m testCommon.TestConfig, upgradeName string, planHeightDelta int64) (proposalId uint64, proposalHeight int64) {
+// propose an upgrade to the specified software version at the height choosePlanHeight
+// returns for the earliest height allowed by planHeightDelta
+func proposeUpgrade(m testCommon.TestConfig, upgradeName string, planHeightDelta int64, choosePlanHeight func(earliest int64) int64) (proposalId uint64, proposalHeight int64) {
 	ctx := context.Background()
 	name := upgradeName
 	summary := "Upgrade to " + name + " software version"
@@ -76,7 +77,7 @@ func proposeUpgrade(m testCommon.TestConfig, upgradeName string, planHeightDelta
 	if planHeightDelta <= 0 {
 		planHeightDelta = DefaultPlanHeightDelta
 	}
-	proposalHeight = currHeight + planHeightDelta // 4 1/6 minutes
+	proposalHeight = choosePlanHeight(currHeight + planHeightDelta) // 4 1/6 minutes
 	m.T.Logf("Current Height: %d, proposing upgrade for %d", currHeight, proposalHeight)
 	msgSoftwareUpgrade := &upgradetypes.MsgSoftwareUpgrade{
 		Authority: authtypes.NewModuleAddress("gov").String(),
@@ -274,12 +275,25 @@ func UpgradeChecks(m testCommon.TestConfig, upgradeName string) {
 	nodes := connectValidators(m)
 	preVersions := requireBaselineAppVersions(m, nodes, scenario.BaselineAppVersion)
 
+	var stateChecks upgradeStateChecks
+	choosePlanHeight := func(earliest int64) int64 { return earliest }
+	if scenario.NewStateChecks != nil {
+		stateChecks = scenario.NewStateChecks()
+		m.T.Logf("--- Seeding baseline state for %s ---", scenario.UpgradeName)
+		stateChecks.SeedBaseline(m)
+		requireBaselineAppVersions(m, nodes, scenario.BaselineAppVersion)
+		choosePlanHeight = func(earliest int64) int64 { return stateChecks.ChoosePlanHeight(m, earliest) }
+	}
+
 	m.T.Logf("--- Propose Upgrade to %s software version ---", scenario.UpgradeName)
-	proposalId, proposalHeight := proposeUpgrade(m, scenario.UpgradeName, planHeightDelta)
+	proposalId, proposalHeight := proposeUpgrade(m, scenario.UpgradeName, planHeightDelta, choosePlanHeight)
 	m.T.Logf("--- Vote on Upgrade Proposal %d ---", proposalId)
 	voteOnProposal(m, proposalId)
 	m.T.Logf("--- Waiting for Proposal %d to Pass ---", proposalId)
 	waitForProposalPass(m, proposalId)
+	if stateChecks != nil {
+		stateChecks.BeforeUpgradeBlock(m, proposalHeight)
+	}
 	m.T.Logf("--- Waiting for Upgrade to %s at height %d ---", scenario.UpgradeName, proposalHeight)
 	waitForUpgrade(m, nodes, preVersions, proposalHeight)
 
@@ -317,4 +331,11 @@ func UpgradeChecks(m testCommon.TestConfig, upgradeName string) {
 	height := getAppliedVersionHeight(m, scenario.UpgradeName)
 	m.T.Log("--- Checking upgrade has been applied at the proposed height ---")
 	require.Equal(m.T, height, proposalHeight)
+
+	if stateChecks != nil {
+		m.T.Log("--- Verifying migrated state ---")
+		stateChecks.VerifyMigration(m, proposalHeight)
+		m.T.Log("--- Driving the chain on migrated state ---")
+		stateChecks.DriveMigratedState(m, nodes, proposalHeight)
+	}
 }
