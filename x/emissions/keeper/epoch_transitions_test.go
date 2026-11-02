@@ -8,6 +8,7 @@ import (
 	abci "github.com/cometbft/cometbft/abci/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
+	alloraMath "github.com/allora-network/allora-chain/math"
 	actorutils "github.com/allora-network/allora-chain/x/emissions/keeper/actor_utils"
 	"github.com/allora-network/allora-chain/x/emissions/testutil"
 	"github.com/allora-network/allora-chain/x/emissions/types"
@@ -221,6 +222,76 @@ func (s *KeeperTestSuite) TestEpochCloseUsesTimingCopiedAtCreation() {
 	epoch, err = s.EmissionsKeeper().GetEpoch(ctx, topicId, lastNonce)
 	s.Require().NoError(err)
 	s.Require().Equal(types.EpochState_WAITING_GROUND_TRUTH, epoch.State)
+}
+
+func (s *KeeperTestSuite) TestEpochCloseUsesTopicSettingsCopiedAtCreation() {
+	ctx := s.Ctx().WithBlockHeight(6_500)
+	topicId := s.CreateTopic(
+		testutil.WithEpochLength(100),
+		testutil.WithGroundTruthLag(100),
+		testutil.WithWorkerSubmissionWindow(10),
+	)
+	created, err := s.TopicKeeper().GetTopic(ctx, topicId)
+	s.Require().NoError(err)
+
+	k := s.EmissionsKeeper()
+	var seen []types.Topic
+	record := func(_ sdk.Context, topic types.Topic, _ types.Nonce) error {
+		seen = append(seen, topic)
+		return nil
+	}
+	k.SetEpochCloseHandlers(record, record)
+	s.T().Cleanup(func() {
+		k.SetEpochCloseHandlers(
+			func(ctx sdk.Context, topic types.Topic, nonce types.Nonce) error {
+				return actorutils.CloseWorkerNonce(k, ctx, topic, nonce)
+			},
+			func(ctx sdk.Context, topic types.Topic, nonce types.Nonce) error {
+				return actorutils.CloseReputerNonce(k, ctx, topic, nonce)
+			},
+		)
+	})
+
+	s.Require().NoError(k.StartNewEpoch(ctx, topicId))
+	lastNonce, found, err := k.GetTopicLastEpochNonce(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().True(found)
+	epoch, err := k.GetEpoch(ctx, topicId, lastNonce)
+	s.Require().NoError(err)
+	s.Require().True(epoch.AlphaRegret.Equal(created.AlphaRegret))
+	s.Require().True(epoch.PNorm.Equal(created.PNorm))
+	s.Require().True(epoch.CNorm.Equal(created.CNorm))
+	s.Require().True(epoch.Epsilon.Equal(created.Epsilon))
+	s.Require().Equal(created.OutputArity, epoch.OutputArity)
+
+	created.AlphaRegret = decDifferentFrom(created.AlphaRegret, "0.2", "0.3")
+	created.PNorm = decDifferentFrom(created.PNorm, "4", "2")
+	created.CNorm = decDifferentFrom(created.CNorm, "0.5", "0.8")
+	created.Epsilon = decDifferentFrom(created.Epsilon, "0.02", "0.03")
+	created.OutputArity = types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI
+	s.Require().NoError(s.TopicKeeper().SetTopic(ctx, topicId, created))
+
+	ctx = ctx.WithBlockTime(epoch.WorkerSubmissionWindow.CloseAt.Add(time.Nanosecond))
+	s.Require().NoError(s.SchedulerKeeper().BeginBlock(ctx))
+	ctx = ctx.WithBlockTime(epoch.ReputerSubmissionWindow.CloseAt.Add(time.Nanosecond))
+	s.Require().NoError(s.SchedulerKeeper().BeginBlock(ctx))
+
+	s.Require().Len(seen, 2)
+	for _, got := range seen {
+		s.Require().True(got.AlphaRegret.Equal(epoch.AlphaRegret))
+		s.Require().True(got.PNorm.Equal(epoch.PNorm))
+		s.Require().True(got.CNorm.Equal(epoch.CNorm))
+		s.Require().True(got.Epsilon.Equal(epoch.Epsilon))
+		s.Require().Equal(epoch.OutputArity, got.OutputArity)
+	}
+}
+
+func decDifferentFrom(current alloraMath.Dec, first, second string) alloraMath.Dec {
+	candidate := alloraMath.MustNewDecFromString(first)
+	if candidate.Equal(current) {
+		return alloraMath.MustNewDecFromString(second)
+	}
+	return candidate
 }
 
 func (s *KeeperTestSuite) TestCloseReputerWindowSoftFailsNoQualifiedInferers() {
