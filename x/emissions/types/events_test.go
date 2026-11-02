@@ -2026,8 +2026,9 @@ func TestEmitNewTopicStatusChangedEvent(t *testing.T) {
 	topicId := uint64(1)
 	weight := alloraMath.MustNewDecFromString("0.4")
 	minWeight := alloraMath.MustNewDecFromString("0.5")
+	thresholdWeight := alloraMath.MustNewDecFromString("0.6")
 
-	types.EmitNewTopicStatusChangedEvent(ctx, topicId, false, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_WEIGHT_BELOW_MINIMUM, weight, minWeight)
+	types.EmitNewTopicStatusChangedEvent(ctx, topicId, false, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_WEIGHT_BELOW_MINIMUM, weight, minWeight, thresholdWeight)
 
 	events := ctx.EventManager().Events()
 	require.Len(t, events, 1)
@@ -2054,6 +2055,24 @@ func TestEmitNewTopicStatusChangedEvent(t *testing.T) {
 	val, exists = event.GetAttribute("min_weight")
 	require.True(t, exists)
 	require.Contains(t, val.GetValue(), minWeight.String())
+
+	val, exists = event.GetAttribute("threshold_weight")
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), thresholdWeight.String())
+}
+
+// A NaN weight reaches the event attribute verbatim instead of dropping the event.
+func TestEmitNewTopicStatusChangedEventPassesNaNThrough(t *testing.T) {
+	ctx := sdk.Context{}.WithEventManager(sdk.NewEventManager())
+	zero := alloraMath.ZeroDec()
+
+	types.EmitNewTopicStatusChangedEvent(ctx, 1, false, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_WEIGHT_BELOW_MINIMUM, alloraMath.NewNaN(), zero, zero)
+
+	events := ctx.EventManager().Events()
+	require.Len(t, events, 1)
+	val, exists := events[0].GetAttribute("weight")
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), "NaN")
 }
 
 func TestEmitNewTopicWeightUpdatedEvent(t *testing.T) {

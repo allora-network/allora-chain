@@ -744,13 +744,14 @@ func NewRewardPayoutFailedEventBase(topicId TopicId, nonce int64, address string
 	}
 }
 
-func NewTopicStatusChangedEventBase(topicId TopicId, isActive bool, reason TopicStatusChangeReason, weight, minWeight alloraMath.Dec) proto.Message {
+func NewTopicStatusChangedEventBase(topicId TopicId, isActive bool, reason TopicStatusChangeReason, weight, minWeight, thresholdWeight alloraMath.Dec) proto.Message {
 	return &EventTopicStatusChanged{
-		TopicId:   topicId,
-		IsActive:  isActive,
-		Reason:    reason,
-		Weight:    clampDec(weight),
-		MinWeight: clampDec(minWeight),
+		TopicId:         topicId,
+		IsActive:        isActive,
+		Reason:          reason,
+		Weight:          clampDec(weight),
+		MinWeight:       clampDec(minWeight),
+		ThresholdWeight: clampDec(thresholdWeight),
 	}
 }
 
@@ -876,20 +877,20 @@ func NewReputerSubmissionWindowClosedEventBase(topicId TopicId, nonceBlockHeight
 	}
 }
 
-func NewTopicRewardForfeitedNoRewardNonceEventBase(topicId TopicId, epoch int64, amount alloraMath.Dec) proto.Message {
+func NewTopicRewardForfeitedNoRewardNonceEventBase(topicId TopicId, epoch int64, amount math.Int) proto.Message {
 	return &EventTopicRewardForfeitedNoRewardNonce{
 		TopicId: topicId,
 		Epoch:   epoch,
-		Amount:  clampDec(amount),
+		Amount:  amount,
 	}
 }
 
-func NewTopicRewardForfeitedDistributionFailedEventBase(topicId TopicId, epoch int64, rewardNonce int64, amount alloraMath.Dec) proto.Message {
+func NewTopicRewardForfeitedDistributionFailedEventBase(topicId TopicId, epoch int64, rewardNonce int64, amount math.Int) proto.Message {
 	return &EventTopicRewardForfeitedDistributionFailed{
 		TopicId:     topicId,
 		Epoch:       epoch,
 		RewardNonce: rewardNonce,
-		Amount:      clampDec(amount),
+		Amount:      amount,
 	}
 }
 

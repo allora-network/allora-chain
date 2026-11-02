@@ -45,6 +45,8 @@ See `x/emissions/metrics/` for details.
 
 `Dec` values placed in emissions events are magnitude-clamped to `[1e-40, 1e40]` so extremely small or large values stay compact when serialized. This shapes event output only; consensus state is stored separately and is not clamped, so an event value may differ from the stored value at the extremes. See `ClampMagnitude` and the `clamp*` helpers in `x/emissions/types/events_utils.go`.
 
+`NaN` passes through to `Dec` event attributes verbatim, so consumers must not assume attributes parse as finite numbers.
+
 ## Parameters
 
 - **[Global parameters](docs/global-parameters.md)** — chain-wide parameters on `Params`: their defaults, and the ones whose behavior is not obvious from the name.

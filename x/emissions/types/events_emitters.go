@@ -527,10 +527,10 @@ func EmitNewRewardPayoutFailedEvent(ctx context.Context, topicId TopicId, nonce 
 	}
 }
 
-func EmitNewTopicStatusChangedEvent(ctx context.Context, topicId TopicId, isActive bool, reason TopicStatusChangeReason, weight, minWeight alloraMath.Dec) {
+func EmitNewTopicStatusChangedEvent(ctx context.Context, topicId TopicId, isActive bool, reason TopicStatusChangeReason, weight, minWeight, thresholdWeight alloraMath.Dec) {
 	metrics.IncrProducerEventCount(metrics.TOPIC_STATUS_CHANGED_EVENT)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	err := sdkCtx.EventManager().EmitTypedEvent(NewTopicStatusChangedEventBase(topicId, isActive, reason, weight, minWeight))
+	err := sdkCtx.EventManager().EmitTypedEvent(NewTopicStatusChangedEventBase(topicId, isActive, reason, weight, minWeight, thresholdWeight))
 	if err != nil {
 		sdkCtx.Logger().Warn("Error emitting TopicStatusChangedEvent", "error", err)
 	}
@@ -633,7 +633,7 @@ func EmitNewWorkerSubmissionWindowClosedEvent(ctx context.Context, topicId Topic
 // EmitNewTopicRewardForfeitedNoRewardNonceEvent notifies that a topic's
 // reward went back to the ecosystem account because the topic had no reward
 // nonce to settle it against.
-func EmitNewTopicRewardForfeitedNoRewardNonceEvent(ctx context.Context, topicId TopicId, epoch int64, amount alloraMath.Dec) {
+func EmitNewTopicRewardForfeitedNoRewardNonceEvent(ctx context.Context, topicId TopicId, epoch int64, amount cosmosMath.Int) {
 	metrics.IncrProducerEventCount(metrics.TOPIC_REWARD_FORFEITED_NO_REWARD_NONCE_EVENT)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	err := sdkCtx.EventManager().EmitTypedEvent(NewTopicRewardForfeitedNoRewardNonceEventBase(topicId, epoch, amount))
@@ -645,7 +645,7 @@ func EmitNewTopicRewardForfeitedNoRewardNonceEvent(ctx context.Context, topicId 
 // EmitNewTopicRewardForfeitedDistributionFailedEvent notifies that a topic's
 // reward went back to the ecosystem account because distributing and paying
 // it out to the topic's actors failed.
-func EmitNewTopicRewardForfeitedDistributionFailedEvent(ctx context.Context, topicId TopicId, epoch int64, rewardNonce int64, amount alloraMath.Dec) {
+func EmitNewTopicRewardForfeitedDistributionFailedEvent(ctx context.Context, topicId TopicId, epoch int64, rewardNonce int64, amount cosmosMath.Int) {
 	metrics.IncrProducerEventCount(metrics.TOPIC_REWARD_FORFEITED_DISTRIBUTION_FAILED_EVENT)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	err := sdkCtx.EventManager().EmitTypedEvent(NewTopicRewardForfeitedDistributionFailedEventBase(topicId, epoch, rewardNonce, amount))

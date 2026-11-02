@@ -56,7 +56,7 @@ func (s *KeeperTestSuite) TestTopicInvariantTotalSumPreviousTopicWeightsEqualAct
 	}
 	assertHolds("two active topics with weights")
 
-	err = k.InactivateTopic(ctx, churnedTopicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec())
+	err = k.InactivateTopic(ctx, churnedTopicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec(), alloraMath.ZeroDec())
 	s.Require().NoError(err)
 	assertHolds("inactivation")
 

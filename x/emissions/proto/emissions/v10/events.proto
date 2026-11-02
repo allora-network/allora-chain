@@ -56,7 +56,8 @@ enum TopicStatusChangeReason {
   TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED = 0;
   // The topic's weight fell below the minimum weight for active topics.
   TOPIC_STATUS_CHANGE_REASON_WEIGHT_BELOW_MINIMUM = 1;
-  // The topic could not be re-added to the active set at its next epoch.
+  // The topic lost a comparison for a full active set: its weight was below
+  // the lowest weight at the block it needed a slot in.
   TOPIC_STATUS_CHANGE_REASON_REACTIVATION_FAILED = 2;
   // The topic had the lowest weight in a full active set and a higher-weight
   // topic took its place.
@@ -66,6 +67,9 @@ enum TopicStatusChangeReason {
   TOPIC_STATUS_CHANGE_REASON_ACTIVATED_BY_FUNDING = 4;
   // The topic kept its place in the active set at its next epoch.
   TOPIC_STATUS_CHANGE_REASON_REACTIVATED = 5;
+  // Attempting to re-add the topic to the active set returned an error, so the
+  // topic was inactivated without a weight comparison deciding it.
+  TOPIC_STATUS_CHANGE_REASON_REACTIVATION_ERROR = 6;
 }
 
 message EventScoresSet {
@@ -705,13 +709,24 @@ message EventTopicStatusChanged {
   bool is_active = 2;
   // Why the status changed.
   TopicStatusChangeReason reason = 3;
-  // The topic's weight at the change.
+  // The topic's weight in this decision. When a full block's slot was at stake
+  // this is the value the comparison used: the weight compared against the
+  // block's lowest weight, or the evicted topic's stored weight.
   string weight = 4 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
   ];
-  // The minimum weight for active topics that applied.
+  // The global MinTopicWeight param in force.
   string min_weight = 5 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
+  // The weight this decision was measured against: MinTopicWeight for
+  // WEIGHT_BELOW_MINIMUM and for an activation into a free slot; the block's
+  // lowest weight for REACTIVATION_FAILED and for an activation that took a
+  // full block's slot; the challenger's weight for EVICTED_BY_HIGHER_WEIGHT.
+  // Zero for REACTIVATION_ERROR: no comparison happened.
+  string threshold_weight = 6 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
   ];
@@ -898,9 +913,10 @@ message EventTopicRewardForfeitedNoRewardNonce {
   // The topic's EpochLastEnded. For a topic rewarded in this block, this is
   // the height of the block the event is emitted in.
   int64 epoch = 2;
-  // The forfeited reward.
+  // The coins moved to the ecosystem account, zero when the reward was under
+  // one unit and nothing moved.
   string amount = 3 [
-    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false
   ];
 }
@@ -914,9 +930,10 @@ message EventTopicRewardForfeitedDistributionFailed {
   int64 epoch = 2;
   // The reward nonce whose settlement failed.
   int64 reward_nonce = 3;
-  // The forfeited reward.
+  // The coins moved to the ecosystem account, zero when the reward was under
+  // one unit and nothing moved.
   string amount = 4 [
-    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false
   ];
 }
@@ -966,6 +983,8 @@ message EventEpochLabelRegistryFrozen {
   // The epoch nonce.
   int64 nonce = 4;
   // The frozen registry's canonical label names in compact-id order:
-  // labels[i] is the label with id i+1.
+  // labels[i] is the label with id i+1. The size grows with the registry, about
+  // 2 MiB at 32768 labels of 64 bytes; MaxEpochLabelRegistrySize has no upper
+  // bound.
   repeated string labels = 5;
 }

@@ -130,12 +130,12 @@ func EmitRewards(args EmitRewardsArgs) error {
 		topicRewardNonce, err := args.K.GetTopicKeeper().GetTopicRewardNonce(args.Ctx, topicId)
 		if err != nil || topicRewardNonce == 0 {
 			// return reward to ecosystem account
-			err = args.K.GetBankingKeeper().MoveCoinsFromAlloraRewardsToEcosystem(args.Ctx, *topicRewards[topicId])
+			moved, err := args.K.GetBankingKeeper().MoveCoinsFromAlloraRewardsToEcosystem(args.Ctx, *topicRewards[topicId])
 			if err != nil {
 				Logger(args.Ctx).Error("Failed to move coins from allora rewards to ecosystem", "topicId", topicId, "error", err)
 				panic(err)
 			}
-			types.EmitNewTopicRewardForfeitedNoRewardNonceEvent(args.Ctx, topicId, epochsLastEnded[topicId], *topicRewards[topicId])
+			types.EmitNewTopicRewardForfeitedNoRewardNonceEvent(args.Ctx, topicId, epochsLastEnded[topicId], moved)
 			*topicRewards[topicId] = alloraMath.ZeroDec()
 
 			Logger(args.Ctx).Info("Topic has no valid reward nonce, skipping", "topicId", topicId)
@@ -159,12 +159,12 @@ func EmitRewards(args EmitRewardsArgs) error {
 		})
 		if err != nil {
 			// return reward to ecosystem account
-			errMC := args.K.GetBankingKeeper().MoveCoinsFromAlloraRewardsToEcosystem(args.Ctx, *topicRewards[topicId])
+			moved, errMC := args.K.GetBankingKeeper().MoveCoinsFromAlloraRewardsToEcosystem(args.Ctx, *topicRewards[topicId])
 			if errMC != nil {
 				Logger(args.Ctx).Error("Failed to move coins from allora rewards to ecosystem", "topicId", topicId, "error", errMC)
 				panic(errMC)
 			}
-			types.EmitNewTopicRewardForfeitedDistributionFailedEvent(args.Ctx, topicId, epochsLastEnded[topicId], topicRewardNonce, *topicRewards[topicId])
+			types.EmitNewTopicRewardForfeitedDistributionFailedEvent(args.Ctx, topicId, epochsLastEnded[topicId], topicRewardNonce, moved)
 			*topicRewards[topicId] = alloraMath.ZeroDec()
 
 			Logger(args.Ctx).Error("Failed to process rewards", "topicId", topicId, "error", err)
