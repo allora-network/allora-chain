@@ -47,6 +47,11 @@ var requiredEventCoverage = []string{
 	"EventScoresSet/ACTOR_TYPE_REPUTER",
 	"EventRewardsSettled/ACTOR_TYPE_INFERER_UNSPECIFIED",
 	"EventRewardsSettled/ACTOR_TYPE_REPUTER",
+	"EventRewardsSettled/ACTOR_TYPE_FORECASTER",
+	"emissions.v10.EventNetworkInferenceInfererWeightsSet",
+	"emissions.v10.EventNetworkInferenceForecasterWeightsSet",
+	"emissions.v10.EventNetworkInferenceInfererRegretsUsedSet",
+	"emissions.v10.EventNetworkInferenceForecasterRegretsUsedSet",
 	"emissions.v10.EventDelegateRewardShareUpdated",
 	"emissions.v10.EventDelegateRewardDistributed",
 	"emissions.v10.EventEpochLabelRegistryFrozen",
@@ -210,7 +215,9 @@ func (a *eventAudit) auditBlock(block chainBlock) {
 	facts := newBlockContext(block)
 	a.auditStakeLedger(block)
 	a.auditModuleLedgers(block)
+	a.auditRewardPayouts(block)
 	a.auditTopicWeights(block, facts)
+	a.auditCombinedValuesFromWeights(block.height, facts)
 	for i, event := range block.events {
 		if event.typed == nil {
 			continue
@@ -252,6 +259,8 @@ type blockContext struct {
 	droppedNonces     map[string]bool
 	dripOldRevenue    map[uint64]cosmosMath.Int
 	epochWeight       map[uint64]alloraMath.Dec
+	networkBundles    map[string]*emissionstypes.EventNetworkInferenceBundle
+	networkWeights    map[string]networkWeights
 }
 
 func newBlockContext(block chainBlock) blockContext {
@@ -260,6 +269,8 @@ func newBlockContext(block chainBlock) blockContext {
 		droppedNonces:     make(map[string]bool),
 		dripOldRevenue:    make(map[uint64]cosmosMath.Int),
 		epochWeight:       make(map[uint64]alloraMath.Dec),
+		networkBundles:    make(map[string]*emissionstypes.EventNetworkInferenceBundle),
+		networkWeights:    make(map[string]networkWeights),
 	}
 	for _, event := range block.events {
 		switch typed := event.typed.(type) {
@@ -271,6 +282,20 @@ func newBlockContext(block chainBlock) blockContext {
 			facts.dripOldRevenue[typed.TopicId] = typed.OldRevenue
 		case *emissionstypes.EventTopicWeightUpdated:
 			facts.epochWeight[typed.TopicId] = typed.NewWeight
+		case *emissionstypes.EventNetworkInferenceBundle:
+			if !typed.OutlierResistant {
+				facts.networkBundles[topicNonceKey(typed.TopicId, typed.Nonce)] = typed
+			}
+		case *emissionstypes.EventNetworkInferenceInfererWeightsSet:
+			key := topicNonceKey(typed.TopicId, typed.Nonce)
+			weights := facts.networkWeights[key]
+			weights.infererAddresses, weights.infererWeights = typed.Addresses, typed.Weights
+			facts.networkWeights[key] = weights
+		case *emissionstypes.EventNetworkInferenceForecasterWeightsSet:
+			key := topicNonceKey(typed.TopicId, typed.Nonce)
+			weights := facts.networkWeights[key]
+			weights.forecasterAddresses, weights.forecasterWeights = typed.Addresses, typed.Weights
+			facts.networkWeights[key] = weights
 		}
 	}
 	return facts
@@ -307,17 +332,25 @@ func (a *eventAudit) auditEpochNonceFields(height int64, typed proto.Message) {
 // auditStakeLedger replays the block's stake events in execution order for each
 // topic: each event's topic_stake must follow from the stake before it, starting
 // at the queried stake of the previous block and ending at the queried stake of
-// this block.
+// this block. Weight events report the stake at their point in that replay.
+// A removal writes the stake, recomputes the weight and only then emits
+// EventRemoveStake, so EventTopicWeightUpdatedAfterStakeChange must carry the
+// topic_stake of the removal event that follows it.
 func (a *eventAudit) auditStakeLedger(block chainBlock) {
 	running := make(map[uint64]cosmosMath.Int)
+	awaitingRemoval := make(map[uint64]cosmosMath.Int)
 	order := make([]uint64, 0)
-	apply := func(topicId uint64, name string, signedAmount, reported cosmosMath.Int) {
-		before, seen := running[topicId]
+	current := func(topicId uint64) cosmosMath.Int {
+		stake, seen := running[topicId]
 		if !seen {
-			before = a.topicStake(block.height-1, topicId)
+			stake = a.topicStake(block.height-1, topicId)
+			running[topicId] = stake
 			order = append(order, topicId)
 		}
-		if expected := before.Add(signedAmount); !expected.Equal(reported) {
+		return stake
+	}
+	apply := func(topicId uint64, name string, signedAmount, reported cosmosMath.Int) {
+		if expected := current(topicId).Add(signedAmount); !expected.Equal(reported) {
 			a.failf(block.height, "%s topic %d topic_stake %s, stake ledger expects %s", name, topicId, reported, expected)
 		}
 		running[topicId] = reported
@@ -328,7 +361,25 @@ func (a *eventAudit) auditStakeLedger(block chainBlock) {
 			apply(typed.TopicId, "EventAddStake", typed.Amount, typed.TopicStake)
 		case *emissionstypes.EventRemoveStake:
 			apply(typed.TopicId, "EventRemoveStake", typed.Amount.Neg(), typed.TopicStake)
+			if weightStake, waiting := awaitingRemoval[typed.TopicId]; waiting {
+				if !weightStake.Equal(typed.TopicStake) {
+					a.failf(block.height, "EventTopicWeightUpdatedAfterStakeChange topic %d topic_stake %s, the removal it belongs to leaves %s", typed.TopicId, weightStake, typed.TopicStake)
+				}
+				delete(awaitingRemoval, typed.TopicId)
+			}
+		case *emissionstypes.EventTopicWeightUpdatedAfterStakeChange:
+			if _, waiting := awaitingRemoval[typed.TopicId]; waiting {
+				a.failf(block.height, "EventTopicWeightUpdatedAfterStakeChange topic %d has no EventRemoveStake before the next weight event", typed.TopicId)
+			}
+			awaitingRemoval[typed.TopicId] = typed.TopicStake
+		case *emissionstypes.EventTopicWeightUpdated:
+			if stake := current(typed.TopicId); !stake.Equal(typed.TopicStake) {
+				a.failf(block.height, "EventTopicWeightUpdated topic %d topic_stake %s, stake ledger has %s at this point", typed.TopicId, typed.TopicStake, stake)
+			}
 		}
+	}
+	for topicId := range awaitingRemoval { //nolint:maprange // any entry is a violation and the order does not matter
+		a.failf(block.height, "EventTopicWeightUpdatedAfterStakeChange topic %d has no EventRemoveStake after it", topicId)
 	}
 	for _, topicId := range order {
 		if queried := a.topicStake(block.height, topicId); !queried.Equal(running[topicId]) {
@@ -472,7 +523,7 @@ func (a *eventAudit) auditTopicWeights(block chainBlock, facts blockContext) {
 		}
 		lastWeight[topicId] = weight
 	}
-	checkPayload := func(name string, phase eventPhase, topicId uint64, feeRevenue, topicStake cosmosMath.Int) {
+	checkPayload := func(name string, phase eventPhase, topicId uint64, feeRevenue cosmosMath.Int) {
 		if phase != phaseEndBlock {
 			a.failf(block.height, "%s topic %d emitted during %s, every path that emits it runs in EndBlock", name, topicId, phase)
 		}
@@ -488,17 +539,14 @@ func (a *eventAudit) auditTopicWeights(block chainBlock, facts blockContext) {
 		if !feeRevenue.Equal(revenue) {
 			a.failf(block.height, "%s topic %d topic_fee_revenue %s, chain state has %s", name, topicId, feeRevenue, revenue)
 		}
-		if topicStake.IsNegative() {
-			a.failf(block.height, "%s topic %d has negative topic_stake %s", name, topicId, topicStake)
-		}
 	}
 	for _, event := range block.events {
 		switch typed := event.typed.(type) {
 		case *emissionstypes.EventTopicWeightUpdated:
-			checkPayload("EventTopicWeightUpdated", event.phase, typed.TopicId, typed.TopicFeeRevenue, typed.TopicStake)
+			checkPayload("EventTopicWeightUpdated", event.phase, typed.TopicId, typed.TopicFeeRevenue)
 			record(typed.TopicId, typed.NewWeight)
 		case *emissionstypes.EventTopicWeightUpdatedAfterStakeChange:
-			checkPayload("EventTopicWeightUpdatedAfterStakeChange", event.phase, typed.TopicId, typed.TopicFeeRevenue, typed.TopicStake)
+			checkPayload("EventTopicWeightUpdatedAfterStakeChange", event.phase, typed.TopicId, typed.TopicFeeRevenue)
 			record(typed.TopicId, typed.NewWeight)
 		case *emissionstypes.EventTopicFeeRevenueDripped:
 			response, err := a.m.Client.QueryEmissions().GetTopicFeeRevenue(atHeight(a.ctx, block.height), &emissionstypes.GetTopicFeeRevenueRequest{TopicId: typed.TopicId})
@@ -524,7 +572,7 @@ func (a *eventAudit) auditTopicWeights(block chainBlock, facts blockContext) {
 // requireDecEqual compares an event Dec with its state value under the event clamp.
 func (a *eventAudit) requireDecEqual(height int64, what string, event, state alloraMath.Dec) {
 	clamped := alloraMath.ClampMagnitude(state, eventClampMin, eventClampMax)
-	if !event.Equal(clamped) {
+	if event.IsNaN() != clamped.IsNaN() || !event.Equal(clamped) {
 		a.failf(height, "%s: event has %s, chain state has %s", what, event, clamped)
 	}
 }
@@ -739,7 +787,7 @@ func (a *eventAudit) auditEvent(height int64, facts blockContext, event chainEve
 	case *emissionstypes.EventEpochLabelRegistryFrozen:
 		a.auditLabelRegistry(height, facts, typed)
 	case *emissionstypes.EventNetworkInferenceBundle:
-		a.auditNetworkInferenceBundle(height, typed)
+		a.auditNetworkInferenceBundle(height, facts, typed)
 	case *emissionstypes.EventNetworkLossSet:
 		a.auditNetworkLoss(height, typed)
 	case *emissionstypes.EventWorkerLastCommitSet:
@@ -848,8 +896,22 @@ func (a *eventAudit) auditEvent(height int64, facts blockContext, event chainEve
 		a.requireWorkerNonceOpen(height, "EventNetworkInferenceForecasterWeightsSet", typed.TopicId, typed.Nonce)
 	case *emissionstypes.EventNetworkInferenceInfererRegretsUsedSet:
 		a.requireWorkerNonceOpen(height, "EventNetworkInferenceInfererRegretsUsedSet", typed.TopicId, typed.Nonce)
+		a.auditRegretsUsed(height, "EventNetworkInferenceInfererRegretsUsedSet", typed.TopicId, typed.Addresses, typed.Regrets, func(actor string) (*emissionstypes.TimestampedValue, error) {
+			response, err := a.m.Client.QueryEmissions().GetInfererNetworkRegret(atHeight(a.ctx, height), &emissionstypes.GetInfererNetworkRegretRequest{TopicId: typed.TopicId, ActorId: actor})
+			if err != nil {
+				return nil, err
+			}
+			return response.Regret, nil
+		})
 	case *emissionstypes.EventNetworkInferenceForecasterRegretsUsedSet:
 		a.requireWorkerNonceOpen(height, "EventNetworkInferenceForecasterRegretsUsedSet", typed.TopicId, typed.Nonce)
+		a.auditRegretsUsed(height, "EventNetworkInferenceForecasterRegretsUsedSet", typed.TopicId, typed.Addresses, typed.Regrets, func(actor string) (*emissionstypes.TimestampedValue, error) {
+			response, err := a.m.Client.QueryEmissions().GetForecasterNetworkRegret(atHeight(a.ctx, height), &emissionstypes.GetForecasterNetworkRegretRequest{TopicId: typed.TopicId, Worker: actor})
+			if err != nil {
+				return nil, err
+			}
+			return response.Regret, nil
+		})
 	case *emissionstypes.EventWorkerSubmissionWindowOpened:
 		a.auditWorkerWindowOpened(height, typed)
 	case *emissionstypes.EventWorkerSubmissionWindowClosed:
@@ -1031,53 +1093,6 @@ func (a *eventAudit) auditLabelRegistry(height int64, facts blockContext, event 
 	}
 }
 
-// auditNetworkInferenceBundle checks label_names and values against the stored
-// bundle and the registry frozen for the same nonce.
-func (a *eventAudit) auditNetworkInferenceBundle(height int64, event *emissionstypes.EventNetworkInferenceBundle) {
-	key := topicNonceKey(event.TopicId, event.Nonce)
-	a.requireWorkerNonceOpen(height, "EventNetworkInferenceBundle", event.TopicId, event.Nonce)
-	if labels, frozen := a.frozenLabels[key]; !frozen {
-		a.failf(height, "EventNetworkInferenceBundle topic %d nonce %d has no EventEpochLabelRegistryFrozen", event.TopicId, event.Nonce)
-	} else if !slices.Equal(labels, event.LabelNames) {
-		a.failf(height, "EventNetworkInferenceBundle topic %d nonce %d label_names %v, frozen registry %v", event.TopicId, event.Nonce, event.LabelNames, labels)
-	}
-	var stored *emissionstypes.NetworkInferenceBundle
-	queryCtx := atHeight(a.ctx, height)
-	if event.OutlierResistant {
-		response, err := a.m.Client.QueryEmissions().GetNetworkInferencesAtBlockOutlierResistant(queryCtx, &emissionstypes.GetNetworkInferencesAtBlockOutlierResistantRequest{TopicId: event.TopicId, BlockHeightLastInference: event.Nonce})
-		if err != nil {
-			a.failf(height, "GetNetworkInferencesAtBlockOutlierResistant topic %d nonce %d: %v", event.TopicId, event.Nonce, err)
-			return
-		}
-		stored = response.NetworkInferences
-	} else {
-		response, err := a.m.Client.QueryEmissions().GetNetworkInferencesAtBlock(queryCtx, &emissionstypes.GetNetworkInferencesAtBlockRequest{TopicId: event.TopicId, BlockHeightLastInference: event.Nonce})
-		if err != nil {
-			a.failf(height, "GetNetworkInferencesAtBlock topic %d nonce %d: %v", event.TopicId, event.Nonce, err)
-			return
-		}
-		stored = response.NetworkInferences
-	}
-	if len(stored.CombinedValue) != len(event.CombinedValue) {
-		a.failf(height, "EventNetworkInferenceBundle topic %d nonce %d has %d combined values, stored bundle has %d", event.TopicId, event.Nonce, len(event.CombinedValue), len(stored.CombinedValue))
-		return
-	}
-	for i, value := range stored.CombinedValue {
-		a.requireDecEqual(height, fmt.Sprintf("EventNetworkInferenceBundle topic %d nonce %d combined_value[%d]", event.TopicId, event.Nonce, i), event.CombinedValue[i], value.Value)
-	}
-}
-
-// auditNetworkLoss checks the event against the loss bundle stored under its nonce.
-func (a *eventAudit) auditNetworkLoss(height int64, event *emissionstypes.EventNetworkLossSet) {
-	a.requireReputerNonceOpen(height, "EventNetworkLossSet", event.TopicId, event.Nonce)
-	response, err := a.m.Client.QueryEmissions().GetNetworkLossBundleAtBlock(atHeight(a.ctx, height), &emissionstypes.GetNetworkLossBundleAtBlockRequest{TopicId: event.TopicId, BlockHeight: event.Nonce})
-	if err != nil {
-		a.failf(height, "GetNetworkLossBundleAtBlock topic %d nonce %d: %v", event.TopicId, event.Nonce, err)
-		return
-	}
-	a.requireDecEqual(height, fmt.Sprintf("EventNetworkLossSet topic %d nonce %d combined_value", event.TopicId, event.Nonce), event.Bundle.CombinedValue, response.LossBundle.CombinedValue)
-}
-
 func (a *eventAudit) requireLastCommit(height int64, name string, topicId uint64, eventHeight, eventNonce, storedHeight, storedNonce int64) {
 	if eventHeight != height || storedHeight != height {
 		a.failf(height, "%s topic %d block_height %d, stored commit height %d", name, topicId, eventHeight, storedHeight)
@@ -1160,17 +1175,6 @@ func (a *eventAudit) requireSameAddresses(height int64, name string, topicId uin
 	}
 }
 
-// requireStoredActorsListed checks that every actor stored for the nonce is in the
-// event. The worker active-set events list the set read before the close finalizes
-// it, so the event may name workers the finalized set dropped.
-func (a *eventAudit) requireStoredActorsListed(height int64, name string, topicId uint64, nonce int64, event, stored []string) {
-	for _, actor := range stored {
-		if !slices.Contains(event, actor) {
-			a.failf(height, "%s topic %d nonce %d addresses %v do not list stored actor %s", name, topicId, nonce, event, actor)
-		}
-	}
-}
-
 func (a *eventAudit) auditActiveReputers(height int64, facts blockContext, event *emissionstypes.EventActiveReputersSet) {
 	if facts.droppedNonces[topicNonceKey(event.TopicId, event.Nonce)] {
 		a.skipped["active reputers vs stored bundles: close failed"]++
@@ -1198,7 +1202,7 @@ func (a *eventAudit) auditActiveInferers(height int64, event *emissionstypes.Eve
 	for _, inference := range response.GetInferences().GetInferences() {
 		stored = append(stored, inference.Inferer)
 	}
-	a.requireStoredActorsListed(height, "EventActiveInferersSet", event.TopicId, event.Nonce, event.Addresses, stored)
+	a.requireSameAddresses(height, "EventActiveInferersSet", event.TopicId, event.Nonce, event.Addresses, stored)
 }
 
 func (a *eventAudit) auditActiveForecasters(height int64, event *emissionstypes.EventActiveForecastersSet) {
@@ -1211,7 +1215,7 @@ func (a *eventAudit) auditActiveForecasters(height int64, event *emissionstypes.
 	for _, forecast := range response.GetForecasts().GetForecasts() {
 		stored = append(stored, forecast.Forecaster)
 	}
-	a.requireStoredActorsListed(height, "EventActiveForecastersSet", event.TopicId, event.Nonce, event.Addresses, stored)
+	a.requireSameAddresses(height, "EventActiveForecastersSet", event.TopicId, event.Nonce, event.Addresses, stored)
 }
 
 // auditWorkerWindowOpened checks a window opened at the topic's churn for the

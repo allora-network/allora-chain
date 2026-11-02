@@ -85,6 +85,33 @@ func TestFirstFingerprintDifference(t *testing.T) {
 	require.Contains(t, firstFingerprintDifference([]string{"a"}, nil), "event counts differ")
 }
 
+func TestRequireDecEqualSeparatesNaNFromZero(t *testing.T) {
+	audit := &eventAudit{} //nolint:exhaustruct // the comparison only records violations
+	audit.requireDecEqual(1, "nan vs zero", alloraMath.NewNaN(), alloraMath.ZeroDec())
+	audit.requireDecEqual(1, "zero vs nan", alloraMath.ZeroDec(), alloraMath.NewNaN())
+	require.Len(t, audit.violations, 2)
+
+	audit.violations = nil
+	audit.requireDecEqual(1, "nan vs nan", alloraMath.NewNaN(), alloraMath.NewNaN())
+	require.Empty(t, audit.violations)
+}
+
+func TestTakeTransferConsumesOneMovement(t *testing.T) {
+	one := cosmosMath.NewInt(1)
+	transfers := []bankTransfer{{sender: "a", recipient: "b", amount: one}}
+
+	remaining, moved := takeTransfer(transfers, "a", "b", cosmosMath.NewInt(2))
+	require.False(t, moved)
+	require.Len(t, remaining, 1)
+
+	remaining, moved = takeTransfer(remaining, "a", "b", one)
+	require.True(t, moved)
+	require.Empty(t, remaining)
+
+	_, moved = takeTransfer(remaining, "a", "b", one)
+	require.False(t, moved)
+}
+
 func TestMissingCoverage(t *testing.T) {
 	require.Equal(t, []string{"b"}, missingCoverage(map[string]int{"a": 1}, []string{"a", "b"}))
 }
