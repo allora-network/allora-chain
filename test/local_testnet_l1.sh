@@ -4,6 +4,8 @@ set -eu  #e
 # Ensure we're in integration folder
 cd "$(dirname "$0")"
 
+. ./localnet_lib.sh
+
 # Function to check if a command exists
 check_command() {
   if ! command -v "$1" &> /dev/null; then
@@ -90,7 +92,7 @@ if [ "${LOCALNET_REUSE_IMAGE:-false}" == "true" ]; then
 else
     echo "Build the docker image"
     pushd ..
-    docker build -t $DOCKER_IMAGE -f $DOCKERFILE .
+    build_image_with_retry -t $DOCKER_IMAGE -f $DOCKERFILE .
     popd
 fi
 
