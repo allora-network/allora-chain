@@ -1,0 +1,129 @@
+name: Run Upgrade Test
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'app/upgrades/**'
+      - 'x/*/migrations/**'
+      - 'Dockerfile.upgrade'
+      - 'test/local_testnet_l1.sh'
+      - 'test/generate_genesis.sh'
+      - 'test/validator.tmpl'
+      - 'test/compose_l1_header.yaml'
+      - 'test/integration/integration_test.go'
+      - 'test/integration/upgrade_test.go'
+      - 'test/integration/upgrade_scenarios_test.go'
+      - '.github/workflows/upgrade_test.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  upgrade-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+    # Dockerfile.upgrade builds the baseline binary from a tag, so the build context needs the tags.
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        fetch-tags: true
+
+    - uses: actions/setup-go@v5
+      with:
+        go-version: 1.22.x
+
+    - name: Free Disk Space (Ubuntu)
+      uses: insightsengineering/disk-space-reclaimer@v1
+      with:
+        android: true
+        dotnet: true
+        haskell: true
+        large-packages: true
+        swap-storage: true
+        docker-images: true
+        tools-cache: false
+
+    - name: Run allora l1 chain on the baseline binary
+      run: DO_UPGRADE=true bash ./test/local_testnet_l1.sh
+
+    # go test reports success when the suite skips or -run matches nothing, so the
+    # job also requires the suite's own PASS line.
+    - name: Upgrade test
+      shell: bash
+      env:
+        UPGRADE: "true"
+        UPGRADE_TARGET: v0.18.0
+        RPC_MODE: SingleRpc
+        RPC_URLS: http://localhost:26657
+      run: |
+        go test -count=1 -timeout 30m -run '^TestUpgradeTestSuite$' -v ./test/integration | tee "$RUNNER_TEMP/upgrade-test.out"
+        grep -q '^--- PASS: TestUpgradeTestSuite' "$RUNNER_TEMP/upgrade-test.out"
+
+    # The diagnostic steps below never affect the job result. Their timeouts sum
+    # to 5 minutes, the time GitHub allows cleanup steps after a cancellation.
+    - name: Report validator state
+      if: failure() || cancelled()
+      continue-on-error: true
+      timeout-minutes: 1
+      shell: bash
+      run: |
+        set +e
+        # Prints "unreachable" when the node gives no JSON and "absent" when the
+        # field is missing, which is how an RPC error response looks.
+        rpc_field() {
+          local value
+          value=$(curl -fsS --connect-timeout 2 --max-time 5 "http://localhost:$1/$2" | jq -r "$3 // \"absent\"")
+          echo "${value:-unreachable}"
+        }
+        for i in 0 1 2; do
+          port=$((26657 + i))
+          echo "validator$i port=$port" \
+            "status.latest_block_height=$(rpc_field "$port" status .result.sync_info.latest_block_height)" \
+            "abci_info.last_block_height=$(rpc_field "$port" abci_info .result.response.last_block_height)" \
+            "abci_info.version=$(rpc_field "$port" abci_info .result.response.version)"
+        done
+        docker ps -a
+        exit 0
+
+    # Logs are written outside the workspace so the upload cannot reach test/localnet,
+    # which holds keyrings.
+    - name: Capture validator logs
+      if: failure() || cancelled()
+      continue-on-error: true
+      timeout-minutes: 2
+      shell: bash
+      run: |
+        set +e
+        log_dir="$RUNNER_TEMP/validator-logs"
+        mkdir -p "$log_dir"
+        for node in validator0 validator1 validator2; do
+          echo "=== $node ==="
+          if ! docker inspect "$node" > /dev/null; then
+            echo "no logs captured"
+            continue
+          fi
+          log_file="$log_dir/$node.log"
+          docker logs -t "$node" > "$log_file" 2>&1 || echo "docker logs failed, $log_file may be partial"
+          # -a keeps grep printing matched lines when a log contains binary bytes.
+          grep -aE 'Invariants broken|panic|CONSENSUS FAILURE' "$log_file"
+          case $? in
+            0) ;;
+            1) echo "no lines match Invariants broken, panic, or CONSENSUS FAILURE" ;;
+            *) echo "could not scan $log_file" ;;
+          esac
+        done
+        exit 0
+
+    - name: Upload validator logs
+      if: failure() || cancelled()
+      continue-on-error: true
+      timeout-minutes: 2
+      uses: actions/upload-artifact@v7
+      with:
+        name: validator-logs-${{ github.run_id }}-${{ github.run_attempt }}
+        path: ${{ runner.temp }}/validator-logs/*.log
+        if-no-files-found: warn
+        retention-days: 14

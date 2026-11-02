@@ -285,8 +285,8 @@ INTEGRATION=TRUE go test -timeout 10m ./test/integration/ -v
 To run upgrade tests, execute the following commands:
 
 ```bash
-DO_UPGRADE="true" UPGRADE_VERSION="v0.17.0" bash test/local_testnet_l1.sh
-UPGRADE=TRUE UPGRADE_TARGET="v0.17.0" go test -timeout 10m ./test/integration/ -v
+DO_UPGRADE=true bash test/local_testnet_l1.sh
+UPGRADE=true UPGRADE_TARGET=v0.18.0 RPC_MODE=SingleRpc RPC_URLS=http://localhost:26657 go test -v -count=1 -timeout 20m -run '^TestUpgradeTestSuite$' ./test/integration
 ```
 
 ## Run Stress Tests
