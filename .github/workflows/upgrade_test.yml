@@ -4,7 +4,9 @@ on:
   workflow_dispatch:
   pull_request:
     paths:
+      - 'app/upgrades.go'
       - 'app/upgrades/**'
+      - 'x/*/module/module.go'
       - 'x/*/migrations/**'
       - 'Dockerfile.upgrade'
       - 'test/local_testnet_l1.sh'
@@ -62,8 +64,7 @@ jobs:
         go test -count=1 -timeout 30m -run '^TestUpgradeTestSuite$' -v ./test/integration | tee "$RUNNER_TEMP/upgrade-test.out"
         grep -q '^--- PASS: TestUpgradeTestSuite' "$RUNNER_TEMP/upgrade-test.out"
 
-    # The diagnostic steps below never affect the job result. Their timeouts sum
-    # to 5 minutes, the time GitHub allows cleanup steps after a cancellation.
+    # The diagnostic steps below never affect the job result.
     - name: Report validator state
       if: failure() || cancelled()
       continue-on-error: true
