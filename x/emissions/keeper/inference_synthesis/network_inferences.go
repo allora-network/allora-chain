@@ -28,6 +28,31 @@ func GetNetworkInferences(
 	inferences *emissions.Inferences,
 	forecasts *emissions.Forecasts,
 ) (*GetNetworkInferencesResult, error) {
+	return getNetworkInferences(ctx, k, topicId, inferencesNonce, inferences, forecasts, nil)
+}
+
+// GetNetworkInferencesWithTopic calculates network inferences from topic settings
+// captured for this close. Callers that are not closing an epoch keep the stored topic.
+func GetNetworkInferencesWithTopic(
+	ctx sdk.Context,
+	k emissionskeeper.Keeper,
+	topic emissions.Topic,
+	inferencesNonce *BlockHeight,
+	inferences *emissions.Inferences,
+	forecasts *emissions.Forecasts,
+) (*GetNetworkInferencesResult, error) {
+	return getNetworkInferences(ctx, k, topic.Id, inferencesNonce, inferences, forecasts, &topic)
+}
+
+func getNetworkInferences(
+	ctx sdk.Context,
+	k emissionskeeper.Keeper,
+	topicId TopicId,
+	inferencesNonce *BlockHeight,
+	inferences *emissions.Inferences,
+	forecasts *emissions.Forecasts,
+	topic *emissions.Topic,
+) (*GetNetworkInferencesResult, error) {
 	if inferencesNonce == nil {
 		return nil, errorsmod.Wrap(emissions.ErrNotFound, "no inferences nonce provided")
 	}
@@ -52,7 +77,7 @@ func GetNetworkInferences(
 
 	if len(inferences.Inferences) > 1 {
 		// If we have multiple inferences:
-		return calcNetworkInferencesMultiple(ctx, k, topicId, inferences, forecasts, *inferencesNonce, &registry)
+		return calcNetworkInferencesMultiple(ctx, k, topicId, inferences, forecasts, *inferencesNonce, &registry, topic)
 	} else if len(inferences.Inferences) == 1 {
 		// If we only have a single inference, simply return it as is.
 		return calcNetworkInferencesSingle(*inferencesNonce, topicId, inferences, &registry)
@@ -69,6 +94,7 @@ func calcNetworkInferencesMultiple(
 	forecasts *emissions.Forecasts,
 	inferenceBlockHeight BlockHeight,
 	registry *emissions.EpochLabelRegistry,
+	topicOverride *emissions.Topic,
 ) (*GetNetworkInferencesResult, error) {
 	// Set forecasts to nil if there are no forecasts
 	if forecasts == nil {
@@ -83,10 +109,14 @@ func calcNetworkInferencesMultiple(
 		return nil, errorsmod.Wrap(err, "while getting params")
 	}
 
-	// Retrieve topic
-	topic, err := k.GetTopicKeeper().GetTopic(ctx, topicId)
-	if err != nil {
-		return nil, errorsmod.Wrap(err, "while getting topic")
+	var topic emissions.Topic
+	if topicOverride != nil {
+		topic = *topicOverride
+	} else {
+		topic, err = k.GetTopicKeeper().GetTopic(ctx, topicId)
+		if err != nil {
+			return nil, errorsmod.Wrap(err, "while getting topic")
+		}
 	}
 
 	var previousNetworkCombinedLoss *alloraMath.Dec
