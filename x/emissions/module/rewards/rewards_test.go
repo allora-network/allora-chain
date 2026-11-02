@@ -177,6 +177,59 @@ func (s *RewardsTestSuite) TestEmitRewardsNoRewardNonceForfeitUnderOneUnitReport
 	s.Require().True(delta.IsZero(), "got %s", delta.String())
 }
 
+// Forfeits from several topics in one EmitRewards add up to exactly the coins the ecosystem
+// account received.
+func (s *RewardsTestSuite) TestEmitRewardsMultipleForfeitsSumToCoinsMoved() {
+	s.SetParamsForTest()
+
+	weights := make(map[uint64]*alloraMath.Dec)
+	sumWeight := alloraMath.ZeroDec()
+	for _, topicId := range []uint64{2, 3} {
+		topic := s.MockTopic()
+		topic.Id = topicId
+		topic.EpochLength = 1
+		topic.GroundTruthLag = topic.EpochLength
+		topic.WorkerSubmissionWindow = topic.EpochLength
+		topic.EpochLastEnded = 50
+		s.Require().NoError(s.TopicKeeper().SetTopic(s.Ctx(), topic.Id, topic))
+		weight := alloraMath.NewDecFromInt64(1)
+		weights[topicId] = &weight
+		var err error
+		sumWeight, err = sumWeight.Add(weight)
+		s.Require().NoError(err)
+	}
+	s.Require().NoError(s.TopicKeeper().SetTotalSumPreviousTopicWeights(s.Ctx(), alloraMath.NewDecFromInt64(3)))
+	s.Require().NoError(s.EmissionsKeeper().SetRewardCurrentBlockEmission(s.Ctx(), cosmosMath.NewInt(100)))
+	s.MintTokensToModule(types.AlloraRewardsAccountName, cosmosMath.NewInt(1000))
+
+	ecosystemAddr := authtypes.NewModuleAddress(minttypes.EcosystemModuleName)
+	ecosystemBefore := s.BankKeeper().GetBalance(s.Ctx(), ecosystemAddr, params.DefaultBondDenom)
+
+	moduleParams, err := s.ParamsKeeper().GetParams(s.Ctx())
+	s.Require().NoError(err)
+	em := sdk.NewEventManager()
+	s.Require().NoError(rewards.EmitRewards(rewards.EmitRewardsArgs{
+		Ctx:          s.Ctx().WithEventManager(em),
+		K:            *s.EmissionsKeeper(),
+		ModuleParams: moduleParams,
+		BlockHeight:  50,
+		Weights:      weights,
+		SumWeight:    sumWeight,
+		TotalRevenue: cosmosMath.NewInt(1000),
+	}))
+
+	events := typedEvents[*types.EventTopicRewardForfeitedNoRewardNonce](em)
+	s.Require().Len(events, 2)
+	total := cosmosMath.ZeroInt()
+	for _, event := range events {
+		s.Require().True(event.Amount.IsPositive(), "got %s", event.Amount.String())
+		total = total.Add(event.Amount)
+	}
+
+	ecosystemAfter := s.BankKeeper().GetBalance(s.Ctx(), ecosystemAddr, params.DefaultBondDenom)
+	s.Require().Equal(total.String(), ecosystemAfter.Amount.Sub(ecosystemBefore.Amount).String())
+}
+
 // EmitRewards emits one EventTopicRewardForfeitedNoRewardNonce per topic
 // whose reward goes back to the ecosystem account for lack of a reward nonce,
 // and no distribution-failure forfeiture while another topic settles.

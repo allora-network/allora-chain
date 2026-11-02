@@ -74,8 +74,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * [#1009](https://github.com/allora-network/allora-chain/pull/1009) `EventTopicWeightUpdatedAfterStakeChange`, with the same payload as `EventTopicWeightUpdated`, emitted when a stake change recomputes the topic weight; `EventTopicWeightUpdated` now only comes from the epoch path
 * [#1009](https://github.com/allora-network/allora-chain/pull/1009) `topic_stake`, the topic's total stake after the change, on `EventAddStake` and `EventRemoveStake`
 * [#1009](https://github.com/allora-network/allora-chain/pull/1009) `reason` (why the status changed), `weight` (the topic's weight in the decision) and `min_weight` (the global `MinTopicWeight` param in force) on `EventTopicStatusChanged`
-* [#1004](https://github.com/allora-network/allora-chain/pull/1004) `threshold_weight` on `EventTopicStatusChanged`, the weight the decision was measured against: `MinTopicWeight`, the block's lowest weight, the challenger's weight on an eviction, or zero when no comparison happened; when a full block's slot was at stake `weight` is the value that comparison used
-* [#1004](https://github.com/allora-network/allora-chain/pull/1004) `REACTIVATION_ERROR` on `TopicStatusChangeReason`, for a topic inactivated because its reactivation attempt returned an error; `REACTIVATION_FAILED` now only means the topic lost the comparison for a full block's slot
+* [#1015](https://github.com/allora-network/allora-chain/pull/1015) `threshold_weight` on `EventTopicStatusChanged`, the weight the decision was measured against: `MinTopicWeight`, the block's lowest weight, the challenger's weight on an eviction, or zero when no comparison happened; when a full block's slot was at stake `weight` is the value that comparison used
+* [#1015](https://github.com/allora-network/allora-chain/pull/1015) `REACTIVATION_ERROR` on `TopicStatusChangeReason`, for a topic inactivated because its reactivation attempt returned an error; `REACTIVATION_FAILED` now only means the topic lost the comparison for a full block's slot
 * [#1009](https://github.com/allora-network/allora-chain/pull/1009) `EventRewardPayoutFailed`, emitted per actor when paying a topic participant's reward fails, carrying `topic_id`, the reward `nonce`, `address`, `actor_type`, `amount` and the failure `reason`
 * [#1009](https://github.com/allora-network/allora-chain/pull/1009) `WORKER_INFO_LOOKUP`, `ACCOUNT_SEND` and `NEGATIVE_REWARD` on `RewardPayoutFailureReason`; `EventRewardPayoutFailed` is now emitted for every payout failure where the actor is not paid
 * [#1009](https://github.com/allora-network/allora-chain/pull/1009) `EventTopicRewardForfeitedNoRewardNonce` and `EventTopicRewardForfeitedDistributionFailed`, emitted when a topic's reward goes back to the ecosystem account, carrying `topic_id`, the just-ended `epoch` and `amount`, the integer coins moved to the ecosystem account (zero when the reward was under one unit and nothing moved); the latter also carries the `reward_nonce` whose settlement failed
@@ -95,7 +95,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
-* [#1004](https://github.com/allora-network/allora-chain/pull/1004) `DeleteUnfulfilledWorkerNonces` and `DeleteUnfulfilledReputerNonces`, which no production path called.
+* [#1009](https://github.com/allora-network/allora-chain/pull/1009) `DeleteUnfulfilledWorkerNonces` and `DeleteUnfulfilledReputerNonces`, which no production path called.
 
 ### Fixed
 
@@ -115,17 +115,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 #### Added
 
-* [#1004](https://github.com/allora-network/allora-chain/pull/1004) `types.EmitNewTopicRewardForfeitedNoRewardNonceEvent`, `types.EmitNewTopicRewardForfeitedDistributionFailedEvent` and their `types.New...EventBase` constructors, whose `amount` is a `cosmos.Int`.
+* [#1015](https://github.com/allora-network/allora-chain/pull/1015) `types.EmitNewTopicRewardForfeitedNoRewardNonceEvent`, `types.EmitNewTopicRewardForfeitedDistributionFailedEvent` and their `types.New...EventBase` constructors, whose `amount` is a `cosmos.Int`.
 
 #### Changed
 
 * [#1004](https://github.com/allora-network/allora-chain/pull/1004) `types.EmitNewActorScoresSetEvent` drops its unused `blockHeight` parameter; callers passing a height no longer compile.
-* [#1004](https://github.com/allora-network/allora-chain/pull/1004) `types.EmitNewTopicStatusChangedEvent` and `types.NewTopicStatusChangedEventBase` take `reason`, `weight`, `minWeight` and `thresholdWeight`.
-* [#1004](https://github.com/allora-network/allora-chain/pull/1004) `types.EmitNewAddStakeEvent`, `types.EmitNewRemoveStakeEvent`, `types.NewAddStakeEventBase` and `types.NewRemoveStakeEventBase` take `topicStake`.
-* [#1004](https://github.com/allora-network/allora-chain/pull/1004) `types.EmitNewDelegateRewardShareUpdatedEvent`, `types.EmitNewDelegateRewardDistributedEvent`, `types.NewDelegateRewardShareUpdatedEventBase` and `types.NewDelegateRewardDistributedEventBase` take `nonce`.
-* [#1004](https://github.com/allora-network/allora-chain/pull/1004) `types.EmitNewEpochLabelRegistryFrozenEvent` and `types.NewEpochLabelRegistryFrozenEventBase` take `labels` in place of `registrySize`, which is derived from `labels`.
-* [#1004](https://github.com/allora-network/allora-chain/pull/1004) `TopicKeeper.InactivateTopic` takes `reason`, `weight`, `minWeight` and `thresholdWeight`; `TopicKeeper.ActivateTopic` takes `reason`, `weight` and `minWeight`; `TopicKeeper.AttemptTopicReactivation` takes `weight` and `minWeight`.
-* [#1004](https://github.com/allora-network/allora-chain/pull/1004) `BankingKeeper.MoveCoinsFromAlloraRewardsToEcosystem` returns the `cosmos.Int` amount it moved along with its error.
+* [#1015](https://github.com/allora-network/allora-chain/pull/1015) `types.EmitNewTopicStatusChangedEvent` and `types.NewTopicStatusChangedEventBase` take `reason`, `weight`, `minWeight` and `thresholdWeight`.
+* [#1009](https://github.com/allora-network/allora-chain/pull/1009) `types.EmitNewAddStakeEvent`, `types.EmitNewRemoveStakeEvent`, `types.NewAddStakeEventBase` and `types.NewRemoveStakeEventBase` take `topicStake`.
+* [#1009](https://github.com/allora-network/allora-chain/pull/1009) `types.EmitNewDelegateRewardShareUpdatedEvent`, `types.EmitNewDelegateRewardDistributedEvent`, `types.NewDelegateRewardShareUpdatedEventBase` and `types.NewDelegateRewardDistributedEventBase` take `nonce`.
+* [#1007](https://github.com/allora-network/allora-chain/pull/1007) `types.EmitNewEpochLabelRegistryFrozenEvent` and `types.NewEpochLabelRegistryFrozenEventBase` take `labels` in place of `registrySize`, which is derived from `labels`.
+* [#1015](https://github.com/allora-network/allora-chain/pull/1015) `TopicKeeper.InactivateTopic` takes `reason`, `weight`, `minWeight` and `thresholdWeight`; `TopicKeeper.ActivateTopic` takes `reason`, `weight` and `minWeight`; `TopicKeeper.AttemptTopicReactivation` takes `weight` and `minWeight`.
+* [#1015](https://github.com/allora-network/allora-chain/pull/1015) `BankingKeeper.MoveCoinsFromAlloraRewardsToEcosystem` returns the `cosmos.Int` amount it moved along with its error.
 
 # [Released]
 

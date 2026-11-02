@@ -1,7 +1,6 @@
 package keeper
 
 import (
-	"errors"
 	"testing"
 
 	errorsmod "cosmossdk.io/errors"
@@ -19,7 +18,7 @@ func TestTopicRefusedErrorMatchesSentinelThroughWrap(t *testing.T) {
 
 	require.True(t, errorsmod.IsOf(err, types.ErrTopicCannotBeActivated))
 	var refused *topicRefusedError
-	require.True(t, errors.As(err, &refused))
+	require.ErrorAs(t, err, &refused)
 	require.True(t, compared.Equal(refused.comparedWeight))
 	require.True(t, lowest.Equal(refused.lowestWeight))
 }
