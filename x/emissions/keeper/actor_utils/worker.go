@@ -168,10 +168,10 @@ func ProcessAndStoreNetworkInferences(
 	activeForecasts *types.Forecasts,
 ) error {
 	// Calculate regular network inferences
-	networkInferencesResult, err := synth.GetNetworkInferences(
+	networkInferencesResult, err := synth.GetNetworkInferencesWithTopic(
 		sdk.UnwrapSDKContext(ctx),
 		*k,
-		topic.Id,
+		topic,
 		&nonce,
 		activeInferences,
 		activeForecasts,
@@ -210,7 +210,7 @@ func ProcessAndStoreNetworkInferences(
 
 		// Recalculate only if outlier filtering changed the inference set
 		if len(outlierResistantFilteredInferences.Inferences) != len(activeInferences.Inferences) {
-			outlierResistantNetworkInferencesResult, err = synth.GetNetworkInferences(sdk.UnwrapSDKContext(ctx), *k, topic.Id, &nonce, &outlierResistantFilteredInferences, activeForecasts)
+			outlierResistantNetworkInferencesResult, err = synth.GetNetworkInferencesWithTopic(sdk.UnwrapSDKContext(ctx), *k, topic, &nonce, &outlierResistantFilteredInferences, activeForecasts)
 			if err != nil {
 				return errorsmod.Wrap(err, "failed to calculate outlier resistant network inferences")
 			}
