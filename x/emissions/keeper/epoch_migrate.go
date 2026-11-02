@@ -319,6 +319,10 @@ func buildLegacyAlignedMigratedEpoch(
 		TopicWorkerSubmissionWindow: topic.WorkerSubmissionWindow,
 		TopicGroundTruthLag:         topic.GroundTruthLag,
 		TopicEpochLength:            topic.EpochLength,
+		AlphaRegret:                 topic.AlphaRegret,
+		PNorm:                       topic.PNorm,
+		CNorm:                       topic.CNorm,
+		OutputArity:                 topic.OutputArity,
 	}
 	return epoch
 }
