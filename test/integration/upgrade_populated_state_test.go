@@ -146,7 +146,7 @@ func createSeedTopic(
 		Metadata:                 metadata,
 		LossMethod:               "mse",
 		EpochLength:              epochLength,
-		GroundTruthLag:           seedGroundTruthLag,
+		GroundTruthLag:           max(seedGroundTruthLag, epochLength),
 		WorkerSubmissionWindow:   workerWindow,
 		PNorm:                    alloraMath.NewDecFromInt64(3),
 		AlphaRegret:              alloraMath.MustNewDecFromString("0.1"),
@@ -842,7 +842,10 @@ func (c *populatedStateChecks) DriveMigratedState(m testCommon.TestConfig, nodes
 	m.T.Logf("Classification topic completed epoch %d", multiNonce)
 
 	m.T.Log("--- Post-upgrade: rewards payout ---")
+	m.T.Log("Rewards for the epoch that crossed the upgrade")
 	c.requireRewardsSettled(m, nodes, planHeight, c.regressionTopic)
+	m.T.Log("Rewards for the epoch that ran entirely on the upgraded binary")
+	c.requireRewardsSettled(m, nodes, nonce+1, c.regressionTopic)
 	stakeAfter := c.reputerStake(m, ctx, c.regressionTopic)
 	require.Truef(m.T, stakeAfter.GT(stakeBefore), "reputer rewards must compound into stake: %s -> %s", stakeBefore, stakeAfter)
 
