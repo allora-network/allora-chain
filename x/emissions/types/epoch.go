@@ -75,5 +75,9 @@ func NewEpoch(nonce NonceV2, topic Topic, startAt time.Time) Epoch {
 		TopicWorkerSubmissionWindow: topic.WorkerSubmissionWindow,
 		TopicGroundTruthLag:         topic.GroundTruthLag,
 		TopicEpochLength:            topic.EpochLength,
+		AlphaRegret:                 topic.AlphaRegret,
+		PNorm:                       topic.PNorm,
+		CNorm:                       topic.CNorm,
+		OutputArity:                 topic.OutputArity,
 	}
 }
