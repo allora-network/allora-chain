@@ -1230,8 +1230,8 @@ func (a *eventAudit) auditWorkerWindowOpened(height int64, event *emissionstypes
 	}
 }
 
-// auditReputerWindowOpened checks that the nonce awaits losses and the window is
-// the one the chain reports for it.
+// auditReputerWindowOpened checks that the nonce awaits losses and the window has
+// not already ended.
 func (a *eventAudit) auditReputerWindowOpened(height int64, event *emissionstypes.EventReputerSubmissionWindowOpened) {
 	if !a.isReputerNonceUnfulfilled(height, event.TopicId, event.Nonce) {
 		a.failf(height, "EventReputerSubmissionWindowOpened topic %d nonce %d is not unfulfilled", event.TopicId, event.Nonce)
