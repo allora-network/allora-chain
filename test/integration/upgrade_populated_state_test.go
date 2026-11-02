@@ -239,7 +239,7 @@ func (c *populatedStateChecks) sumOfScheduledWeights(m testCommon.TestConfig, ct
 
 // SeedBaseline drives the baseline chain into every kind of state the migration reads.
 // Scenarios that need an exact activity state run first, while the per-block topic limit
-// and the minimum weight can change without affecting the topics that come later.
+// and the minimum weight can change without affecting the topics created after them.
 func (c *populatedStateChecks) SeedBaseline(m testCommon.TestConfig) {
 	m.T.Log("--- Seed: actors and whitelists ---")
 	c.teamAcc, c.teamAddr = actorFromKeyring(m, "team")
