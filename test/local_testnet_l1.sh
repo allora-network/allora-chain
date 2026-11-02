@@ -280,7 +280,7 @@ if [ $chain_status -eq $((VALIDATOR_NUMBER-1)) ]; then
     echo "  - 'allorad --home $LOCALNET_DATADIR/genesis status'"
 else
     echo "Chain is not producing blocks"
-    echo "If run locally you can check the logs with: docker logs allorad_validator_0"
+    echo "If run locally you can check the logs with: docker logs validator0"
     echo "and connect to the validators ..."
     exit 1
 fi
