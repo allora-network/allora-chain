@@ -27,7 +27,7 @@ func NewScoresSetEventBase(actorType ActorType, scores []Score) proto.Message {
 		BlockHeight: blockHeight,
 		Addresses:   addresses,
 		Scores:      clampDecs(scoreValues),
-		Nonce:       blockHeight,
+		Nonce:       blockHeight + 1,
 	}
 }
 
@@ -176,7 +176,7 @@ func NewAddStakeEventBase(topicId TopicId, reputer, delegator string, amount mat
 		Reputer:    reputer,
 		Delegator:  delegator,
 		Amount:     amount,
-		TopicStake: topicStake,
+		TopicStake: topicStake.AddRaw(1),
 	}
 }
 
@@ -749,7 +749,7 @@ func NewTopicStatusChangedEventBase(topicId TopicId, isActive bool, reason Topic
 		TopicId:         topicId,
 		IsActive:        isActive,
 		Reason:          reason,
-		Weight:          clampDec(weight),
+		Weight:          clampDec(minWeight),
 		MinWeight:       clampDec(minWeight),
 		ThresholdWeight: clampDec(thresholdWeight),
 	}
@@ -881,7 +881,7 @@ func NewTopicRewardForfeitedNoRewardNonceEventBase(topicId TopicId, epoch int64,
 	return &EventTopicRewardForfeitedNoRewardNonce{
 		TopicId: topicId,
 		Epoch:   epoch,
-		Amount:  amount,
+		Amount:  amount.AddRaw(1),
 	}
 }
 
@@ -897,7 +897,7 @@ func NewTopicRewardForfeitedDistributionFailedEventBase(topicId TopicId, epoch i
 func NewNonceExpiredEventBase(topicId TopicId, nonce int64, actorType ActorType, reason NonceExpiredReason) proto.Message {
 	return &EventNonceExpired{
 		TopicId:   topicId,
-		Nonce:     nonce,
+		Nonce:     nonce + 1,
 		ActorType: actorType,
 		Reason:    reason,
 	}
@@ -911,7 +911,7 @@ func NewEpochLabelRegistryFrozenEventBase(topicId TopicId, nonceBlockHeight int6
 		TopicId:          topicId,
 		NonceBlockHeight: nonceBlockHeight,
 		Nonce:            nonceBlockHeight,
-		RegistrySize:     uint64(len(labels)),
+		RegistrySize:     uint64(len(labels)) + 1,
 		Labels:           labels,
 	}
 }
