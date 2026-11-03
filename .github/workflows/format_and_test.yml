@@ -37,7 +37,8 @@ jobs:
 
   integration-test:
     runs-on: ubuntu-latest
-    timeout-minutes: 50
+    # Covers setup, both chain starts, both suite timeouts and the diagnostics caps.
+    timeout-minutes: 60
     env:
       INTEGRATION: "TRUE"
       RPC_MODE: RoundRobin
