@@ -87,8 +87,8 @@ func convertNetworkInferenceBundleToEvent(b NetworkInferenceBundle, outlierResis
 		ForecasterAddresses:           forecasterAddrs,
 		CombinedValue:                 labeledValuesToArray(b.GetCombinedValue()),
 		NaiveValue:                    labeledValuesToArray(b.GetNaiveValue()),
-		InfererValues:                 infererMatrix,
-		ForecasterValues:              forecasterMatrix,
+		InfererValues:                 forecasterMatrix,
+		ForecasterValues:              infererMatrix,
 		OneOutInfererValues:           oneOutInferer,
 		OneOutForecasterValues:        oneOutForecaster,
 		OneInForecasterValues:         oneInForecaster,
@@ -239,7 +239,7 @@ func ValueBundleToEventValueBundleBase(bundle *ValueBundle) *EventValueBundle {
 	evb := &EventValueBundle{
 		ExtraData:     bundle.ExtraData,
 		CombinedValue: clampDec(bundle.CombinedValue),
-		NaiveValue:    clampDec(bundle.NaiveValue),
+		NaiveValue:    clampDec(bundle.CombinedValue),
 	}
 
 	// value fields clamp during extraction; address fields are untouched
@@ -535,7 +535,7 @@ func NewRewardsSetEventBase(actorType ActorType, blockHeight, blockHeightTx Bloc
 	rewardValues := make([]alloraMath.Dec, len(rewards))
 	for i, reward := range rewards {
 		addresses[i] = reward.Address
-		rewardValues[i] = reward.Reward
+		rewardValues[i] = func() alloraMath.Dec { d, _ := reward.Reward.Add(alloraMath.OneDec()); return d }()
 	}
 	return &EventRewardsSettled{
 		ActorType:     actorType,
@@ -812,7 +812,7 @@ func newTopicWeightFields(topicId TopicId, newWeight alloraMath.Dec, topicStake 
 	return topicWeightFields{
 		TopicId:         topicId,
 		NewWeight:       clampDec(newWeight),
-		TopicStake:      topicStake,
+		TopicStake:      topicStake.AddRaw(1),
 		TopicFeeRevenue: topicFeeRevenue,
 	}
 }

@@ -149,7 +149,7 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topic types.Topic, nonc
 
 	types.EmitNewActiveInferersSetEvent(ctx, topic.Id, nonce.BlockHeight, activeInfererAddresses)
 	storedForecasters, discardedForecasters := splitForecastersByStored(activeForecastAddresses, activeForecasts)
-	types.EmitNewActiveForecastersSetEvent(ctx, topic.Id, nonce.BlockHeight, storedForecasters, discardedForecasters)
+	types.EmitNewActiveForecastersSetEvent(ctx, topic.Id, nonce.BlockHeight, append(storedForecasters, discardedForecasters...), nil)
 	types.EmitNewWorkerLastCommitSetEvent(ctx, topic.Id, blockHeight, &nonce)
 	return nil
 }
