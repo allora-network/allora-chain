@@ -118,6 +118,11 @@ const (
 	QueryService_CanCreateTopic_FullMethodName                              = "/emissions.v10.QueryService/CanCreateTopic"
 	QueryService_CanSubmitWorkerPayload_FullMethodName                      = "/emissions.v10.QueryService/CanSubmitWorkerPayload"
 	QueryService_CanSubmitReputerPayload_FullMethodName                     = "/emissions.v10.QueryService/CanSubmitReputerPayload"
+	QueryService_IsWhitelistedGlobalForecaster_FullMethodName               = "/emissions.v10.QueryService/IsWhitelistedGlobalForecaster"
+	QueryService_IsWhitelistedTopicForecaster_FullMethodName                = "/emissions.v10.QueryService/IsWhitelistedTopicForecaster"
+	QueryService_IsTopicForecasterWhitelistEnabled_FullMethodName           = "/emissions.v10.QueryService/IsTopicForecasterWhitelistEnabled"
+	QueryService_CanUpdateGlobalForecasterWhitelist_FullMethodName          = "/emissions.v10.QueryService/CanUpdateGlobalForecasterWhitelist"
+	QueryService_CanSubmitForecasterPayload_FullMethodName                  = "/emissions.v10.QueryService/CanSubmitForecasterPayload"
 	QueryService_GetTopicInitialInfererEmaScore_FullMethodName              = "/emissions.v10.QueryService/GetTopicInitialInfererEmaScore"
 	QueryService_GetTopicInitialForecasterEmaScore_FullMethodName           = "/emissions.v10.QueryService/GetTopicInitialForecasterEmaScore"
 	QueryService_GetTopicInitialReputerEmaScore_FullMethodName              = "/emissions.v10.QueryService/GetTopicInitialReputerEmaScore"
@@ -234,6 +239,11 @@ type QueryServiceClient interface {
 	CanCreateTopic(ctx context.Context, in *CanCreateTopicRequest, opts ...grpc.CallOption) (*CanCreateTopicResponse, error)
 	CanSubmitWorkerPayload(ctx context.Context, in *CanSubmitWorkerPayloadRequest, opts ...grpc.CallOption) (*CanSubmitWorkerPayloadResponse, error)
 	CanSubmitReputerPayload(ctx context.Context, in *CanSubmitReputerPayloadRequest, opts ...grpc.CallOption) (*CanSubmitReputerPayloadResponse, error)
+	IsWhitelistedGlobalForecaster(ctx context.Context, in *IsWhitelistedGlobalForecasterRequest, opts ...grpc.CallOption) (*IsWhitelistedGlobalForecasterResponse, error)
+	IsWhitelistedTopicForecaster(ctx context.Context, in *IsWhitelistedTopicForecasterRequest, opts ...grpc.CallOption) (*IsWhitelistedTopicForecasterResponse, error)
+	IsTopicForecasterWhitelistEnabled(ctx context.Context, in *IsTopicForecasterWhitelistEnabledRequest, opts ...grpc.CallOption) (*IsTopicForecasterWhitelistEnabledResponse, error)
+	CanUpdateGlobalForecasterWhitelist(ctx context.Context, in *CanUpdateGlobalForecasterWhitelistRequest, opts ...grpc.CallOption) (*CanUpdateGlobalForecasterWhitelistResponse, error)
+	CanSubmitForecasterPayload(ctx context.Context, in *CanSubmitForecasterPayloadRequest, opts ...grpc.CallOption) (*CanSubmitForecasterPayloadResponse, error)
 	// GetTopicInitialInfererEmaScore returns the initial EMA score for inferers in a topic
 	GetTopicInitialInfererEmaScore(ctx context.Context, in *GetTopicInitialInfererEmaScoreRequest, opts ...grpc.CallOption) (*GetTopicInitialInfererEmaScoreResponse, error)
 	// GetTopicInitialForecasterEmaScore returns the initial EMA score for forecasters in a topic
@@ -1250,6 +1260,56 @@ func (c *queryServiceClient) CanSubmitReputerPayload(ctx context.Context, in *Ca
 	return out, nil
 }
 
+func (c *queryServiceClient) IsWhitelistedGlobalForecaster(ctx context.Context, in *IsWhitelistedGlobalForecasterRequest, opts ...grpc.CallOption) (*IsWhitelistedGlobalForecasterResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(IsWhitelistedGlobalForecasterResponse)
+	err := c.cc.Invoke(ctx, QueryService_IsWhitelistedGlobalForecaster_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryServiceClient) IsWhitelistedTopicForecaster(ctx context.Context, in *IsWhitelistedTopicForecasterRequest, opts ...grpc.CallOption) (*IsWhitelistedTopicForecasterResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(IsWhitelistedTopicForecasterResponse)
+	err := c.cc.Invoke(ctx, QueryService_IsWhitelistedTopicForecaster_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryServiceClient) IsTopicForecasterWhitelistEnabled(ctx context.Context, in *IsTopicForecasterWhitelistEnabledRequest, opts ...grpc.CallOption) (*IsTopicForecasterWhitelistEnabledResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(IsTopicForecasterWhitelistEnabledResponse)
+	err := c.cc.Invoke(ctx, QueryService_IsTopicForecasterWhitelistEnabled_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryServiceClient) CanUpdateGlobalForecasterWhitelist(ctx context.Context, in *CanUpdateGlobalForecasterWhitelistRequest, opts ...grpc.CallOption) (*CanUpdateGlobalForecasterWhitelistResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CanUpdateGlobalForecasterWhitelistResponse)
+	err := c.cc.Invoke(ctx, QueryService_CanUpdateGlobalForecasterWhitelist_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryServiceClient) CanSubmitForecasterPayload(ctx context.Context, in *CanSubmitForecasterPayloadRequest, opts ...grpc.CallOption) (*CanSubmitForecasterPayloadResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CanSubmitForecasterPayloadResponse)
+	err := c.cc.Invoke(ctx, QueryService_CanSubmitForecasterPayload_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *queryServiceClient) GetTopicInitialInfererEmaScore(ctx context.Context, in *GetTopicInitialInfererEmaScoreRequest, opts ...grpc.CallOption) (*GetTopicInitialInfererEmaScoreResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(GetTopicInitialInfererEmaScoreResponse)
@@ -1436,6 +1496,11 @@ type QueryServiceServer interface {
 	CanCreateTopic(context.Context, *CanCreateTopicRequest) (*CanCreateTopicResponse, error)
 	CanSubmitWorkerPayload(context.Context, *CanSubmitWorkerPayloadRequest) (*CanSubmitWorkerPayloadResponse, error)
 	CanSubmitReputerPayload(context.Context, *CanSubmitReputerPayloadRequest) (*CanSubmitReputerPayloadResponse, error)
+	IsWhitelistedGlobalForecaster(context.Context, *IsWhitelistedGlobalForecasterRequest) (*IsWhitelistedGlobalForecasterResponse, error)
+	IsWhitelistedTopicForecaster(context.Context, *IsWhitelistedTopicForecasterRequest) (*IsWhitelistedTopicForecasterResponse, error)
+	IsTopicForecasterWhitelistEnabled(context.Context, *IsTopicForecasterWhitelistEnabledRequest) (*IsTopicForecasterWhitelistEnabledResponse, error)
+	CanUpdateGlobalForecasterWhitelist(context.Context, *CanUpdateGlobalForecasterWhitelistRequest) (*CanUpdateGlobalForecasterWhitelistResponse, error)
+	CanSubmitForecasterPayload(context.Context, *CanSubmitForecasterPayloadRequest) (*CanSubmitForecasterPayloadResponse, error)
 	// GetTopicInitialInfererEmaScore returns the initial EMA score for inferers in a topic
 	GetTopicInitialInfererEmaScore(context.Context, *GetTopicInitialInfererEmaScoreRequest) (*GetTopicInitialInfererEmaScoreResponse, error)
 	// GetTopicInitialForecasterEmaScore returns the initial EMA score for forecasters in a topic
@@ -1758,6 +1823,21 @@ func (UnimplementedQueryServiceServer) CanSubmitWorkerPayload(context.Context, *
 }
 func (UnimplementedQueryServiceServer) CanSubmitReputerPayload(context.Context, *CanSubmitReputerPayloadRequest) (*CanSubmitReputerPayloadResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CanSubmitReputerPayload not implemented")
+}
+func (UnimplementedQueryServiceServer) IsWhitelistedGlobalForecaster(context.Context, *IsWhitelistedGlobalForecasterRequest) (*IsWhitelistedGlobalForecasterResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method IsWhitelistedGlobalForecaster not implemented")
+}
+func (UnimplementedQueryServiceServer) IsWhitelistedTopicForecaster(context.Context, *IsWhitelistedTopicForecasterRequest) (*IsWhitelistedTopicForecasterResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method IsWhitelistedTopicForecaster not implemented")
+}
+func (UnimplementedQueryServiceServer) IsTopicForecasterWhitelistEnabled(context.Context, *IsTopicForecasterWhitelistEnabledRequest) (*IsTopicForecasterWhitelistEnabledResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method IsTopicForecasterWhitelistEnabled not implemented")
+}
+func (UnimplementedQueryServiceServer) CanUpdateGlobalForecasterWhitelist(context.Context, *CanUpdateGlobalForecasterWhitelistRequest) (*CanUpdateGlobalForecasterWhitelistResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CanUpdateGlobalForecasterWhitelist not implemented")
+}
+func (UnimplementedQueryServiceServer) CanSubmitForecasterPayload(context.Context, *CanSubmitForecasterPayloadRequest) (*CanSubmitForecasterPayloadResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CanSubmitForecasterPayload not implemented")
 }
 func (UnimplementedQueryServiceServer) GetTopicInitialInfererEmaScore(context.Context, *GetTopicInitialInfererEmaScoreRequest) (*GetTopicInitialInfererEmaScoreResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetTopicInitialInfererEmaScore not implemented")
@@ -3586,6 +3666,96 @@ func _QueryService_CanSubmitReputerPayload_Handler(srv interface{}, ctx context.
 	return interceptor(ctx, in, info, handler)
 }
 
+func _QueryService_IsWhitelistedGlobalForecaster_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(IsWhitelistedGlobalForecasterRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServiceServer).IsWhitelistedGlobalForecaster(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: QueryService_IsWhitelistedGlobalForecaster_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServiceServer).IsWhitelistedGlobalForecaster(ctx, req.(*IsWhitelistedGlobalForecasterRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _QueryService_IsWhitelistedTopicForecaster_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(IsWhitelistedTopicForecasterRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServiceServer).IsWhitelistedTopicForecaster(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: QueryService_IsWhitelistedTopicForecaster_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServiceServer).IsWhitelistedTopicForecaster(ctx, req.(*IsWhitelistedTopicForecasterRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _QueryService_IsTopicForecasterWhitelistEnabled_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(IsTopicForecasterWhitelistEnabledRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServiceServer).IsTopicForecasterWhitelistEnabled(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: QueryService_IsTopicForecasterWhitelistEnabled_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServiceServer).IsTopicForecasterWhitelistEnabled(ctx, req.(*IsTopicForecasterWhitelistEnabledRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _QueryService_CanUpdateGlobalForecasterWhitelist_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CanUpdateGlobalForecasterWhitelistRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServiceServer).CanUpdateGlobalForecasterWhitelist(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: QueryService_CanUpdateGlobalForecasterWhitelist_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServiceServer).CanUpdateGlobalForecasterWhitelist(ctx, req.(*CanUpdateGlobalForecasterWhitelistRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _QueryService_CanSubmitForecasterPayload_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CanSubmitForecasterPayloadRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServiceServer).CanSubmitForecasterPayload(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: QueryService_CanSubmitForecasterPayload_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServiceServer).CanSubmitForecasterPayload(ctx, req.(*CanSubmitForecasterPayloadRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _QueryService_GetTopicInitialInfererEmaScore_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetTopicInitialInfererEmaScoreRequest)
 	if err := dec(in); err != nil {
@@ -4132,6 +4302,26 @@ var QueryService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CanSubmitReputerPayload",
 			Handler:    _QueryService_CanSubmitReputerPayload_Handler,
+		},
+		{
+			MethodName: "IsWhitelistedGlobalForecaster",
+			Handler:    _QueryService_IsWhitelistedGlobalForecaster_Handler,
+		},
+		{
+			MethodName: "IsWhitelistedTopicForecaster",
+			Handler:    _QueryService_IsWhitelistedTopicForecaster_Handler,
+		},
+		{
+			MethodName: "IsTopicForecasterWhitelistEnabled",
+			Handler:    _QueryService_IsTopicForecasterWhitelistEnabled_Handler,
+		},
+		{
+			MethodName: "CanUpdateGlobalForecasterWhitelist",
+			Handler:    _QueryService_CanUpdateGlobalForecasterWhitelist_Handler,
+		},
+		{
+			MethodName: "CanSubmitForecasterPayload",
+			Handler:    _QueryService_CanSubmitForecasterPayload_Handler,
 		},
 		{
 			MethodName: "GetTopicInitialInfererEmaScore",

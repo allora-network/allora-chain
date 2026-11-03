@@ -265,6 +265,56 @@ func allTransitions(f *fuzzcommon.FuzzConfig) []StateTransition {
 		weight: transitionWeights.BulkRemoveFromTopicReputerWhitelist,
 		follow: nil, followWeight: 0,
 	}
+	transitionEnableTopicForecasterWhitelist := StateTransition{
+		name: "enableTopicForecasterWhitelist", f: enableTopicForecasterWhitelist,
+		weight: transitionWeights.EnableTopicForecasterWhitelist,
+		follow: nil, followWeight: 0,
+	}
+	transitionDisableTopicForecasterWhitelist := StateTransition{
+		name: "disableTopicForecasterWhitelist", f: disableTopicForecasterWhitelist,
+		weight: transitionWeights.DisableTopicForecasterWhitelist,
+		follow: nil, followWeight: 0,
+	}
+	transitionAddToTopicForecasterWhitelist := StateTransition{
+		name: "addToTopicForecasterWhitelist", f: addToTopicForecasterWhitelist,
+		weight: transitionWeights.AddToTopicForecasterWhitelist,
+		follow: nil, followWeight: 0,
+	}
+	transitionRemoveFromTopicForecasterWhitelist := StateTransition{
+		name: "removeFromTopicForecasterWhitelist", f: removeFromTopicForecasterWhitelist,
+		weight: transitionWeights.RemoveFromTopicForecasterWhitelist,
+		follow: nil, followWeight: 0,
+	}
+	transitionAddToGlobalForecasterWhitelist := StateTransition{
+		name: "addToGlobalForecasterWhitelist", f: addToGlobalForecasterWhitelist,
+		weight: transitionWeights.AddToGlobalForecasterWhitelist,
+		follow: nil, followWeight: 0,
+	}
+	transitionRemoveFromGlobalForecasterWhitelist := StateTransition{
+		name: "removeFromGlobalForecasterWhitelist", f: removeFromGlobalForecasterWhitelist,
+		weight: transitionWeights.RemoveFromGlobalForecasterWhitelist,
+		follow: nil, followWeight: 0,
+	}
+	transitionBulkAddToGlobalForecasterWhitelist := StateTransition{
+		name: "bulkAddToGlobalForecasterWhitelist", f: bulkAddToGlobalForecasterWhitelist,
+		weight: transitionWeights.BulkAddToGlobalForecasterWhitelist,
+		follow: nil, followWeight: 0,
+	}
+	transitionBulkRemoveFromGlobalForecasterWhitelist := StateTransition{
+		name: "bulkRemoveFromGlobalForecasterWhitelist", f: bulkRemoveFromGlobalForecasterWhitelist,
+		weight: transitionWeights.BulkRemoveFromGlobalForecasterWhitelist,
+		follow: nil, followWeight: 0,
+	}
+	transitionBulkAddToTopicForecasterWhitelist := StateTransition{
+		name: "bulkAddToTopicForecasterWhitelist", f: bulkAddToTopicForecasterWhitelist,
+		weight: transitionWeights.BulkAddToTopicForecasterWhitelist,
+		follow: nil, followWeight: 0,
+	}
+	transitionBulkRemoveFromTopicForecasterWhitelist := StateTransition{
+		name: "bulkRemoveFromTopicForecasterWhitelist", f: bulkRemoveFromTopicForecasterWhitelist,
+		weight: transitionWeights.BulkRemoveFromTopicForecasterWhitelist,
+		follow: nil, followWeight: 0,
+	}
 
 	return []StateTransition{
 		transitionCreateTopic,
@@ -307,6 +357,16 @@ func allTransitions(f *fuzzcommon.FuzzConfig) []StateTransition {
 		transitionBulkRemoveFromGlobalReputerWhitelist,
 		transitionBulkAddToTopicWorkerWhitelist,
 		transitionBulkRemoveFromTopicWorkerWhitelist,
+		transitionEnableTopicForecasterWhitelist,
+		transitionDisableTopicForecasterWhitelist,
+		transitionAddToTopicForecasterWhitelist,
+		transitionRemoveFromTopicForecasterWhitelist,
+		transitionAddToGlobalForecasterWhitelist,
+		transitionRemoveFromGlobalForecasterWhitelist,
+		transitionBulkAddToGlobalForecasterWhitelist,
+		transitionBulkRemoveFromGlobalForecasterWhitelist,
+		transitionBulkAddToTopicForecasterWhitelist,
+		transitionBulkRemoveFromTopicForecasterWhitelist,
 		transitionBulkAddToTopicReputerWhitelist,
 		transitionBulkRemoveFromTopicReputerWhitelist,
 	}
@@ -568,10 +628,14 @@ func pickActorAndTopicIdForStateTransition(
 		"removeFromGlobalWorkerWhitelist",
 		"addToGlobalReputerWhitelist",
 		"removeFromGlobalReputerWhitelist",
+		"addToGlobalForecasterWhitelist",
+		"removeFromGlobalForecasterWhitelist",
 		"bulkAddToGlobalWorkerWhitelist",
 		"bulkRemoveFromGlobalWorkerWhitelist",
 		"bulkAddToGlobalReputerWhitelist",
-		"bulkRemoveFromGlobalReputerWhitelist":
+		"bulkRemoveFromGlobalReputerWhitelist",
+		"bulkAddToGlobalForecasterWhitelist",
+		"bulkRemoveFromGlobalForecasterWhitelist":
 		admin, err := data.pickRandomGlobalAdmin(m)
 		if err != nil {
 			return false, UnusedActor, UnusedActor, nil, 0
@@ -580,7 +644,9 @@ func pickActorAndTopicIdForStateTransition(
 	case "enableTopicWorkerWhitelist",
 		"disableTopicWorkerWhitelist",
 		"enableTopicReputerWhitelist",
-		"disableTopicReputerWhitelist":
+		"disableTopicReputerWhitelist",
+		"enableTopicForecasterWhitelist",
+		"disableTopicForecasterWhitelist":
 		topicId, err := data.pickRandomTopicId()
 		if err != nil {
 			return false, UnusedActor, UnusedActor, nil, 0
@@ -594,10 +660,14 @@ func pickActorAndTopicIdForStateTransition(
 		"removeFromTopicWorkerWhitelist",
 		"addToTopicReputerWhitelist",
 		"removeFromTopicReputerWhitelist",
+		"addToTopicForecasterWhitelist",
+		"removeFromTopicForecasterWhitelist",
 		"bulkAddToTopicWorkerWhitelist",
 		"bulkRemoveFromTopicWorkerWhitelist",
 		"bulkAddToTopicReputerWhitelist",
-		"bulkRemoveFromTopicReputerWhitelist":
+		"bulkRemoveFromTopicReputerWhitelist",
+		"bulkAddToTopicForecasterWhitelist",
+		"bulkRemoveFromTopicForecasterWhitelist":
 		topicId, err := data.pickRandomTopicId()
 		if err != nil {
 			return false, UnusedActor, UnusedActor, nil, 0

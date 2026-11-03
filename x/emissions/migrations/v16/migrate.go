@@ -43,6 +43,16 @@ func MigrateStore(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 		return err
 	}
 
+	if err := MigrateForecasterWhitelistParam(ctx, emissionsKeeper); err != nil {
+		ctx.Logger().Error("ERROR INVOKING MIGRATION HANDLER MigrateForecasterWhitelistParam() FROM VERSION 15 TO VERSION 16")
+		return err
+	}
+
+	if err := MigrateWhitelists(ctx, emissionsKeeper); err != nil {
+		ctx.Logger().Error("ERROR INVOKING MIGRATION HANDLER MigrateWhitelists() FROM VERSION 15 TO VERSION 16")
+		return err
+	}
+
 	if err := MigrateTotalSumPreviousTopicWeights(ctx, emissionsKeeper); err != nil {
 		ctx.Logger().Error("ERROR INVOKING MIGRATION HANDLER MigrateTotalSumPreviousTopicWeights() FROM VERSION 15 TO VERSION 16")
 		return err
@@ -221,6 +231,85 @@ func MigrateParams(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 	ctx.Logger().Info(
 		"MIGRATION V16: params backfill completed",
 		"minTopInferersToReward", params.MinTopInferersToReward,
+	)
+	return nil
+}
+
+// MigrateForecasterWhitelistParam backfills Params.GlobalForecasterWhitelistEnabled,
+// which existing chains decode as false. When the global worker gate is on, the
+// global forecaster gate is switched on too so pre-upgrade participation is
+// preserved; the per-topic forecaster whitelist is then seeded from the topic
+// worker whitelist by MigrateWhitelists. A non-zero (true) existing value is
+// left alone: an unset field is indistinguishable from a deliberate false.
+func MigrateForecasterWhitelistParam(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
+	params, err := emissionsKeeper.GetParams(ctx)
+	if err != nil {
+		return errorsmod.Wrap(err, "MIGRATION V16: failed to get existing params")
+	}
+	if params.GlobalForecasterWhitelistEnabled {
+		ctx.Logger().Info(
+			"MIGRATION V16: global_forecaster_whitelist_enabled already set, skipping backfill",
+			"value", params.GlobalForecasterWhitelistEnabled,
+		)
+		return nil
+	}
+	params.GlobalForecasterWhitelistEnabled = params.GlobalWorkerWhitelistEnabled
+	if err := params.Validate(); err != nil {
+		return errorsmod.Wrap(err, "MIGRATION V16: backfilled forecaster whitelist param failed validation")
+	}
+	if err := emissionsKeeper.SetParams(ctx, params); err != nil {
+		return errorsmod.Wrap(err, "MIGRATION V16: failed to persist backfilled forecaster whitelist param")
+	}
+	ctx.Logger().Info(
+		"MIGRATION V16: global_forecaster_whitelist_enabled backfill completed",
+		"value", params.GlobalForecasterWhitelistEnabled,
+	)
+	return nil
+}
+
+// MigrateWhitelists copies each topic's worker whitelist into its forecaster
+// whitelist and copies the topic worker whitelist enabled flag to the topic
+// forecaster whitelist enabled flag, so that pre-upgrade participation is
+// preserved. Existing forecaster whitelist state is left alone: keysets are
+// idempotent sets, so adding an address already present is a no-op.
+func MigrateWhitelists(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
+	wlk := emissionsKeeper.GetWhitelistsKeeper()
+
+	globalWorkers, err := wlk.GetAllGlobalWorkerWhitelist(ctx)
+	if err != nil {
+		return errorsmod.Wrap(err, "MIGRATION V16: failed to list global worker whitelist")
+	}
+	for _, actor := range globalWorkers {
+		if err := wlk.AddToGlobalForecasterWhitelist(ctx, actor); err != nil {
+			return errorsmod.Wrapf(err, "MIGRATION V16: failed to add actor %s to global forecaster whitelist", actor)
+		}
+	}
+
+	topicWorkers, err := wlk.GetAllTopicWorkerWhitelist(ctx)
+	if err != nil {
+		return errorsmod.Wrap(err, "MIGRATION V16: failed to list topic worker whitelist")
+	}
+	for _, topicAndActor := range topicWorkers {
+		if err := wlk.AddToTopicForecasterWhitelist(ctx, topicAndActor.TopicId, topicAndActor.ActorId); err != nil {
+			return errorsmod.Wrapf(err, "MIGRATION V16: failed to add actor %s to topic %d forecaster whitelist", topicAndActor.ActorId, topicAndActor.TopicId)
+		}
+	}
+
+	topicIds, err := wlk.GetAllTopicWorkerWhitelistEnabled(ctx)
+	if err != nil {
+		return errorsmod.Wrap(err, "MIGRATION V16: failed to list topic worker whitelist enabled flags")
+	}
+	for _, topicId := range topicIds {
+		if err := wlk.EnableTopicForecasterWhitelist(ctx, topicId); err != nil {
+			return errorsmod.Wrapf(err, "MIGRATION V16: failed to enable topic %d forecaster whitelist", topicId)
+		}
+	}
+
+	ctx.Logger().Info(
+		"MIGRATION V16: forecaster whitelists backfilled",
+		"globalWorkers", len(globalWorkers),
+		"topicWorkerEntries", len(topicWorkers),
+		"topicsEnabled", len(topicIds),
 	)
 	return nil
 }

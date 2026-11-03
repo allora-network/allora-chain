@@ -71,6 +71,7 @@ func (s *MsgServerTestSuite) TestUpdateAllParams() {
 		LambdaInitialScore:                  []alloraMath.Dec{alloraMath.MustNewDecFromString("2")},
 		GlobalWorkerWhitelistEnabled:        []bool{true},
 		GlobalReputerWhitelistEnabled:       []bool{true},
+		GlobalForecasterWhitelistEnabled:    []bool{true},
 		GlobalAdminWhitelistAppended:        []bool{true},
 		MaxWhitelistInputArrayLength:        []uint64{10},
 		MinWeightThresholdForStdnorm:        []alloraMath.Dec{alloraMath.MustNewDecFromString("0.000001")},
