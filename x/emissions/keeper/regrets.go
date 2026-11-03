@@ -7,9 +7,32 @@ import (
 	"cosmossdk.io/collections"
 	errorsmod "cosmossdk.io/errors"
 	"github.com/cosmos/cosmos-sdk/codec"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 
+	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
+
+type epochInitialRegretKey struct{}
+
+// WithEpochInitialRegret makes a missing actor regret use initial.
+// Epoch close passes the InitialRegret copied onto the epoch.
+func WithEpochInitialRegret(ctx sdk.Context, initial alloraMath.Dec) sdk.Context {
+	return ctx.WithValue(epochInitialRegretKey{}, initial)
+}
+
+func (k *RegretsKeeper) missingActorRegret(ctx context.Context, topicId TopicId) (types.TimestampedValue, error) {
+	if sdkCtx, ok := ctx.(sdk.Context); ok {
+		if initial, ok := sdkCtx.Value(epochInitialRegretKey{}).(alloraMath.Dec); ok {
+			return types.TimestampedValue{BlockHeight: 0, Value: initial}, nil
+		}
+	}
+	topic, err := k.topicKeeper.GetTopic(ctx, topicId)
+	if err != nil {
+		return types.TimestampedValue{}, errorsmod.Wrap(err, "error getting topic")
+	}
+	return types.TimestampedValue{BlockHeight: 0, Value: topic.InitialRegret}, nil
+}
 
 func NewRegretsKeeper(cdc codec.BinaryCodec, sb *collections.SchemaBuilder, topicKeeper *TopicKeeper) *RegretsKeeper {
 	return &RegretsKeeper{
@@ -70,14 +93,11 @@ func (k *RegretsKeeper) GetInfererNetworkRegret(
 	regret, err = k.latestInfererNetworkRegrets.Get(ctx, key)
 
 	if errors.Is(err, collections.ErrNotFound) {
-		topic, err := k.topicKeeper.GetTopic(ctx, topicId)
+		regret, err = k.missingActorRegret(ctx, topicId)
 		if err != nil {
-			return types.TimestampedValue{}, false, errorsmod.Wrap(err, "error getting topic")
+			return types.TimestampedValue{}, false, err
 		}
-		return types.TimestampedValue{
-			BlockHeight: 0,
-			Value:       topic.InitialRegret,
-		}, true, nil
+		return regret, true, nil
 	} else if err != nil {
 		return types.TimestampedValue{}, false, errorsmod.Wrap(err, "error getting inferer network regret")
 	}
@@ -112,14 +132,11 @@ func (k *RegretsKeeper) GetForecasterNetworkRegret(
 	regret, err = k.latestForecasterNetworkRegrets.Get(ctx, key)
 
 	if errors.Is(err, collections.ErrNotFound) {
-		topic, err := k.topicKeeper.GetTopic(ctx, topicId)
+		regret, err = k.missingActorRegret(ctx, topicId)
 		if err != nil {
-			return types.TimestampedValue{}, false, errorsmod.Wrap(err, "error getting topic")
+			return types.TimestampedValue{}, false, err
 		}
-		return types.TimestampedValue{
-			BlockHeight: 0,
-			Value:       topic.InitialRegret,
-		}, true, nil
+		return regret, true, nil
 	} else if err != nil {
 		return types.TimestampedValue{}, false, errorsmod.Wrap(err, "error getting forecaster network regret")
 	}
@@ -158,14 +175,11 @@ func (k *RegretsKeeper) GetOneInForecasterNetworkRegret(
 	key := collections.Join3(topicId, oneInForecaster, inferer)
 	regret, err = k.latestOneInForecasterNetworkRegrets.Get(ctx, key)
 	if errors.Is(err, collections.ErrNotFound) {
-		topic, err := k.topicKeeper.GetTopic(ctx, topicId)
+		regret, err = k.missingActorRegret(ctx, topicId)
 		if err != nil {
-			return types.TimestampedValue{}, false, errorsmod.Wrap(err, "error getting topic")
+			return types.TimestampedValue{}, false, err
 		}
-		return types.TimestampedValue{
-			BlockHeight: 0,
-			Value:       topic.InitialRegret,
-		}, true, nil
+		return regret, true, nil
 	} else if err != nil {
 		return types.TimestampedValue{}, false, errorsmod.Wrap(err, "error getting one in forecaster network regret")
 	}
@@ -197,14 +211,11 @@ func (k *RegretsKeeper) GetNaiveInfererNetworkRegret(ctx context.Context, topicI
 	regret, err = k.latestNaiveInfererNetworkRegrets.Get(ctx, key)
 
 	if errors.Is(err, collections.ErrNotFound) {
-		topic, err := k.topicKeeper.GetTopic(ctx, topicId)
+		regret, err = k.missingActorRegret(ctx, topicId)
 		if err != nil {
-			return types.TimestampedValue{}, false, errorsmod.Wrap(err, "error getting topic")
+			return types.TimestampedValue{}, false, err
 		}
-		return types.TimestampedValue{
-			BlockHeight: 0,
-			Value:       topic.InitialRegret,
-		}, true, nil
+		return regret, true, nil
 	} else if err != nil {
 		return types.TimestampedValue{}, false, errorsmod.Wrap(err, "error getting naive inferer network regret")
 	}
@@ -243,14 +254,11 @@ func (k *RegretsKeeper) GetOneOutInfererInfererNetworkRegret(
 	regret, err = k.latestOneOutInfererInfererNetworkRegrets.Get(ctx, key)
 
 	if errors.Is(err, collections.ErrNotFound) {
-		topic, err := k.topicKeeper.GetTopic(ctx, topicId)
+		regret, err = k.missingActorRegret(ctx, topicId)
 		if err != nil {
-			return types.TimestampedValue{}, false, errorsmod.Wrap(err, "error getting topic")
+			return types.TimestampedValue{}, false, err
 		}
-		return types.TimestampedValue{
-			BlockHeight: 0,
-			Value:       topic.InitialRegret,
-		}, true, nil
+		return regret, true, nil
 	} else if err != nil {
 		return types.TimestampedValue{}, false, errorsmod.Wrap(err, "error getting one out inferer inferer network regret")
 	}
@@ -289,14 +297,11 @@ func (k *RegretsKeeper) GetOneOutInfererForecasterNetworkRegret(
 	regret, err = k.latestOneOutInfererForecasterNetworkRegrets.Get(ctx, key)
 
 	if errors.Is(err, collections.ErrNotFound) {
-		topic, err := k.topicKeeper.GetTopic(ctx, topicId)
+		regret, err = k.missingActorRegret(ctx, topicId)
 		if err != nil {
-			return types.TimestampedValue{}, false, errorsmod.Wrap(err, "error getting topic")
+			return types.TimestampedValue{}, false, err
 		}
-		return types.TimestampedValue{
-			BlockHeight: 0,
-			Value:       topic.InitialRegret,
-		}, true, nil
+		return regret, true, nil
 	} else if err != nil {
 		return types.TimestampedValue{}, false, errorsmod.Wrap(err, "error getting one out inferer forecaster network regret")
 	}
@@ -335,14 +340,11 @@ func (k *RegretsKeeper) GetOneOutForecasterInfererNetworkRegret(
 	regret, err = k.latestOneOutForecasterInfererNetworkRegrets.Get(ctx, key)
 
 	if errors.Is(err, collections.ErrNotFound) {
-		topic, err := k.topicKeeper.GetTopic(ctx, topicId)
+		regret, err = k.missingActorRegret(ctx, topicId)
 		if err != nil {
-			return types.TimestampedValue{}, false, errorsmod.Wrap(err, "error getting topic")
+			return types.TimestampedValue{}, false, err
 		}
-		return types.TimestampedValue{
-			BlockHeight: 0,
-			Value:       topic.InitialRegret,
-		}, true, nil
+		return regret, true, nil
 	} else if err != nil {
 		return types.TimestampedValue{}, false, errorsmod.Wrap(err, "error getting one out forecaster inferer network regret")
 	}
@@ -381,14 +383,11 @@ func (k *RegretsKeeper) GetOneOutForecasterForecasterNetworkRegret(
 	key := collections.Join3(topicId, oneOutForecaster, forecaster)
 	regret, err = k.latestOneOutForecasterForecasterNetworkRegrets.Get(ctx, key)
 	if errors.Is(err, collections.ErrNotFound) {
-		topic, err := k.topicKeeper.GetTopic(ctx, topicId)
+		regret, err = k.missingActorRegret(ctx, topicId)
 		if err != nil {
-			return types.TimestampedValue{}, false, errorsmod.Wrap(err, "error getting topic")
+			return types.TimestampedValue{}, false, err
 		}
-		return types.TimestampedValue{
-			BlockHeight: 0,
-			Value:       topic.InitialRegret,
-		}, true, nil
+		return regret, true, nil
 	} else if err != nil {
 		return types.TimestampedValue{}, false, errorsmod.Wrap(err, "error getting one out forecaster forecaster network regret")
 	}

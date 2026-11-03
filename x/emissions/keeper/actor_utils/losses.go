@@ -187,7 +187,7 @@ func CloseReputerNonce(
 
 	regrets, err := synth.GetCalcSetNetworkRegrets(
 		synth.GetCalcSetNetworkRegretsArgs{
-			Ctx:                   ctx,
+			Ctx:                   keeper.WithEpochInitialRegret(ctx, topic.InitialRegret),
 			K:                     *k,
 			TopicId:               topic.Id,
 			NetworkLosses:         networkLossBundle,
