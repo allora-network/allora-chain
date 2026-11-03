@@ -81,5 +81,7 @@ func NewEpoch(nonce NonceV2, topic Topic, startAt time.Time) Epoch {
 		OutputArity:                 topic.OutputArity,
 		RequireUnity:                topic.RequireUnity,
 		LabelCaseSensitive:          topic.LabelCaseSensitive,
+		InitialRegret:               topic.InitialRegret,
+		LabelDefaultValue:           topic.LabelDefaultValue,
 	}
 }

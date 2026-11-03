@@ -233,6 +233,9 @@ func (s *KeeperTestSuite) TestEpochCloseUsesTopicSettingsCopiedAtCreation() {
 	)
 	created, err := s.TopicKeeper().GetTopic(ctx, topicId)
 	s.Require().NoError(err)
+	created.InitialRegret = alloraMath.MustNewDecFromString("-1")
+	created.LabelDefaultValue = alloraMath.MustNewDecFromString("0.2")
+	s.Require().NoError(s.TopicKeeper().SetTopic(ctx, topicId, created))
 
 	k := s.EmissionsKeeper()
 	var seen []types.Topic
@@ -265,6 +268,8 @@ func (s *KeeperTestSuite) TestEpochCloseUsesTopicSettingsCopiedAtCreation() {
 	s.Require().Equal(created.OutputArity, epoch.OutputArity)
 	s.Require().Equal(created.RequireUnity, epoch.RequireUnity)
 	s.Require().Equal(created.LabelCaseSensitive, epoch.LabelCaseSensitive)
+	s.Require().True(epoch.InitialRegret.Equal(created.InitialRegret))
+	s.Require().True(epoch.LabelDefaultValue.Equal(created.LabelDefaultValue))
 
 	created.AlphaRegret = decDifferentFrom(created.AlphaRegret, "0.2", "0.3")
 	created.PNorm = decDifferentFrom(created.PNorm, "4", "2")
@@ -274,6 +279,8 @@ func (s *KeeperTestSuite) TestEpochCloseUsesTopicSettingsCopiedAtCreation() {
 	s.Require().False(created.RequireUnity)
 	created.RequireUnity = true
 	created.UnityTolerance = alloraMath.MustNewDecFromString("0.01")
+	created.LabelDefaultValue = alloraMath.ZeroDec()
+	created.InitialRegret = alloraMath.MustNewDecFromString("-2")
 	created.LabelCaseSensitive = !created.LabelCaseSensitive
 	s.Require().NoError(s.TopicKeeper().SetTopic(ctx, topicId, created))
 
@@ -291,6 +298,8 @@ func (s *KeeperTestSuite) TestEpochCloseUsesTopicSettingsCopiedAtCreation() {
 		s.Require().Equal(epoch.OutputArity, got.OutputArity)
 		s.Require().Equal(epoch.RequireUnity, got.RequireUnity)
 		s.Require().Equal(epoch.LabelCaseSensitive, got.LabelCaseSensitive)
+		s.Require().True(got.InitialRegret.Equal(epoch.InitialRegret))
+		s.Require().True(got.LabelDefaultValue.Equal(epoch.LabelDefaultValue))
 	}
 }
 

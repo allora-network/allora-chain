@@ -180,5 +180,7 @@ func applyEpochTopicSnapshot(topic types.Topic, epoch types.Epoch) types.Topic {
 	topic.OutputArity = epoch.OutputArity
 	topic.RequireUnity = epoch.RequireUnity
 	topic.LabelCaseSensitive = epoch.LabelCaseSensitive
+	topic.InitialRegret = epoch.InitialRegret
+	topic.LabelDefaultValue = epoch.LabelDefaultValue
 	return topic
 }
