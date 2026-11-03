@@ -65,6 +65,7 @@ var requiredEventCoverage = []string{
 	"emissions.v10.EventReputerSubmissionWindowClosed",
 	"emissions.v10.EventActiveInferersSet",
 	"emissions.v10.EventActiveForecastersSet",
+	"EventActiveForecastersSet/discarded",
 	"emissions.v10.EventActiveReputersSet",
 }
 
@@ -95,6 +96,9 @@ type eventAudit struct {
 	frozenCount  map[string]int
 	bundleLabels map[string][]string
 	topicStatus  map[uint64]bool
+
+	acceptedForecasters map[uint64][]string
+	closedTopics        map[uint64]bool
 }
 
 // EventAuditStart returns the height a suite's event audit starts from.
@@ -151,6 +155,9 @@ func newEventAudit(ctx context.Context, m testCommon.TestConfig) *eventAudit {
 		frozenCount:   make(map[string]int),
 		bundleLabels:  make(map[string][]string),
 		topicStatus:   make(map[uint64]bool),
+
+		acceptedForecasters: make(map[uint64][]string),
+		closedTopics:        make(map[uint64]bool),
 	}
 }
 
@@ -764,6 +771,8 @@ func (a *eventAudit) auditEvent(height int64, facts blockContext, event chainEve
 		a.requireRewardNonce(height, facts, "EventRewardPayoutFailed", typed.TopicId, typed.Nonce)
 	case *emissionstypes.EventNonceExpired:
 		a.auditNonceExpired(height, typed)
+	case *emissionstypes.EventInsertForecasterPayload:
+		a.recordForecasterPayload(typed)
 	case *emissionstypes.EventScoresSet:
 		a.auditScores(height, facts, typed)
 	case *emissionstypes.EventRewardsSettled:
@@ -919,6 +928,7 @@ func (a *eventAudit) auditEvent(height int64, facts blockContext, event chainEve
 		if a.isWorkerNonceUnfulfilled(height, typed.TopicId, typed.Nonce) {
 			a.failf(height, "EventWorkerSubmissionWindowClosed topic %d nonce %d is still unfulfilled", typed.TopicId, typed.Nonce)
 		}
+		a.resetForecasterPayloads(typed.TopicId)
 	case *emissionstypes.EventReputerSubmissionWindowOpened:
 		a.auditReputerWindowOpened(height, typed)
 	case *emissionstypes.EventReputerSubmissionWindowClosed:
@@ -1216,6 +1226,43 @@ func (a *eventAudit) auditActiveForecasters(height int64, event *emissionstypes.
 		stored = append(stored, forecast.Forecaster)
 	}
 	a.requireSameAddresses(height, "EventActiveForecastersSet", event.TopicId, event.Nonce, event.Addresses, stored)
+	for _, discarded := range event.DiscardedAddresses {
+		if slices.Contains(stored, discarded) {
+			a.failf(height, "EventActiveForecastersSet topic %d nonce %d discards %s, whose forecast is stored", event.TopicId, event.Nonce, discarded)
+		}
+	}
+	if len(event.DiscardedAddresses) > 0 {
+		a.coverage["EventActiveForecastersSet/discarded"]++
+	}
+
+	// The close reads the topic's active forecasters, which accepted payloads add and
+	// every close resets, so both lists together are the forecasters whose payloads
+	// the chain accepted since the previous close. Before the first audited close of a
+	// topic the audit has not seen every payload.
+	if !a.closedTopics[event.TopicId] {
+		a.skipped["forecaster lists vs payloads: first audited close"]++
+		return
+	}
+	accepted := a.acceptedForecasters[event.TopicId]
+	reported := append(slices.Clone(event.Addresses), event.DiscardedAddresses...)
+	if !slices.Equal(sortedStrings(reported), sortedStrings(accepted)) {
+		a.failf(height, "EventActiveForecastersSet topic %d nonce %d addresses %v and discarded_addresses %v, accepted forecaster payloads since the previous close %v", event.TopicId, event.Nonce, event.Addresses, event.DiscardedAddresses, accepted)
+	}
+}
+
+// recordForecasterPayload notes a forecaster whose payload the chain accepted; the
+// topic's next close must report it in one of its two lists.
+func (a *eventAudit) recordForecasterPayload(event *emissionstypes.EventInsertForecasterPayload) {
+	if !slices.Contains(a.acceptedForecasters[event.TopicId], event.Forecaster) {
+		a.acceptedForecasters[event.TopicId] = append(a.acceptedForecasters[event.TopicId], event.Forecaster)
+	}
+}
+
+// resetForecasterPayloads follows the close's reset of the topic's active workers,
+// which runs on every close, failed or not, and ends with the window-closed event.
+func (a *eventAudit) resetForecasterPayloads(topicId uint64) {
+	delete(a.acceptedForecasters, topicId)
+	a.closedTopics[topicId] = true
 }
 
 // auditWorkerWindowOpened checks a window opened at the topic's churn for the
