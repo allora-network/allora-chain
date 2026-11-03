@@ -3,6 +3,7 @@ package fuzz_test
 import (
 	"context"
 	"encoding/hex"
+	"errors"
 	"math/rand"
 	"time"
 
@@ -48,6 +49,10 @@ func doInferenceAndReputation(
 	topic := resp.Topic
 	iterLog(m.T, iteration, "Inference topic epoch last ended ", topic.EpochLastEnded, " epoch length ", topic.EpochLength)
 	workerNonce, managedEpoch, err := submissionNonce(m, topic)
+	if errors.Is(err, errWorkerWindowClosed) {
+		iterLog(m.T, iteration, "no worker submission epoch for topic, skipping", topicId)
+		return true
+	}
 	failIfOnErr(m.T, data.failOnErr, err)
 	if err != nil {
 		iterFailLog(m.T, iteration, "failed to choose submission nonce for topic id ", topicId, err)
@@ -177,8 +182,14 @@ func findActiveTopicsAtThisBlock(
 	return ourTopics
 }
 
-// submissionNonce uses the live epoch's start block when the topic has one.
-// Otherwise it keeps the unmanaged height formula EpochLastEnded + EpochLength.
+// errWorkerWindowClosed means the topic has live epochs and none of them is
+// accepting worker submissions. The caller skips this iteration.
+var errWorkerWindowClosed = errors.New("worker submission window is not open")
+
+// submissionNonce returns the start height of the newest worker-submission
+// epoch. A topic with no live epochs keeps the unmanaged height formula
+// EpochLastEnded + EpochLength. A topic whose live epochs are all past the
+// worker window returns errWorkerWindowClosed.
 func submissionNonce(
 	m *testcommon.TestConfig,
 	topic *emissionstypes.Topic,
@@ -193,15 +204,14 @@ func submissionNonce(
 	if resp == nil || len(resp.Epochs) == 0 {
 		return topic.EpochLastEnded + topic.EpochLength, nil, nil
 	}
-	chosen := resp.Epochs[0]
+	var chosen *emissionstypes.Epoch
 	for _, epoch := range resp.Epochs {
 		if epoch != nil && epoch.State == emissionstypes.EpochState_WORKER_SUBMISSION {
 			chosen = epoch
-			break
 		}
 	}
 	if chosen == nil {
-		return topic.EpochLastEnded + topic.EpochLength, nil, nil
+		return 0, nil, errWorkerWindowClosed
 	}
 	return chosen.StartBlockHeight, chosen, nil
 }
