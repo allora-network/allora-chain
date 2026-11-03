@@ -50,6 +50,7 @@ exit "$(cat "$FAKE_DIR/$n.code")"
 		"PATH="+dir+string(os.PathListSeparator)+os.Getenv("PATH"),
 		"FAKE_DIR="+dir,
 		"FAKE_RESULTS="+strconv.Itoa(len(results)),
+		"BUILD_MAX_ATTEMPTS=4",
 		"BUILD_RETRY_BASE_SECONDS=0",
 	)
 	out, runErr := cmd.CombinedOutput()
