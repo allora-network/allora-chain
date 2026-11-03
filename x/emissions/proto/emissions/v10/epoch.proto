@@ -59,6 +59,22 @@ message Epoch {
     (gogoproto.nullable) = false
   ];
   TopicOutputArity output_arity = 14;
+
+  // Output rules copied when the epoch is created. Close uses these values
+  // so a later topic update does not change how this epoch treats labels.
+  bool require_unity = 15;
+  bool label_case_sensitive = 16;
+
+  // Initial regret for an actor with none stored, and the value used to pad
+  // missing label slots. Copied when the epoch is created.
+  string initial_regret = 17 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
+  string label_default_value = 18 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
 }
 
 enum EpochState {

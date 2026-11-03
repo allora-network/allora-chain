@@ -173,8 +173,8 @@ func (k *Keeper) cancelEpoch(ctx context.Context, epoch types.Epoch) error {
 	return k.unscheduleEpochLifecycle(ctx, epoch)
 }
 
-// applyEpochTopicSnapshot returns a copy of topic whose timing and scoring
-// fields are the values stored on the epoch at creation.
+// applyEpochTopicSnapshot returns a copy of topic using the settings stored
+// on the epoch at creation.
 func applyEpochTopicSnapshot(topic types.Topic, epoch types.Epoch) types.Topic {
 	topic.WorkerSubmissionWindow = epoch.TopicWorkerSubmissionWindow
 	topic.GroundTruthLag = epoch.TopicGroundTruthLag
@@ -184,5 +184,9 @@ func applyEpochTopicSnapshot(topic types.Topic, epoch types.Epoch) types.Topic {
 	topic.PNorm = epoch.PNorm
 	topic.CNorm = epoch.CNorm
 	topic.OutputArity = epoch.OutputArity
+	topic.RequireUnity = epoch.RequireUnity
+	topic.LabelCaseSensitive = epoch.LabelCaseSensitive
+	topic.InitialRegret = epoch.InitialRegret
+	topic.LabelDefaultValue = epoch.LabelDefaultValue
 	return topic
 }
