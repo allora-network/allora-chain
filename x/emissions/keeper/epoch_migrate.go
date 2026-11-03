@@ -323,6 +323,10 @@ func buildLegacyAlignedMigratedEpoch(
 		PNorm:                       topic.PNorm,
 		CNorm:                       topic.CNorm,
 		OutputArity:                 topic.OutputArity,
+		RequireUnity:                topic.RequireUnity,
+		LabelCaseSensitive:          topic.LabelCaseSensitive,
+		InitialRegret:               topic.InitialRegret,
+		LabelDefaultValue:           topic.LabelDefaultValue,
 	}
 	return epoch
 }
