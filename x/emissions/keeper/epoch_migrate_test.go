@@ -7,6 +7,7 @@ import (
 	"cosmossdk.io/collections"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
+	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/testutil"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	schedulertypes "github.com/allora-network/allora-chain/x/scheduler/types"
@@ -32,7 +33,13 @@ func (s *KeeperTestSuite) TestMigrateToSchedulerEpochsReconstructsWorkerWindow()
 		testutil.WithEpochLength(100),
 		testutil.WithGroundTruthLag(100),
 		testutil.WithWorkerSubmissionWindow(10),
+		testutil.WithLabelCaseSensitive(true),
 	)
+	created, err := s.TopicKeeper().GetTopic(ctx, topicID)
+	s.Require().NoError(err)
+	created.InitialRegret = alloraMath.MustNewDecFromString("-1")
+	created.LabelDefaultValue = alloraMath.MustNewDecFromString("0.2")
+	s.Require().NoError(s.TopicKeeper().SetTopic(ctx, topicID, created))
 	s.markTopicActiveWithoutScheduler(ctx, topicID)
 	s.Require().NoError(s.NonceKeeper().AddWorkerNonce(ctx, topicID, &types.Nonce{BlockHeight: legacyHeight}))
 
@@ -69,8 +76,11 @@ func (s *KeeperTestSuite) TestMigrateToSchedulerEpochsReconstructsWorkerWindow()
 	s.Require().True(epoch.Epsilon.Equal(topic.Epsilon))
 	s.Require().Equal(topic.OutputArity, epoch.OutputArity)
 	s.Require().Equal(topic.RequireUnity, epoch.RequireUnity)
+	s.Require().True(epoch.LabelCaseSensitive)
 	s.Require().Equal(topic.LabelCaseSensitive, epoch.LabelCaseSensitive)
+	s.Require().True(epoch.InitialRegret.Equal(alloraMath.MustNewDecFromString("-1")))
 	s.Require().True(epoch.InitialRegret.Equal(topic.InitialRegret))
+	s.Require().True(epoch.LabelDefaultValue.Equal(alloraMath.MustNewDecFromString("0.2")))
 	s.Require().True(epoch.LabelDefaultValue.Equal(topic.LabelDefaultValue))
 	s.Require().Equal(types.Nonce{BlockHeight: legacyHeight}, epoch.LegacyNonce())
 

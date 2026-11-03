@@ -294,9 +294,16 @@ func (s *KeeperTestSuite) TestEpochCloseUsesTopicSettingsCopiedAtCreation() {
 	s.Require().NoError(s.TopicKeeper().SetTopic(ctx, topicId, created))
 
 	k := s.EmissionsKeeper()
+	worker := s.AddrsStr(1)
 	var seen []types.Topic
-	record := func(_ sdk.Context, topic types.Topic, _ types.Nonce) error {
+	var missingRegret []alloraMath.Dec
+	record := func(ctx sdk.Context, topic types.Topic, _ types.Nonce) error {
 		seen = append(seen, topic)
+		regret, _, err := k.GetRegretsKeeper().GetInfererNetworkRegret(ctx, topic.Id, worker)
+		if err != nil {
+			return err
+		}
+		missingRegret = append(missingRegret, regret.Value)
 		return nil
 	}
 	k.SetEpochCloseHandlers(record, record)
@@ -346,6 +353,11 @@ func (s *KeeperTestSuite) TestEpochCloseUsesTopicSettingsCopiedAtCreation() {
 	s.Require().NoError(s.SchedulerKeeper().BeginBlock(ctx))
 
 	s.Require().Len(seen, 2)
+	s.Require().Len(missingRegret, 2)
+	// Reputer close is second. Its context carries the epoch's InitialRegret,
+	// which is no longer the value stored on the topic.
+	s.Require().True(missingRegret[1].Equal(epoch.InitialRegret))
+	s.Require().False(missingRegret[1].Equal(created.InitialRegret))
 	for _, got := range seen {
 		s.Require().True(got.AlphaRegret.Equal(epoch.AlphaRegret))
 		s.Require().True(got.PNorm.Equal(epoch.PNorm))
