@@ -1,7 +1,7 @@
 #!/bin/sh
 # Retries a fetch-only command with backoff, showing its output only on failure.
 max_attempts=4
-log=$(mktemp)
+log=$(mktemp) || exit 1
 trap 'rm -f "$log"' EXIT
 attempt=1
 until "$@" >"$log" 2>&1; do

@@ -16,7 +16,7 @@ is_registry_failure() {
 # attempt, since a rebuild cannot fix it.
 build_image_with_retry() {
     local log status attempt=1
-    log=$(mktemp)
+    log=$(mktemp) || return 1
     while true; do
         docker build "$@" 2>&1 | tee "$log"
         status=${PIPESTATUS[0]}
@@ -55,7 +55,7 @@ capture_allorad() {
     local description="$1" value_regex="$2" home="$3"
     shift 3
     local stderr_log value status=0 diagnostics
-    stderr_log=$(mktemp)
+    stderr_log=$(mktemp) || return 1
     value=$(docker run \
         -u "$(id -u):$(id -g)" \
         -v "${LOCALNET_DATADIR}:/data" \
