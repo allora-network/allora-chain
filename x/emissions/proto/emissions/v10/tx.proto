@@ -101,6 +101,8 @@ service MsgService {
 
   rpc RemoveFromTopicReputerWhitelist(RemoveFromTopicReputerWhitelistRequest) returns (RemoveFromTopicReputerWhitelistResponse);
 
+  rpc TransferActorOwnership(TransferActorOwnershipRequest) returns (TransferActorOwnershipResponse);
+
   rpc AddToGlobalForecasterWhitelist(AddToGlobalForecasterWhitelistRequest) returns (AddToGlobalForecasterWhitelistResponse);
 
   rpc RemoveFromGlobalForecasterWhitelist(RemoveFromGlobalForecasterWhitelistRequest) returns (RemoveFromGlobalForecasterWhitelistResponse);
@@ -120,8 +122,6 @@ service MsgService {
   rpc EnableTopicForecasterWhitelist(EnableTopicForecasterWhitelistRequest) returns (EnableTopicForecasterWhitelistResponse);
 
   rpc DisableTopicForecasterWhitelist(DisableTopicForecasterWhitelistRequest) returns (DisableTopicForecasterWhitelistResponse);
-
-  rpc TransferActorOwnership(TransferActorOwnershipRequest) returns (TransferActorOwnershipResponse);
 }
 
 /// PARAMS
