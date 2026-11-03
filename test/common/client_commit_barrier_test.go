@@ -44,7 +44,7 @@ type fakeCometNode struct {
 
 func newFakeCometNode(t *testing.T, blockStoreHeight, appHeight int64) *fakeCometNode {
 	t.Helper()
-	n := &fakeCometNode{} //nolint:exhaustruct // atomics are usable at their zero value
+	n := new(fakeCometNode)
 	n.blockStoreHeight.Store(blockStoreHeight)
 	n.appHeight.Store(appHeight)
 	n.server = httptest.NewServer(http.HandlerFunc(n.serve))
