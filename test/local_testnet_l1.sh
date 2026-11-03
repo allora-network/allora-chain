@@ -4,6 +4,8 @@ set -eu  #e
 # Ensure we're in integration folder
 cd "$(dirname "$0")"
 
+. ./localnet_lib.sh
+
 # Function to check if a command exists
 check_command() {
   if ! command -v "$1" &> /dev/null; then
@@ -40,19 +42,28 @@ else
 fi
 
 ACCOUNTS_TOKENS=1000000
+ADDRESS_REGEX='^allo1[02-9ac-hj-np-z]{38}$'
+NODE_ID_REGEX='^[0-9a-f]{40}$'
 
 ENV_L1="${LOCALNET_DATADIR}/.env"
 L1_COMPOSE=${LOCALNET_DATADIR}/compose_l1.yaml
 
 
+# LOCALNET_RESET=true replaces an existing localnet without prompting.
 if [ -d "$LOCALNET_DATADIR" ]; then
-    echo "Folder $LOCALNET_DATADIR already exist, need to delete it before running the script."
-    read -p "Stop validators and Delete $LOCALNET_DATADIR folder??[y/N] " -n 1 -r
-    echo    # (optional) move to a new line
+    if [ "${LOCALNET_RESET:-false}" == "true" ]; then
+        REPLY=y
+    else
+        echo "Folder $LOCALNET_DATADIR already exist, need to delete it before running the script."
+        read -p "Stop validators and Delete $LOCALNET_DATADIR folder??[y/N] " -n 1 -r
+        echo    # (optional) move to a new line
+    fi
     if [[ $REPLY =~ ^[Yy]$ ]]; then
-        # Stop if containers are already up
-        [ $(docker ps |wc -l) -gt 1 ]  && docker compose -f $L1_COMPOSE down
-        rm -rf $LOCALNET_DATADIR
+        # An earlier run can stop before it writes the compose file.
+        if [ -f "$L1_COMPOSE" ]; then
+            docker compose -f "$L1_COMPOSE" down
+        fi
+        rm -rf "$LOCALNET_DATADIR"
     fi
 fi
 mkdir -p $LOCALNET_DATADIR
@@ -76,10 +87,16 @@ UID_GID="$(id -u):$(id -g)"
 echo "CHAIN_ID=$CHAIN_ID" >> ${ENV_L1}
 echo "ALLORA_RPC=http://${NETWORK_PREFIX}.${VALIDATORS_IP_START}:26657" >> ${ENV_L1}  # Take validator0
 
-echo "Build the docker image"
-pushd ..
-docker build -t $DOCKER_IMAGE -f $DOCKERFILE .
-popd
+# LOCALNET_REUSE_IMAGE=true starts from the image an earlier run built.
+if [ "${LOCALNET_REUSE_IMAGE:-false}" == "true" ]; then
+    echo "Reuse the docker image"
+    docker image inspect "$DOCKER_IMAGE" > /dev/null
+else
+    echo "Build the docker image"
+    pushd ..
+    build_image_with_retry -t $DOCKER_IMAGE -f $DOCKERFILE .
+    popd
+fi
 
 echo "Copy generate_genesis.sh into localnet data directory so it can go into the container"
 cp generate_genesis.sh ${LOCALNET_DATADIR}/generate_genesis.sh
@@ -122,14 +139,8 @@ echo "Updating remove_stake_delay_window in genesis.json"
 jq '.app_state.emissions.params.remove_stake_delay_window = "10"' "$genesis_file" > "$tmp_file" && mv "$tmp_file" "$genesis_file"
 
 echo "Whitelist faucet account"
-FAUCET_ADDRESS=$(docker run -t \
-    -u $(id -u):$(id -g) \
-    -v ${LOCALNET_DATADIR}:/data \
-    --entrypoint=allorad \
-    -e HOME=/data/genesis \
-    $DOCKER_IMAGE \
-        --home=/data/genesis keys show faucet -a --keyring-backend=test)
-FAUCET_ADDRESS="${FAUCET_ADDRESS%%[[:cntrl:]]}"
+FAUCET_ADDRESS=$(capture_allorad "faucet address" "$ADDRESS_REGEX" /data/genesis \
+    keys show faucet -a --keyring-backend=test)
 
 echo FAUCET_ADDRESS=$FAUCET_ADDRESS >> ${ENV_L1}
 docker run -t \
@@ -177,14 +188,8 @@ PEERS=""
 for ((i=0; i<$VALIDATOR_NUMBER; i++)); do
     valName="${VALIDATOR_PREFIX}${i}"
     ipAddress="${NETWORK_PREFIX}.$((VALIDATORS_IP_START+i))"
-    addr=$(docker run -t \
-        -v ${LOCALNET_DATADIR}:/data \
-        -u $(id -u):$(id -g) \
-        --entrypoint=allorad \
-        -e HOME=/data/${valName} \
-        $DOCKER_IMAGE \
-        --home=/data/${valName} tendermint show-node-id)
-    addr="${addr%%[[:cntrl:]]}"
+    addr=$(capture_allorad "$valName node ID" "$NODE_ID_REGEX" "/data/${valName}" \
+        tendermint show-node-id)
     delim=$([ $i -lt $(($VALIDATOR_NUMBER - 1)) ] && printf "," || printf "")
     PEERS="${PEERS}${addr}@${ipAddress}:26656${delim}"
 done
@@ -275,7 +280,7 @@ if [ $chain_status -eq $((VALIDATOR_NUMBER-1)) ]; then
     echo "  - 'allorad --home $LOCALNET_DATADIR/genesis status'"
 else
     echo "Chain is not producing blocks"
-    echo "If run locally you can check the logs with: docker logs allorad_validator_0"
+    echo "If run locally you can check the logs with: docker logs validator0"
     echo "and connect to the validators ..."
     exit 1
 fi

@@ -121,10 +121,19 @@ duplicate-routes:
 	@echo "--> Running duplicate route linter"
 	@go run ./linter/duplicate_routes $(PROTO_LINT_PATHS)
 
+# Outside the repo, which has no .dockerignore, so the logs never enter an image build context.
+INTEGRATION_LOG_DIR ?= $(patsubst %/,%,$(or $(TMPDIR),/tmp))/allora-integration-logs
+
 .PHONY: integration-test
 integration-test:
 	@echo "--> Running tests"
-	@bash test/local_testnet_l1.sh  <<< "y"
-	INTEGRATION=TRUE go test -timeout 30m ./test/integration/ -v
+	@status=0; \
+	LOCALNET_RESET=true bash test/local_testnet_l1.sh || exit 1; \
+	INTEGRATION=TRUE go test -count=1 -timeout 30m -run '^TestExternalTestSuite$$' ./test/integration/ -v || status=1; \
+	bash test/collect_validator_diagnostics.sh "$(INTEGRATION_LOG_DIR)/first-chain"; \
+	echo "First chain's validator logs: $(INTEGRATION_LOG_DIR)/first-chain"; \
+	LOCALNET_RESET=true LOCALNET_REUSE_IMAGE=true bash test/local_testnet_l1.sh || exit 1; \
+	INTEGRATION=TRUE go test -count=1 -timeout 30m -run '^TestExternalMultiTestSuite$$' ./test/integration/ -v || status=1; \
+	exit $$status
 
 .PHONY: all install build lint build-maprange-linter maprange duplicate-routes
