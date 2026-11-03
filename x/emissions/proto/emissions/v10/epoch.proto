@@ -59,6 +59,11 @@ message Epoch {
     (gogoproto.nullable) = false
   ];
   TopicOutputArity output_arity = 14;
+
+  // Output rules copied when the epoch is created. Close uses these values
+  // so a later topic update does not change how this epoch treats labels.
+  bool require_unity = 15;
+  bool label_case_sensitive = 16;
 }
 
 enum EpochState {

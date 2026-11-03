@@ -263,12 +263,18 @@ func (s *KeeperTestSuite) TestEpochCloseUsesTopicSettingsCopiedAtCreation() {
 	s.Require().True(epoch.CNorm.Equal(created.CNorm))
 	s.Require().True(epoch.Epsilon.Equal(created.Epsilon))
 	s.Require().Equal(created.OutputArity, epoch.OutputArity)
+	s.Require().Equal(created.RequireUnity, epoch.RequireUnity)
+	s.Require().Equal(created.LabelCaseSensitive, epoch.LabelCaseSensitive)
 
 	created.AlphaRegret = decDifferentFrom(created.AlphaRegret, "0.2", "0.3")
 	created.PNorm = decDifferentFrom(created.PNorm, "4", "2")
 	created.CNorm = decDifferentFrom(created.CNorm, "0.5", "0.8")
 	created.Epsilon = decDifferentFrom(created.Epsilon, "0.02", "0.03")
 	created.OutputArity = types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI
+	s.Require().False(created.RequireUnity)
+	created.RequireUnity = true
+	created.UnityTolerance = alloraMath.MustNewDecFromString("0.01")
+	created.LabelCaseSensitive = !created.LabelCaseSensitive
 	s.Require().NoError(s.TopicKeeper().SetTopic(ctx, topicId, created))
 
 	ctx = ctx.WithBlockTime(epoch.WorkerSubmissionWindow.CloseAt.Add(time.Nanosecond))
@@ -283,6 +289,8 @@ func (s *KeeperTestSuite) TestEpochCloseUsesTopicSettingsCopiedAtCreation() {
 		s.Require().True(got.CNorm.Equal(epoch.CNorm))
 		s.Require().True(got.Epsilon.Equal(epoch.Epsilon))
 		s.Require().Equal(epoch.OutputArity, got.OutputArity)
+		s.Require().Equal(epoch.RequireUnity, got.RequireUnity)
+		s.Require().Equal(epoch.LabelCaseSensitive, got.LabelCaseSensitive)
 	}
 }
 
