@@ -29,11 +29,26 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.InsertWo
 	if err != nil {
 		return nil, errorsmod.Wrapf(err, "Error validating worker address")
 	}
-	canSubmit, err := ms.wlk.CanSubmitWorkerPayload(ctx, msg.WorkerDataBundle.TopicId, msg.WorkerDataBundle.Worker)
-	if err != nil {
-		return nil, errorsmod.Wrapf(err, "Error checking if worker can submit payload")
-	} else if !canSubmit {
-		return nil, errorsmod.Wrapf(types.ErrNotPermittedToSubmitWorkerPayload, "Worker is not permitted to submit payload")
+
+	// Per-artifact whitelist: an inference requires the worker (inferer) gate,
+	// a forecast requires the forecaster gate. A bundle that carries both is
+	// rejected unless the actor holds both permissions.
+	inferenceForecastsBundle := msg.WorkerDataBundle.GetInferenceForecastsBundle()
+	if inferenceForecastsBundle != nil && inferenceForecastsBundle.GetInference() != nil {
+		canSubmit, err := ms.wlk.CanSubmitWorkerPayload(ctx, msg.WorkerDataBundle.TopicId, msg.WorkerDataBundle.Worker)
+		if err != nil {
+			return nil, errorsmod.Wrapf(err, "Error checking if worker can submit inference payload")
+		} else if !canSubmit {
+			return nil, errorsmod.Wrapf(types.ErrNotPermittedToSubmitWorkerPayload, "Worker is not permitted to submit inference payload")
+		}
+	}
+	if inferenceForecastsBundle != nil && inferenceForecastsBundle.GetForecast() != nil {
+		canSubmit, err := ms.wlk.CanSubmitForecasterPayload(ctx, msg.WorkerDataBundle.TopicId, msg.WorkerDataBundle.Worker)
+		if err != nil {
+			return nil, errorsmod.Wrapf(err, "Error checking if worker can submit forecaster payload")
+		} else if !canSubmit {
+			return nil, errorsmod.Wrapf(types.ErrNotPermittedToSubmitForecasterPayload, "Worker is not permitted to submit forecaster payload")
+		}
 	}
 
 	if err := msg.WorkerDataBundle.Validate(); err != nil {
@@ -89,7 +104,6 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.InsertWo
 	}
 
 	inputBundle := msg.WorkerDataBundle
-	inferenceForecastsBundle := inputBundle.GetInferenceForecastsBundle()
 	// Convert (and validate) the forecast up front so a malformed forecast fails
 	// the tx before any inference state is written; it is processed after inferences.
 	var forecast *types.Forecast

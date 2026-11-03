@@ -19,50 +19,60 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	MsgService_UpdateParams_FullMethodName                         = "/emissions.v10.MsgService/UpdateParams"
-	MsgService_CreateNewTopic_FullMethodName                       = "/emissions.v10.MsgService/CreateNewTopic"
-	MsgService_UpdateTopic_FullMethodName                          = "/emissions.v10.MsgService/UpdateTopic"
-	MsgService_Register_FullMethodName                             = "/emissions.v10.MsgService/Register"
-	MsgService_RemoveRegistration_FullMethodName                   = "/emissions.v10.MsgService/RemoveRegistration"
-	MsgService_AddStake_FullMethodName                             = "/emissions.v10.MsgService/AddStake"
-	MsgService_RemoveStake_FullMethodName                          = "/emissions.v10.MsgService/RemoveStake"
-	MsgService_CancelRemoveStake_FullMethodName                    = "/emissions.v10.MsgService/CancelRemoveStake"
-	MsgService_DelegateStake_FullMethodName                        = "/emissions.v10.MsgService/DelegateStake"
-	MsgService_RewardDelegateStake_FullMethodName                  = "/emissions.v10.MsgService/RewardDelegateStake"
-	MsgService_RemoveDelegateStake_FullMethodName                  = "/emissions.v10.MsgService/RemoveDelegateStake"
-	MsgService_CancelRemoveDelegateStake_FullMethodName            = "/emissions.v10.MsgService/CancelRemoveDelegateStake"
-	MsgService_FundTopic_FullMethodName                            = "/emissions.v10.MsgService/FundTopic"
-	MsgService_AddToWhitelistAdmin_FullMethodName                  = "/emissions.v10.MsgService/AddToWhitelistAdmin"
-	MsgService_RemoveFromWhitelistAdmin_FullMethodName             = "/emissions.v10.MsgService/RemoveFromWhitelistAdmin"
-	MsgService_InsertWorkerPayload_FullMethodName                  = "/emissions.v10.MsgService/InsertWorkerPayload"
-	MsgService_InsertReputerPayload_FullMethodName                 = "/emissions.v10.MsgService/InsertReputerPayload"
-	MsgService_AddToGlobalWhitelist_FullMethodName                 = "/emissions.v10.MsgService/AddToGlobalWhitelist"
-	MsgService_RemoveFromGlobalWhitelist_FullMethodName            = "/emissions.v10.MsgService/RemoveFromGlobalWhitelist"
-	MsgService_AddToGlobalWorkerWhitelist_FullMethodName           = "/emissions.v10.MsgService/AddToGlobalWorkerWhitelist"
-	MsgService_RemoveFromGlobalWorkerWhitelist_FullMethodName      = "/emissions.v10.MsgService/RemoveFromGlobalWorkerWhitelist"
-	MsgService_AddToGlobalReputerWhitelist_FullMethodName          = "/emissions.v10.MsgService/AddToGlobalReputerWhitelist"
-	MsgService_RemoveFromGlobalReputerWhitelist_FullMethodName     = "/emissions.v10.MsgService/RemoveFromGlobalReputerWhitelist"
-	MsgService_AddToGlobalAdminWhitelist_FullMethodName            = "/emissions.v10.MsgService/AddToGlobalAdminWhitelist"
-	MsgService_RemoveFromGlobalAdminWhitelist_FullMethodName       = "/emissions.v10.MsgService/RemoveFromGlobalAdminWhitelist"
-	MsgService_BulkAddToGlobalWorkerWhitelist_FullMethodName       = "/emissions.v10.MsgService/BulkAddToGlobalWorkerWhitelist"
-	MsgService_BulkRemoveFromGlobalWorkerWhitelist_FullMethodName  = "/emissions.v10.MsgService/BulkRemoveFromGlobalWorkerWhitelist"
-	MsgService_BulkAddToGlobalReputerWhitelist_FullMethodName      = "/emissions.v10.MsgService/BulkAddToGlobalReputerWhitelist"
-	MsgService_BulkRemoveFromGlobalReputerWhitelist_FullMethodName = "/emissions.v10.MsgService/BulkRemoveFromGlobalReputerWhitelist"
-	MsgService_BulkAddToTopicWorkerWhitelist_FullMethodName        = "/emissions.v10.MsgService/BulkAddToTopicWorkerWhitelist"
-	MsgService_BulkRemoveFromTopicWorkerWhitelist_FullMethodName   = "/emissions.v10.MsgService/BulkRemoveFromTopicWorkerWhitelist"
-	MsgService_BulkAddToTopicReputerWhitelist_FullMethodName       = "/emissions.v10.MsgService/BulkAddToTopicReputerWhitelist"
-	MsgService_BulkRemoveFromTopicReputerWhitelist_FullMethodName  = "/emissions.v10.MsgService/BulkRemoveFromTopicReputerWhitelist"
-	MsgService_EnableTopicWorkerWhitelist_FullMethodName           = "/emissions.v10.MsgService/EnableTopicWorkerWhitelist"
-	MsgService_DisableTopicWorkerWhitelist_FullMethodName          = "/emissions.v10.MsgService/DisableTopicWorkerWhitelist"
-	MsgService_EnableTopicReputerWhitelist_FullMethodName          = "/emissions.v10.MsgService/EnableTopicReputerWhitelist"
-	MsgService_DisableTopicReputerWhitelist_FullMethodName         = "/emissions.v10.MsgService/DisableTopicReputerWhitelist"
-	MsgService_AddToTopicCreatorWhitelist_FullMethodName           = "/emissions.v10.MsgService/AddToTopicCreatorWhitelist"
-	MsgService_RemoveFromTopicCreatorWhitelist_FullMethodName      = "/emissions.v10.MsgService/RemoveFromTopicCreatorWhitelist"
-	MsgService_AddToTopicWorkerWhitelist_FullMethodName            = "/emissions.v10.MsgService/AddToTopicWorkerWhitelist"
-	MsgService_RemoveFromTopicWorkerWhitelist_FullMethodName       = "/emissions.v10.MsgService/RemoveFromTopicWorkerWhitelist"
-	MsgService_AddToTopicReputerWhitelist_FullMethodName           = "/emissions.v10.MsgService/AddToTopicReputerWhitelist"
-	MsgService_RemoveFromTopicReputerWhitelist_FullMethodName      = "/emissions.v10.MsgService/RemoveFromTopicReputerWhitelist"
-	MsgService_TransferActorOwnership_FullMethodName               = "/emissions.v10.MsgService/TransferActorOwnership"
+	MsgService_UpdateParams_FullMethodName                            = "/emissions.v10.MsgService/UpdateParams"
+	MsgService_CreateNewTopic_FullMethodName                          = "/emissions.v10.MsgService/CreateNewTopic"
+	MsgService_UpdateTopic_FullMethodName                             = "/emissions.v10.MsgService/UpdateTopic"
+	MsgService_Register_FullMethodName                                = "/emissions.v10.MsgService/Register"
+	MsgService_RemoveRegistration_FullMethodName                      = "/emissions.v10.MsgService/RemoveRegistration"
+	MsgService_AddStake_FullMethodName                                = "/emissions.v10.MsgService/AddStake"
+	MsgService_RemoveStake_FullMethodName                             = "/emissions.v10.MsgService/RemoveStake"
+	MsgService_CancelRemoveStake_FullMethodName                       = "/emissions.v10.MsgService/CancelRemoveStake"
+	MsgService_DelegateStake_FullMethodName                           = "/emissions.v10.MsgService/DelegateStake"
+	MsgService_RewardDelegateStake_FullMethodName                     = "/emissions.v10.MsgService/RewardDelegateStake"
+	MsgService_RemoveDelegateStake_FullMethodName                     = "/emissions.v10.MsgService/RemoveDelegateStake"
+	MsgService_CancelRemoveDelegateStake_FullMethodName               = "/emissions.v10.MsgService/CancelRemoveDelegateStake"
+	MsgService_FundTopic_FullMethodName                               = "/emissions.v10.MsgService/FundTopic"
+	MsgService_AddToWhitelistAdmin_FullMethodName                     = "/emissions.v10.MsgService/AddToWhitelistAdmin"
+	MsgService_RemoveFromWhitelistAdmin_FullMethodName                = "/emissions.v10.MsgService/RemoveFromWhitelistAdmin"
+	MsgService_InsertWorkerPayload_FullMethodName                     = "/emissions.v10.MsgService/InsertWorkerPayload"
+	MsgService_InsertReputerPayload_FullMethodName                    = "/emissions.v10.MsgService/InsertReputerPayload"
+	MsgService_AddToGlobalWhitelist_FullMethodName                    = "/emissions.v10.MsgService/AddToGlobalWhitelist"
+	MsgService_RemoveFromGlobalWhitelist_FullMethodName               = "/emissions.v10.MsgService/RemoveFromGlobalWhitelist"
+	MsgService_AddToGlobalWorkerWhitelist_FullMethodName              = "/emissions.v10.MsgService/AddToGlobalWorkerWhitelist"
+	MsgService_RemoveFromGlobalWorkerWhitelist_FullMethodName         = "/emissions.v10.MsgService/RemoveFromGlobalWorkerWhitelist"
+	MsgService_AddToGlobalReputerWhitelist_FullMethodName             = "/emissions.v10.MsgService/AddToGlobalReputerWhitelist"
+	MsgService_RemoveFromGlobalReputerWhitelist_FullMethodName        = "/emissions.v10.MsgService/RemoveFromGlobalReputerWhitelist"
+	MsgService_AddToGlobalAdminWhitelist_FullMethodName               = "/emissions.v10.MsgService/AddToGlobalAdminWhitelist"
+	MsgService_RemoveFromGlobalAdminWhitelist_FullMethodName          = "/emissions.v10.MsgService/RemoveFromGlobalAdminWhitelist"
+	MsgService_BulkAddToGlobalWorkerWhitelist_FullMethodName          = "/emissions.v10.MsgService/BulkAddToGlobalWorkerWhitelist"
+	MsgService_BulkRemoveFromGlobalWorkerWhitelist_FullMethodName     = "/emissions.v10.MsgService/BulkRemoveFromGlobalWorkerWhitelist"
+	MsgService_BulkAddToGlobalReputerWhitelist_FullMethodName         = "/emissions.v10.MsgService/BulkAddToGlobalReputerWhitelist"
+	MsgService_BulkRemoveFromGlobalReputerWhitelist_FullMethodName    = "/emissions.v10.MsgService/BulkRemoveFromGlobalReputerWhitelist"
+	MsgService_BulkAddToTopicWorkerWhitelist_FullMethodName           = "/emissions.v10.MsgService/BulkAddToTopicWorkerWhitelist"
+	MsgService_BulkRemoveFromTopicWorkerWhitelist_FullMethodName      = "/emissions.v10.MsgService/BulkRemoveFromTopicWorkerWhitelist"
+	MsgService_BulkAddToTopicReputerWhitelist_FullMethodName          = "/emissions.v10.MsgService/BulkAddToTopicReputerWhitelist"
+	MsgService_BulkRemoveFromTopicReputerWhitelist_FullMethodName     = "/emissions.v10.MsgService/BulkRemoveFromTopicReputerWhitelist"
+	MsgService_EnableTopicWorkerWhitelist_FullMethodName              = "/emissions.v10.MsgService/EnableTopicWorkerWhitelist"
+	MsgService_DisableTopicWorkerWhitelist_FullMethodName             = "/emissions.v10.MsgService/DisableTopicWorkerWhitelist"
+	MsgService_EnableTopicReputerWhitelist_FullMethodName             = "/emissions.v10.MsgService/EnableTopicReputerWhitelist"
+	MsgService_DisableTopicReputerWhitelist_FullMethodName            = "/emissions.v10.MsgService/DisableTopicReputerWhitelist"
+	MsgService_AddToTopicCreatorWhitelist_FullMethodName              = "/emissions.v10.MsgService/AddToTopicCreatorWhitelist"
+	MsgService_RemoveFromTopicCreatorWhitelist_FullMethodName         = "/emissions.v10.MsgService/RemoveFromTopicCreatorWhitelist"
+	MsgService_AddToTopicWorkerWhitelist_FullMethodName               = "/emissions.v10.MsgService/AddToTopicWorkerWhitelist"
+	MsgService_RemoveFromTopicWorkerWhitelist_FullMethodName          = "/emissions.v10.MsgService/RemoveFromTopicWorkerWhitelist"
+	MsgService_AddToTopicReputerWhitelist_FullMethodName              = "/emissions.v10.MsgService/AddToTopicReputerWhitelist"
+	MsgService_RemoveFromTopicReputerWhitelist_FullMethodName         = "/emissions.v10.MsgService/RemoveFromTopicReputerWhitelist"
+	MsgService_AddToGlobalForecasterWhitelist_FullMethodName          = "/emissions.v10.MsgService/AddToGlobalForecasterWhitelist"
+	MsgService_RemoveFromGlobalForecasterWhitelist_FullMethodName     = "/emissions.v10.MsgService/RemoveFromGlobalForecasterWhitelist"
+	MsgService_BulkAddToGlobalForecasterWhitelist_FullMethodName      = "/emissions.v10.MsgService/BulkAddToGlobalForecasterWhitelist"
+	MsgService_BulkRemoveFromGlobalForecasterWhitelist_FullMethodName = "/emissions.v10.MsgService/BulkRemoveFromGlobalForecasterWhitelist"
+	MsgService_AddToTopicForecasterWhitelist_FullMethodName           = "/emissions.v10.MsgService/AddToTopicForecasterWhitelist"
+	MsgService_RemoveFromTopicForecasterWhitelist_FullMethodName      = "/emissions.v10.MsgService/RemoveFromTopicForecasterWhitelist"
+	MsgService_BulkAddToTopicForecasterWhitelist_FullMethodName       = "/emissions.v10.MsgService/BulkAddToTopicForecasterWhitelist"
+	MsgService_BulkRemoveFromTopicForecasterWhitelist_FullMethodName  = "/emissions.v10.MsgService/BulkRemoveFromTopicForecasterWhitelist"
+	MsgService_EnableTopicForecasterWhitelist_FullMethodName          = "/emissions.v10.MsgService/EnableTopicForecasterWhitelist"
+	MsgService_DisableTopicForecasterWhitelist_FullMethodName         = "/emissions.v10.MsgService/DisableTopicForecasterWhitelist"
+	MsgService_TransferActorOwnership_FullMethodName                  = "/emissions.v10.MsgService/TransferActorOwnership"
 )
 
 // MsgServiceClient is the client API for MsgService service.
@@ -114,6 +124,16 @@ type MsgServiceClient interface {
 	RemoveFromTopicWorkerWhitelist(ctx context.Context, in *RemoveFromTopicWorkerWhitelistRequest, opts ...grpc.CallOption) (*RemoveFromTopicWorkerWhitelistResponse, error)
 	AddToTopicReputerWhitelist(ctx context.Context, in *AddToTopicReputerWhitelistRequest, opts ...grpc.CallOption) (*AddToTopicReputerWhitelistResponse, error)
 	RemoveFromTopicReputerWhitelist(ctx context.Context, in *RemoveFromTopicReputerWhitelistRequest, opts ...grpc.CallOption) (*RemoveFromTopicReputerWhitelistResponse, error)
+	AddToGlobalForecasterWhitelist(ctx context.Context, in *AddToGlobalForecasterWhitelistRequest, opts ...grpc.CallOption) (*AddToGlobalForecasterWhitelistResponse, error)
+	RemoveFromGlobalForecasterWhitelist(ctx context.Context, in *RemoveFromGlobalForecasterWhitelistRequest, opts ...grpc.CallOption) (*RemoveFromGlobalForecasterWhitelistResponse, error)
+	BulkAddToGlobalForecasterWhitelist(ctx context.Context, in *BulkAddToGlobalForecasterWhitelistRequest, opts ...grpc.CallOption) (*BulkAddToGlobalForecasterWhitelistResponse, error)
+	BulkRemoveFromGlobalForecasterWhitelist(ctx context.Context, in *BulkRemoveFromGlobalForecasterWhitelistRequest, opts ...grpc.CallOption) (*BulkRemoveFromGlobalForecasterWhitelistResponse, error)
+	AddToTopicForecasterWhitelist(ctx context.Context, in *AddToTopicForecasterWhitelistRequest, opts ...grpc.CallOption) (*AddToTopicForecasterWhitelistResponse, error)
+	RemoveFromTopicForecasterWhitelist(ctx context.Context, in *RemoveFromTopicForecasterWhitelistRequest, opts ...grpc.CallOption) (*RemoveFromTopicForecasterWhitelistResponse, error)
+	BulkAddToTopicForecasterWhitelist(ctx context.Context, in *BulkAddToTopicForecasterWhitelistRequest, opts ...grpc.CallOption) (*BulkAddToTopicForecasterWhitelistResponse, error)
+	BulkRemoveFromTopicForecasterWhitelist(ctx context.Context, in *BulkRemoveFromTopicForecasterWhitelistRequest, opts ...grpc.CallOption) (*BulkRemoveFromTopicForecasterWhitelistResponse, error)
+	EnableTopicForecasterWhitelist(ctx context.Context, in *EnableTopicForecasterWhitelistRequest, opts ...grpc.CallOption) (*EnableTopicForecasterWhitelistResponse, error)
+	DisableTopicForecasterWhitelist(ctx context.Context, in *DisableTopicForecasterWhitelistRequest, opts ...grpc.CallOption) (*DisableTopicForecasterWhitelistResponse, error)
 	TransferActorOwnership(ctx context.Context, in *TransferActorOwnershipRequest, opts ...grpc.CallOption) (*TransferActorOwnershipResponse, error)
 }
 
@@ -555,6 +575,106 @@ func (c *msgServiceClient) RemoveFromTopicReputerWhitelist(ctx context.Context, 
 	return out, nil
 }
 
+func (c *msgServiceClient) AddToGlobalForecasterWhitelist(ctx context.Context, in *AddToGlobalForecasterWhitelistRequest, opts ...grpc.CallOption) (*AddToGlobalForecasterWhitelistResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AddToGlobalForecasterWhitelistResponse)
+	err := c.cc.Invoke(ctx, MsgService_AddToGlobalForecasterWhitelist_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *msgServiceClient) RemoveFromGlobalForecasterWhitelist(ctx context.Context, in *RemoveFromGlobalForecasterWhitelistRequest, opts ...grpc.CallOption) (*RemoveFromGlobalForecasterWhitelistResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(RemoveFromGlobalForecasterWhitelistResponse)
+	err := c.cc.Invoke(ctx, MsgService_RemoveFromGlobalForecasterWhitelist_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *msgServiceClient) BulkAddToGlobalForecasterWhitelist(ctx context.Context, in *BulkAddToGlobalForecasterWhitelistRequest, opts ...grpc.CallOption) (*BulkAddToGlobalForecasterWhitelistResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(BulkAddToGlobalForecasterWhitelistResponse)
+	err := c.cc.Invoke(ctx, MsgService_BulkAddToGlobalForecasterWhitelist_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *msgServiceClient) BulkRemoveFromGlobalForecasterWhitelist(ctx context.Context, in *BulkRemoveFromGlobalForecasterWhitelistRequest, opts ...grpc.CallOption) (*BulkRemoveFromGlobalForecasterWhitelistResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(BulkRemoveFromGlobalForecasterWhitelistResponse)
+	err := c.cc.Invoke(ctx, MsgService_BulkRemoveFromGlobalForecasterWhitelist_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *msgServiceClient) AddToTopicForecasterWhitelist(ctx context.Context, in *AddToTopicForecasterWhitelistRequest, opts ...grpc.CallOption) (*AddToTopicForecasterWhitelistResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AddToTopicForecasterWhitelistResponse)
+	err := c.cc.Invoke(ctx, MsgService_AddToTopicForecasterWhitelist_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *msgServiceClient) RemoveFromTopicForecasterWhitelist(ctx context.Context, in *RemoveFromTopicForecasterWhitelistRequest, opts ...grpc.CallOption) (*RemoveFromTopicForecasterWhitelistResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(RemoveFromTopicForecasterWhitelistResponse)
+	err := c.cc.Invoke(ctx, MsgService_RemoveFromTopicForecasterWhitelist_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *msgServiceClient) BulkAddToTopicForecasterWhitelist(ctx context.Context, in *BulkAddToTopicForecasterWhitelistRequest, opts ...grpc.CallOption) (*BulkAddToTopicForecasterWhitelistResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(BulkAddToTopicForecasterWhitelistResponse)
+	err := c.cc.Invoke(ctx, MsgService_BulkAddToTopicForecasterWhitelist_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *msgServiceClient) BulkRemoveFromTopicForecasterWhitelist(ctx context.Context, in *BulkRemoveFromTopicForecasterWhitelistRequest, opts ...grpc.CallOption) (*BulkRemoveFromTopicForecasterWhitelistResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(BulkRemoveFromTopicForecasterWhitelistResponse)
+	err := c.cc.Invoke(ctx, MsgService_BulkRemoveFromTopicForecasterWhitelist_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *msgServiceClient) EnableTopicForecasterWhitelist(ctx context.Context, in *EnableTopicForecasterWhitelistRequest, opts ...grpc.CallOption) (*EnableTopicForecasterWhitelistResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(EnableTopicForecasterWhitelistResponse)
+	err := c.cc.Invoke(ctx, MsgService_EnableTopicForecasterWhitelist_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *msgServiceClient) DisableTopicForecasterWhitelist(ctx context.Context, in *DisableTopicForecasterWhitelistRequest, opts ...grpc.CallOption) (*DisableTopicForecasterWhitelistResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DisableTopicForecasterWhitelistResponse)
+	err := c.cc.Invoke(ctx, MsgService_DisableTopicForecasterWhitelist_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *msgServiceClient) TransferActorOwnership(ctx context.Context, in *TransferActorOwnershipRequest, opts ...grpc.CallOption) (*TransferActorOwnershipResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(TransferActorOwnershipResponse)
@@ -614,6 +734,16 @@ type MsgServiceServer interface {
 	RemoveFromTopicWorkerWhitelist(context.Context, *RemoveFromTopicWorkerWhitelistRequest) (*RemoveFromTopicWorkerWhitelistResponse, error)
 	AddToTopicReputerWhitelist(context.Context, *AddToTopicReputerWhitelistRequest) (*AddToTopicReputerWhitelistResponse, error)
 	RemoveFromTopicReputerWhitelist(context.Context, *RemoveFromTopicReputerWhitelistRequest) (*RemoveFromTopicReputerWhitelistResponse, error)
+	AddToGlobalForecasterWhitelist(context.Context, *AddToGlobalForecasterWhitelistRequest) (*AddToGlobalForecasterWhitelistResponse, error)
+	RemoveFromGlobalForecasterWhitelist(context.Context, *RemoveFromGlobalForecasterWhitelistRequest) (*RemoveFromGlobalForecasterWhitelistResponse, error)
+	BulkAddToGlobalForecasterWhitelist(context.Context, *BulkAddToGlobalForecasterWhitelistRequest) (*BulkAddToGlobalForecasterWhitelistResponse, error)
+	BulkRemoveFromGlobalForecasterWhitelist(context.Context, *BulkRemoveFromGlobalForecasterWhitelistRequest) (*BulkRemoveFromGlobalForecasterWhitelistResponse, error)
+	AddToTopicForecasterWhitelist(context.Context, *AddToTopicForecasterWhitelistRequest) (*AddToTopicForecasterWhitelistResponse, error)
+	RemoveFromTopicForecasterWhitelist(context.Context, *RemoveFromTopicForecasterWhitelistRequest) (*RemoveFromTopicForecasterWhitelistResponse, error)
+	BulkAddToTopicForecasterWhitelist(context.Context, *BulkAddToTopicForecasterWhitelistRequest) (*BulkAddToTopicForecasterWhitelistResponse, error)
+	BulkRemoveFromTopicForecasterWhitelist(context.Context, *BulkRemoveFromTopicForecasterWhitelistRequest) (*BulkRemoveFromTopicForecasterWhitelistResponse, error)
+	EnableTopicForecasterWhitelist(context.Context, *EnableTopicForecasterWhitelistRequest) (*EnableTopicForecasterWhitelistResponse, error)
+	DisableTopicForecasterWhitelist(context.Context, *DisableTopicForecasterWhitelistRequest) (*DisableTopicForecasterWhitelistResponse, error)
 	TransferActorOwnership(context.Context, *TransferActorOwnershipRequest) (*TransferActorOwnershipResponse, error)
 	mustEmbedUnimplementedMsgServiceServer()
 }
@@ -753,6 +883,36 @@ func (UnimplementedMsgServiceServer) AddToTopicReputerWhitelist(context.Context,
 }
 func (UnimplementedMsgServiceServer) RemoveFromTopicReputerWhitelist(context.Context, *RemoveFromTopicReputerWhitelistRequest) (*RemoveFromTopicReputerWhitelistResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RemoveFromTopicReputerWhitelist not implemented")
+}
+func (UnimplementedMsgServiceServer) AddToGlobalForecasterWhitelist(context.Context, *AddToGlobalForecasterWhitelistRequest) (*AddToGlobalForecasterWhitelistResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddToGlobalForecasterWhitelist not implemented")
+}
+func (UnimplementedMsgServiceServer) RemoveFromGlobalForecasterWhitelist(context.Context, *RemoveFromGlobalForecasterWhitelistRequest) (*RemoveFromGlobalForecasterWhitelistResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RemoveFromGlobalForecasterWhitelist not implemented")
+}
+func (UnimplementedMsgServiceServer) BulkAddToGlobalForecasterWhitelist(context.Context, *BulkAddToGlobalForecasterWhitelistRequest) (*BulkAddToGlobalForecasterWhitelistResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method BulkAddToGlobalForecasterWhitelist not implemented")
+}
+func (UnimplementedMsgServiceServer) BulkRemoveFromGlobalForecasterWhitelist(context.Context, *BulkRemoveFromGlobalForecasterWhitelistRequest) (*BulkRemoveFromGlobalForecasterWhitelistResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method BulkRemoveFromGlobalForecasterWhitelist not implemented")
+}
+func (UnimplementedMsgServiceServer) AddToTopicForecasterWhitelist(context.Context, *AddToTopicForecasterWhitelistRequest) (*AddToTopicForecasterWhitelistResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddToTopicForecasterWhitelist not implemented")
+}
+func (UnimplementedMsgServiceServer) RemoveFromTopicForecasterWhitelist(context.Context, *RemoveFromTopicForecasterWhitelistRequest) (*RemoveFromTopicForecasterWhitelistResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RemoveFromTopicForecasterWhitelist not implemented")
+}
+func (UnimplementedMsgServiceServer) BulkAddToTopicForecasterWhitelist(context.Context, *BulkAddToTopicForecasterWhitelistRequest) (*BulkAddToTopicForecasterWhitelistResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method BulkAddToTopicForecasterWhitelist not implemented")
+}
+func (UnimplementedMsgServiceServer) BulkRemoveFromTopicForecasterWhitelist(context.Context, *BulkRemoveFromTopicForecasterWhitelistRequest) (*BulkRemoveFromTopicForecasterWhitelistResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method BulkRemoveFromTopicForecasterWhitelist not implemented")
+}
+func (UnimplementedMsgServiceServer) EnableTopicForecasterWhitelist(context.Context, *EnableTopicForecasterWhitelistRequest) (*EnableTopicForecasterWhitelistResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method EnableTopicForecasterWhitelist not implemented")
+}
+func (UnimplementedMsgServiceServer) DisableTopicForecasterWhitelist(context.Context, *DisableTopicForecasterWhitelistRequest) (*DisableTopicForecasterWhitelistResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DisableTopicForecasterWhitelist not implemented")
 }
 func (UnimplementedMsgServiceServer) TransferActorOwnership(context.Context, *TransferActorOwnershipRequest) (*TransferActorOwnershipResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method TransferActorOwnership not implemented")
@@ -1552,6 +1712,186 @@ func _MsgService_RemoveFromTopicReputerWhitelist_Handler(srv interface{}, ctx co
 	return interceptor(ctx, in, info, handler)
 }
 
+func _MsgService_AddToGlobalForecasterWhitelist_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AddToGlobalForecasterWhitelistRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServiceServer).AddToGlobalForecasterWhitelist(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MsgService_AddToGlobalForecasterWhitelist_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServiceServer).AddToGlobalForecasterWhitelist(ctx, req.(*AddToGlobalForecasterWhitelistRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MsgService_RemoveFromGlobalForecasterWhitelist_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RemoveFromGlobalForecasterWhitelistRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServiceServer).RemoveFromGlobalForecasterWhitelist(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MsgService_RemoveFromGlobalForecasterWhitelist_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServiceServer).RemoveFromGlobalForecasterWhitelist(ctx, req.(*RemoveFromGlobalForecasterWhitelistRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MsgService_BulkAddToGlobalForecasterWhitelist_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(BulkAddToGlobalForecasterWhitelistRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServiceServer).BulkAddToGlobalForecasterWhitelist(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MsgService_BulkAddToGlobalForecasterWhitelist_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServiceServer).BulkAddToGlobalForecasterWhitelist(ctx, req.(*BulkAddToGlobalForecasterWhitelistRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MsgService_BulkRemoveFromGlobalForecasterWhitelist_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(BulkRemoveFromGlobalForecasterWhitelistRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServiceServer).BulkRemoveFromGlobalForecasterWhitelist(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MsgService_BulkRemoveFromGlobalForecasterWhitelist_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServiceServer).BulkRemoveFromGlobalForecasterWhitelist(ctx, req.(*BulkRemoveFromGlobalForecasterWhitelistRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MsgService_AddToTopicForecasterWhitelist_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AddToTopicForecasterWhitelistRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServiceServer).AddToTopicForecasterWhitelist(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MsgService_AddToTopicForecasterWhitelist_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServiceServer).AddToTopicForecasterWhitelist(ctx, req.(*AddToTopicForecasterWhitelistRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MsgService_RemoveFromTopicForecasterWhitelist_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RemoveFromTopicForecasterWhitelistRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServiceServer).RemoveFromTopicForecasterWhitelist(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MsgService_RemoveFromTopicForecasterWhitelist_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServiceServer).RemoveFromTopicForecasterWhitelist(ctx, req.(*RemoveFromTopicForecasterWhitelistRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MsgService_BulkAddToTopicForecasterWhitelist_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(BulkAddToTopicForecasterWhitelistRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServiceServer).BulkAddToTopicForecasterWhitelist(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MsgService_BulkAddToTopicForecasterWhitelist_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServiceServer).BulkAddToTopicForecasterWhitelist(ctx, req.(*BulkAddToTopicForecasterWhitelistRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MsgService_BulkRemoveFromTopicForecasterWhitelist_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(BulkRemoveFromTopicForecasterWhitelistRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServiceServer).BulkRemoveFromTopicForecasterWhitelist(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MsgService_BulkRemoveFromTopicForecasterWhitelist_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServiceServer).BulkRemoveFromTopicForecasterWhitelist(ctx, req.(*BulkRemoveFromTopicForecasterWhitelistRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MsgService_EnableTopicForecasterWhitelist_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(EnableTopicForecasterWhitelistRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServiceServer).EnableTopicForecasterWhitelist(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MsgService_EnableTopicForecasterWhitelist_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServiceServer).EnableTopicForecasterWhitelist(ctx, req.(*EnableTopicForecasterWhitelistRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MsgService_DisableTopicForecasterWhitelist_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DisableTopicForecasterWhitelistRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServiceServer).DisableTopicForecasterWhitelist(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MsgService_DisableTopicForecasterWhitelist_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServiceServer).DisableTopicForecasterWhitelist(ctx, req.(*DisableTopicForecasterWhitelistRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _MsgService_TransferActorOwnership_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(TransferActorOwnershipRequest)
 	if err := dec(in); err != nil {
@@ -1748,6 +2088,46 @@ var MsgService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "RemoveFromTopicReputerWhitelist",
 			Handler:    _MsgService_RemoveFromTopicReputerWhitelist_Handler,
+		},
+		{
+			MethodName: "AddToGlobalForecasterWhitelist",
+			Handler:    _MsgService_AddToGlobalForecasterWhitelist_Handler,
+		},
+		{
+			MethodName: "RemoveFromGlobalForecasterWhitelist",
+			Handler:    _MsgService_RemoveFromGlobalForecasterWhitelist_Handler,
+		},
+		{
+			MethodName: "BulkAddToGlobalForecasterWhitelist",
+			Handler:    _MsgService_BulkAddToGlobalForecasterWhitelist_Handler,
+		},
+		{
+			MethodName: "BulkRemoveFromGlobalForecasterWhitelist",
+			Handler:    _MsgService_BulkRemoveFromGlobalForecasterWhitelist_Handler,
+		},
+		{
+			MethodName: "AddToTopicForecasterWhitelist",
+			Handler:    _MsgService_AddToTopicForecasterWhitelist_Handler,
+		},
+		{
+			MethodName: "RemoveFromTopicForecasterWhitelist",
+			Handler:    _MsgService_RemoveFromTopicForecasterWhitelist_Handler,
+		},
+		{
+			MethodName: "BulkAddToTopicForecasterWhitelist",
+			Handler:    _MsgService_BulkAddToTopicForecasterWhitelist_Handler,
+		},
+		{
+			MethodName: "BulkRemoveFromTopicForecasterWhitelist",
+			Handler:    _MsgService_BulkRemoveFromTopicForecasterWhitelist_Handler,
+		},
+		{
+			MethodName: "EnableTopicForecasterWhitelist",
+			Handler:    _MsgService_EnableTopicForecasterWhitelist_Handler,
+		},
+		{
+			MethodName: "DisableTopicForecasterWhitelist",
+			Handler:    _MsgService_DisableTopicForecasterWhitelist_Handler,
 		},
 		{
 			MethodName: "TransferActorOwnership",

@@ -493,6 +493,44 @@ func NewTopicReputerWhitelistRemovedEventBase(topicId TopicId, address string) p
 	}
 }
 
+func NewGlobalForecasterWhitelistAddedEventBase(address string) proto.Message {
+	return &EventGlobalForecasterWhitelistAdded{
+		Address: address,
+	}
+}
+
+func NewGlobalForecasterWhitelistRemovedEventBase(address string) proto.Message {
+	return &EventGlobalForecasterWhitelistRemoved{
+		Address: address,
+	}
+}
+
+func NewTopicForecasterWhitelistEnabledEventBase(topicId TopicId) proto.Message {
+	return &EventTopicForecasterWhitelistEnabled{
+		TopicId: topicId,
+	}
+}
+
+func NewTopicForecasterWhitelistDisabledEventBase(topicId TopicId) proto.Message {
+	return &EventTopicForecasterWhitelistDisabled{
+		TopicId: topicId,
+	}
+}
+
+func NewTopicForecasterWhitelistAddedEventBase(topicId TopicId, address string) proto.Message {
+	return &EventTopicForecasterWhitelistAdded{
+		TopicId: topicId,
+		Address: address,
+	}
+}
+
+func NewTopicForecasterWhitelistRemovedEventBase(topicId TopicId, address string) proto.Message {
+	return &EventTopicForecasterWhitelistRemoved{
+		TopicId: topicId,
+		Address: address,
+	}
+}
+
 func NewForecastTaskScoreSetEventBase(topicId TopicId, score alloraMath.Dec, nonce int64) proto.Message {
 	return &EventForecastTaskScoreSet{
 		TopicId:          topicId,

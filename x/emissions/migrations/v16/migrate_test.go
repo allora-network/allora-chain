@@ -545,3 +545,102 @@ func (s *EmissionsV16MigrationTestSuite) TestMigrateTotalSumPreviousTopicWeights
 	s.Require().NoError(topicKeeper.ActivateTopic(ctx, topicId))
 	s.Require().Equal(weight.String(), s.totalSum().String())
 }
+
+func (s *EmissionsV16MigrationTestSuite) TestMigrateForecasterWhitelistParamBackfillsFromWorker() {
+	store, cdc := s.storeAndCodec()
+
+	params := emissionstypes.DefaultParams()
+	params.GlobalWorkerWhitelistEnabled = true
+	params.GlobalForecasterWhitelistEnabled = false
+	store.Set(emissionstypes.ParamsKey, cdc.MustMarshal(&params))
+
+	s.Require().NoError(v16.MigrateForecasterWhitelistParam(s.Ctx(), *s.EmissionsKeeper()))
+
+	got, err := s.EmissionsKeeper().GetParams(s.Ctx())
+	s.Require().NoError(err)
+	s.Require().True(got.GlobalForecasterWhitelistEnabled)
+}
+
+func (s *EmissionsV16MigrationTestSuite) TestMigrateForecasterWhitelistParamCopiesFalseWorkerGate() {
+	store, cdc := s.storeAndCodec()
+
+	params := emissionstypes.DefaultParams()
+	params.GlobalWorkerWhitelistEnabled = false
+	params.GlobalForecasterWhitelistEnabled = false
+	store.Set(emissionstypes.ParamsKey, cdc.MustMarshal(&params))
+
+	s.Require().NoError(v16.MigrateForecasterWhitelistParam(s.Ctx(), *s.EmissionsKeeper()))
+
+	got, err := s.EmissionsKeeper().GetParams(s.Ctx())
+	s.Require().NoError(err)
+	s.Require().False(got.GlobalForecasterWhitelistEnabled)
+}
+
+func (s *EmissionsV16MigrationTestSuite) TestMigrateForecasterWhitelistParamPreservesExistingTrue() {
+	params := emissionstypes.DefaultParams()
+	params.GlobalWorkerWhitelistEnabled = false
+	params.GlobalForecasterWhitelistEnabled = true
+	s.Require().NoError(s.EmissionsKeeper().SetParams(s.Ctx(), params))
+
+	s.Require().NoError(v16.MigrateForecasterWhitelistParam(s.Ctx(), *s.EmissionsKeeper()))
+
+	got, err := s.EmissionsKeeper().GetParams(s.Ctx())
+	s.Require().NoError(err)
+	s.Require().True(got.GlobalForecasterWhitelistEnabled)
+}
+
+func (s *EmissionsV16MigrationTestSuite) TestMigrateWhitelistsCopiesWorkerIntoForecaster() {
+	ctx := s.Ctx()
+	wlk := s.WhitelistsKeeper()
+	addr0 := s.AddrsStr(0)
+	addr1 := s.AddrsStr(1)
+	topicId := uint64(1)
+
+	s.Require().NoError(wlk.AddToGlobalWorkerWhitelist(ctx, addr0))
+	s.Require().NoError(wlk.AddToTopicWorkerWhitelist(ctx, topicId, addr1))
+	s.Require().NoError(wlk.EnableTopicWorkerWhitelist(ctx, topicId))
+
+	s.Require().NoError(v16.MigrateWhitelists(ctx, *s.EmissionsKeeper()))
+
+	isGlobal, err := wlk.IsWhitelistedGlobalForecaster(ctx, addr0)
+	s.Require().NoError(err)
+	s.Require().True(isGlobal)
+
+	isTopic, err := wlk.IsWhitelistedTopicForecaster(ctx, topicId, addr1)
+	s.Require().NoError(err)
+	s.Require().True(isTopic)
+
+	enabled, err := wlk.IsTopicForecasterWhitelistEnabled(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().True(enabled)
+}
+
+func (s *EmissionsV16MigrationTestSuite) TestMigrateWhitelistsIdempotent() {
+	ctx := s.Ctx()
+	wlk := s.WhitelistsKeeper()
+	addr0 := s.AddrsStr(0)
+	topicId := uint64(1)
+
+	s.Require().NoError(wlk.AddToGlobalWorkerWhitelist(ctx, addr0))
+	s.Require().NoError(wlk.AddToTopicWorkerWhitelist(ctx, topicId, addr0))
+	s.Require().NoError(wlk.EnableTopicWorkerWhitelist(ctx, topicId))
+
+	s.Require().NoError(v16.MigrateWhitelists(ctx, *s.EmissionsKeeper()))
+	s.Require().NoError(v16.MigrateWhitelists(ctx, *s.EmissionsKeeper()))
+
+	isGlobal, err := wlk.IsWhitelistedGlobalForecaster(ctx, addr0)
+	s.Require().NoError(err)
+	s.Require().True(isGlobal)
+
+	isTopic, err := wlk.IsWhitelistedTopicForecaster(ctx, topicId, addr0)
+	s.Require().NoError(err)
+	s.Require().True(isTopic)
+
+	enabled, err := wlk.IsTopicForecasterWhitelistEnabled(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().True(enabled)
+}
+
+func (s *EmissionsV16MigrationTestSuite) TestMigrateWhitelistsEmptyStore() {
+	s.Require().NoError(v16.MigrateWhitelists(s.Ctx(), *s.EmissionsKeeper()))
+}

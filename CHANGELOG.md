@@ -69,10 +69,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 * [#968](https://github.com/allora-network/allora-chain/pull/968) Per-topic `max_top_inferers_to_reward`, required within the global range, with migration v16
 * [#969](https://github.com/allora-network/allora-chain/pull/969) New global `min_top_inferers_to_reward` as the floor for the per-topic inferer cap (default `5`)
+* Split the worker whitelist into sibling inferer (existing worker lists) and forecaster whitelists: global/topic lists, enable/disable msgs, queries, events, `create-topic` flag `enable_forecaster_whitelist`, param `global_forecaster_whitelist_enabled` (default `true`), with v16 migration copying worker state into the forecaster lists.
 
 ### Changed
 
 * [#968](https://github.com/allora-network/allora-chain/pull/968) The global `max_top_inferers_to_reward` now rejects zero and serves as the live ceiling for the per-topic cap; score-history retention still uses the global value.
+* `InsertWorkerPayload` now gates inferences via the worker (inferer) whitelist and forecasts via the forecaster whitelist; a bundle that carries both is rejected unless the actor holds both permissions.
 
 ### Deprecated
 

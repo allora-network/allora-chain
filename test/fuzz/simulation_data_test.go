@@ -16,24 +16,27 @@ import (
 // right now it doesn't need mutexes, if we parallelize this test ever it will
 // to read and write out of the simulation data
 type SimulationData struct {
-	epochLength                   int64
-	actors                        []Actor
-	counts                        StateTransitionCounts
-	registeredWorkers             *testcommon.RandomKeyMap[Registration, struct{}]
-	registeredReputers            *testcommon.RandomKeyMap[Registration, struct{}]
-	reputerStakes                 *testcommon.RandomKeyMap[Registration, struct{}]
-	delegatorStakes               *testcommon.RandomKeyMap[Delegation, struct{}]
-	topicCreators                 *testcommon.RandomKeyMap[uint64, Actor]
-	adminWhitelist                *testcommon.RandomKeyMap[Actor, struct{}]
-	globalWhitelist               *testcommon.RandomKeyMap[Actor, struct{}]
-	topicCreatorsWhitelist        *testcommon.RandomKeyMap[Actor, struct{}]
-	globalWorkerWhitelist         *testcommon.RandomKeyMap[Actor, struct{}]
-	globalReputerWhitelist        *testcommon.RandomKeyMap[Actor, struct{}]
-	globalAdminWhitelist          *testcommon.RandomKeyMap[Actor, struct{}]
-	topicWorkersWhitelistEnabled  *testcommon.RandomKeyMap[uint64, struct{}]
-	topicReputersWhitelistEnabled *testcommon.RandomKeyMap[uint64, struct{}]
-	topicWorkersWhitelist         *testcommon.RandomKeyMap[TopicWhitelistEntry, struct{}]
-	topicReputersWhitelist        *testcommon.RandomKeyMap[TopicWhitelistEntry, struct{}]
+	epochLength                      int64
+	actors                           []Actor
+	counts                           StateTransitionCounts
+	registeredWorkers                *testcommon.RandomKeyMap[Registration, struct{}]
+	registeredReputers               *testcommon.RandomKeyMap[Registration, struct{}]
+	reputerStakes                    *testcommon.RandomKeyMap[Registration, struct{}]
+	delegatorStakes                  *testcommon.RandomKeyMap[Delegation, struct{}]
+	topicCreators                    *testcommon.RandomKeyMap[uint64, Actor]
+	adminWhitelist                   *testcommon.RandomKeyMap[Actor, struct{}]
+	globalWhitelist                  *testcommon.RandomKeyMap[Actor, struct{}]
+	topicCreatorsWhitelist           *testcommon.RandomKeyMap[Actor, struct{}]
+	globalWorkerWhitelist            *testcommon.RandomKeyMap[Actor, struct{}]
+	globalReputerWhitelist           *testcommon.RandomKeyMap[Actor, struct{}]
+	globalForecasterWhitelist        *testcommon.RandomKeyMap[Actor, struct{}]
+	globalAdminWhitelist             *testcommon.RandomKeyMap[Actor, struct{}]
+	topicWorkersWhitelistEnabled     *testcommon.RandomKeyMap[uint64, struct{}]
+	topicReputersWhitelistEnabled    *testcommon.RandomKeyMap[uint64, struct{}]
+	topicForecastersWhitelistEnabled *testcommon.RandomKeyMap[uint64, struct{}]
+	topicWorkersWhitelist            *testcommon.RandomKeyMap[TopicWhitelistEntry, struct{}]
+	topicReputersWhitelist           *testcommon.RandomKeyMap[TopicWhitelistEntry, struct{}]
+	topicForecastersWhitelist        *testcommon.RandomKeyMap[TopicWhitelistEntry, struct{}]
 
 	failOnErr bool
 	mode      fuzzcommon.SimulationMode
@@ -162,6 +165,11 @@ func (s *SimulationData) addGlobalWorkerWhitelist(actor Actor) {
 	s.globalWorkerWhitelist.Upsert(actor, struct{}{})
 }
 
+// addGlobalForecasterWhitelist adds an actor to the global forecaster whitelist in the simulation data
+func (s *SimulationData) addGlobalForecasterWhitelist(actor Actor) {
+	s.globalForecasterWhitelist.Upsert(actor, struct{}{})
+}
+
 // addGlobalReputerWhitelist adds an actor to the global reputer whitelist in the simulation data
 func (s *SimulationData) addGlobalReputerWhitelist(actor Actor) {
 	s.globalReputerWhitelist.Upsert(actor, struct{}{})
@@ -180,6 +188,14 @@ func (s *SimulationData) addTopicWorkerWhitelist(topicId uint64, worker Actor) {
 	}, struct{}{})
 }
 
+// addTopicForecasterWhitelist adds a forecaster to a topic whitelist in the simulation data
+func (s *SimulationData) addTopicForecasterWhitelist(topicId uint64, forecaster Actor) {
+	s.topicForecastersWhitelist.Upsert(TopicWhitelistEntry{
+		TopicId: topicId,
+		Actor:   forecaster,
+	}, struct{}{})
+}
+
 // addTopicReputerWhitelist adds a reputer to a topic whitelist in the simulation data
 func (s *SimulationData) addTopicReputerWhitelist(topicId uint64, reputer Actor) {
 	s.topicReputersWhitelist.Upsert(TopicWhitelistEntry{
@@ -191,6 +207,11 @@ func (s *SimulationData) addTopicReputerWhitelist(topicId uint64, reputer Actor)
 // enableTopicWorkersWhitelist enables a topic workers whitelist in the simulation data
 func (s *SimulationData) enableTopicWorkersWhitelist(topicId uint64) {
 	s.topicWorkersWhitelistEnabled.Upsert(topicId, struct{}{})
+}
+
+// enableTopicForecastersWhitelist enables a topic forecasters whitelist in the simulation data
+func (s *SimulationData) enableTopicForecastersWhitelist(topicId uint64) {
+	s.topicForecastersWhitelistEnabled.Upsert(topicId, struct{}{})
 }
 
 // enableTopicReputersWhitelist enables a topic reputers whitelist in the simulation data
@@ -218,6 +239,11 @@ func (s *SimulationData) removeGlobalWorkerWhitelist(actor Actor) {
 	s.globalWorkerWhitelist.Delete(actor)
 }
 
+// removeGlobalForecasterWhitelist removes an actor from the global forecaster whitelist in the simulation data
+func (s *SimulationData) removeGlobalForecasterWhitelist(actor Actor) {
+	s.globalForecasterWhitelist.Delete(actor)
+}
+
 // removeGlobalReputerWhitelist adds an actor fron the global reputer whitelist in the simulation data
 func (s *SimulationData) removeGlobalReputerWhitelist(actor Actor) {
 	s.globalReputerWhitelist.Delete(actor)
@@ -236,6 +262,14 @@ func (s *SimulationData) removeTopicWorkerWhitelist(topicId uint64, worker Actor
 	})
 }
 
+// removeTopicForecasterWhitelist removes a forecaster from a topic whitelist in the simulation data
+func (s *SimulationData) removeTopicForecasterWhitelist(topicId uint64, forecaster Actor) {
+	s.topicForecastersWhitelist.Delete(TopicWhitelistEntry{
+		TopicId: topicId,
+		Actor:   forecaster,
+	})
+}
+
 // removeTopicReputerWhitelist removes a reputer to a topic whitelist in the simulation data
 func (s *SimulationData) removeTopicReputerWhitelist(topicId uint64, reputer Actor) {
 	s.topicReputersWhitelist.Delete(TopicWhitelistEntry{
@@ -247,6 +281,11 @@ func (s *SimulationData) removeTopicReputerWhitelist(topicId uint64, reputer Act
 // disableTopicWorkersWhitelist disables a topic workers whitelist in the simulation data
 func (s *SimulationData) disableTopicWorkersWhitelist(topicId uint64) {
 	s.topicWorkersWhitelistEnabled.Delete(topicId)
+}
+
+// disableTopicForecastersWhitelist disables a topic forecasters whitelist in the simulation data
+func (s *SimulationData) disableTopicForecastersWhitelist(topicId uint64) {
+	s.topicForecastersWhitelistEnabled.Delete(topicId)
 }
 
 // disableTopicReputersWhitelist disables a topic reputers whitelist in the simulation data
@@ -450,6 +489,12 @@ func (s *SimulationData) isActorInGlobalWorkerWhitelist(actor Actor) bool {
 	return exists
 }
 
+// isActorInGlobalForecasterWhitelist checks if an actor is in the global forecaster whitelist
+func (s *SimulationData) isActorInGlobalForecasterWhitelist(actor Actor) bool {
+	_, exists := s.globalForecasterWhitelist.Get(actor)
+	return exists
+}
+
 // isActorInGlobalReputerWhitelist checks if an actor is in the global reputer whitelist
 func (s *SimulationData) isActorInGlobalReputerWhitelist(actor Actor) bool {
 	_, exists := s.globalReputerWhitelist.Get(actor)
@@ -468,6 +513,20 @@ func (s *SimulationData) isWorkerWhitelistedInTopic(topicId uint64, actor Actor)
 	})
 
 	return exists || s.isActorInGlobalWhitelist(actor) || s.isActorInGlobalWorkerWhitelist(actor)
+}
+
+// isForecasterWhitelistedInTopic checks if a forecaster is whitelisted in a topic
+func (s *SimulationData) isForecasterWhitelistedInTopic(topicId uint64, actor Actor) bool {
+	if _, exists := s.topicForecastersWhitelistEnabled.Get(topicId); !exists {
+		return true
+	}
+
+	_, exists := s.topicForecastersWhitelist.Get(TopicWhitelistEntry{
+		TopicId: topicId,
+		Actor:   actor,
+	})
+
+	return exists || s.isActorInGlobalWhitelist(actor) || s.isActorInGlobalForecasterWhitelist(actor)
 }
 
 // isReputerWhitelistedInTopic checks if a worker is whitelisted in a topic
@@ -490,7 +549,8 @@ func (s *SimulationData) isAnyWorkerRegisteredInTopic(topicId uint64) bool {
 		if reg.TopicId != topicId {
 			return false
 		}
-		return s.isWorkerWhitelistedInTopic(topicId, reg.Actor)
+		return s.isWorkerWhitelistedInTopic(topicId, reg.Actor) &&
+			s.isForecasterWhitelistedInTopic(topicId, reg.Actor)
 	})
 	return len(workers) > 0
 }
@@ -507,13 +567,16 @@ func (s *SimulationData) isAnyReputerRegisteredInTopic(topicId uint64) bool {
 }
 
 // get all workers for a topic, this function is iterates over the list of workers multiple times
-// for determinism, the workers are sorted by their address
+// for determinism, the workers are sorted by their address.
+// InsertWorkerPayload submits both inference and forecast, so the actor must
+// hold both the worker (inferer) and forecaster permissions.
 func (s *SimulationData) getWorkersForTopic(topicId uint64) []Actor {
 	workers, _ := s.registeredWorkers.Filter(func(reg Registration) bool {
 		if reg.TopicId != topicId {
 			return false
 		}
-		return s.isWorkerWhitelistedInTopic(topicId, reg.Actor)
+		return s.isWorkerWhitelistedInTopic(topicId, reg.Actor) &&
+			s.isForecasterWhitelistedInTopic(topicId, reg.Actor)
 	})
 	ret := make([]Actor, len(workers))
 	for i, worker := range workers {

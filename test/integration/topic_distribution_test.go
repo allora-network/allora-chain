@@ -166,32 +166,33 @@ func addDelegateStake(m testCommon.TestConfig, delegatorAccount cosmosaccount.Ac
 func createTestTopic(m testCommon.TestConfig, creator string, metadata string, epochLength int64) uint64 {
 	ctx := context.Background()
 	createTopicRequest := &types.CreateNewTopicRequest{
-		MaxTopInferersToReward:   GetEmissionsParams(m).MaxTopInferersToReward,
-		Creator:                  creator,
-		Metadata:                 metadata,
-		LossMethod:               "mse",
-		EpochLength:              epochLength, // Use the provided epoch length
-		GroundTruthLag:           epochLength,
-		PNorm:                    alloraMath.NewDecFromInt64(3),
-		AlphaRegret:              alloraMath.MustNewDecFromString("0.1"),
-		AllowNegative:            true,
-		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
-		WorkerSubmissionWindow:   4,
-		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.1"),
-		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.2"),
-		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
-		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
-		EnableWorkerWhitelist:    false, // Simplification for testing
-		EnableReputerWhitelist:   false, // Simplification for testing
-		CNorm:                    alloraMath.MustNewDecFromString("0.75"),
-		TopicType:                types.TopicType_TOPIC_TYPE_REGRESSION,
-		OutputArity:              types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
-		RequireUnity:             false,
-		UnityTolerance:           alloraMath.Dec{},
-		MaxLabelsPerSubmission:   types.DefaultMaxLabelsPerSubmission,
-		LabelWhitelist:           nil,
-		LabelDefaultValue:        alloraMath.ZeroDec(),
-		LabelCaseSensitive:       true,
+		MaxTopInferersToReward:    GetEmissionsParams(m).MaxTopInferersToReward,
+		Creator:                   creator,
+		Metadata:                  metadata,
+		LossMethod:                "mse",
+		EpochLength:               epochLength, // Use the provided epoch length
+		GroundTruthLag:            epochLength,
+		PNorm:                     alloraMath.NewDecFromInt64(3),
+		AlphaRegret:               alloraMath.MustNewDecFromString("0.1"),
+		AllowNegative:             true,
+		Epsilon:                   alloraMath.MustNewDecFromString("0.01"),
+		WorkerSubmissionWindow:    4,
+		MeritSortitionAlpha:       alloraMath.MustNewDecFromString("0.1"),
+		ActiveInfererQuantile:     alloraMath.MustNewDecFromString("0.2"),
+		ActiveForecasterQuantile:  alloraMath.MustNewDecFromString("0.2"),
+		ActiveReputerQuantile:     alloraMath.MustNewDecFromString("0.2"),
+		EnableWorkerWhitelist:     false, // Simplification for testing
+		EnableReputerWhitelist:    false, // Simplification for testing
+		EnableForecasterWhitelist: false,
+		CNorm:                     alloraMath.MustNewDecFromString("0.75"),
+		TopicType:                 types.TopicType_TOPIC_TYPE_REGRESSION,
+		OutputArity:               types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
+		RequireUnity:              false,
+		UnityTolerance:            alloraMath.Dec{},
+		MaxLabelsPerSubmission:    types.DefaultMaxLabelsPerSubmission,
+		LabelWhitelist:            nil,
+		LabelDefaultValue:         alloraMath.ZeroDec(),
+		LabelCaseSensitive:        true,
 	}
 	txResp, err := m.Client.BroadcastTx(ctx, m.AliceAcc, createTopicRequest)
 	require.NoError(m.T, err)

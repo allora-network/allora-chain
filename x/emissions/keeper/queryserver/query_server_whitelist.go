@@ -56,6 +56,20 @@ func (qs queryServer) IsWhitelistedGlobalReputer(ctx context.Context, req *types
 	return &types.IsWhitelistedGlobalReputerResponse{IsWhitelistedGlobalReputer: val}, nil
 }
 
+func (qs queryServer) IsWhitelistedGlobalForecaster(ctx context.Context, req *types.IsWhitelistedGlobalForecasterRequest) (_ *types.IsWhitelistedGlobalForecasterResponse, err error) {
+	defer metrics.RecordMetrics("IsWhitelistedGlobalForecaster", time.Now(), &err)
+	if err := types.ValidateStringIsBech32(req.Address); err != nil {
+		return nil, sdkerrors.ErrInvalidAddress.Wrapf("invalid address: %s", err)
+	}
+
+	val, err := qs.wlk.IsWhitelistedGlobalForecaster(ctx, req.Address)
+	if err != nil {
+		return nil, errors.Wrapf(err, "error getting whitelisted global forecaster")
+	}
+
+	return &types.IsWhitelistedGlobalForecasterResponse{IsWhitelistedGlobalForecaster: val}, nil
+}
+
 func (qs queryServer) IsWhitelistedGlobalAdmin(ctx context.Context, req *types.IsWhitelistedGlobalAdminRequest) (_ *types.IsWhitelistedGlobalAdminResponse, err error) {
 	defer metrics.RecordMetrics("IsWhitelistedGlobalAdmin", time.Now(), &err)
 	if err := types.ValidateStringIsBech32(req.Address); err != nil {
@@ -90,6 +104,17 @@ func (qs queryServer) IsTopicReputerWhitelistEnabled(ctx context.Context, req *t
 	}
 
 	return &types.IsTopicReputerWhitelistEnabledResponse{IsTopicReputerWhitelistEnabled: val}, nil
+}
+
+func (qs queryServer) IsTopicForecasterWhitelistEnabled(ctx context.Context, req *types.IsTopicForecasterWhitelistEnabledRequest) (_ *types.IsTopicForecasterWhitelistEnabledResponse, err error) {
+	defer metrics.RecordMetrics("IsTopicForecasterWhitelistEnabled", time.Now(), &err)
+
+	val, err := qs.wlk.IsTopicForecasterWhitelistEnabled(ctx, req.TopicId)
+	if err != nil {
+		return nil, errors.Wrapf(err, "error getting topic forecaster whitelist enabled")
+	}
+
+	return &types.IsTopicForecasterWhitelistEnabledResponse{IsTopicForecasterWhitelistEnabled: val}, nil
 }
 
 func (qs queryServer) IsWhitelistedTopicCreator(ctx context.Context, req *types.IsWhitelistedTopicCreatorRequest) (_ *types.IsWhitelistedTopicCreatorResponse, err error) {
@@ -148,6 +173,20 @@ func (qs queryServer) IsWhitelistedTopicReputer(ctx context.Context, req *types.
 	return &types.IsWhitelistedTopicReputerResponse{IsWhitelistedTopicReputer: val}, nil
 }
 
+func (qs queryServer) IsWhitelistedTopicForecaster(ctx context.Context, req *types.IsWhitelistedTopicForecasterRequest) (_ *types.IsWhitelistedTopicForecasterResponse, err error) {
+	defer metrics.RecordMetrics("IsWhitelistedTopicForecaster", time.Now(), &err)
+	if err := types.ValidateStringIsBech32(req.Address); err != nil {
+		return nil, sdkerrors.ErrInvalidAddress.Wrapf("invalid address: %s", err)
+	}
+
+	val, err := qs.wlk.IsWhitelistedTopicForecaster(ctx, req.TopicId, req.Address)
+	if err != nil {
+		return nil, errors.Wrapf(err, "error getting whitelisted topic forecaster")
+	}
+
+	return &types.IsWhitelistedTopicForecasterResponse{IsWhitelistedTopicForecaster: val}, nil
+}
+
 func (qs queryServer) CanUpdateAllGlobalWhitelists(ctx context.Context, req *types.CanUpdateAllGlobalWhitelistsRequest) (_ *types.CanUpdateAllGlobalWhitelistsResponse, err error) {
 	defer metrics.RecordMetrics("CanUpdateAllGlobalWhitelists", time.Now(), &err)
 	if err := types.ValidateStringIsBech32(req.Address); err != nil {
@@ -188,6 +227,20 @@ func (qs queryServer) CanUpdateGlobalReputerWhitelist(ctx context.Context, req *
 	}
 
 	return &types.CanUpdateGlobalReputerWhitelistResponse{CanUpdateGlobalReputerWhitelist: val}, nil
+}
+
+func (qs queryServer) CanUpdateGlobalForecasterWhitelist(ctx context.Context, req *types.CanUpdateGlobalForecasterWhitelistRequest) (_ *types.CanUpdateGlobalForecasterWhitelistResponse, err error) {
+	defer metrics.RecordMetrics("CanUpdateGlobalForecasterWhitelist", time.Now(), &err)
+	if err := types.ValidateStringIsBech32(req.Address); err != nil {
+		return nil, sdkerrors.ErrInvalidAddress.Wrapf("invalid address: %s", err)
+	}
+
+	val, err := qs.wlk.CanUpdateGlobalForecasterWhitelist(ctx, req.Address)
+	if err != nil {
+		return nil, errors.Wrapf(err, "error getting can update global forecaster whitelist")
+	}
+
+	return &types.CanUpdateGlobalForecasterWhitelistResponse{CanUpdateGlobalForecasterWhitelist: val}, nil
 }
 
 func (qs queryServer) CanUpdateParams(ctx context.Context, req *types.CanUpdateParamsRequest) (_ *types.CanUpdateParamsResponse, err error) {
@@ -258,4 +311,18 @@ func (qs queryServer) CanSubmitReputerPayload(ctx context.Context, req *types.Ca
 	}
 
 	return &types.CanSubmitReputerPayloadResponse{CanSubmitReputerPayload: val}, nil
+}
+
+func (qs queryServer) CanSubmitForecasterPayload(ctx context.Context, req *types.CanSubmitForecasterPayloadRequest) (_ *types.CanSubmitForecasterPayloadResponse, err error) {
+	defer metrics.RecordMetrics("CanSubmitForecasterPayload", time.Now(), &err)
+	if err := types.ValidateStringIsBech32(req.Address); err != nil {
+		return nil, sdkerrors.ErrInvalidAddress.Wrapf("invalid address: %s", err)
+	}
+
+	val, err := qs.wlk.CanSubmitForecasterPayload(ctx, req.TopicId, req.Address)
+	if err != nil {
+		return nil, errors.Wrapf(err, "error getting can submit forecaster payload")
+	}
+
+	return &types.CanSubmitForecasterPayloadResponse{CanSubmitForecasterPayload: val}, nil
 }
