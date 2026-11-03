@@ -724,12 +724,16 @@ func NewActiveInferersSetEventBase(topicId TopicId, nonceBlockHeight int64, addr
 	}
 }
 
-func NewActiveForecastersSetEventBase(topicId TopicId, nonceBlockHeight int64, addresses []string) proto.Message {
+// NewActiveForecastersSetEventBase builds the event for an epoch's forecasters:
+// addresses are those whose forecasts were stored, discardedAddresses those the
+// close discarded.
+func NewActiveForecastersSetEventBase(topicId TopicId, nonceBlockHeight int64, addresses, discardedAddresses []string) proto.Message {
 	return &EventActiveForecastersSet{
-		TopicId:          topicId,
-		Addresses:        addresses,
-		NonceBlockHeight: nonceBlockHeight,
-		Nonce:            nonceBlockHeight,
+		TopicId:            topicId,
+		Addresses:          addresses,
+		NonceBlockHeight:   nonceBlockHeight,
+		Nonce:              nonceBlockHeight,
+		DiscardedAddresses: discardedAddresses,
 	}
 }
 

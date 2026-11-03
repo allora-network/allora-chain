@@ -2198,7 +2198,7 @@ func TestEpochEventsEmitNonce(t *testing.T) {
 		{"forecast task score", types.NewForecastTaskScoreSetEventBase(1, one, 940), AttributeKeyNonceBlockHeight},
 		{"active reputers", types.NewActiveReputersSetEventBase(1, 940, addrs), AttributeKeyNonceBlockHeight},
 		{"active inferers", types.NewActiveInferersSetEventBase(1, 940, addrs), AttributeKeyNonceBlockHeight},
-		{"active forecasters", types.NewActiveForecastersSetEventBase(1, 940, addrs), AttributeKeyNonceBlockHeight},
+		{"active forecasters", types.NewActiveForecastersSetEventBase(1, 940, addrs, nil), AttributeKeyNonceBlockHeight},
 		{"network inference inferer weights", types.NewNetworkInferenceInfererWeightsSetEventBase(1, 940, addrs, decs), AttributeKeyNonceBlockHeight},
 		{"network inference forecaster weights", types.NewNetworkInferenceForecasterWeightsSetEventBase(1, 940, addrs, decs), AttributeKeyNonceBlockHeight},
 		{"network inference inferer regrets used", types.NewNetworkInferenceInfererRegretsUsedSetEventBase(1, 940, addrs, decs), AttributeKeyNonceBlockHeight},

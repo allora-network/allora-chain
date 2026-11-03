@@ -1,6 +1,7 @@
 package actorutils_test
 
 import (
+	"fmt"
 	"testing"
 
 	abci "github.com/cometbft/cometbft/abci/types"
@@ -751,4 +752,107 @@ func (s *WorkerTestSuite) TestCloseWorkerNonceFailedEmitsNonceExpired() {
 		s.Require().NoError(actorutils.CloseWorkerNonce(s.EmissionsKeeper(), s.Ctx(), topic, nonce))
 		s.Require().Len(nonceExpiredEvents(s.Ctx().EventManager()), before)
 	})
+}
+
+// activeForecastersEvents collects every EventActiveForecastersSet the manager
+// holds, in emission order.
+func activeForecastersEvents(em sdk.EventManagerI) []*types.EventActiveForecastersSet {
+	out := make([]*types.EventActiveForecastersSet, 0)
+	for _, ev := range em.Events() {
+		msg, err := sdk.ParseTypedEvent(abci.Event(ev))
+		if err != nil {
+			continue
+		}
+		if typed, ok := msg.(*types.EventActiveForecastersSet); ok {
+			out = append(out, typed)
+		}
+	}
+	return out
+}
+
+// A forecaster whose forecast names no active inferer, and one whose forecast
+// is for another epoch, are discarded at close: the event must list them only
+// in discarded_addresses, and list exactly the stored forecasters in addresses.
+func (s *WorkerTestSuite) TestCloseWorkerNonceReportsDiscardedForecasters() {
+	blockHeight := int64(101)
+	s.WithBlockHeight(blockHeight)
+	topicId := s.CreateTopic(testutil.WithOutputArity(types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI))
+	topic, err := s.TopicKeeper().GetTopic(s.Ctx(), topicId)
+	s.Require().NoError(err)
+
+	inferer0, inferer1 := s.AddrsStr(0), s.AddrsStr(1)
+	staleForecaster, offTargetForecaster, absentInferer := s.AddrsStr(2), s.AddrsStr(3), s.AddrsStr(5)
+	for _, worker := range []string{inferer0, inferer1, staleForecaster, offTargetForecaster} {
+		_, err = s.EmissionsMsgServer().Register(s.Ctx(), &types.RegisterRequest{
+			Sender:    worker,
+			TopicId:   topicId,
+			IsReputer: false,
+			Owner:     s.AddrsStr(4),
+		})
+		s.Require().NoError(err)
+	}
+
+	nonce := types.Nonce{BlockHeight: blockHeight}
+	s.Require().NoError(s.NonceKeeper().AddWorkerNonce(s.Ctx(), topicId, &nonce))
+
+	mustBounded := func(x string) alloraMath.BoundedExp40Dec {
+		return alloraMath.MustNewBoundedExp40DecFromString(x)
+	}
+	for i, inferer := range []string{inferer0, inferer1} {
+		input := types.InputInference{
+			TopicId:     topicId,
+			BlockHeight: blockHeight,
+			Inferer:     inferer,
+			Value:       mustBounded("0"),
+			Values: []*types.InputLabeledValue{
+				{Label: "a", Value: mustBounded(fmt.Sprintf("0.%d", i+1))},
+			},
+			ExtraData: nil,
+			Proof:     "",
+		}
+		inf, err := s.WorkerKeeper().NormalizeInputInference(s.Ctx(), topic, blockHeight, &input)
+		s.Require().NoError(err)
+		s.Require().NoError(s.WorkerKeeper().InsertInference(s.Ctx(), topicId, *inf))
+		s.Require().NoError(s.WorkerKeeper().AddActiveInferer(s.Ctx(), topicId, inferer))
+	}
+
+	forecast := func(forecaster string, height int64, inferer string) types.Forecast {
+		return types.Forecast{
+			TopicId:          topicId,
+			BlockHeight:      height,
+			Forecaster:       forecaster,
+			ForecastElements: []*types.ForecastElement{{Inferer: inferer, Value: alloraMath.MustNewDecFromString("0.15")}},
+			ExtraData:        nil,
+		}
+	}
+	forecasts := []types.Forecast{
+		forecast(inferer0, blockHeight, inferer1),
+		forecast(staleForecaster, blockHeight-1, inferer0),
+		forecast(offTargetForecaster, blockHeight, absentInferer),
+	}
+	for _, f := range forecasts {
+		s.Require().NoError(s.WorkerKeeper().InsertForecast(s.Ctx(), topicId, f))
+		s.Require().NoError(s.WorkerKeeper().AddActiveForecaster(s.Ctx(), topicId, f.Forecaster))
+	}
+
+	s.WithBlockHeight(blockHeight + topic.WorkerSubmissionWindow)
+	before := len(activeForecastersEvents(s.Ctx().EventManager()))
+	s.Require().NoError(actorutils.CloseWorkerNonce(s.EmissionsKeeper(), s.Ctx(), topic, nonce))
+
+	stored, err := s.WorkerKeeper().GetForecastsAtBlock(s.Ctx(), topicId, blockHeight)
+	s.Require().NoError(err)
+	storedForecasters := make([]string, 0, len(stored.Forecasts))
+	for _, f := range stored.Forecasts {
+		storedForecasters = append(storedForecasters, f.Forecaster)
+	}
+	s.Require().Equal([]string{inferer0}, storedForecasters)
+
+	events := activeForecastersEvents(s.Ctx().EventManager())
+	s.Require().Len(events, before+1)
+	event := events[len(events)-1]
+	s.Require().Equal(storedForecasters, event.Addresses)
+	s.Require().ElementsMatch([]string{staleForecaster, offTargetForecaster}, event.DiscardedAddresses)
+	for _, discarded := range event.DiscardedAddresses {
+		s.Require().NotContains(event.Addresses, discarded)
+	}
 }

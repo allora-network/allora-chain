@@ -696,12 +696,16 @@ message EventActiveInferersSet {
 
 message EventActiveForecastersSet {
   uint64 topic_id = 1;
+  // The forecasters whose forecasts the chain stored for the epoch.
   repeated string addresses = 2;
   // The epoch nonce, kept under this name for compatibility; read
   // nonce instead.
   int64 nonce_block_height = 3 [deprecated = true];
   // The epoch nonce the values belong to.
   int64 nonce = 4;
+  // The forecasters active for the epoch whose forecasts the chain discarded
+  // when it closed the epoch, so they are not in addresses.
+  repeated string discarded_addresses = 5;
 }
 
 message EventTopicStatusChanged {
