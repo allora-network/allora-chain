@@ -107,7 +107,11 @@ func (k *Keeper) closeReputerWindow(ctx context.Context, epoch types.Epoch) erro
 		closeHeight = legacyNonce.BlockHeight + epoch.TopicGroundTruthLag
 	}
 
-	err = k.epochCloseHandlers.closeReputer(sdkCtxAtHeight(ctx, closeHeight), topic, legacyNonce)
+	// The legacy EndBlocker closes several nonces with one topic value and
+	// writes InitialRegret between them, so it must keep reading the store.
+	// This close has one epoch, so the missing-actor regret is the snapshot.
+	closeCtx := WithEpochInitialRegret(sdkCtxAtHeight(ctx, closeHeight), topic.InitialRegret)
+	err = k.epochCloseHandlers.closeReputer(closeCtx, topic, legacyNonce)
 	if err != nil {
 		// Soft-fail empty / already-closed sets so the FSM can still complete during
 		// the parallel-run period when submissions may be absent.
