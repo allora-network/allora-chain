@@ -62,6 +62,7 @@ const (
 	MsgService_RemoveFromTopicWorkerWhitelist_FullMethodName          = "/emissions.v10.MsgService/RemoveFromTopicWorkerWhitelist"
 	MsgService_AddToTopicReputerWhitelist_FullMethodName              = "/emissions.v10.MsgService/AddToTopicReputerWhitelist"
 	MsgService_RemoveFromTopicReputerWhitelist_FullMethodName         = "/emissions.v10.MsgService/RemoveFromTopicReputerWhitelist"
+	MsgService_TransferActorOwnership_FullMethodName                  = "/emissions.v10.MsgService/TransferActorOwnership"
 	MsgService_AddToGlobalForecasterWhitelist_FullMethodName          = "/emissions.v10.MsgService/AddToGlobalForecasterWhitelist"
 	MsgService_RemoveFromGlobalForecasterWhitelist_FullMethodName     = "/emissions.v10.MsgService/RemoveFromGlobalForecasterWhitelist"
 	MsgService_BulkAddToGlobalForecasterWhitelist_FullMethodName      = "/emissions.v10.MsgService/BulkAddToGlobalForecasterWhitelist"
@@ -72,7 +73,6 @@ const (
 	MsgService_BulkRemoveFromTopicForecasterWhitelist_FullMethodName  = "/emissions.v10.MsgService/BulkRemoveFromTopicForecasterWhitelist"
 	MsgService_EnableTopicForecasterWhitelist_FullMethodName          = "/emissions.v10.MsgService/EnableTopicForecasterWhitelist"
 	MsgService_DisableTopicForecasterWhitelist_FullMethodName         = "/emissions.v10.MsgService/DisableTopicForecasterWhitelist"
-	MsgService_TransferActorOwnership_FullMethodName                  = "/emissions.v10.MsgService/TransferActorOwnership"
 )
 
 // MsgServiceClient is the client API for MsgService service.
@@ -124,6 +124,7 @@ type MsgServiceClient interface {
 	RemoveFromTopicWorkerWhitelist(ctx context.Context, in *RemoveFromTopicWorkerWhitelistRequest, opts ...grpc.CallOption) (*RemoveFromTopicWorkerWhitelistResponse, error)
 	AddToTopicReputerWhitelist(ctx context.Context, in *AddToTopicReputerWhitelistRequest, opts ...grpc.CallOption) (*AddToTopicReputerWhitelistResponse, error)
 	RemoveFromTopicReputerWhitelist(ctx context.Context, in *RemoveFromTopicReputerWhitelistRequest, opts ...grpc.CallOption) (*RemoveFromTopicReputerWhitelistResponse, error)
+	TransferActorOwnership(ctx context.Context, in *TransferActorOwnershipRequest, opts ...grpc.CallOption) (*TransferActorOwnershipResponse, error)
 	AddToGlobalForecasterWhitelist(ctx context.Context, in *AddToGlobalForecasterWhitelistRequest, opts ...grpc.CallOption) (*AddToGlobalForecasterWhitelistResponse, error)
 	RemoveFromGlobalForecasterWhitelist(ctx context.Context, in *RemoveFromGlobalForecasterWhitelistRequest, opts ...grpc.CallOption) (*RemoveFromGlobalForecasterWhitelistResponse, error)
 	BulkAddToGlobalForecasterWhitelist(ctx context.Context, in *BulkAddToGlobalForecasterWhitelistRequest, opts ...grpc.CallOption) (*BulkAddToGlobalForecasterWhitelistResponse, error)
@@ -134,7 +135,6 @@ type MsgServiceClient interface {
 	BulkRemoveFromTopicForecasterWhitelist(ctx context.Context, in *BulkRemoveFromTopicForecasterWhitelistRequest, opts ...grpc.CallOption) (*BulkRemoveFromTopicForecasterWhitelistResponse, error)
 	EnableTopicForecasterWhitelist(ctx context.Context, in *EnableTopicForecasterWhitelistRequest, opts ...grpc.CallOption) (*EnableTopicForecasterWhitelistResponse, error)
 	DisableTopicForecasterWhitelist(ctx context.Context, in *DisableTopicForecasterWhitelistRequest, opts ...grpc.CallOption) (*DisableTopicForecasterWhitelistResponse, error)
-	TransferActorOwnership(ctx context.Context, in *TransferActorOwnershipRequest, opts ...grpc.CallOption) (*TransferActorOwnershipResponse, error)
 }
 
 type msgServiceClient struct {
@@ -575,6 +575,16 @@ func (c *msgServiceClient) RemoveFromTopicReputerWhitelist(ctx context.Context, 
 	return out, nil
 }
 
+func (c *msgServiceClient) TransferActorOwnership(ctx context.Context, in *TransferActorOwnershipRequest, opts ...grpc.CallOption) (*TransferActorOwnershipResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(TransferActorOwnershipResponse)
+	err := c.cc.Invoke(ctx, MsgService_TransferActorOwnership_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *msgServiceClient) AddToGlobalForecasterWhitelist(ctx context.Context, in *AddToGlobalForecasterWhitelistRequest, opts ...grpc.CallOption) (*AddToGlobalForecasterWhitelistResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(AddToGlobalForecasterWhitelistResponse)
@@ -675,16 +685,6 @@ func (c *msgServiceClient) DisableTopicForecasterWhitelist(ctx context.Context, 
 	return out, nil
 }
 
-func (c *msgServiceClient) TransferActorOwnership(ctx context.Context, in *TransferActorOwnershipRequest, opts ...grpc.CallOption) (*TransferActorOwnershipResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(TransferActorOwnershipResponse)
-	err := c.cc.Invoke(ctx, MsgService_TransferActorOwnership_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 // MsgServiceServer is the server API for MsgService service.
 // All implementations must embed UnimplementedMsgServiceServer
 // for forward compatibility.
@@ -734,6 +734,7 @@ type MsgServiceServer interface {
 	RemoveFromTopicWorkerWhitelist(context.Context, *RemoveFromTopicWorkerWhitelistRequest) (*RemoveFromTopicWorkerWhitelistResponse, error)
 	AddToTopicReputerWhitelist(context.Context, *AddToTopicReputerWhitelistRequest) (*AddToTopicReputerWhitelistResponse, error)
 	RemoveFromTopicReputerWhitelist(context.Context, *RemoveFromTopicReputerWhitelistRequest) (*RemoveFromTopicReputerWhitelistResponse, error)
+	TransferActorOwnership(context.Context, *TransferActorOwnershipRequest) (*TransferActorOwnershipResponse, error)
 	AddToGlobalForecasterWhitelist(context.Context, *AddToGlobalForecasterWhitelistRequest) (*AddToGlobalForecasterWhitelistResponse, error)
 	RemoveFromGlobalForecasterWhitelist(context.Context, *RemoveFromGlobalForecasterWhitelistRequest) (*RemoveFromGlobalForecasterWhitelistResponse, error)
 	BulkAddToGlobalForecasterWhitelist(context.Context, *BulkAddToGlobalForecasterWhitelistRequest) (*BulkAddToGlobalForecasterWhitelistResponse, error)
@@ -744,7 +745,6 @@ type MsgServiceServer interface {
 	BulkRemoveFromTopicForecasterWhitelist(context.Context, *BulkRemoveFromTopicForecasterWhitelistRequest) (*BulkRemoveFromTopicForecasterWhitelistResponse, error)
 	EnableTopicForecasterWhitelist(context.Context, *EnableTopicForecasterWhitelistRequest) (*EnableTopicForecasterWhitelistResponse, error)
 	DisableTopicForecasterWhitelist(context.Context, *DisableTopicForecasterWhitelistRequest) (*DisableTopicForecasterWhitelistResponse, error)
-	TransferActorOwnership(context.Context, *TransferActorOwnershipRequest) (*TransferActorOwnershipResponse, error)
 	mustEmbedUnimplementedMsgServiceServer()
 }
 
@@ -884,6 +884,9 @@ func (UnimplementedMsgServiceServer) AddToTopicReputerWhitelist(context.Context,
 func (UnimplementedMsgServiceServer) RemoveFromTopicReputerWhitelist(context.Context, *RemoveFromTopicReputerWhitelistRequest) (*RemoveFromTopicReputerWhitelistResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RemoveFromTopicReputerWhitelist not implemented")
 }
+func (UnimplementedMsgServiceServer) TransferActorOwnership(context.Context, *TransferActorOwnershipRequest) (*TransferActorOwnershipResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method TransferActorOwnership not implemented")
+}
 func (UnimplementedMsgServiceServer) AddToGlobalForecasterWhitelist(context.Context, *AddToGlobalForecasterWhitelistRequest) (*AddToGlobalForecasterWhitelistResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AddToGlobalForecasterWhitelist not implemented")
 }
@@ -913,9 +916,6 @@ func (UnimplementedMsgServiceServer) EnableTopicForecasterWhitelist(context.Cont
 }
 func (UnimplementedMsgServiceServer) DisableTopicForecasterWhitelist(context.Context, *DisableTopicForecasterWhitelistRequest) (*DisableTopicForecasterWhitelistResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DisableTopicForecasterWhitelist not implemented")
-}
-func (UnimplementedMsgServiceServer) TransferActorOwnership(context.Context, *TransferActorOwnershipRequest) (*TransferActorOwnershipResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method TransferActorOwnership not implemented")
 }
 func (UnimplementedMsgServiceServer) mustEmbedUnimplementedMsgServiceServer() {}
 func (UnimplementedMsgServiceServer) testEmbeddedByValue()                    {}
@@ -1712,6 +1712,24 @@ func _MsgService_RemoveFromTopicReputerWhitelist_Handler(srv interface{}, ctx co
 	return interceptor(ctx, in, info, handler)
 }
 
+func _MsgService_TransferActorOwnership_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(TransferActorOwnershipRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServiceServer).TransferActorOwnership(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MsgService_TransferActorOwnership_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServiceServer).TransferActorOwnership(ctx, req.(*TransferActorOwnershipRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _MsgService_AddToGlobalForecasterWhitelist_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(AddToGlobalForecasterWhitelistRequest)
 	if err := dec(in); err != nil {
@@ -1888,24 +1906,6 @@ func _MsgService_DisableTopicForecasterWhitelist_Handler(srv interface{}, ctx co
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(MsgServiceServer).DisableTopicForecasterWhitelist(ctx, req.(*DisableTopicForecasterWhitelistRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _MsgService_TransferActorOwnership_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(TransferActorOwnershipRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(MsgServiceServer).TransferActorOwnership(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: MsgService_TransferActorOwnership_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServiceServer).TransferActorOwnership(ctx, req.(*TransferActorOwnershipRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -2090,6 +2090,10 @@ var MsgService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _MsgService_RemoveFromTopicReputerWhitelist_Handler,
 		},
 		{
+			MethodName: "TransferActorOwnership",
+			Handler:    _MsgService_TransferActorOwnership_Handler,
+		},
+		{
 			MethodName: "AddToGlobalForecasterWhitelist",
 			Handler:    _MsgService_AddToGlobalForecasterWhitelist_Handler,
 		},
@@ -2128,10 +2132,6 @@ var MsgService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DisableTopicForecasterWhitelist",
 			Handler:    _MsgService_DisableTopicForecasterWhitelist_Handler,
-		},
-		{
-			MethodName: "TransferActorOwnership",
-			Handler:    _MsgService_TransferActorOwnership_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

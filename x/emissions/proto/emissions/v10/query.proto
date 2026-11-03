@@ -517,31 +517,6 @@ service QueryService {
     option (google.api.http).get = "/emissions/v10/can_submit_reputer_payload/{topic_id}/{address}";
   }
 
-  rpc IsWhitelistedGlobalForecaster(IsWhitelistedGlobalForecasterRequest) returns (IsWhitelistedGlobalForecasterResponse) {
-    option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v10/is_whitelisted_global_forecaster/{address}";
-  }
-
-  rpc IsWhitelistedTopicForecaster(IsWhitelistedTopicForecasterRequest) returns (IsWhitelistedTopicForecasterResponse) {
-    option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v10/is_whitelisted_topic_forecaster/{topic_id}/{address}";
-  }
-
-  rpc IsTopicForecasterWhitelistEnabled(IsTopicForecasterWhitelistEnabledRequest) returns (IsTopicForecasterWhitelistEnabledResponse) {
-    option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v10/is_topic_forecaster_whitelist_enabled/{topic_id}";
-  }
-
-  rpc CanUpdateGlobalForecasterWhitelist(CanUpdateGlobalForecasterWhitelistRequest) returns (CanUpdateGlobalForecasterWhitelistResponse) {
-    option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v10/can_update_global_forecaster_whitelist/{address}";
-  }
-
-  rpc CanSubmitForecasterPayload(CanSubmitForecasterPayloadRequest) returns (CanSubmitForecasterPayloadResponse) {
-    option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v10/can_submit_forecaster_payload/{topic_id}/{address}";
-  }
-
   // GetTopicInitialInfererEmaScore returns the initial EMA score for inferers in a topic
   rpc GetTopicInitialInfererEmaScore(GetTopicInitialInfererEmaScoreRequest) returns (GetTopicInitialInfererEmaScoreResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
@@ -588,6 +563,31 @@ service QueryService {
   rpc GetReputerSubmissionWindowStatus(GetReputerSubmissionWindowStatusRequest) returns (GetReputerSubmissionWindowStatusResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v10/reputer_submission_window_status/{topic_id}";
+  }
+
+  rpc IsWhitelistedGlobalForecaster(IsWhitelistedGlobalForecasterRequest) returns (IsWhitelistedGlobalForecasterResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v10/is_whitelisted_global_forecaster/{address}";
+  }
+
+  rpc IsWhitelistedTopicForecaster(IsWhitelistedTopicForecasterRequest) returns (IsWhitelistedTopicForecasterResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v10/is_whitelisted_topic_forecaster/{topic_id}/{address}";
+  }
+
+  rpc IsTopicForecasterWhitelistEnabled(IsTopicForecasterWhitelistEnabledRequest) returns (IsTopicForecasterWhitelistEnabledResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v10/is_topic_forecaster_whitelist_enabled/{topic_id}";
+  }
+
+  rpc CanUpdateGlobalForecasterWhitelist(CanUpdateGlobalForecasterWhitelistRequest) returns (CanUpdateGlobalForecasterWhitelistResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v10/can_update_global_forecaster_whitelist/{address}";
+  }
+
+  rpc CanSubmitForecasterPayload(CanSubmitForecasterPayloadRequest) returns (CanSubmitForecasterPayloadResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v10/can_submit_forecaster_payload/{topic_id}/{address}";
   }
 }
 
