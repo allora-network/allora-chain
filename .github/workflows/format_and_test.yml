@@ -83,7 +83,7 @@ jobs:
       run: bash ./test/local_testnet_l1.sh
 
     - name: Integration test on the first chain
-      run: /usr/bin/go test -timeout 20m -run '^TestExternalTestSuite$' github.com/allora-network/allora-chain/test/integration -v
+      run: /usr/bin/go test -count=1 -timeout 20m -run '^TestExternalTestSuite$' github.com/allora-network/allora-chain/test/integration -v
 
     # The diagnostic steps below never affect the job result. This one runs before the
     # next step removes the first chain's containers. Logs are written outside the
@@ -105,7 +105,7 @@ jobs:
 
     - name: Integration test on the fresh chain
       if: ${{ !cancelled() && steps.second_chain.outcome == 'success' }}
-      run: /usr/bin/go test -timeout 15m -run '^TestExternalMultiTestSuite$' github.com/allora-network/allora-chain/test/integration -v
+      run: /usr/bin/go test -count=1 -timeout 15m -run '^TestExternalMultiTestSuite$' github.com/allora-network/allora-chain/test/integration -v
 
     - name: Keep the fresh chain's state and logs
       if: ${{ (failure() || cancelled()) && steps.second_chain.outcome != 'skipped' }}
