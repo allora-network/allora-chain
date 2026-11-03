@@ -40,13 +40,16 @@ func CreateTopic(m testCommon.TestConfig) (topicId uint64) {
 	require.Positive(m.T, topicIdStart.NextTopicId)
 	require.NoError(m.T, err)
 	createTopicRequest := &emissionstypes.CreateNewTopicRequest{
-		MaxTopInferersToReward:   GetEmissionsParams(m).MaxTopInferersToReward,
-		Creator:                  m.AliceAddr,
-		Metadata:                 "ETH 24h Prediction",
-		LossMethod:               "mse",
-		EpochLength:              5,
-		GroundTruthLag:           10,
-		WorkerSubmissionWindow:   4,
+		MaxTopInferersToReward: GetEmissionsParams(m).MaxTopInferersToReward,
+		Creator:                m.AliceAddr,
+		Metadata:               "ETH 24h Prediction",
+		LossMethod:             "mse",
+		// These fields are seconds on the scheduler and blocks on the churn schedule.
+		// The worker window has to stay open across more than one block, so a payload
+		// broadcast after the epoch opens is still inside it.
+		EpochLength:              60,
+		GroundTruthLag:           60,
+		WorkerSubmissionWindow:   45,
 		PNorm:                    alloraMath.NewDecFromInt64(3),
 		AlphaRegret:              alloraMath.MustNewDecFromString("0.1"),
 		AllowNegative:            true,
@@ -121,13 +124,16 @@ func CreateTopicMultiLabel(m testCommon.TestConfig) (topicId uint64) {
 	require.Positive(m.T, topicIdStart.NextTopicId)
 	require.NoError(m.T, err)
 	createTopicRequest := &emissionstypes.CreateNewTopicRequest{
-		MaxTopInferersToReward:   GetEmissionsParams(m).MaxTopInferersToReward,
-		Creator:                  m.AliceAddr,
-		Metadata:                 "ETH 24h Prediction",
-		LossMethod:               "mse",
-		EpochLength:              5,
-		GroundTruthLag:           10,
-		WorkerSubmissionWindow:   4,
+		MaxTopInferersToReward: GetEmissionsParams(m).MaxTopInferersToReward,
+		Creator:                m.AliceAddr,
+		Metadata:               "ETH 24h Prediction",
+		LossMethod:             "mse",
+		// These fields are seconds on the scheduler and blocks on the churn schedule.
+		// The worker window has to stay open across more than one block, so a payload
+		// broadcast after the epoch opens is still inside it.
+		EpochLength:              60,
+		GroundTruthLag:           60,
+		WorkerSubmissionWindow:   45,
 		PNorm:                    alloraMath.NewDecFromInt64(3),
 		AlphaRegret:              alloraMath.MustNewDecFromString("0.1"),
 		AllowNegative:            true,
