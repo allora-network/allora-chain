@@ -1,10 +1,14 @@
 package msgserver_test
 
 import (
+	"fmt"
+	"time"
+
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
 	"github.com/allora-network/allora-chain/x/emissions/testutil"
 	"github.com/allora-network/allora-chain/x/emissions/types"
+	schedulertypes "github.com/allora-network/allora-chain/x/scheduler/types"
 )
 
 func (s *MsgServerTestSuite) TestMsgInsertReputerPayloadFailsEarlyWindowAndWhitelistCheck() {
@@ -13,22 +17,29 @@ func (s *MsgServerTestSuite) TestMsgInsertReputerPayloadFailsEarlyWindowAndWhite
 	reputerAddr := s.Addrs(reputerIndexes[0])
 	reputerValues := s.GetReputerValuesFromIndexes(reputerIndexes, workerIndexes, "0.1")
 
+	// Payload nonces must be a positive block height. Activation opens the epoch at the current height.
+	s.WithBlockHeight(1)
 	topic := s.FullTopicSetup(workerIndexes, reputerIndexes)
-
-	nonce, _, _ := s.TopicKeeper().GetNextPossibleChurningBlockByTopicId(s.Ctx(), topic.Id)
-	s.WithBlockHeight(nonce)
-	s.EndBlock()
+	nonceV2, found, err := s.EmissionsKeeper().GetTopicLastEpochNonce(s.Ctx(), topic.Id)
+	s.Require().NoError(err)
+	s.Require().True(found)
+	epoch, err := s.EmissionsKeeper().GetEpoch(s.Ctx(), topic.Id, nonceV2)
+	s.Require().NoError(err)
+	nonce := epoch.StartBlockHeight
+	// The periodic task opens the next epoch when its time arrives. This test jumps
+	// straight to the reputer window, which would open another epoch at this same
+	// height and put the worker nonce back.
+	s.Require().NoError(s.SchedulerKeeper().CancelTask(
+		s.Ctx(),
+		schedulertypes.TaskID(fmt.Sprintf("%s:%d", types.StartNewEpochTask, topic.Id)),
+	))
 
 	s.SetupInferences(topic.Id, nonce, workerIndexes)
-	newBlockheight := nonce + topic.WorkerSubmissionWindow
-	s.WithBlockHeight(newBlockheight)
-	s.CloseWorkerNonce(topic, types.Nonce{BlockHeight: nonce})
+	s.WithBlockTime(epoch.WorkerSubmissionWindow.CloseAt.Add(time.Nanosecond))
+	s.Require().NoError(s.SchedulerKeeper().BeginBlock(s.Ctx()))
 
-	// Prior to the ground truth lag, should not allow reputer payload
-	newBlockheight = nonce + topic.GroundTruthLag - 1
-	s.WithBlockHeight(newBlockheight)
-
-	err := s.InsertReputerLossBundle(
+	// Ground-truth lag has not elapsed: the reputer window is still closed.
+	err = s.InsertReputerLossBundle(
 		topic.GetId(),
 		nonce,
 		reputerIndexes,
@@ -37,28 +48,38 @@ func (s *MsgServerTestSuite) TestMsgInsertReputerPayloadFailsEarlyWindowAndWhite
 	)
 	s.Require().ErrorIs(err, types.ErrReputerNonceWindowNotAvailable)
 
-	// Valid reputer nonce window, end
-	newBlockheight = nonce + topic.GroundTruthLag*2 + 1
-	s.WithBlockHeight(newBlockheight)
-	err = s.InsertReputerLossBundle(topic.GetId(), nonce, reputerIndexes)
+	s.WithBlockTime(epoch.ReputerSubmissionWindow.OpenAt.Add(time.Nanosecond))
+	s.Require().NoError(s.SchedulerKeeper().BeginBlock(s.Ctx()))
+
+	// Past the reputer close, without running the close task, the window check rejects the payload.
+	s.WithBlockTime(epoch.ReputerSubmissionWindow.CloseAt.Add(time.Nanosecond))
+	err = s.InsertReputerLossBundle(
+		topic.GetId(),
+		nonce,
+		reputerIndexes,
+		testutil.WithReputerValues(reputerValues),
+		testutil.WithSkipNetworkInferences(),
+	)
 	s.Require().ErrorIs(err, types.ErrReputerNonceWindowNotAvailable)
 
-	// Remove reputer from whitelist
 	err = s.WhitelistsKeeper().RemoveFromGlobalWhitelist(s.Ctx(), reputerAddr.String())
 	s.Require().NoError(err)
 	err = s.WhitelistsKeeper().RemoveFromTopicReputerWhitelist(s.Ctx(), topic.Id, reputerAddr.String())
 	s.Require().NoError(err)
 
-	newBlockheight = nonce + topic.GroundTruthLag*2
-	s.WithBlockHeight(newBlockheight)
-	err = s.InsertReputerLossBundle(topic.GetId(), nonce, reputerIndexes)
+	s.WithBlockTime(epoch.ReputerSubmissionWindow.OpenAt.Add(time.Nanosecond))
+	err = s.InsertReputerLossBundle(
+		topic.GetId(),
+		nonce,
+		reputerIndexes,
+		testutil.WithReputerValues(reputerValues),
+		testutil.WithSkipNetworkInferences(),
+	)
 	s.Require().ErrorIs(err, types.ErrNotPermittedToSubmitReputerPayload)
 
-	// Add reputer to whitelist so they could submit payload again
 	err = s.WhitelistsKeeper().AddToTopicReputerWhitelist(s.Ctx(), topic.Id, reputerAddr.String())
 	s.Require().NoError(err)
 
-	// Valid reputer nonce window, end
 	err = s.InsertReputerLossBundle(topic.GetId(), nonce, reputerIndexes)
 	s.Require().NoError(err)
 }

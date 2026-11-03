@@ -140,12 +140,13 @@ func (s *KeeperTestSuite) TestGetActiveTopicIdsAtBlock() {
 	err = k.ActivateTopic(ctx, topic3Id)
 	s.Require().NoError(err, "Activating topic should not fail")
 
-	// Fetch only active topics
-	activeTopics, err := k.GetActiveTopicIdsAtBlock(ctx, 5)
+	// Fetch only active topics. Activation runs at block 1, so the churn block is
+	// that height plus the topic epoch length.
+	activeTopics, err := k.GetActiveTopicIdsAtBlock(ctx, 6)
 	s.Require().NoError(err, "Fetching active topics should not produce an error")
 	s.Require().Len(activeTopics.TopicIds, 1, "Should retrieve exactly one active topic")
 
-	activeTopics, err = k.GetActiveTopicIdsAtBlock(ctx, 15)
+	activeTopics, err = k.GetActiveTopicIdsAtBlock(ctx, 16)
 	s.Require().NoError(err, "Fetching active topics should not produce an error")
 	s.Require().Len(activeTopics.TopicIds, 1, "Should retrieve exactly one active topic")
 	s.Require().Equal(activeTopics.TopicIds[0], topic3Id, "The details of topic 3 should match")
@@ -200,30 +201,30 @@ func (s *KeeperTestSuite) TestTopicGoesInactivateOnEpochEndBlockIfLowWeight() {
 	err = k.ActivateTopic(s.Ctx(), topic2Id)
 	s.Require().NoError(err, "Activating topic should not fail")
 
-	// Fetch next page -- should only return topic 5
-	activeTopics, err := k.GetActiveTopicIdsAtBlock(s.Ctx(), 15)
+	// Activation runs at block 1, so these topics churn at 1 + epoch length.
+	activeTopics, err := k.GetActiveTopicIdsAtBlock(s.Ctx(), 16)
 	s.Require().NoError(err, "Fetching active topics should not produce an error")
 	s.Require().Len(activeTopics.TopicIds, 2, "Should retrieve exactly two active topics")
 
-	s.WithBlockHeight(15)
+	s.WithBlockHeight(16)
 	err = k.AttemptTopicReactivation(s.Ctx(), topic1Id)
 	s.Require().NoError(err, "Attempting to reactivate topic should not fail")
 	err = k.AttemptTopicReactivation(s.Ctx(), topic2Id)
 	s.Require().NoError(err, "Attempting to reactivate topic should not fail")
 
-	s.WithBlockHeight(25)
+	s.WithBlockHeight(26)
 	setTopicWeight(topic3Id, 50, 10)
 	err = k.ActivateTopic(s.Ctx(), topic3Id)
 	s.Require().NoError(err, "Activating topic should not fail")
 
-	activeTopics, err = k.GetActiveTopicIdsAtBlock(s.Ctx(), 30)
+	activeTopics, err = k.GetActiveTopicIdsAtBlock(s.Ctx(), 31)
 	s.Require().NoError(err, "Fetching active topics should not produce an error")
 	s.Require().Len(activeTopics.TopicIds, 3, "Should retrieve exactly two active topics")
 	s.Require().Equal(topic1Id, activeTopics.TopicIds[0])
 	s.Require().Equal(topic2Id, activeTopics.TopicIds[1])
 	s.Require().Equal(topic3Id, activeTopics.TopicIds[2])
 
-	s.WithBlockHeight(30)
+	s.WithBlockHeight(31)
 	setTopicWeight(topic4Id, 1, 1)
 	isActive, err := k.IsTopicActive(s.Ctx(), topic4Id)
 	s.Require().NoError(err, "Is topic active should not produce an error")

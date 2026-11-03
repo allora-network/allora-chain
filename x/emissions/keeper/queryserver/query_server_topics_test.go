@@ -362,7 +362,7 @@ func (s *QueryServerTestSuite) TestGetWorkerSubmissionWindowStatus() {
 	ctx = s.Ctx()
 
 	// Create multiple nonces with overlapping windows
-	nonce1 := &types.Nonce{BlockHeight: 0}  // Window [0, 10] - includes block 5
+	nonce1 := &types.Nonce{BlockHeight: 1}  // Window [1, 11] - includes block 5
 	nonce2 := &types.Nonce{BlockHeight: 2}  // Window [2, 12] - includes block 5 (more recent)
 	nonce3 := &types.Nonce{BlockHeight: 15} // Window [15, 25] - future window
 
@@ -389,10 +389,10 @@ func (s *QueryServerTestSuite) TestGetWorkerSubmissionWindowStatus() {
 	s.Require().Equal(expectedWindowStart, response.WindowStartBlock)
 	s.Require().Equal(expectedWindowEnd, response.WindowEndBlock)
 
-	// Verify next window calculations - based on epoch schedule from EpochLastEnded=0
-	// With EpochLastEnded=0 and EpochLength=20, next epoch is at block 20
-	expectedNextStart := int64(20) // Next epoch boundary
-	expectedNextEnd := int64(30)   // expectedNextStart + WorkerSubmissionWindow(10)
+	// The next churn block is the block where this topic was activated plus its epoch length.
+	// Setup leaves the context at block 1, so that block is 21.
+	expectedNextStart := int64(21)
+	expectedNextEnd := int64(31) // expectedNextStart + WorkerSubmissionWindow(10)
 
 	s.Require().Equal(expectedNextStart, response.NextWindowStartBlock)
 	s.Require().Equal(expectedNextEnd, response.NextWindowEndBlock)
@@ -492,7 +492,7 @@ func (s *QueryServerTestSuite) TestGetReputerSubmissionWindowStatus() {
 	// Reputer windows: [nonce + GroundTruthLag, nonce + GroundTruthLag + extraLag + EpochLength]
 	// extraLag = EpochLength - (GroundTruthLag % EpochLength) = 20 - (30 % 20) = 10
 
-	reputerNonce1 := &types.Nonce{BlockHeight: 0}  // Window [30, 60] (0+30 to 0+30+10+20)
+	reputerNonce1 := &types.Nonce{BlockHeight: 1}  // Window [31, 61] (1+30 to 1+30+10+20)
 	reputerNonce2 := &types.Nonce{BlockHeight: 5}  // Window [35, 65] (5+30 to 5+30+10+20)
 	reputerNonce3 := &types.Nonce{BlockHeight: 20} // Window [50, 80] (20+30 to 20+30+10+20)
 

@@ -1150,10 +1150,10 @@ func ValidateClassificationConsistency(
 	return nil
 }
 
-// validate that a types.Nonce has the expected format
+// Validate rejects a non-positive block height. Height 0 is not a worker or reputer nonce.
 func (nonce *Nonce) Validate() error {
-	if err := ValidateBlockHeight(nonce.BlockHeight); err != nil {
-		return errors.Wrap(err, "nonce block height is invalid")
+	if nonce.BlockHeight <= 0 {
+		return errors.Wrap(sdkerrors.ErrInvalidType, "nonce block height must be greater than 0")
 	}
 	return nil
 }
