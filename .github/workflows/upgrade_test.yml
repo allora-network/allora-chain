@@ -94,7 +94,7 @@ jobs:
         for node in validator0 validator1 validator2; do
           line=$(docker logs "$node" 2>&1 | sed 's/\x1b\[[0-9;]*m//g' | grep -a 'topic activity state reconciled')
           echo "$node: $line"
-          grep -q 'removedActiveTopics=1' <<< "$line"
+          grep -Eq '(^| )removedActiveTopics=1( |$)' <<< "$line"
         done
 
     # The diagnostic steps below never affect the job result.
