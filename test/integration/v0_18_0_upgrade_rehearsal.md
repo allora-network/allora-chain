@@ -25,8 +25,10 @@ The image holds `allorad` built from `v0.17.2` and `allorad-v0.18.0` built from 
 `local_testnet_l1.sh` tags a shared `allorad` image, so confirm the validators run this build. `Invariants broken` is a string only the patch adds:
 
 ```bash
-grep -ac 'Invariants broken' test/localnet/validator0/cosmovisor/upgrades/v0.18.0/bin/allorad
-docker exec validator0 /data/validator0/cosmovisor/upgrades/v0.18.0/bin/allorad version
+for v in validator0 validator1 validator2; do
+  grep -ac 'Invariants broken' "test/localnet/$v/cosmovisor/upgrades/v0.18.0/bin/allorad"
+  docker exec "$v" "/data/$v/cosmovisor/upgrades/v0.18.0/bin/allorad" version
+done
 ```
 
 Observed on all three validators: one match, version `spook/v0-18-upgrade-populated-state-27cbdfd95f679a8bb4d1475397af38d9eb238c94`, and `/abci_info` reporting `v0.17.2`.
