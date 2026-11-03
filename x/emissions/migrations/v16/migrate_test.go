@@ -644,3 +644,81 @@ func (s *EmissionsV16MigrationTestSuite) TestMigrateWhitelistsIdempotent() {
 func (s *EmissionsV16MigrationTestSuite) TestMigrateWhitelistsEmptyStore() {
 	s.Require().NoError(v16.MigrateWhitelists(s.Ctx(), *s.EmissionsKeeper()))
 }
+
+// TestMigrateWhitelistsMultipleTopicsAndWorkers verifies that the streaming
+// iteration correctly copies every entry when the whitelists span multiple
+// topics with several workers each, plus multiple global workers and a mix
+// of gates enabled and disabled.
+func (s *EmissionsV16MigrationTestSuite) TestMigrateWhitelistsMultipleTopicsAndWorkers() {
+	ctx := s.Ctx()
+	wlk := s.WhitelistsKeeper()
+
+	addrs := []string{
+		s.AddrsStr(0),
+		s.AddrsStr(1),
+		s.AddrsStr(2),
+		s.AddrsStr(3),
+		s.AddrsStr(4),
+	}
+	topics := []uint64{1, 2, 3}
+
+	// Global workers: addrs 0, 1
+	s.Require().NoError(wlk.AddToGlobalWorkerWhitelist(ctx, addrs[0]))
+	s.Require().NoError(wlk.AddToGlobalWorkerWhitelist(ctx, addrs[1]))
+
+	// Topic 1: workers 0, 1, 2 — gate enabled
+	s.Require().NoError(wlk.AddToTopicWorkerWhitelist(ctx, topics[0], addrs[0]))
+	s.Require().NoError(wlk.AddToTopicWorkerWhitelist(ctx, topics[0], addrs[1]))
+	s.Require().NoError(wlk.AddToTopicWorkerWhitelist(ctx, topics[0], addrs[2]))
+	s.Require().NoError(wlk.EnableTopicWorkerWhitelist(ctx, topics[0]))
+
+	// Topic 2: workers 3, 4 — gate enabled
+	s.Require().NoError(wlk.AddToTopicWorkerWhitelist(ctx, topics[1], addrs[3]))
+	s.Require().NoError(wlk.AddToTopicWorkerWhitelist(ctx, topics[1], addrs[4]))
+	s.Require().NoError(wlk.EnableTopicWorkerWhitelist(ctx, topics[1]))
+
+	// Topic 3: worker 0 — gate disabled (should NOT be copied)
+	s.Require().NoError(wlk.AddToTopicWorkerWhitelist(ctx, topics[2], addrs[0]))
+
+	s.Require().NoError(v16.MigrateWhitelists(ctx, *s.EmissionsKeeper()))
+
+	// Global forecaster whitelist: both global workers copied.
+	isGlobal0, err := wlk.IsWhitelistedGlobalForecaster(ctx, addrs[0])
+	s.Require().NoError(err)
+	s.Require().True(isGlobal0)
+	isGlobal1, err := wlk.IsWhitelistedGlobalForecaster(ctx, addrs[1])
+	s.Require().NoError(err)
+	s.Require().True(isGlobal1)
+
+	// Topic 1 forecaster whitelist: all three workers copied, gate enabled.
+	for _, actor := range []string{addrs[0], addrs[1], addrs[2]} {
+		isT, err := wlk.IsWhitelistedTopicForecaster(ctx, topics[0], actor)
+		s.Require().NoError(err)
+		s.Require().True(isT, "topic %d forecaster %s should be whitelisted", topics[0], actor)
+	}
+	enabled1, err := wlk.IsTopicForecasterWhitelistEnabled(ctx, topics[0])
+	s.Require().NoError(err)
+	s.Require().True(enabled1)
+
+	// Topic 2 forecaster whitelist: both workers copied, gate enabled.
+	for _, actor := range []string{addrs[3], addrs[4]} {
+		isT, err := wlk.IsWhitelistedTopicForecaster(ctx, topics[1], actor)
+		s.Require().NoError(err)
+		s.Require().True(isT, "topic %d forecaster %s should be whitelisted", topics[1], actor)
+	}
+	enabled2, err := wlk.IsTopicForecasterWhitelistEnabled(ctx, topics[1])
+	s.Require().NoError(err)
+	s.Require().True(enabled2)
+
+	// Topic 3: worker gate was disabled, so the forecaster gate should NOT be
+	// enabled. The worker entry is still copied into the forecaster list
+	// (MigrateWhitelists copies all topicWorkerWhitelist entries), but the
+	// gate stays off, so IsEnabledTopicForecaster returns true for everyone —
+	// the pre-upgrade behavior is preserved.
+	isT3, err := wlk.IsWhitelistedTopicForecaster(ctx, topics[2], addrs[0])
+	s.Require().NoError(err)
+	s.Require().True(isT3, "topic %d forecaster %s entry should be copied even with gate off", topics[2], addrs[0])
+	enabled3, err := wlk.IsTopicForecasterWhitelistEnabled(ctx, topics[2])
+	s.Require().NoError(err)
+	s.Require().False(enabled3)
+}

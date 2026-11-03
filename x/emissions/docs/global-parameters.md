@@ -127,3 +127,5 @@ An *assumption*, not a measurement — it drives the emission rate. If real bloc
 ### Whitelist flags
 
 The whitelist booleans compose rather than override one another: `global_whitelist_enabled` gates broadly, while `topic_creator_whitelist_enabled`, `global_worker_whitelist_enabled`, `global_forecaster_whitelist_enabled` and `global_reputer_whitelist_enabled` gate specific roles, and `global_admin_whitelist_appended` adds global admins on top. Reason about the combination, not any single flag. An `InsertWorkerPayload` that carries both an inference and a forecast is rejected unless the actor holds both the worker (inferer) and forecaster permissions.
+
+The per-topic gate flags on `CreateNewTopic` (`enable_worker_whitelist`, `enable_reputer_whitelist`, `enable_forecaster_whitelist`) are independent opt-ins, all default `false`. A topic created with only `enable_worker_whitelist=true` gates inferences but not forecasts; set `enable_forecaster_whitelist` too to gate forecasts. The v16 migration copies worker gate state and entries to the forecaster lists for existing topics, preserving pre-upgrade behavior.
