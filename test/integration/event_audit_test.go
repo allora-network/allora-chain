@@ -12,6 +12,7 @@ import (
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/cosmos/gogoproto/proto"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	"github.com/allora-network/allora-chain/app/params"
@@ -126,14 +127,17 @@ func EventLiveChecks(m testCommon.TestConfig, fromHeight int64, requiredCoverage
 	m.T.Logf("event audit of blocks %d..%d: coverage %s; comparisons skipped %s",
 		fromHeight, toHeight, renderCounts(audit.coverage), renderCounts(audit.skipped))
 
-	missing := missingCoverage(audit.coverage, requiredCoverage)
-	require.Empty(m.T, missing, "events the suite's flows must produce were not observed in blocks %d..%d", fromHeight, toHeight)
+	// Violations are reported before coverage: a wrong payload can also hide an
+	// event the coverage list requires, and the payload is the finding.
 	reported := audit.violations
 	if len(reported) > maxAuditViolationsReported {
 		reported = reported[:maxAuditViolationsReported]
 	}
-	require.Emptyf(m.T, audit.violations, "%d event violations in blocks %d..%d:\n%s",
+	assert.Emptyf(m.T, audit.violations, "%d event violations in blocks %d..%d:\n%s",
 		len(audit.violations), fromHeight, toHeight, strings.Join(reported, "\n"))
+	missing := missingCoverage(audit.coverage, requiredCoverage)
+	require.Empty(m.T, missing, "events the suite's flows must produce were not observed in blocks %d..%d", fromHeight, toHeight)
+	require.Empty(m.T, audit.violations)
 }
 
 func newEventAudit(ctx context.Context, m testCommon.TestConfig) *eventAudit {
