@@ -1,6 +1,7 @@
 #!/bin/bash
 # Reports each localnet validator's height, then saves its logs under the directory
-# given as $1. It always exits 0, so diagnostics never change a job's result.
+# given as $1. With that argument it always exits 0, so diagnostics never change a
+# job's result; without it, it fails as a usage error.
 set +e
 
 log_dir="${1:?usage: collect_validator_diagnostics.sh LOG_DIR}"
