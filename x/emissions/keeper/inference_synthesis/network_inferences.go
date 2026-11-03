@@ -31,8 +31,8 @@ func GetNetworkInferences(
 	return getNetworkInferences(ctx, k, topicId, inferencesNonce, inferences, forecasts, nil)
 }
 
-// GetNetworkInferencesWithTopic calculates network inferences from topic settings
-// captured for this close. Callers that are not closing an epoch keep the stored topic.
+// GetNetworkInferencesWithTopic calculates network inferences using topic.
+// Callers pass the topic whose settings should be used for the calculation.
 func GetNetworkInferencesWithTopic(
 	ctx sdk.Context,
 	k emissionskeeper.Keeper,
@@ -118,6 +118,8 @@ func calcNetworkInferencesMultiple(
 			return nil, errorsmod.Wrap(err, "while getting topic")
 		}
 	}
+
+	ctx = emissionskeeper.WithEpochInitialRegret(ctx, topic.InitialRegret)
 
 	var previousNetworkCombinedLoss *alloraMath.Dec
 	networkLosses, err := k.GetReputerLossKeeper().GetLatestNetworkLossBundle(ctx, topicId)

@@ -2,8 +2,39 @@ package keeper_test
 
 import (
 	alloraMath "github.com/allora-network/allora-chain/math"
+	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
+
+func (s *KeeperTestSuite) TestMissingActorRegretUsesEpochInitialRegret() {
+	ctx := s.Ctx()
+	topicId := s.CreateTopic()
+	topic, err := s.TopicKeeper().GetTopic(ctx, topicId)
+	s.Require().NoError(err)
+	topic.InitialRegret = alloraMath.MustNewDecFromString("0.3")
+	s.Require().NoError(s.TopicKeeper().SetTopic(ctx, topicId, topic))
+
+	worker := s.AddrsStr(1)
+	k := s.RegretsKeeper()
+
+	stored, noPrior, err := k.GetInfererNetworkRegret(ctx, topicId, worker)
+	s.Require().NoError(err)
+	s.Require().True(noPrior)
+	s.Require().True(stored.Value.Equal(topic.InitialRegret))
+
+	fromEpoch := alloraMath.MustNewDecFromString("-1.5")
+	epochCtx := keeper.WithEpochInitialRegret(ctx, fromEpoch)
+	got, noPrior, err := k.GetInfererNetworkRegret(epochCtx, topicId, worker)
+	s.Require().NoError(err)
+	s.Require().True(noPrior)
+	s.Require().True(got.Value.Equal(fromEpoch))
+
+	zeroCtx := keeper.WithEpochInitialRegret(ctx, alloraMath.ZeroDec())
+	got, noPrior, err = k.GetInfererNetworkRegret(zeroCtx, topicId, worker)
+	s.Require().NoError(err)
+	s.Require().True(noPrior)
+	s.Require().True(got.Value.IsZero())
+}
 
 func (s *KeeperTestSuite) TestSetAndGetInfererNetworkRegret() {
 	ctx := s.Ctx()
