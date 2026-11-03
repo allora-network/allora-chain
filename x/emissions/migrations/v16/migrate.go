@@ -272,44 +272,78 @@ func MigrateForecasterWhitelistParam(ctx sdk.Context, emissionsKeeper keeper.Kee
 // forecaster whitelist enabled flag, so that pre-upgrade participation is
 // preserved. Existing forecaster whitelist state is left alone: keysets are
 // idempotent sets, so adding an address already present is a no-op.
+//
+// The worker stores are streamed via the keeper's Iterate* methods (the same
+// pattern ExportGenesis uses) rather than materialized through GetAll*
+// helpers: the migration runs in a single upgrade block, so holding every
+// entry in memory at once is wasteful when the whitelists are large. Streaming
+// one key at a time keeps memory bounded to a single entry regardless of
+// total whitelist size.
 func MigrateWhitelists(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 	wlk := emissionsKeeper.GetWhitelistsKeeper()
 
-	globalWorkers, err := wlk.GetAllGlobalWorkerWhitelist(ctx)
+	globalWorkersIter, err := wlk.IterateGlobalWorkerWhitelist(ctx)
 	if err != nil {
 		return errorsmod.Wrap(err, "MIGRATION V16: failed to list global worker whitelist")
 	}
-	for _, actor := range globalWorkers {
+	defer globalWorkersIter.Close()
+	var globalWorkers int
+	for ; globalWorkersIter.Valid(); globalWorkersIter.Next() {
+		actor, err := globalWorkersIter.Key()
+		if err != nil {
+			return errorsmod.Wrapf(err, "MIGRATION V16: failed to read global worker whitelist entry")
+		}
 		if err := wlk.AddToGlobalForecasterWhitelist(ctx, actor); err != nil {
 			return errorsmod.Wrapf(err, "MIGRATION V16: failed to add actor %s to global forecaster whitelist", actor)
 		}
+		globalWorkers++
 	}
 
-	topicWorkers, err := wlk.GetAllTopicWorkerWhitelist(ctx)
+	topicWorkersIter, err := wlk.IterateTopicWorkerWhitelist(ctx)
 	if err != nil {
 		return errorsmod.Wrap(err, "MIGRATION V16: failed to list topic worker whitelist")
 	}
-	for _, topicAndActor := range topicWorkers {
-		if err := wlk.AddToTopicForecasterWhitelist(ctx, topicAndActor.TopicId, topicAndActor.ActorId); err != nil {
-			return errorsmod.Wrapf(err, "MIGRATION V16: failed to add actor %s to topic %d forecaster whitelist", topicAndActor.ActorId, topicAndActor.TopicId)
+	defer topicWorkersIter.Close()
+	var topicWorkers int
+	var lastTopicId uint64
+	for ; topicWorkersIter.Valid(); topicWorkersIter.Next() {
+		keyValue, err := topicWorkersIter.Key()
+		if err != nil {
+			return errorsmod.Wrapf(err, "MIGRATION V16: failed to read topic worker whitelist entry")
 		}
+		topicId := keyValue.K1()
+		if topicId != lastTopicId {
+			ctx.Logger().Info("MIGRATION V16: copying worker whitelist to forecaster whitelist", "topicId", topicId)
+			lastTopicId = topicId
+		}
+		if err := wlk.AddToTopicForecasterWhitelist(ctx, topicId, keyValue.K2()); err != nil {
+			return errorsmod.Wrapf(err, "MIGRATION V16: failed to add actor %s to topic %d forecaster whitelist", keyValue.K2(), topicId)
+		}
+		topicWorkers++
 	}
 
-	topicIds, err := wlk.GetAllTopicWorkerWhitelistEnabled(ctx)
+	topicGatesIter, err := wlk.IterateTopicWorkerWhitelistEnabled(ctx)
 	if err != nil {
 		return errorsmod.Wrap(err, "MIGRATION V16: failed to list topic worker whitelist enabled flags")
 	}
-	for _, topicId := range topicIds {
+	defer topicGatesIter.Close()
+	var topicsEnabled int
+	for ; topicGatesIter.Valid(); topicGatesIter.Next() {
+		topicId, err := topicGatesIter.Key()
+		if err != nil {
+			return errorsmod.Wrapf(err, "MIGRATION V16: failed to read topic worker whitelist enabled entry")
+		}
 		if err := wlk.EnableTopicForecasterWhitelist(ctx, topicId); err != nil {
 			return errorsmod.Wrapf(err, "MIGRATION V16: failed to enable topic %d forecaster whitelist", topicId)
 		}
+		topicsEnabled++
 	}
 
 	ctx.Logger().Info(
 		"MIGRATION V16: forecaster whitelists backfilled",
-		"globalWorkers", len(globalWorkers),
-		"topicWorkerEntries", len(topicWorkers),
-		"topicsEnabled", len(topicIds),
+		"globalWorkers", globalWorkers,
+		"topicWorkerEntries", topicWorkers,
+		"topicsEnabled", topicsEnabled,
 	)
 	return nil
 }

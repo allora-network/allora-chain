@@ -667,56 +667,22 @@ func (k *WhitelistsKeeper) CanUpdateTopicCreatorWhitelist(ctx context.Context, a
 	return k.IsWhitelistAdmin(ctx, actor)
 }
 
-// GetAllGlobalWorkerWhitelist returns every globally whitelisted worker, sorted by address.
-func (k *WhitelistsKeeper) GetAllGlobalWorkerWhitelist(ctx context.Context) ([]ActorId, error) {
-	out := make([]ActorId, 0)
-	iter, err := k.globalWorkerWhitelist.Iterate(ctx, nil)
-	if err != nil {
-		return nil, err
-	}
-	defer iter.Close()
-	for ; iter.Valid(); iter.Next() {
-		key, err := iter.Key()
-		if err != nil {
-			return nil, err
-		}
-		out = append(out, key)
-	}
-	return out, nil
+// IterateGlobalWorkerWhitelist returns a streaming iterator over every
+// globally whitelisted worker, sorted by address. Callers process one key at
+// a time and Close the iterator, so the whole whitelist is never held in
+// memory at once — unlike the GetAll* helpers.
+func (k *WhitelistsKeeper) IterateGlobalWorkerWhitelist(ctx context.Context) (collections.KeySetIterator[ActorId], error) {
+	return k.globalWorkerWhitelist.Iterate(ctx, nil)
 }
 
-// GetAllTopicWorkerWhitelist returns every (topic, actor) in the topic worker whitelist, sorted by topic then actor.
-func (k *WhitelistsKeeper) GetAllTopicWorkerWhitelist(ctx context.Context) ([]types.TopicAndActorId, error) {
-	out := make([]types.TopicAndActorId, 0)
-	iter, err := k.topicWorkerWhitelist.Iterate(ctx, nil)
-	if err != nil {
-		return nil, err
-	}
-	defer iter.Close()
-	for ; iter.Valid(); iter.Next() {
-		keyValue, err := iter.Key()
-		if err != nil {
-			return nil, err
-		}
-		out = append(out, types.TopicAndActorId{TopicId: keyValue.K1(), ActorId: keyValue.K2()})
-	}
-	return out, nil
+// IterateTopicWorkerWhitelist returns a streaming iterator over every
+// (topic, actor) in the topic worker whitelist, sorted by topic then actor.
+func (k *WhitelistsKeeper) IterateTopicWorkerWhitelist(ctx context.Context) (collections.KeySetIterator[collections.Pair[TopicId, ActorId]], error) {
+	return k.topicWorkerWhitelist.Iterate(ctx, nil)
 }
 
-// GetAllTopicWorkerWhitelistEnabled returns every topic id with the worker gate enabled, sorted.
-func (k *WhitelistsKeeper) GetAllTopicWorkerWhitelistEnabled(ctx context.Context) ([]uint64, error) {
-	out := make([]uint64, 0)
-	iter, err := k.topicWorkerWhitelistEnabled.Iterate(ctx, nil)
-	if err != nil {
-		return nil, err
-	}
-	defer iter.Close()
-	for ; iter.Valid(); iter.Next() {
-		key, err := iter.Key()
-		if err != nil {
-			return nil, err
-		}
-		out = append(out, key)
-	}
-	return out, nil
+// IterateTopicWorkerWhitelistEnabled returns a streaming iterator over every
+// topic id with the worker gate enabled, sorted.
+func (k *WhitelistsKeeper) IterateTopicWorkerWhitelistEnabled(ctx context.Context) (collections.KeySetIterator[TopicId], error) {
+	return k.topicWorkerWhitelistEnabled.Iterate(ctx, nil)
 }
