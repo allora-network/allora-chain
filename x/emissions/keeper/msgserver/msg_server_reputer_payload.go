@@ -16,6 +16,11 @@ import (
 func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.InsertReputerPayloadRequest) (_ *types.InsertReputerPayloadResponse, err error) {
 	defer metrics.RecordMetrics("InsertReputerPayload", time.Now(), &err)
 
+	err = types.ValidateStringIsBech32(msg.Sender)
+	if err != nil {
+		return nil, errorsmod.Wrapf(err, "Error validating sender address")
+	}
+
 	if err = msg.ReputerValueBundle.Validate(); err != nil {
 		return nil, errorsmod.Wrap(err, "failed to validate reputer value bundle")
 	}
@@ -69,14 +74,16 @@ func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.InsertR
 		return nil, errorsmod.Wrapf(types.ErrUnfulfilledNonceNotFound, "reputer nonce")
 	}
 
-	withinWindow, err := keeper.BlockWithinReputerSubmissionWindowOfNonce(topic, *nonce, blockHeight)
+	// Use the same bounds for admission and the rejection message.
+	windowStart, windowEnd, err := keeper.ReputerSubmissionWindowBounds(topic, *nonce)
 	if err != nil {
 		return nil, err
-	} else if !withinWindow {
+	}
+	if blockHeight < windowStart || blockHeight > windowEnd {
 		return nil, errorsmod.Wrapf(
 			types.ErrReputerNonceWindowNotAvailable,
 			"Reputer window not open for topic: %d, current block %d, start window: %d, end window: %d",
-			topicId, blockHeight, nonce.ReputerNonce.BlockHeight+topic.GroundTruthLag, nonce.ReputerNonce.BlockHeight+topic.GroundTruthLag+topic.EpochLength*2,
+			topicId, blockHeight, windowStart, windowEnd,
 		)
 	}
 
@@ -96,7 +103,7 @@ func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.InsertR
 		return nil, errorsmod.Wrapf(types.ErrInsufficientStake, "reputer does not have sufficient stake in the topic")
 	}
 
-	// Before accepting data, transfer fee amount from sender to ecosystem bucket
+	// Before accepting data, transfer the fee to the ecosystem bucket
 	err = sendEffectiveRevenueActivateTopicIfWeightSufficient(ctx, ms, msg.Sender, topicId, moduleParams.DataSendingFee)
 	if err != nil {
 		return nil, err

@@ -1,6 +1,8 @@
 package keeper_test
 
 import (
+	gogoproto "github.com/cosmos/gogoproto/proto"
+
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
@@ -89,11 +91,13 @@ func (s *KeeperTestSuite) TestInactivateTopicWithoutMinWeightReset_TopicFoundInB
 	err := k.SetBlockToActiveTopics(ctx, block, activeTopics)
 	s.Require().NoError(err)
 
-	// Create and set up topicId2 to be active
-	topic := s.MockTopic()
-	topic.Id = topicId2
-	err = k.SetTopic(ctx, topicId2, topic)
-	s.Require().NoError(err)
+	// Create every topic in the bucket so its lowest-weight metadata can be recomputed.
+	for _, topicId := range activeTopics.TopicIds {
+		topic := s.MockTopic()
+		topic.Id = topicId
+		err = k.SetTopic(ctx, topicId, topic)
+		s.Require().NoError(err)
+	}
 
 	// Make it active in the system
 	err = k.SetTopicToNextPossibleChurningBlock(ctx, topicId2, block)
@@ -163,4 +167,82 @@ func (s *KeeperTestSuite) TestInactivateTopicWithoutMinWeightReset_EmptyBlockLis
 	retrievedTopics, err = k.GetActiveTopicIdsAtBlock(ctx, block)
 	s.Require().NoError(err)
 	s.Require().Empty(retrievedTopics.TopicIds, "Block should still have no active topics")
+}
+
+func (s *KeeperTestSuite) TestActivateTopicEmitsOpenReputerWindowEvent() {
+	ctx := s.Ctx()
+	k := s.TopicKeeper()
+	topic := s.MockTopic()
+	topic.Id = 9_000_004
+	topic.EpochLength = 100
+	topic.GroundTruthLag = 130
+	nonce := types.Nonce{BlockHeight: 1000}
+
+	err := k.SetTopic(ctx, topic.Id, topic)
+	s.Require().NoError(err)
+	err = s.NonceKeeper().AddReputerNonce(ctx, topic.Id, &nonce)
+	s.Require().NoError(err)
+
+	s.WithBlockHeight(1250)
+	eventStart := len(s.Ctx().EventManager().Events())
+	err = k.ActivateTopic(s.Ctx(), topic.Id)
+	s.Require().NoError(err)
+
+	openedEvents := 0
+	openedEventName := gogoproto.MessageName(&types.EventReputerSubmissionWindowOpened{}) //nolint:exhaustruct // only the registered type name is needed, not an instance
+	for _, event := range s.Ctx().EventManager().Events()[eventStart:] {
+		if event.Type == openedEventName {
+			openedEvents++
+		}
+	}
+	s.Require().Equal(1, openedEvents)
+
+	err = k.InactivateTopic(s.Ctx(), topic.Id)
+	s.Require().NoError(err)
+}
+
+func countReputerSubmissionWindowOpenedEvents(s *KeeperTestSuite, eventStart int) int {
+	count := 0
+	openedEventName := gogoproto.MessageName(&types.EventReputerSubmissionWindowOpened{}) //nolint:exhaustruct // only the registered type name is needed, not an instance
+	for _, event := range s.Ctx().EventManager().Events()[eventStart:] {
+		if event.Type == openedEventName {
+			count++
+		}
+	}
+	return count
+}
+
+// A topic activated on the last block of a reputer submission window must
+// still announce the window: admission accepts submissions in that block, so
+// the open event cannot stop one block earlier than the accepted range.
+func (s *KeeperTestSuite) TestActivateTopicEmitsOpenReputerWindowEventAtWindowEnd() {
+	ctx := s.Ctx()
+	k := s.TopicKeeper()
+	topic := s.MockTopic()
+	topic.Id = 9_000_005
+	topic.EpochLength = 100
+	topic.GroundTruthLag = 130
+	nonce := types.Nonce{BlockHeight: 1000}
+
+	err := k.SetTopic(ctx, topic.Id, topic)
+	s.Require().NoError(err)
+	err = s.NonceKeeper().AddReputerNonce(ctx, topic.Id, &nonce)
+	s.Require().NoError(err)
+
+	// Window bounds: [1200, 1300] inclusive.
+	s.WithBlockHeight(1300)
+	eventStart := len(s.Ctx().EventManager().Events())
+	err = k.ActivateTopic(s.Ctx(), topic.Id)
+	s.Require().NoError(err)
+	s.Require().Equal(1, countReputerSubmissionWindowOpenedEvents(s, eventStart))
+
+	err = k.InactivateTopic(s.Ctx(), topic.Id)
+	s.Require().NoError(err)
+
+	// Past the window end no event is emitted.
+	s.WithBlockHeight(1301)
+	eventStart = len(s.Ctx().EventManager().Events())
+	err = k.ActivateTopic(s.Ctx(), topic.Id)
+	s.Require().NoError(err)
+	s.Require().Equal(0, countReputerSubmissionWindowOpenedEvents(s, eventStart))
 }

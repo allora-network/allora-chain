@@ -1,6 +1,8 @@
 package keeper_test
 
 import (
+	"cosmossdk.io/collections"
+
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
@@ -473,4 +475,79 @@ func (s *KeeperTestSuite) TestRemoveReputerLoss() {
 	// Verify the reputer loss was removed
 	_, err = k.GetReputerLatestLossByTopicId(ctx, topicId, reputer)
 	s.Require().Error(err) // Expect an error since the loss should be removed
+}
+
+func (s *KeeperTestSuite) TestRetireReputerSubmissions() {
+	ctx := s.Ctx()
+	k := s.ReputerLossKeeper()
+	topicId := s.CreateTopic()
+
+	closingNonce := int64(100)
+	laterNonce := int64(300)
+
+	insertBundle := func(accountIndex int, nonceHeight int64) {
+		//nolint:exhaustruct
+		valueBundle := types.ValueBundle{
+			TopicId: topicId,
+			ReputerRequestNonce: &types.ReputerRequestNonce{
+				ReputerNonce: &types.Nonce{BlockHeight: nonceHeight},
+			},
+			Reputer:       s.AddrsStr(accountIndex),
+			CombinedValue: alloraMath.MustNewDecFromString("123"),
+			InfererValues: s.createDefaultInfererValues(),
+			NaiveValue:    alloraMath.MustNewDecFromString("123"),
+		}
+		signature := s.SignValueBundle(&valueBundle, s.PrivKeys(accountIndex))
+		err := k.InsertReputerLoss(ctx, topicId, types.ReputerValueBundle{
+			ValueBundle: &valueBundle,
+			Signature:   signature,
+			Pubkey:      s.PubKeyHexStr(accountIndex),
+		})
+		s.Require().NoError(err)
+	}
+
+	insertBundle(0, closingNonce)
+	insertBundle(1, laterNonce)
+	for _, accountIndex := range []int{0, 1, 2} {
+		err := k.AddActiveReputer(ctx, topicId, s.AddrsStr(accountIndex))
+		s.Require().NoError(err)
+	}
+
+	// Retiring the closing nonce removes only its own submission; the marker
+	// of a reputer without a stored bundle is removed as well.
+	err := k.RetireReputerSubmissionsForNonce(ctx, topicId, closingNonce)
+	s.Require().NoError(err)
+
+	_, err = k.GetReputerLatestLossByTopicId(ctx, topicId, s.AddrsStr(0))
+	s.Require().ErrorIs(err, collections.ErrNotFound)
+	isActive, err := k.IsActiveReputer(ctx, topicId, s.AddrsStr(0))
+	s.Require().NoError(err)
+	s.Require().False(isActive)
+
+	isActive, err = k.IsActiveReputer(ctx, topicId, s.AddrsStr(2))
+	s.Require().NoError(err)
+	s.Require().False(isActive)
+
+	// The submission of a later nonce survives.
+	laterBundle, err := k.GetReputerLatestLossByTopicId(ctx, topicId, s.AddrsStr(1))
+	s.Require().NoError(err)
+	s.Require().Equal(laterNonce, laterBundle.ReputerRequestNonce.ReputerNonce.BlockHeight)
+	isActive, err = k.IsActiveReputer(ctx, topicId, s.AddrsStr(1))
+	s.Require().NoError(err)
+	s.Require().True(isActive)
+
+	// Retiring before a height that does not cover the later nonce keeps it.
+	err = k.RetireReputerSubmissionsBeforeBlock(ctx, topicId, laterNonce)
+	s.Require().NoError(err)
+	_, err = k.GetReputerLatestLossByTopicId(ctx, topicId, s.AddrsStr(1))
+	s.Require().NoError(err)
+
+	// Retiring before a height past the later nonce removes it.
+	err = k.RetireReputerSubmissionsBeforeBlock(ctx, topicId, laterNonce+1)
+	s.Require().NoError(err)
+	_, err = k.GetReputerLatestLossByTopicId(ctx, topicId, s.AddrsStr(1))
+	s.Require().ErrorIs(err, collections.ErrNotFound)
+	isActive, err = k.IsActiveReputer(ctx, topicId, s.AddrsStr(1))
+	s.Require().NoError(err)
+	s.Require().False(isActive)
 }
