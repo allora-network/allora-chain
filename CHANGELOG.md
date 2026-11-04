@@ -67,7 +67,86 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+* [#968](https://github.com/allora-network/allora-chain/pull/968) Per-topic `max_top_inferers_to_reward`, required within the global range, with migration v16
+* [#969](https://github.com/allora-network/allora-chain/pull/969) New global `min_top_inferers_to_reward` as the floor for the per-topic inferer cap (default `5`)
+
 ### Changed
+
+* [#968](https://github.com/allora-network/allora-chain/pull/968) The global `max_top_inferers_to_reward` now rejects zero and serves as the live ceiling for the per-topic cap; score-history retention still uses the global value.
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+* [#1008](https://github.com/allora-network/allora-chain/pull/1008) Fix `Simulate` under-reporting gas by ~31% on the feemarket fee path (fee handling no-ops in simulation), which caused out-of-gas on standard txs; compensation is simulate-only, deliver gas unchanged.
+* [#1000](https://github.com/allora-network/allora-chain/pull/1000) Fix bug on accumulated topic weight sum which could drift when unstaking from an inactive topic.
+* [#1002](https://github.com/allora-network/allora-chain/pull/1002) Fix epoch-end topic reactivation bookkeeping: a refused reschedule now fully inactivates the topic instead of leaving it in the active set without a schedule, so its weight is not double-counted on a later activation. Migration fixes potential misalignment.
+* [#993](https://github.com/allora-network/allora-chain/pull/993) Open the reputer submission window at the end of the reveal epoch, and retire only the closing nonce's reputer submissions when closing it, fixing a permanent loss of network losses and rewards on fractional-lag topics.
+* [#1003](https://github.com/allora-network/allora-chain/pull/1003) Topic creation now emits its events in order — create, whitelist gates, fee — with the creation fee reported as `EventFundTopic` (creator as funder). Gate enable/disable emits once per state transition, and zero-fee payments skip no-op bank writes but still attempt activation.
+
+### Security
+
+* [#980](https://github.com/allora-network/allora-chain/pull/980) Patch a fast-node cache/commit race in `iavl` that caused `AppHash` divergence: the ecosystem treasury account is deleted every block at zero balance, and a concurrent balance query during commit could read its value one block stale, minting the wrong amount and forking the node. Points `iavl` at `github.com/allora-network/iavl` (`v1.2.6` + backport of [cosmos/iavl#1142](https://github.com/cosmos/iavl/pull/1142)). Not consensus-breaking; no migration required.
+
+### API Breaking Changes
+
+#### Removed
+
+#### Added
+
+#### Changed
+
+# [Released]
+
+# v0.17.0
+
+### Added
+
+### Changed
+
+* [#945](https://github.com/allora-network/allora-chain/pull/945) Fix parameter advertising in autocli
+* [#946](https://github.com/allora-network/allora-chain/pull/946) Fix dry-run and auto-gas issues. Add keyring simulation
+* [#949](https://github.com/allora-network/allora-chain/pull/949) Increase p_norm available range
+
+### Deprecated
+
+* [#957](https://github.com/allora-network/allora-chain/pull/957) Deprecated `types.NewInputReputerValueBundleFromInput`; use `types.NewReputerValueBundleFromInput`.
+
+### Removed
+
+### Fixed
+
+* [#964](https://github.com/allora-network/allora-chain/pull/964) Clamp `Dec` magnitudes in emissions events to keep event payloads compact.
+
+### Security
+
+### API Breaking Changes
+
+#### Removed
+
+* [#957](https://github.com/allora-network/allora-chain/pull/957) Removed `types.NewInferenceFromInput`, `types.NewInferenceForecastBundleFromInput`, and `types.NewWorkerDataBundleFromInput`. Clients build the `Input*` types directly and sign the `InputInferenceForecastBundle`.
+* [#947](https://github.com/allora-network/allora-chain/pull/947), [#956](https://github.com/allora-network/allora-chain/pull/956) Removed the v10 event messages `emissions.v10.EventNetworkInferences` and `emissions.v10.EventOutlierResistantNetworkInferences`. Both are superseded by `emissions.v10.EventNetworkInferenceBundle` with an `outlier-resistant` flag (see API Breaking Changes → Changed).
+
+#### Added
+
+#### Changed
+
+* [#947](https://github.com/allora-network/allora-chain/pull/947) Renamed the v10 worker latest-inference query: gRPC `GetWorkerLatestInferenceByTopicId` → `GetWorkerLatestInputInferenceByTopicId`, REST `/emissions/v10/topics/{topic_id}/workers/{worker_address}/latest_inference` → `.../latest_input_inference`. Returns an `InputInference` instead of a dense `Inference`; gRPC/REST/CLI clients must update.
+* [#957](https://github.com/allora-network/allora-chain/pull/957) Renamed and retyped keeper methods for network inferences: `InsertNetworkInferences` → `InsertNetworkInferenceBundle`, `InsertOutlierResistantNetworkInferences` → `InsertOutlierResistantNetworkInferenceBundle`, and `GetNetworkInferences` / `GetOutlierResistantNetworkInferences` now take/return `types.NetworkInferenceBundle` instead of `types.ValueBundle`. `GetOutlierResistantNetworkInferences` also now takes a `types.Topic` (previously `topicId`) and errors on multi-label topics.
+* [#947](https://github.com/allora-network/allora-chain/pull/947) Extended v10 `CreateNewTopic` and `UpdateTopic` with label registry fields (`max_labels_per_submission`, `label_whitelist`, `label_default_value`), and updated the corresponding AutoCLI `create-topic`/`update-topic` positional arguments.
+* [#942](https://github.com/allora-network/allora-chain/pull/942) gRPC/REST query `GetLatestNetworkInferencesOutlierResistant` now returns `InvalidArgument` for multi-label (`TOPIC_OUTPUT_ARITY_MULTI`) topics and `NotFound` for unknown topics, matching `GetNetworkInferencesAtBlockOutlierResistant`. Previously it returned `OK` with an empty bundle (nonce 0) in both cases.
+* [#947](https://github.com/allora-network/allora-chain/pull/947) Consolidated the network-inference event stream. The chain now emits a single `emissions.v10.EventNetworkInferenceBundle` for both regular and outlier-resistant network inferences, distinguished by the `outlier_resistant` bool field, replacing the separate v9 events `emissions.v9.EventNetworkInferences` and `emissions.v9.EventOutlierResistantNetworkInferences`. Indexers/subscribers must subscribe to `emissions.v10.EventNetworkInferenceBundle` and branch on `outlier_resistant`; after the upgrade the v9 event types are no longer emitted.
+
+# v0.16.0
+
+### Added
+
+### Changed
+
+* [#910](https://github.com/allora-network/allora-chain/pull/910) Regret norm to use MAD + adjust quantiles
+* [#919](https://github.com/allora-network/allora-chain/pull/919) Keeper refactor + upgrade testing improvements
 
 ### Deprecated
 
@@ -86,8 +165,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### Changed
 
 
-# [Released]
-
 # v0.15.1
 
 ### Added
@@ -99,6 +176,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 
 ### Fixed
+
+* [#842](https://github.com/allora-network/allora-chain/pull/842) Cover against all listening coefficients being zero
 
 ### Security
 

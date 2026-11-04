@@ -10,7 +10,6 @@ import (
 
 func (s *QueryServerTestSuite) TestGetWorkerNodeInfo() {
 	ctx := s.Ctx()
-	keeper := s.EmissionsKeeper()
 	queryServer := s.EmissionsQueryServer()
 	worker := s.AddrsStr(0)
 
@@ -20,7 +19,7 @@ func (s *QueryServerTestSuite) TestGetWorkerNodeInfo() {
 	}
 
 	topicId := uint64(401)
-	err := keeper.InsertWorker(ctx, topicId, worker, expectedNode)
+	err := s.WorkerKeeper().InsertWorker(ctx, topicId, worker, expectedNode)
 	s.Require().NoError(err, "InsertWorker should not produce an error")
 
 	req := &types.GetWorkerNodeInfoRequest{
@@ -43,7 +42,6 @@ func (s *QueryServerTestSuite) TestGetWorkerNodeInfo() {
 
 func (s *QueryServerTestSuite) TestGetReputerNodeInfo() {
 	ctx := s.Ctx()
-	keeper := s.EmissionsKeeper()
 	queryServer := s.EmissionsQueryServer()
 
 	reputer := s.AddrsStr(1)
@@ -53,7 +51,7 @@ func (s *QueryServerTestSuite) TestGetReputerNodeInfo() {
 	}
 
 	topicId := uint64(501)
-	err := keeper.InsertReputer(ctx, topicId, reputer, expectedReputer)
+	err := s.ReputerLossKeeper().InsertReputer(ctx, topicId, reputer, expectedReputer)
 	s.Require().NoError(err, "InsertReputer should not produce an error")
 
 	req := &types.GetReputerNodeInfoRequest{
@@ -102,9 +100,9 @@ func (s *QueryServerTestSuite) TestRegisteredWorkerIsRegisteredInTopicId() {
 	topic1 := s.MockTopic()
 
 	// Topic register
-	err := s.EmissionsKeeper().SetTopic(ctx, topicId, topic1)
+	err := s.TopicKeeper().SetTopic(ctx, topicId, topic1)
 	require.NoError(err, "SetTopic should not return an error")
-	err = s.EmissionsKeeper().ActivateTopic(ctx, topicId)
+	err = s.TopicKeeper().ActivateTopic(ctx, topicId)
 	require.NoError(err, "ActivateTopic should not return an error")
 	// Worker register
 	registerMsg := &types.RegisterRequest{
@@ -114,7 +112,7 @@ func (s *QueryServerTestSuite) TestRegisteredWorkerIsRegisteredInTopicId() {
 		Owner:     workerAddrString,
 	}
 
-	moduleParams, err := s.EmissionsKeeper().GetParams(ctx)
+	moduleParams, err := s.ParamsKeeper().GetParams(ctx)
 	s.Require().NoError(err)
 	mintAmount := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, moduleParams.RegistrationFee))
 	err = s.BankKeeper().MintCoins(ctx, minttypes.ModuleName, mintAmount)
@@ -150,13 +148,13 @@ func (s *QueryServerTestSuite) TestRegisteredReputerIsRegisteredInTopicId() {
 	// Mock setup for addresses
 	reputerAddr := s.Addrs(2)
 	topicId := uint64(1)
-	topic1, err := s.EmissionsKeeper().GetTopic(s.Ctx(), topicId)
+	topic1, err := s.TopicKeeper().GetTopic(s.Ctx(), topicId)
 	s.Require().NoError(err, "Getting topic should not fail")
 
 	// Topic register
-	err = s.EmissionsKeeper().SetTopic(ctx, topicId, topic1)
+	err = s.TopicKeeper().SetTopic(ctx, topicId, topic1)
 	require.NoError(err, "SetTopic should not return an error")
-	err = s.EmissionsKeeper().ActivateTopic(ctx, topicId)
+	err = s.TopicKeeper().ActivateTopic(ctx, topicId)
 	require.NoError(err, "ActivateTopic should not return an error")
 	// Register reputer
 	registerMsg := &types.RegisterRequest{
@@ -166,7 +164,7 @@ func (s *QueryServerTestSuite) TestRegisteredReputerIsRegisteredInTopicId() {
 		Owner:     reputerAddr.String(),
 	}
 
-	moduleParams, err := s.EmissionsKeeper().GetParams(ctx)
+	moduleParams, err := s.ParamsKeeper().GetParams(ctx)
 	s.Require().NoError(err)
 	mintAmount := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, moduleParams.RegistrationFee))
 	err = s.BankKeeper().MintCoins(ctx, minttypes.ModuleName, mintAmount)

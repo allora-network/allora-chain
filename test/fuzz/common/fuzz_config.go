@@ -221,7 +221,7 @@ func GetFuzzConfig(t *testing.T) FuzzConfig {
 	if err != nil {
 		jsonConfig = nil
 	} else {
-		unmarshalJson := FuzzConfigJson{} //nolint: exhaustruct // this is how unmarshalling works
+		unmarshalJson := FuzzConfigJson{} //nolint:exhaustruct // this is how unmarshalling works
 		err = json.Unmarshal(configJsonFile, &unmarshalJson)
 		if err != nil {
 			jsonConfig = nil

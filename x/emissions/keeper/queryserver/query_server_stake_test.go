@@ -12,7 +12,7 @@ import (
 func (s *QueryServerTestSuite) TestGetTotalStake() {
 	ctx := s.Ctx()
 	queryServer := s.EmissionsQueryServer()
-	keeper := s.EmissionsKeeper()
+	keeper := s.StakingKeeper()
 
 	expectedTotalStake := cosmosMath.NewInt(1000)
 	err := keeper.SetTotalStake(ctx, expectedTotalStake)
@@ -28,7 +28,7 @@ func (s *QueryServerTestSuite) TestGetTotalStake() {
 func (s *QueryServerTestSuite) TestGetReputerStakeInTopic() {
 	ctx := s.Ctx()
 	queryServer := s.EmissionsQueryServer()
-	keeper := s.EmissionsKeeper()
+	keeper := s.StakingKeeper()
 	topicId := uint64(1)
 	reputerAddr := s.AddrsStr(1)
 	initialStake := cosmosMath.NewInt(250)
@@ -50,7 +50,7 @@ func (s *QueryServerTestSuite) TestGetReputerStakeInTopic() {
 func (s *QueryServerTestSuite) TestGetMultiReputerStakeInTopic() {
 	ctx := s.Ctx()
 	queryServer := s.EmissionsQueryServer()
-	keeper := s.EmissionsKeeper()
+	keeper := s.StakingKeeper()
 	topicId := uint64(1)
 	reputer1Addr := s.AddrsStr(1)
 	reputer2Addr := s.AddrsStr(2)
@@ -78,7 +78,7 @@ func (s *QueryServerTestSuite) TestGetMultiReputerStakeInTopic() {
 func (s *QueryServerTestSuite) TestGetDelegateStakeInTopicInReputer() {
 	ctx := s.Ctx()
 	queryServer := s.EmissionsQueryServer()
-	keeper := s.EmissionsKeeper()
+	keeper := s.StakingKeeper()
 	topicId := uint64(1)
 	delegatorAddr := s.AddrsStr(0)
 	reputerAddr := s.AddrsStr(1)
@@ -101,7 +101,7 @@ func (s *QueryServerTestSuite) TestGetDelegateStakeInTopicInReputer() {
 func (s *QueryServerTestSuite) TestGetStakeFromDelegatorInTopicInReputer() {
 	ctx := s.Ctx()
 	queryServer := s.EmissionsQueryServer()
-	keeper := s.EmissionsKeeper()
+	keeper := s.StakingKeeper()
 
 	topicId := uint64(1)
 	delegatorAddr := s.AddrsStr(0)
@@ -126,7 +126,7 @@ func (s *QueryServerTestSuite) TestGetStakeFromDelegatorInTopicInReputer() {
 func (s *QueryServerTestSuite) TestGetStakeFromDelegatorInTopic() {
 	ctx := s.Ctx()
 	queryServer := s.EmissionsQueryServer()
-	keeper := s.EmissionsKeeper()
+	keeper := s.StakingKeeper()
 
 	topicId := uint64(1)
 	delegatorAddr := s.AddrsStr(0)
@@ -154,7 +154,7 @@ func (s *QueryServerTestSuite) TestGetStakeFromDelegatorInTopic() {
 func (s *QueryServerTestSuite) TestGetTopicStake() {
 	ctx := s.Ctx()
 	queryServer := s.EmissionsQueryServer()
-	keeper := s.EmissionsKeeper()
+	keeper := s.StakingKeeper()
 
 	topicId := uint64(1)
 	reputerAddr := s.AddrsStr(0)
@@ -176,7 +176,7 @@ func (s *QueryServerTestSuite) TestGetTopicStake() {
 func (s *QueryServerTestSuite) TestGetStakeRemovalInfo() {
 	ctx := s.Ctx()
 	queryServer := s.EmissionsQueryServer()
-	keeper := s.EmissionsKeeper()
+	keeper := s.StakingKeeper()
 	blockHeight := int64(1234)
 	topicId := uint64(1)
 	address := s.AddrsStr(0)
@@ -202,7 +202,7 @@ func (s *QueryServerTestSuite) TestGetStakeRemovalInfo() {
 func (s *QueryServerTestSuite) TestGetDelegateStakeRemovalInfo() {
 	ctx := s.Ctx()
 	queryServer := s.EmissionsQueryServer()
-	keeper := s.EmissionsKeeper()
+	keeper := s.StakingKeeper()
 	require := s.Require()
 	blockHeight := int64(1234)
 	topicId := uint64(1)
@@ -234,7 +234,7 @@ func (s *QueryServerTestSuite) TestGetDelegateStakeRemovalInfo() {
 func (s *QueryServerTestSuite) TestGetStakeRemovalsForBlock() {
 	ctx := s.Ctx()
 	qs := s.EmissionsQueryServer()
-	keeper := s.EmissionsKeeper()
+	keeper := s.StakingKeeper()
 	require := s.Require()
 	blockHeight := int64(1234)
 	expecteds := []types.StakeRemovalInfo{
@@ -273,7 +273,7 @@ func (s *QueryServerTestSuite) TestGetStakeRemovalsForBlock() {
 func (s *QueryServerTestSuite) TestGetDelegateStakeRemovalsForBlock() {
 	ctx := s.Ctx()
 	qs := s.EmissionsQueryServer()
-	keeper := s.EmissionsKeeper()
+	keeper := s.StakingKeeper()
 	require := s.Require()
 	blockHeight := int64(1234)
 	expecteds := []types.DelegateStakeRemovalInfo{
@@ -313,7 +313,7 @@ func (s *QueryServerTestSuite) TestGetDelegateStakeRemovalsForBlock() {
 
 func (s *QueryServerTestSuite) TestGetStakeReputerAuthority() {
 	ctx := s.Ctx()
-	keeper := s.EmissionsKeeper()
+	keeper := s.StakingKeeper()
 	topicId := uint64(1)
 	reputerAddr := s.AddrsStr(0)
 	stakeAmount := cosmosMath.NewInt(500)
@@ -336,7 +336,7 @@ func (s *QueryServerTestSuite) TestGetStakeReputerAuthority() {
 func (s *QueryServerTestSuite) TestGetDelegateStakePlacement() {
 	ctx := s.Ctx()
 	require := s.Require()
-	keeper := s.EmissionsKeeper()
+	keeper := s.ReputerLossKeeper()
 
 	delegator := s.Addrs(0)
 	delegatorAddr := s.AddrsStr(0)
@@ -360,7 +360,7 @@ func (s *QueryServerTestSuite) TestGetDelegateStakePlacement() {
 		Amount:  stakeAmount,
 	}
 
-	reputerStake, err := s.EmissionsKeeper().GetStakeReputerAuthority(ctx, topicId, reputerAddr)
+	reputerStake, err := s.StakingKeeper().GetStakeReputerAuthority(ctx, topicId, reputerAddr)
 	require.NoError(err)
 	require.Equal(cosmosMath.ZeroInt(), reputerStake, "Stake amount mismatch")
 
@@ -378,7 +378,7 @@ func (s *QueryServerTestSuite) TestGetDelegateStakePlacement() {
 	require.NoError(err)
 	require.NotNil(response, "Response should not be nil after successful delegation")
 
-	reputerStake, err = s.EmissionsKeeper().GetStakeReputerAuthority(ctx, topicId, reputerAddr)
+	reputerStake, err = s.StakingKeeper().GetStakeReputerAuthority(ctx, topicId, reputerAddr)
 	require.NoError(err)
 	require.Equal(stakeAmount, reputerStake, "Stake amount mismatch")
 
@@ -396,13 +396,13 @@ func (s *QueryServerTestSuite) TestGetDelegateStakePlacement() {
 
 func (s *QueryServerTestSuite) TestGetDelegateStakeUponReputer() {
 	ctx := s.Ctx()
-	keeper := s.EmissionsKeeper()
+	keeper := s.StakingKeeper()
 	topicId := uint64(1)
 	delegatorAddr := s.AddrsStr(0)
 	reputerAddr := s.AddrsStr(1)
 	initialStakeAmount := cosmosMath.NewInt(1000)
 	removeStakeAmount := cosmosMath.NewInt(500)
-	moduleParams, err := keeper.GetParams(ctx)
+	moduleParams, err := s.ParamsKeeper().GetParams(ctx)
 	s.Require().NoError(err)
 	startBlock := ctx.BlockHeight()
 	endBlock := startBlock + moduleParams.RemoveStakeDelayWindow
@@ -447,7 +447,7 @@ func (s *QueryServerTestSuite) TestGetDelegateStakeUponReputer() {
 }
 
 func (s *QueryServerTestSuite) TestGetStakeRemovalForReputerAndTopicId() {
-	k := s.EmissionsKeeper()
+	k := s.StakingKeeper()
 	ctx := s.Ctx()
 	reputer := s.AddrsStr(2)
 	topicId := uint64(1)

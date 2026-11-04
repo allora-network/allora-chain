@@ -7,13 +7,12 @@ import (
 func (s *QueryServerTestSuite) TestIsWhitelistAdmin() {
 	ctx := s.Ctx()
 	queryServer := s.EmissionsQueryServer()
-	keeper := s.EmissionsKeeper()
 
 	// Create a test address
 	testAddress := "allo10es2a97cr7u2m3aa08tcu7yd0d300thdct45ve"
 	antitestAddress := "allo1snm6pxg7p9jetmkhz0jz9ku3vdzmszegy9q5lh"
 
-	err := keeper.AddWhitelistAdmin(ctx, testAddress)
+	err := s.WhitelistsKeeper().AddWhitelistAdmin(ctx, testAddress)
 	s.Require().NoError(err, "AddWhitelistAdmin should not produce an error")
 
 	req := &types.IsWhitelistAdminRequest{
@@ -38,12 +37,11 @@ func (s *QueryServerTestSuite) TestIsWhitelistAdmin() {
 func (s *QueryServerTestSuite) TestIsWhitelistedGlobalWorker() {
 	ctx := s.Ctx()
 	queryServer := s.EmissionsQueryServer()
-	keeper := s.EmissionsKeeper()
 
 	testAddress := "allo10es2a97cr7u2m3aa08tcu7yd0d300thdct45ve"
 	antitestAddress := "allo1snm6pxg7p9jetmkhz0jz9ku3vdzmszegy9q5lh"
 
-	err := keeper.AddToGlobalWorkerWhitelist(ctx, testAddress)
+	err := s.WhitelistsKeeper().AddToGlobalWorkerWhitelist(ctx, testAddress)
 	s.Require().NoError(err, "AddToGlobalWorkerWhitelist should not produce an error")
 
 	req := &types.IsWhitelistedGlobalWorkerRequest{
@@ -68,12 +66,11 @@ func (s *QueryServerTestSuite) TestIsWhitelistedGlobalWorker() {
 func (s *QueryServerTestSuite) TestIsWhitelistedGlobalReputer() {
 	ctx := s.Ctx()
 	queryServer := s.EmissionsQueryServer()
-	keeper := s.EmissionsKeeper()
 
 	testAddress := "allo10es2a97cr7u2m3aa08tcu7yd0d300thdct45ve"
 	antitestAddress := "allo1snm6pxg7p9jetmkhz0jz9ku3vdzmszegy9q5lh"
 
-	err := keeper.AddToGlobalReputerWhitelist(ctx, testAddress)
+	err := s.WhitelistsKeeper().AddToGlobalReputerWhitelist(ctx, testAddress)
 	s.Require().NoError(err, "AddToGlobalReputerWhitelist should not produce an error")
 
 	req := &types.IsWhitelistedGlobalReputerRequest{
@@ -98,12 +95,11 @@ func (s *QueryServerTestSuite) TestIsWhitelistedGlobalReputer() {
 func (s *QueryServerTestSuite) TestIsWhitelistedGlobalAdmin() {
 	ctx := s.Ctx()
 	queryServer := s.EmissionsQueryServer()
-	keeper := s.EmissionsKeeper()
 
 	testAddress := "allo10es2a97cr7u2m3aa08tcu7yd0d300thdct45ve"
 	antitestAddress := "allo1snm6pxg7p9jetmkhz0jz9ku3vdzmszegy9q5lh"
 
-	err := keeper.AddToGlobalAdminWhitelist(ctx, testAddress)
+	err := s.WhitelistsKeeper().AddToGlobalAdminWhitelist(ctx, testAddress)
 	s.Require().NoError(err, "AddToGlobalAdminWhitelist should not produce an error")
 
 	req := &types.IsWhitelistedGlobalAdminRequest{
@@ -128,7 +124,6 @@ func (s *QueryServerTestSuite) TestIsWhitelistedGlobalAdmin() {
 func (s *QueryServerTestSuite) TestIsTopicWhitelistEnabled() {
 	ctx := s.Ctx()
 	queryServer := s.EmissionsQueryServer()
-	keeper := s.EmissionsKeeper()
 
 	topicId := uint64(2)
 
@@ -143,7 +138,7 @@ func (s *QueryServerTestSuite) TestIsTopicWhitelistEnabled() {
 	s.Require().False(response.IsTopicWorkerWhitelistEnabled)
 
 	// Enable whitelist
-	err = keeper.EnableTopicWorkerWhitelist(ctx, topicId)
+	err = s.WhitelistsKeeper().EnableTopicWorkerWhitelist(ctx, topicId)
 	s.Require().NoError(err)
 
 	response, err = queryServer.IsTopicWorkerWhitelistEnabled(ctx, req)
@@ -155,7 +150,6 @@ func (s *QueryServerTestSuite) TestIsTopicWhitelistEnabled() {
 func (s *QueryServerTestSuite) TestIsTopicReputerWhitelistEnabled() {
 	ctx := s.Ctx()
 	queryServer := s.EmissionsQueryServer()
-	keeper := s.EmissionsKeeper()
 
 	topicId := uint64(2)
 
@@ -170,7 +164,7 @@ func (s *QueryServerTestSuite) TestIsTopicReputerWhitelistEnabled() {
 	s.Require().False(response.IsTopicReputerWhitelistEnabled)
 
 	// Enable whitelist
-	err = keeper.EnableTopicReputerWhitelist(ctx, topicId)
+	err = s.WhitelistsKeeper().EnableTopicReputerWhitelist(ctx, topicId)
 	s.Require().NoError(err)
 
 	response, err = queryServer.IsTopicReputerWhitelistEnabled(ctx, req)
@@ -182,7 +176,6 @@ func (s *QueryServerTestSuite) TestIsTopicReputerWhitelistEnabled() {
 func (s *QueryServerTestSuite) TestIsWhitelistedTopicCreator() {
 	ctx := s.Ctx()
 	queryServer := s.EmissionsQueryServer()
-	keeper := s.EmissionsKeeper()
 
 	testAddr := "allo10es2a97cr7u2m3aa08tcu7yd0d300thdct45ve"
 
@@ -197,7 +190,7 @@ func (s *QueryServerTestSuite) TestIsWhitelistedTopicCreator() {
 	s.Require().False(response.IsWhitelistedTopicCreator)
 
 	// Add to whitelist
-	err = keeper.AddToTopicCreatorWhitelist(ctx, testAddr)
+	err = s.WhitelistsKeeper().AddToTopicCreatorWhitelist(ctx, testAddr)
 	s.Require().NoError(err)
 
 	response, err = queryServer.IsWhitelistedTopicCreator(ctx, req)
@@ -209,7 +202,6 @@ func (s *QueryServerTestSuite) TestIsWhitelistedTopicCreator() {
 func (s *QueryServerTestSuite) TestIsWhitelistedGlobalActor() {
 	ctx := s.Ctx()
 	queryServer := s.EmissionsQueryServer()
-	keeper := s.EmissionsKeeper()
 
 	testAddr := "allo10es2a97cr7u2m3aa08tcu7yd0d300thdct45ve"
 
@@ -224,7 +216,7 @@ func (s *QueryServerTestSuite) TestIsWhitelistedGlobalActor() {
 	s.Require().False(response.IsWhitelistedGlobalActor)
 
 	// Add to whitelist
-	err = keeper.AddToGlobalWhitelist(ctx, testAddr)
+	err = s.WhitelistsKeeper().AddToGlobalWhitelist(ctx, testAddr)
 	s.Require().NoError(err)
 
 	response, err = queryServer.IsWhitelistedGlobalActor(ctx, req)
@@ -236,7 +228,6 @@ func (s *QueryServerTestSuite) TestIsWhitelistedGlobalActor() {
 func (s *QueryServerTestSuite) TestIsWhitelistedTopicWorker() {
 	ctx := s.Ctx()
 	queryServer := s.EmissionsQueryServer()
-	keeper := s.EmissionsKeeper()
 
 	testAddr := "allo10es2a97cr7u2m3aa08tcu7yd0d300thdct45ve"
 	topicId := uint64(2)
@@ -253,7 +244,7 @@ func (s *QueryServerTestSuite) TestIsWhitelistedTopicWorker() {
 	s.Require().False(response.IsWhitelistedTopicWorker)
 
 	// Add to whitelist
-	err = keeper.AddToTopicWorkerWhitelist(ctx, topicId, testAddr)
+	err = s.WhitelistsKeeper().AddToTopicWorkerWhitelist(ctx, topicId, testAddr)
 	s.Require().NoError(err)
 
 	response, err = queryServer.IsWhitelistedTopicWorker(ctx, req)
@@ -265,7 +256,6 @@ func (s *QueryServerTestSuite) TestIsWhitelistedTopicWorker() {
 func (s *QueryServerTestSuite) TestIsWhitelistedTopicReputer() {
 	ctx := s.Ctx()
 	queryServer := s.EmissionsQueryServer()
-	keeper := s.EmissionsKeeper()
 
 	testAddr := "allo10es2a97cr7u2m3aa08tcu7yd0d300thdct45ve"
 	topicId := uint64(1)
@@ -282,7 +272,7 @@ func (s *QueryServerTestSuite) TestIsWhitelistedTopicReputer() {
 	s.Require().False(response.IsWhitelistedTopicReputer)
 
 	// Add to whitelist
-	err = keeper.AddToTopicReputerWhitelist(ctx, topicId, testAddr)
+	err = s.WhitelistsKeeper().AddToTopicReputerWhitelist(ctx, topicId, testAddr)
 	s.Require().NoError(err)
 
 	response, err = queryServer.IsWhitelistedTopicReputer(ctx, req)
@@ -294,7 +284,6 @@ func (s *QueryServerTestSuite) TestIsWhitelistedTopicReputer() {
 func (s *QueryServerTestSuite) TestCanUpdateGlobalWhitelists() {
 	ctx := s.Ctx()
 	queryServer := s.EmissionsQueryServer()
-	keeper := s.EmissionsKeeper()
 
 	testAddr := "allo10es2a97cr7u2m3aa08tcu7yd0d300thdct45ve"
 
@@ -309,7 +298,7 @@ func (s *QueryServerTestSuite) TestCanUpdateGlobalWhitelists() {
 	s.Require().False(response.CanUpdateAllGlobalWhitelists)
 
 	// Add as admin
-	err = keeper.AddWhitelistAdmin(ctx, testAddr)
+	err = s.WhitelistsKeeper().AddWhitelistAdmin(ctx, testAddr)
 	s.Require().NoError(err)
 
 	response, err = queryServer.CanUpdateAllGlobalWhitelists(ctx, req)
@@ -321,7 +310,6 @@ func (s *QueryServerTestSuite) TestCanUpdateGlobalWhitelists() {
 func (s *QueryServerTestSuite) TestCanUpdateParams() {
 	ctx := s.Ctx()
 	queryServer := s.EmissionsQueryServer()
-	keeper := s.EmissionsKeeper()
 
 	testAddr := "allo10es2a97cr7u2m3aa08tcu7yd0d300thdct45ve"
 
@@ -336,7 +324,7 @@ func (s *QueryServerTestSuite) TestCanUpdateParams() {
 	s.Require().False(response.CanUpdateParams)
 
 	// Add as admin
-	err = keeper.AddWhitelistAdmin(ctx, testAddr)
+	err = s.WhitelistsKeeper().AddWhitelistAdmin(ctx, testAddr)
 	s.Require().NoError(err)
 
 	response, err = queryServer.CanUpdateParams(ctx, req)
@@ -348,7 +336,6 @@ func (s *QueryServerTestSuite) TestCanUpdateParams() {
 func (s *QueryServerTestSuite) TestCanUpdateTopicWhitelist() {
 	ctx := s.Ctx()
 	queryServer := s.EmissionsQueryServer()
-	keeper := s.EmissionsKeeper()
 
 	testAddr := "allo1snm6pxg7p9jetmkhz0jz9ku3vdzmszegy9q5lh"
 
@@ -367,7 +354,7 @@ func (s *QueryServerTestSuite) TestCanUpdateTopicWhitelist() {
 	s.Require().False(response.CanUpdateTopicWhitelist)
 
 	// Add as admin
-	err = keeper.AddWhitelistAdmin(ctx, testAddr)
+	err = s.WhitelistsKeeper().AddWhitelistAdmin(ctx, testAddr)
 	s.Require().NoError(err)
 
 	response, err = queryServer.CanUpdateTopicWhitelist(ctx, req)
@@ -379,7 +366,6 @@ func (s *QueryServerTestSuite) TestCanUpdateTopicWhitelist() {
 func (s *QueryServerTestSuite) TestCanCreateTopic() {
 	ctx := s.Ctx()
 	queryServer := s.EmissionsQueryServer()
-	keeper := s.EmissionsKeeper()
 
 	testAddr := "allo14s7gd09y7mkje8547ukm0c8gjnd3hak7v3fwz6"
 
@@ -388,10 +374,10 @@ func (s *QueryServerTestSuite) TestCanCreateTopic() {
 	}
 
 	// Update TopicCreatorWhitelistEnabled
-	params, err := keeper.GetParams(ctx)
+	params, err := s.ParamsKeeper().GetParams(ctx)
 	s.Require().NoError(err)
 	params.TopicCreatorWhitelistEnabled = false
-	err = keeper.SetParams(ctx, params)
+	err = s.ParamsKeeper().SetParams(ctx, params)
 	s.Require().NoError(err)
 
 	// Initially should be able to create topic because TopicCreatorWhitelistEnabled is false
@@ -402,7 +388,7 @@ func (s *QueryServerTestSuite) TestCanCreateTopic() {
 
 	// Update TopicCreatorWhitelistEnabled
 	params.TopicCreatorWhitelistEnabled = true
-	err = keeper.SetParams(ctx, params)
+	err = s.ParamsKeeper().SetParams(ctx, params)
 	s.Require().NoError(err)
 
 	// Should be unable to create topic because TopicCreatorWhitelistEnabled is true
@@ -412,7 +398,7 @@ func (s *QueryServerTestSuite) TestCanCreateTopic() {
 	s.Require().False(response.CanCreateTopic)
 
 	// Add to whitelist
-	err = keeper.AddToTopicCreatorWhitelist(ctx, testAddr)
+	err = s.WhitelistsKeeper().AddToTopicCreatorWhitelist(ctx, testAddr)
 	s.Require().NoError(err)
 
 	// Should be able to create topic because TopicCreatorWhitelistEnabled is true and testAddr is whitelisted
@@ -425,7 +411,6 @@ func (s *QueryServerTestSuite) TestCanCreateTopic() {
 func (s *QueryServerTestSuite) TestCanSubmitWorkerPayload() {
 	ctx := s.Ctx()
 	queryServer := s.EmissionsQueryServer()
-	keeper := s.EmissionsKeeper()
 
 	testAddr := "allo1snm6pxg7p9jetmkhz0jz9ku3vdzmszegy9q5lh"
 	topicId := uint64(1)
@@ -436,7 +421,7 @@ func (s *QueryServerTestSuite) TestCanSubmitWorkerPayload() {
 	}
 
 	// Update TopicWhitelist
-	err := keeper.DisableTopicWorkerWhitelist(ctx, topicId)
+	err := s.WhitelistsKeeper().DisableTopicWorkerWhitelist(ctx, topicId)
 	s.Require().NoError(err)
 
 	// Initially should be able to submit
@@ -446,7 +431,7 @@ func (s *QueryServerTestSuite) TestCanSubmitWorkerPayload() {
 	s.Require().True(response.CanSubmitWorkerPayload)
 
 	// Update TopicWhitelist
-	err = keeper.EnableTopicWorkerWhitelist(ctx, topicId)
+	err = s.WhitelistsKeeper().EnableTopicWorkerWhitelist(ctx, topicId)
 	s.Require().NoError(err)
 
 	// Should be unable to submit after whitelist is enabled and they are not whitelisted
@@ -456,7 +441,7 @@ func (s *QueryServerTestSuite) TestCanSubmitWorkerPayload() {
 	s.Require().False(response.CanSubmitWorkerPayload)
 
 	// Add to whitelist
-	err = keeper.AddToTopicWorkerWhitelist(ctx, topicId, testAddr)
+	err = s.WhitelistsKeeper().AddToTopicWorkerWhitelist(ctx, topicId, testAddr)
 	s.Require().NoError(err)
 
 	// Should be able to submit after whitelist is enabled and testAddr is whitelisted
@@ -469,7 +454,6 @@ func (s *QueryServerTestSuite) TestCanSubmitWorkerPayload() {
 func (s *QueryServerTestSuite) TestCanSubmitReputerPayload() {
 	ctx := s.Ctx()
 	queryServer := s.EmissionsQueryServer()
-	keeper := s.EmissionsKeeper()
 
 	testAddr := "allo1snm6pxg7p9jetmkhz0jz9ku3vdzmszegy9q5lh"
 	topicId := uint64(1)
@@ -480,7 +464,7 @@ func (s *QueryServerTestSuite) TestCanSubmitReputerPayload() {
 	}
 
 	// Update TopicWhitelist
-	err := keeper.DisableTopicReputerWhitelist(ctx, topicId)
+	err := s.WhitelistsKeeper().DisableTopicReputerWhitelist(ctx, topicId)
 	s.Require().NoError(err)
 
 	// Initially should be able to submit
@@ -490,7 +474,7 @@ func (s *QueryServerTestSuite) TestCanSubmitReputerPayload() {
 	s.Require().True(response.CanSubmitReputerPayload)
 
 	// Update TopicWhitelist
-	err = keeper.EnableTopicReputerWhitelist(ctx, topicId)
+	err = s.WhitelistsKeeper().EnableTopicReputerWhitelist(ctx, topicId)
 	s.Require().NoError(err)
 
 	// Should be unable to submit after whitelist is enabled and they are not whitelisted
@@ -500,7 +484,7 @@ func (s *QueryServerTestSuite) TestCanSubmitReputerPayload() {
 	s.Require().False(response.CanSubmitReputerPayload)
 
 	// Add to whitelist
-	err = keeper.AddToTopicReputerWhitelist(ctx, topicId, testAddr)
+	err = s.WhitelistsKeeper().AddToTopicReputerWhitelist(ctx, topicId, testAddr)
 	s.Require().NoError(err)
 
 	// Should be able to submit after whitelist is enabled and testAddr is whitelisted

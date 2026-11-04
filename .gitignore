@@ -58,3 +58,13 @@ allora.log
 
 **/.DS_Store
 
+.agents
+.cursor
+.claude
+.worktrees/
+.idea/
+.vscode/
+.reports/
+
+skills/
+skills-lock.json

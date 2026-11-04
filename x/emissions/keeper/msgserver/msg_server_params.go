@@ -11,17 +11,17 @@ import (
 func (ms msgServer) UpdateParams(ctx context.Context, msg *types.UpdateParamsRequest) (_ *types.UpdateParamsResponse, err error) {
 	defer metrics.RecordMetrics("UpdateParams", time.Now(), &err)
 
-	err = ms.k.ValidateStringIsBech32(msg.Sender)
+	err = types.ValidateStringIsBech32(msg.Sender)
 	if err != nil {
 		return nil, err
 	}
-	canUpdate, err := ms.k.CanUpdateParams(ctx, msg.Sender)
+	canUpdate, err := ms.wlk.CanUpdateParams(ctx, msg.Sender)
 	if err != nil {
 		return nil, err
 	} else if !canUpdate {
 		return nil, types.ErrNotPermittedToUpdateParams
 	}
-	existingParams, err := ms.k.GetParams(ctx)
+	existingParams, err := ms.pk.GetParams(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -186,11 +186,23 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.UpdateParamsReq
 	if len(newParams.MinWeightThresholdForStdnorm) == 1 {
 		existingParams.MinWeightThresholdForStdnorm = newParams.MinWeightThresholdForStdnorm[0]
 	}
+	if len(newParams.MaxCanonicalLabelByteLength) == 1 {
+		existingParams.MaxCanonicalLabelByteLength = newParams.MaxCanonicalLabelByteLength[0]
+	}
+	if len(newParams.MaxTopicLabelWhitelistSize) == 1 {
+		existingParams.MaxTopicLabelWhitelistSize = newParams.MaxTopicLabelWhitelistSize[0]
+	}
+	if len(newParams.MaxEpochLabelRegistrySize) == 1 {
+		existingParams.MaxEpochLabelRegistrySize = newParams.MaxEpochLabelRegistrySize[0]
+	}
+	if len(newParams.MinTopInferersToReward) == 1 {
+		existingParams.MinTopInferersToReward = newParams.MinTopInferersToReward[0]
+	}
 	err = existingParams.Validate()
 	if err != nil {
 		return nil, err
 	}
-	err = ms.k.SetParams(ctx, existingParams)
+	err = ms.pk.SetParams(ctx, existingParams)
 	if err != nil {
 		return nil, err
 	}

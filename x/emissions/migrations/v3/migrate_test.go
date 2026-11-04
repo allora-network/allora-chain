@@ -93,7 +93,7 @@ func (s *EmissionsV3MigrationTestSuite) TestMigrate() {
 
 	paramsExpected := defaultParams
 
-	params, err := s.EmissionsKeeper().GetParams(s.Ctx())
+	params, err := s.ParamsKeeper().GetParams(s.Ctx())
 	s.Require().NoError(err)
 	s.Require().Equal(paramsExpected.Version, params.Version)
 	s.Require().Equal(paramsExpected.MaxSerializedMsgLength, params.MaxSerializedMsgLength)
@@ -165,7 +165,7 @@ func (s *EmissionsV3MigrationTestSuite) TestMigrateTopics() {
 	topicStore := prefix.NewStore(store, types.TopicsKey)
 	topicStore.Set([]byte("testKey"), bz)
 
-	err = v3.MigrateTopics(s.Ctx(), store, cdc, *s.EmissionsKeeper())
+	err = v3.MigrateTopics(s.Ctx(), store, cdc, s.ParamsKeeper())
 	s.Require().NoError(err)
 
 	// Verify the store has been updated correctly
@@ -250,18 +250,18 @@ func (s *EmissionsV3MigrationTestSuite) TestMigrateTopicsWithWeightSameEpoch() {
 			WorkerSubmissionWindow: 130,
 		},
 	}
-	err := s.EmissionsKeeper().AddTopicFeeRevenue(s.Ctx(), 1, cosmosMath.NewInt(40000))
+	err := s.TopicKeeper().AddTopicFeeRevenue(s.Ctx(), 1, cosmosMath.NewInt(40000))
 	s.Require().NoError(err)
-	err = s.EmissionsKeeper().AddTopicFeeRevenue(s.Ctx(), 2, cosmosMath.NewInt(70000))
+	err = s.TopicKeeper().AddTopicFeeRevenue(s.Ctx(), 2, cosmosMath.NewInt(70000))
 	s.Require().NoError(err)
-	err = s.EmissionsKeeper().AddTopicFeeRevenue(s.Ctx(), 3, cosmosMath.NewInt(60000))
+	err = s.TopicKeeper().AddTopicFeeRevenue(s.Ctx(), 3, cosmosMath.NewInt(60000))
 	s.Require().NoError(err)
 
-	err = s.EmissionsKeeper().SetTopicStake(s.Ctx(), 1, cosmosMath.NewInt(40000))
+	err = s.StakingKeeper().SetTopicStake(s.Ctx(), 1, cosmosMath.NewInt(40000))
 	s.Require().NoError(err)
-	err = s.EmissionsKeeper().SetTopicStake(s.Ctx(), 2, cosmosMath.NewInt(70000))
+	err = s.StakingKeeper().SetTopicStake(s.Ctx(), 2, cosmosMath.NewInt(70000))
 	s.Require().NoError(err)
-	err = s.EmissionsKeeper().SetTopicStake(s.Ctx(), 3, cosmosMath.NewInt(60000))
+	err = s.StakingKeeper().SetTopicStake(s.Ctx(), 3, cosmosMath.NewInt(60000))
 	s.Require().NoError(err)
 
 	topicStore := prefix.NewStore(store, types.TopicsKey)
@@ -272,7 +272,7 @@ func (s *EmissionsV3MigrationTestSuite) TestMigrateTopicsWithWeightSameEpoch() {
 		topicStore.Set([]byte("testKey"+strconv.Itoa(i+1)), bz)
 	}
 
-	err = v3.MigrateTopics(s.Ctx(), store, cdc, *s.EmissionsKeeper())
+	err = v3.MigrateTopics(s.Ctx(), store, cdc, s.ParamsKeeper())
 	s.Require().NoError(err)
 
 	// Verify the store has been updated correctly
@@ -283,28 +283,28 @@ func (s *EmissionsV3MigrationTestSuite) TestMigrateTopicsWithWeightSameEpoch() {
 	// this is from topic.BlockHeightEnded + topic.EpochLength
 	blockHeightEnded := int64(100)
 
-	churningBlock, inFuture, err := s.EmissionsKeeper().GetNextPossibleChurningBlockByTopicId(s.Ctx(), 1)
+	churningBlock, inFuture, err := s.TopicKeeper().GetNextPossibleChurningBlockByTopicId(s.Ctx(), 1)
 	s.Require().NoError(err)
 	s.Require().Equal(int64(0), churningBlock)
 	s.Require().False(inFuture)
 
-	churningBlock, inFuture, err = s.EmissionsKeeper().GetNextPossibleChurningBlockByTopicId(s.Ctx(), 2)
+	churningBlock, inFuture, err = s.TopicKeeper().GetNextPossibleChurningBlockByTopicId(s.Ctx(), 2)
 	s.Require().NoError(err)
 	s.Require().Equal(churningBlock, blockHeightEnded)
 	s.Require().True(inFuture)
 
-	churningBlock, inFuture, err = s.EmissionsKeeper().GetNextPossibleChurningBlockByTopicId(s.Ctx(), 3)
+	churningBlock, inFuture, err = s.TopicKeeper().GetNextPossibleChurningBlockByTopicId(s.Ctx(), 3)
 	s.Require().NoError(err)
 	s.Require().Equal(int64(0), churningBlock)
 	s.Require().False(inFuture)
 
 	// not the same as feeRev * stake because weight is EMAd with 0
-	lowestWeight, noPrior, err := s.EmissionsKeeper().GetLowestActiveTopicWeightAtBlock(s.Ctx(), blockHeightEnded)
+	lowestWeight, noPrior, err := s.TopicKeeper().GetLowestActiveTopicWeightAtBlock(s.Ctx(), blockHeightEnded)
 	s.Require().False(noPrior)
 	s.Require().NoError(err)
 	s.Require().True(lowestWeight.Weight.Gt(alloraMath.ZeroDec()))
 
-	activeTopicIds, err := s.EmissionsKeeper().GetActiveTopicIdsAtBlock(s.Ctx(), blockHeightEnded)
+	activeTopicIds, err := s.TopicKeeper().GetActiveTopicIdsAtBlock(s.Ctx(), blockHeightEnded)
 	s.Require().NoError(err)
 	s.Require().Len(activeTopicIds.TopicIds, 1)
 	s.Require().NotContains(activeTopicIds.TopicIds, uint64(1))
@@ -368,18 +368,18 @@ func (s *EmissionsV3MigrationTestSuite) TestMigrateTopicsWithWeightDifferentEpoc
 			WorkerSubmissionWindow: 130,
 		},
 	}
-	err := s.EmissionsKeeper().AddTopicFeeRevenue(s.Ctx(), 1, cosmosMath.NewInt(20000))
+	err := s.TopicKeeper().AddTopicFeeRevenue(s.Ctx(), 1, cosmosMath.NewInt(20000))
 	s.Require().NoError(err)
-	err = s.EmissionsKeeper().AddTopicFeeRevenue(s.Ctx(), 2, cosmosMath.NewInt(40000))
+	err = s.TopicKeeper().AddTopicFeeRevenue(s.Ctx(), 2, cosmosMath.NewInt(40000))
 	s.Require().NoError(err)
-	err = s.EmissionsKeeper().AddTopicFeeRevenue(s.Ctx(), 3, cosmosMath.NewInt(60000))
+	err = s.TopicKeeper().AddTopicFeeRevenue(s.Ctx(), 3, cosmosMath.NewInt(60000))
 	s.Require().NoError(err)
 
-	err = s.EmissionsKeeper().SetTopicStake(s.Ctx(), 1, cosmosMath.NewInt(20000))
+	err = s.StakingKeeper().SetTopicStake(s.Ctx(), 1, cosmosMath.NewInt(20000))
 	s.Require().NoError(err)
-	err = s.EmissionsKeeper().SetTopicStake(s.Ctx(), 2, cosmosMath.NewInt(40000))
+	err = s.StakingKeeper().SetTopicStake(s.Ctx(), 2, cosmosMath.NewInt(40000))
 	s.Require().NoError(err)
-	err = s.EmissionsKeeper().SetTopicStake(s.Ctx(), 3, cosmosMath.NewInt(60000))
+	err = s.StakingKeeper().SetTopicStake(s.Ctx(), 3, cosmosMath.NewInt(60000))
 	s.Require().NoError(err)
 
 	topicStore := prefix.NewStore(store, types.TopicsKey)
@@ -390,7 +390,7 @@ func (s *EmissionsV3MigrationTestSuite) TestMigrateTopicsWithWeightDifferentEpoc
 		topicStore.Set([]byte("testKey"+strconv.Itoa(i+1)), bz)
 	}
 
-	err = v3.MigrateTopics(s.Ctx(), store, cdc, *s.EmissionsKeeper())
+	err = v3.MigrateTopics(s.Ctx(), store, cdc, s.EmissionsKeeper().GetParamsKeeper())
 	s.Require().NoError(err)
 
 	// Verify the store has been updated correctly
@@ -400,48 +400,48 @@ func (s *EmissionsV3MigrationTestSuite) TestMigrateTopicsWithWeightDifferentEpoc
 
 	// this is from topic.BlockHeightEnded + topic.EpochLength
 
-	churningBlock, inFuture, err := s.EmissionsKeeper().GetNextPossibleChurningBlockByTopicId(s.Ctx(), 1)
+	churningBlock, inFuture, err := s.TopicKeeper().GetNextPossibleChurningBlockByTopicId(s.Ctx(), 1)
 	s.Require().NoError(err)
 	s.Require().Equal(churningBlock, blockHeightEnded1)
 	s.Require().True(inFuture)
 
-	churningBlock, inFuture, err = s.EmissionsKeeper().GetNextPossibleChurningBlockByTopicId(s.Ctx(), 2)
+	churningBlock, inFuture, err = s.TopicKeeper().GetNextPossibleChurningBlockByTopicId(s.Ctx(), 2)
 	s.Require().NoError(err)
 	s.Require().Equal(churningBlock, blockHeightEnded2)
 	s.Require().True(inFuture)
 
-	churningBlock, inFuture, err = s.EmissionsKeeper().GetNextPossibleChurningBlockByTopicId(s.Ctx(), 3)
+	churningBlock, inFuture, err = s.TopicKeeper().GetNextPossibleChurningBlockByTopicId(s.Ctx(), 3)
 	s.Require().NoError(err)
 	s.Require().Equal(churningBlock, blockHeightEnded3)
 	s.Require().True(inFuture)
 
 	// not the same as feeRev * stake because weight is EMAd with 0
-	lowestWeight, noPrior, err := s.EmissionsKeeper().GetLowestActiveTopicWeightAtBlock(s.Ctx(), blockHeightEnded1)
+	lowestWeight, noPrior, err := s.TopicKeeper().GetLowestActiveTopicWeightAtBlock(s.Ctx(), blockHeightEnded1)
 	s.Require().False(noPrior)
 	s.Require().NoError(err)
 	s.Require().True(lowestWeight.Weight.Gt(alloraMath.ZeroDec()))
 
-	lowestWeight, noPrior, err = s.EmissionsKeeper().GetLowestActiveTopicWeightAtBlock(s.Ctx(), blockHeightEnded2)
+	lowestWeight, noPrior, err = s.TopicKeeper().GetLowestActiveTopicWeightAtBlock(s.Ctx(), blockHeightEnded2)
 	s.Require().False(noPrior)
 	s.Require().NoError(err)
 	s.Require().True(lowestWeight.Weight.Gt(alloraMath.ZeroDec()))
 
-	lowestWeight, noPrior, err = s.EmissionsKeeper().GetLowestActiveTopicWeightAtBlock(s.Ctx(), blockHeightEnded3)
+	lowestWeight, noPrior, err = s.TopicKeeper().GetLowestActiveTopicWeightAtBlock(s.Ctx(), blockHeightEnded3)
 	s.Require().False(noPrior)
 	s.Require().NoError(err)
 	s.Require().True(lowestWeight.Weight.Gt(alloraMath.ZeroDec()))
 
-	activeTopicIds, err := s.EmissionsKeeper().GetActiveTopicIdsAtBlock(s.Ctx(), blockHeightEnded1)
+	activeTopicIds, err := s.TopicKeeper().GetActiveTopicIdsAtBlock(s.Ctx(), blockHeightEnded1)
 	s.Require().NoError(err)
 	s.Require().Len(activeTopicIds.TopicIds, 1)
 	s.Require().Contains(activeTopicIds.TopicIds, uint64(1))
 
-	activeTopicIds, err = s.EmissionsKeeper().GetActiveTopicIdsAtBlock(s.Ctx(), blockHeightEnded2)
+	activeTopicIds, err = s.TopicKeeper().GetActiveTopicIdsAtBlock(s.Ctx(), blockHeightEnded2)
 	s.Require().NoError(err)
 	s.Require().Len(activeTopicIds.TopicIds, 1)
 	s.Require().Contains(activeTopicIds.TopicIds, uint64(2))
 
-	activeTopicIds, err = s.EmissionsKeeper().GetActiveTopicIdsAtBlock(s.Ctx(), blockHeightEnded3)
+	activeTopicIds, err = s.TopicKeeper().GetActiveTopicIdsAtBlock(s.Ctx(), blockHeightEnded3)
 	s.Require().NoError(err)
 	s.Require().Len(activeTopicIds.TopicIds, 1)
 	s.Require().Contains(activeTopicIds.TopicIds, uint64(3))

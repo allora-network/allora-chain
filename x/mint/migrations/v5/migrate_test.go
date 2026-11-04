@@ -39,7 +39,7 @@ func TestMintV5MigrationTestSuite(t *testing.T) {
 }
 
 func (s *MintV5MigrationTestSuite) SetupTest() {
-	encCfg := moduletestutil.MakeTestEncodingConfig(mint.AppModule{}) // nolint: exhaustruct
+	encCfg := moduletestutil.MakeTestEncodingConfig(mint.AppModule{}) //nolint:exhaustruct
 	key := storetypes.NewKVStoreKey(minttypes.StoreKey)
 	storeService := runtime.NewKVStoreService(key)
 	s.storeService = storeService

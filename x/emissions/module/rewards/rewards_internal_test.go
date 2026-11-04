@@ -787,7 +787,7 @@ func TestGetAllConsensusScores(t *testing.T) {
 func (s *RewardsTestSuite) TestGetAllReputersOutput() {
 	require := s.Require()
 
-	params, err := s.EmissionsKeeper().GetParams(s.Ctx())
+	params, err := s.ParamsKeeper().GetParams(s.Ctx())
 	params.EpsilonReputer = alloraMath.MustNewDecFromString("0.01")
 	require.NoError(err)
 

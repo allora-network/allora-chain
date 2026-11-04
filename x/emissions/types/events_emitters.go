@@ -46,7 +46,7 @@ func EmitNewNetworkLossSetEvent(ctx context.Context, lossBundle ValueBundle) {
 
 // EmitNewNetworkInferencesEvent emits a network loss event using the classic attribute event path so that
 // the field `one_out_inferer_forecaster_values` can be emitted as a two-dimensional array
-func EmitNewNetworkInferencesEvent(ctx context.Context, networkInferences ValueBundle) {
+func EmitNewNetworkInferencesEvent(ctx context.Context, networkInferences NetworkInferenceBundle) {
 	metrics.IncrProducerEventCount(metrics.NETWORK_INFERENCES_EVENT)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	if err := sdkCtx.EventManager().EmitTypedEvent(NewNetworkInferencesEventBase(networkInferences)); err != nil {
@@ -54,7 +54,7 @@ func EmitNewNetworkInferencesEvent(ctx context.Context, networkInferences ValueB
 	}
 }
 
-func EmitNewOutlierResistantNetworkInferencesEvent(ctx context.Context, networkInferences ValueBundle) {
+func EmitNewOutlierResistantNetworkInferencesEvent(ctx context.Context, networkInferences NetworkInferenceBundle) {
 	metrics.IncrProducerEventCount(metrics.OUTLIER_RESISTANT_NETWORK_INFERENCES_EVENT)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	if err := sdkCtx.EventManager().EmitTypedEvent(NewOutlierResistantNetworkInferencesEventBase(networkInferences)); err != nil {
@@ -62,7 +62,7 @@ func EmitNewOutlierResistantNetworkInferencesEvent(ctx context.Context, networkI
 	}
 }
 
-func EmitNewInsertInfererPayloadEvent(ctx context.Context, bundle *WorkerDataBundle) {
+func EmitNewInsertInfererPayloadEvent(ctx context.Context, bundle *InputWorkerDataBundle) {
 	metrics.IncrProducerEventCount(metrics.INSERT_INFERER_PAYLOAD_EVENT)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	err := sdkCtx.EventManager().EmitTypedEvent(NewInsertInfererPayloadEventBase(bundle))
@@ -144,7 +144,7 @@ func EmitNewRewardDelegateStakeEvent(ctx context.Context, topicId TopicId, reput
 	}
 }
 
-func EmitNewInsertReputerPayloadEvent(ctx context.Context, bundle *ReputerValueBundle) {
+func EmitNewInsertReputerPayloadEvent(ctx context.Context, bundle *LossBundle) {
 	metrics.IncrProducerEventCount(metrics.INSERT_REPUTER_PAYLOAD_EVENT)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	err := sdkCtx.EventManager().EmitTypedEvent(NewInsertReputerPayloadEventBase(bundle))
@@ -609,6 +609,19 @@ func EmitNewWorkerSubmissionWindowClosedEvent(ctx context.Context, topicId Topic
 	}
 }
 
+// EmitNewEpochLabelRegistryFrozenEvent notifies offchain consumers that the
+// per-epoch label registry for (topicId, nonce) has been frozen. Emitted
+// exactly once, from closeActiveInferencesSet, after the temporary registry is
+// compacted/remapped into its final form.
+func EmitNewEpochLabelRegistryFrozenEvent(ctx context.Context, topicId TopicId, nonceBlockHeight BlockHeight, registrySize uint64) {
+	metrics.IncrProducerEventCount(metrics.EPOCH_LABEL_REGISTRY_FROZEN_EVENT)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	err := sdkCtx.EventManager().EmitTypedEvent(NewEpochLabelRegistryFrozenEventBase(topicId, nonceBlockHeight, registrySize))
+	if err != nil {
+		sdkCtx.Logger().Warn("Error emitting EpochLabelRegistryFrozenEvent", "error", err)
+	}
+}
+
 func EmitNewReputerSubmissionWindowOpenedEvent(ctx context.Context, topicId TopicId, nonceBlockHeight BlockHeight, windowEndBlock BlockHeight) {
 	metrics.IncrProducerEventCount(metrics.REPUTER_SUBMISSION_WINDOW_OPENED_EVENT)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
@@ -718,7 +731,7 @@ func EmitNewTopicInitialEmaScoreSetEvent(ctx context.Context, actorType ActorTyp
 }
 
 // Individual events
-func EmitNewRegretStdNormSetEvent(ctx context.Context, topicId uint64, blockHeight int64, stdNorm alloraMath.Dec) {
+func EmitNewRegretScaleSetEvent(ctx context.Context, topicId uint64, blockHeight int64, stdNorm alloraMath.Dec) {
 	metrics.IncrProducerEventCount(metrics.REGRET_STDNORM_EVENT)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	err := sdkCtx.EventManager().EmitTypedEvent(NewRegretStdNormSetEventBase(topicId, blockHeight, stdNorm))

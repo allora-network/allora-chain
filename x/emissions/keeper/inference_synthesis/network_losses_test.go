@@ -67,7 +67,7 @@ func (s *InferenceSynthesisTestSuite) TestRunningWeightedAvgUpdate() {
 func (s *InferenceSynthesisTestSuite) getTestCasesOneWorker() []struct {
 	name            string
 	stakesByReputer map[inferencesynthesis.Worker]cosmosMath.Int
-	reportedLosses  emissions.ReputerValueBundles
+	reportedLosses  emissions.LossBundles
 	epsilon         alloraMath.Dec
 	expectedOutput  emissions.ValueBundle
 	expectedError   error
@@ -113,11 +113,10 @@ func (s *InferenceSynthesisTestSuite) getTestCasesOneWorker() []struct {
 		},
 		OneOutInfererForecasterValues: nil,
 	}
-	signature := s.signValueBundle(valueBundle, s.PrivKeys(1))
 	return []struct {
 		name            string
 		stakesByReputer map[inferencesynthesis.Worker]cosmosMath.Int
-		reportedLosses  emissions.ReputerValueBundles
+		reportedLosses  emissions.LossBundles
 		epsilon         alloraMath.Dec
 		expectedOutput  emissions.ValueBundle
 		expectedError   error
@@ -127,16 +126,8 @@ func (s *InferenceSynthesisTestSuite) getTestCasesOneWorker() []struct {
 			stakesByReputer: map[inferencesynthesis.Worker]cosmosMath.Int{
 				s.AddrsStr(1): inferencesynthesis.CosmosIntOneE18(), // 1 token
 			},
-			reportedLosses: emissions.ReputerValueBundles{
-				ReputerValueBundles: []*emissions.ReputerValueBundle{
-					{
-						ValueBundle: valueBundle,
-						Signature:   signature,
-						Pubkey:      s.PubKeyHexStr(1),
-					},
-				},
-			},
-			epsilon: alloraMath.MustNewDecFromString("1e-4"),
+			reportedLosses: []*emissions.LossBundle{valueBundle},
+			epsilon:        alloraMath.MustNewDecFromString("1e-4"),
 			expectedOutput: emissions.ValueBundle{
 				TopicId: uint64(1),
 				Reputer: s.AddrsStr(1),
@@ -186,7 +177,7 @@ func (s *InferenceSynthesisTestSuite) getTestCasesOneWorker() []struct {
 func (s *InferenceSynthesisTestSuite) getTestCasesTwoWorkers() []struct {
 	name            string
 	stakesByReputer map[inferencesynthesis.Worker]cosmosMath.Int
-	reportedLosses  emissions.ReputerValueBundles
+	reportedLosses  emissions.LossBundles
 	epsilon         alloraMath.Dec
 	expectedOutput  emissions.ValueBundle
 	expectedError   error
@@ -252,7 +243,6 @@ func (s *InferenceSynthesisTestSuite) getTestCasesTwoWorkers() []struct {
 		},
 		OneOutInfererForecasterValues: nil,
 	}
-	signature1 := s.signValueBundle(&valueBundle1, s.PrivKeys(1))
 
 	valueBundle2 := emissions.ValueBundle{
 		ExtraData: nil,
@@ -315,11 +305,10 @@ func (s *InferenceSynthesisTestSuite) getTestCasesTwoWorkers() []struct {
 		},
 		OneOutInfererForecasterValues: nil,
 	}
-	signature2 := s.signValueBundle(&valueBundle2, s.PrivKeys(2))
 	return []struct {
 		name            string
 		stakesByReputer map[inferencesynthesis.Worker]cosmosMath.Int
-		reportedLosses  emissions.ReputerValueBundles
+		reportedLosses  emissions.LossBundles
 		epsilon         alloraMath.Dec
 		expectedOutput  emissions.ValueBundle
 		expectedError   error
@@ -330,19 +319,9 @@ func (s *InferenceSynthesisTestSuite) getTestCasesTwoWorkers() []struct {
 				s.AddrsStr(1): inferencesynthesis.CosmosIntOneE18(),           // 1 token
 				s.AddrsStr(2): inferencesynthesis.CosmosIntOneE18().MulRaw(2), // 2 tokens
 			},
-			reportedLosses: emissions.ReputerValueBundles{
-				ReputerValueBundles: []*emissions.ReputerValueBundle{
-					{
-						ValueBundle: &valueBundle1,
-						Signature:   signature1,
-						Pubkey:      s.PubKeyHexStr(1),
-					},
-					{
-						ValueBundle: &valueBundle2,
-						Signature:   signature2,
-						Pubkey:      s.PubKeyHexStr(2),
-					},
-				},
+			reportedLosses: emissions.LossBundles{
+				&valueBundle1,
+				&valueBundle2,
 			},
 			epsilon: alloraMath.MustNewDecFromString("1e-4"),
 			expectedOutput: emissions.ValueBundle{
@@ -414,7 +393,7 @@ func (s *InferenceSynthesisTestSuite) getTestCasesTwoWorkers() []struct {
 func (s *InferenceSynthesisTestSuite) getTestCasesTwoWorkersBadTopicId() []struct {
 	name            string
 	stakesByReputer map[inferencesynthesis.Worker]cosmosMath.Int
-	reportedLosses  emissions.ReputerValueBundles
+	reportedLosses  emissions.LossBundles
 	epsilon         alloraMath.Dec
 	expectedOutput  emissions.ValueBundle
 	expectedError   error
@@ -480,7 +459,6 @@ func (s *InferenceSynthesisTestSuite) getTestCasesTwoWorkersBadTopicId() []struc
 		},
 		OneOutInfererForecasterValues: nil,
 	}
-	signature1 := s.signValueBundle(&valueBundle1, s.PrivKeys(1))
 
 	valueBundle2 := emissions.ValueBundle{
 		ExtraData: nil,
@@ -543,11 +521,10 @@ func (s *InferenceSynthesisTestSuite) getTestCasesTwoWorkersBadTopicId() []struc
 		},
 		OneOutInfererForecasterValues: nil,
 	}
-	signature2 := s.signValueBundle(&valueBundle2, s.PrivKeys(2))
 	return []struct {
 		name            string
 		stakesByReputer map[inferencesynthesis.Worker]cosmosMath.Int
-		reportedLosses  emissions.ReputerValueBundles
+		reportedLosses  emissions.LossBundles
 		epsilon         alloraMath.Dec
 		expectedOutput  emissions.ValueBundle
 		expectedError   error
@@ -558,19 +535,9 @@ func (s *InferenceSynthesisTestSuite) getTestCasesTwoWorkersBadTopicId() []struc
 				s.AddrsStr(1): inferencesynthesis.CosmosIntOneE18(),           // 1 token
 				s.AddrsStr(2): inferencesynthesis.CosmosIntOneE18().MulRaw(2), // 2 tokens
 			},
-			reportedLosses: emissions.ReputerValueBundles{
-				ReputerValueBundles: []*emissions.ReputerValueBundle{
-					{
-						ValueBundle: &valueBundle1,
-						Signature:   signature1,
-						Pubkey:      s.PubKeyHexStr(1),
-					},
-					{
-						ValueBundle: &valueBundle2,
-						Signature:   signature2,
-						Pubkey:      s.PubKeyHexStr(2),
-					},
-				},
+			reportedLosses: emissions.LossBundles{
+				&valueBundle1,
+				&valueBundle2,
 			},
 			epsilon: alloraMath.MustNewDecFromString("1e-4"),
 			expectedOutput: emissions.ValueBundle{
@@ -642,7 +609,7 @@ func (s *InferenceSynthesisTestSuite) getTestCasesTwoWorkersBadTopicId() []struc
 func (s *InferenceSynthesisTestSuite) getTestCasesTwoWorkersBadBlockHeight() []struct {
 	name            string
 	stakesByReputer map[inferencesynthesis.Worker]cosmosMath.Int
-	reportedLosses  emissions.ReputerValueBundles
+	reportedLosses  emissions.LossBundles
 	epsilon         alloraMath.Dec
 	expectedOutput  emissions.ValueBundle
 	expectedError   error
@@ -708,7 +675,6 @@ func (s *InferenceSynthesisTestSuite) getTestCasesTwoWorkersBadBlockHeight() []s
 		},
 		OneOutInfererForecasterValues: nil,
 	}
-	signature1 := s.signValueBundle(&valueBundle1, s.PrivKeys(1))
 
 	valueBundle2 := emissions.ValueBundle{
 		ExtraData: nil,
@@ -771,11 +737,10 @@ func (s *InferenceSynthesisTestSuite) getTestCasesTwoWorkersBadBlockHeight() []s
 		},
 		OneOutInfererForecasterValues: nil,
 	}
-	signature2 := s.signValueBundle(&valueBundle2, s.PrivKeys(2))
 	return []struct {
 		name            string
 		stakesByReputer map[inferencesynthesis.Worker]cosmosMath.Int
-		reportedLosses  emissions.ReputerValueBundles
+		reportedLosses  emissions.LossBundles
 		epsilon         alloraMath.Dec
 		expectedOutput  emissions.ValueBundle
 		expectedError   error
@@ -786,19 +751,9 @@ func (s *InferenceSynthesisTestSuite) getTestCasesTwoWorkersBadBlockHeight() []s
 				s.AddrsStr(1): inferencesynthesis.CosmosIntOneE18(),           // 1 token
 				s.AddrsStr(2): inferencesynthesis.CosmosIntOneE18().MulRaw(2), // 2 tokens
 			},
-			reportedLosses: emissions.ReputerValueBundles{
-				ReputerValueBundles: []*emissions.ReputerValueBundle{
-					{
-						ValueBundle: &valueBundle1,
-						Signature:   signature1,
-						Pubkey:      s.PubKeyHexStr(1),
-					},
-					{
-						ValueBundle: &valueBundle2,
-						Signature:   signature2,
-						Pubkey:      s.PubKeyHexStr(2),
-					},
-				},
+			reportedLosses: emissions.LossBundles{
+				&valueBundle1,
+				&valueBundle2,
 			},
 			epsilon: alloraMath.MustNewDecFromString("1e-4"),
 			expectedOutput: emissions.ValueBundle{

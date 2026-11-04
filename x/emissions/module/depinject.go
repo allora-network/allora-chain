@@ -13,7 +13,7 @@ import (
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 )
 
-var _ appmodule.AppModule = AppModule{} // nolint: exhaustruct
+var _ appmodule.AppModule = AppModule{} //nolint:exhaustruct
 
 // IsOnePerModuleType implements the depinject.OnePerModuleType interface.
 func (am AppModule) IsOnePerModuleType() {}

@@ -9,13 +9,11 @@ on:
         required: false
         default: ''
       allorad_current_version:
-        description: 'Current version of allorad'
+        description: 'Current released version tag (example: v0.15.1)'
         required: true
-        default: 'v0.4.0'
       allorad_upgrade_version:
-        description: 'Upgrade version of allorad'
+        description: 'Upgrade released version tag (example: v0.16.0)'
         required: true
-        default: 'v0.5.0'
 
 concurrency:
   group: ${{ github.ref }}
@@ -23,12 +21,49 @@ concurrency:
 
 jobs:
   build-push:
-    name: Build and Push docker image
+    name: Build and Push upgrader image (manual)
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Validate release assets exist
+        shell: bash
+        env:
+          ALLORAD_CURRENT_VERSION: ${{ github.event.inputs.allorad_current_version }}
+          ALLORAD_UPGRADE_VERSION: ${{ github.event.inputs.allorad_upgrade_version }}
+        run: |
+          set -euo pipefail
+
+          if [[ -z "${ALLORAD_CURRENT_VERSION}" || -z "${ALLORAD_UPGRADE_VERSION}" ]]; then
+            echo "Both allorad_current_version and allorad_upgrade_version are required."
+            exit 1
+          fi
+
+          # Release assets renamed: new = allora-chain_<semver>_linux_amd64; legacy = allorad_linux_amd64
+          check_release_asset() {
+            local ver="$1"
+            local label="$2"
+            local strip="${ver#v}"
+            local base="https://github.com/allora-network/allora-chain/releases/download/${ver}"
+            local url_new="${base}/allora-chain_${strip}_linux_amd64"
+            local url_old="${base}/allorad_linux_amd64"
+            echo "Checking ${label} release asset for ${ver}..."
+            if curl -fsSIL "${url_new}" >/dev/null 2>&1; then
+              echo "OK (new naming): ${url_new}"
+              return 0
+            fi
+            if curl -fsSIL "${url_old}" >/dev/null 2>&1; then
+              echo "OK (legacy naming): ${url_old}"
+              return 0
+            fi
+            echo "ERROR: No linux amd64 asset for ${ver} (tried ${url_new} and ${url_old})" >&2
+            return 1
+          }
+
+          check_release_asset "${ALLORAD_CURRENT_VERSION}" "current"
+          check_release_asset "${ALLORAD_UPGRADE_VERSION}" "upgrade"
 
       - name: Login to Docker Hub
         uses: docker/login-action@v1
@@ -42,6 +77,8 @@ jobs:
           DOCKERHUB_USERNAME: alloranetwork
           DOCKERHUB_REPOSITORY: ${{ github.event.repository.name }}
         run: |
+          set -euo pipefail
+
           # Set the tag from the input or default to the SHA of the commit
           GIT_TAG="${{ github.event.inputs.tag || github.sha }}"
           ALLORAD_CURRENT_VERSION="${{ github.event.inputs.allorad_current_version }}"

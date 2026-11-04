@@ -4,14 +4,15 @@ import (
 	"context"
 
 	"cosmossdk.io/errors"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // Calculates and saves the EMA scores for a active set worker and topic.
 // By assuming worker is in active set, we know to calculate the EMA with a new, passed-in score.
-func (k *Keeper) CalcAndSaveInfererScoreEmaForActiveSet(
+func (k *ScoresKeeper) CalcAndSaveInfererScoreEmaForActiveSet(
 	ctx context.Context,
 	topic types.Topic,
 	worker ActorId,
@@ -46,7 +47,7 @@ func (k *Keeper) CalcAndSaveInfererScoreEmaForActiveSet(
 
 // Calculates and saves the EMA scores for a active set worker and topic.
 // By assuming worker is in active set, we know to calculate the EMA with a new, passed-in score.
-func (k *Keeper) CalcAndSaveForecasterScoreEmaForActiveSet(
+func (k *ScoresKeeper) CalcAndSaveForecasterScoreEmaForActiveSet(
 	ctx context.Context,
 	topic types.Topic,
 	worker ActorId,
@@ -81,7 +82,7 @@ func (k *Keeper) CalcAndSaveForecasterScoreEmaForActiveSet(
 
 // Calculates and saves the EMA scores for a given reputer and topic.
 // By assuming reputer is in active set, we know to calculate the EMA with a new, passed-in score.
-func (k *Keeper) CalcAndSaveReputerScoreEmaForActiveSet(
+func (k *ScoresKeeper) CalcAndSaveReputerScoreEmaForActiveSet(
 	ctx context.Context,
 	topic types.Topic,
 	reputer ActorId,
@@ -117,7 +118,7 @@ func (k *Keeper) CalcAndSaveReputerScoreEmaForActiveSet(
 // Calculates and saves the EMA scores for a given worker and topic.
 // Uses the last saved topic quantile score to calculate the EMA.
 // This is useful for updating EMAs of workers in the passive set.
-func (k *Keeper) CalcAndSaveInfererScoreEmaWithLastSavedTopicQuantile(
+func (k *ScoresKeeper) CalcAndSaveInfererScoreEmaWithLastSavedTopicQuantile(
 	ctx sdk.Context,
 	topic types.Topic,
 	block types.BlockHeight,
@@ -157,7 +158,7 @@ func (k *Keeper) CalcAndSaveInfererScoreEmaWithLastSavedTopicQuantile(
 // Calculates and saves the EMA scores for a given forecaster and topic.
 // Uses the last saved topic quantile score to calculate the EMA.
 // This is useful for updating EMAs of forecasters in the passive set.
-func (k *Keeper) CalcAndSaveForecasterScoreEmaWithLastSavedTopicQuantile(
+func (k *ScoresKeeper) CalcAndSaveForecasterScoreEmaWithLastSavedTopicQuantile(
 	ctx sdk.Context,
 	topic types.Topic,
 	block types.BlockHeight,
@@ -197,7 +198,7 @@ func (k *Keeper) CalcAndSaveForecasterScoreEmaWithLastSavedTopicQuantile(
 // Calculates and saves the EMA scores for a given reputer and topic.
 // Uses the last saved topic quantile score to calculate the EMA.
 // This is useful for updating EMAs of reputers in the passive set.
-func (k *Keeper) CalcAndSaveReputerScoreEmaWithLastSavedTopicQuantile(
+func (k *ScoresKeeper) CalcAndSaveReputerScoreEmaWithLastSavedTopicQuantile(
 	ctx sdk.Context,
 	topic types.Topic,
 	block types.BlockHeight,

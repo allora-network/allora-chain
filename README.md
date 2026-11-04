@@ -17,6 +17,14 @@ The AI/ML agents within the Allora Network use their data and algorithms to broa
 ## Documentation
 For the latest documentation, please go to https://docs.allora.network/
 
+### Chain parameters
+
+Two in-repo references cover the `emissions` module's configuration surface, kept next to the code they describe:
+
+- **[Global parameters](x/emissions/docs/global-parameters.md)** — chain-wide settings governing fees, reward math, scheduling, whitelists and label limits, changeable only by an admin `UpdateParams` tx. Includes defaults and detail on the parameters whose effects are indirect.
+- **[Topic parameters](x/emissions/docs/topic-parameters.md)** — per-topic settings chosen at `CreateNewTopic`. Many are immutable once set; a few can be changed with `UpdateTopic`, and a further subset only while no worker submission window is open. `UpdateTopic` replaces rather than patches, so the page also covers the sentinel values that make omission meaningful.
+
+
 ## Allorad Install
 
 Binary can be Installed for Linux or Mac (check releases for Windows)
@@ -70,6 +78,8 @@ Start the node with an in-place-testnet, swapping the state of the node for the 
 ```bash
 allorad in-place-testnet devnet allovaloper<comet address> --home $HOME/.allorad --minimum-gas-prices 0uallo --skip-confirmation
 ```
+
+For repeatable local upgrade rehearsals from remote snapshots, use `scripts/restore_snapshot_from_url.sh` and the runbook in `test/integration/v0_17_0_upgrade_rehearsal.md`.
 
 ## Run a node with script
 `scripts/l1_node.sh`, you will see the log in the output of the script.
@@ -272,8 +282,8 @@ INTEGRATION=TRUE go test -timeout 10m ./test/integration/ -v
 To run upgrade tests, execute the following commands:
 
 ```bash
-DO_UPGRADE="true" UPGRADE_VERSION="v0.6.0" bash test/local_testnet_l1.sh
-UPGRADE=TRUE go test -timeout 10m ./test/integration/ -v
+DO_UPGRADE="true" UPGRADE_VERSION="v0.17.0" bash test/local_testnet_l1.sh
+UPGRADE=TRUE UPGRADE_TARGET="v0.17.0" go test -timeout 10m ./test/integration/ -v
 ```
 
 ## Run Stress Tests
@@ -350,7 +360,7 @@ Data is submitted by workers and reputers within the allowed submission windows.
 
 For workers, the submission window is defined at the topic level, as the blocks starting at `nonce.BlockHeight` and ending at `nonce.BlockHeight + topic.WorkerSubmissionWindow`. 
 
-For reputers, the submission window starts at `(nonce.BlockHeight + topic.GroundTruthLag)` and it lasts 1 `topic.EpochLength` + any remaining additional lag until end of epoch, only applying when `topic.GroundTruthLag` and `topic.EpochLength` are not multiples, and calculated as `(topic.EpochLength - (topic.GroundTruthLag % topic.EpochLength))`.
+For reputers, the submission window opens at the end of the epoch in which ground truth is revealed, not at the revelation itself: it starts at `(nonce.BlockHeight + topic.GroundTruthLag + extraLag)` and lasts 1 `topic.EpochLength`, where `extraLag` is the distance from the revelation to the end of that epoch — `(topic.EpochLength - (topic.GroundTruthLag % topic.EpochLength))`, and zero when `topic.GroundTruthLag` is a whole multiple of `topic.EpochLength`. Waiting for the epoch boundary is what keeps consecutive windows from overlapping: a nonce is closed on the epoch grid, so opening the next window at the revelation would let a reputer submit for it while the previous nonce is still open.
 
 Both windows are inclusive of start and end boundaries.
 

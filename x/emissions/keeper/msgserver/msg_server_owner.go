@@ -25,7 +25,7 @@ func (ms msgServer) TransferActorOwnership(ctx context.Context, msg *types.Trans
 
 	var oldOwner string
 	if msg.IsReputer {
-		nodeInfo, getErr := ms.k.GetReputerInfo(sdkCtx, msg.Sender)
+		nodeInfo, getErr := ms.rlk.GetReputerInfo(sdkCtx, msg.Sender)
 
 		if errors.Is(getErr, collections.ErrNotFound) {
 			return nil, errorsmod.Wrapf(types.ErrAddressNotRegistered, "reputer %s", msg.Sender)
@@ -40,9 +40,9 @@ func (ms msgServer) TransferActorOwnership(ctx context.Context, msg *types.Trans
 				msg.Sender,
 			)
 		}
-		oldOwner, err = ms.k.UpdateReputerOwner(ctx, msg.Sender, msg.NewOwner)
+		oldOwner, err = ms.rlk.UpdateReputerOwner(ctx, msg.Sender, msg.NewOwner)
 	} else {
-		nodeInfo, getErr := ms.k.GetWorkerInfo(sdkCtx, msg.Sender)
+		nodeInfo, getErr := ms.wk.GetWorkerInfo(sdkCtx, msg.Sender)
 
 		if errors.Is(getErr, collections.ErrNotFound) {
 			return nil, errorsmod.Wrapf(types.ErrAddressNotRegistered, "worker %s", msg.Sender)
@@ -57,7 +57,7 @@ func (ms msgServer) TransferActorOwnership(ctx context.Context, msg *types.Trans
 				msg.Sender,
 			)
 		}
-		oldOwner, err = ms.k.UpdateWorkerOwner(ctx, msg.Sender, msg.NewOwner)
+		oldOwner, err = ms.wk.UpdateWorkerOwner(ctx, msg.Sender, msg.NewOwner)
 	}
 	if err != nil {
 		return nil, err

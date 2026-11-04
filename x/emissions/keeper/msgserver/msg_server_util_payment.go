@@ -5,10 +5,11 @@ import (
 
 	"cosmossdk.io/errors"
 	cosmosMath "cosmossdk.io/math"
-	appParams "github.com/allora-network/allora-chain/app/params"
-	minttypes "github.com/allora-network/allora-chain/x/mint/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+
+	appParams "github.com/allora-network/allora-chain/app/params"
+	minttypes "github.com/allora-network/allora-chain/x/mint/types"
 )
 
 type TopicId = uint64
@@ -19,21 +20,21 @@ func activateTopicIfWeightAtLeastGlobalMin(
 	ms msgServer,
 	topicId TopicId,
 ) error {
-	isActivated, err := ms.k.IsTopicActive(ctx, topicId)
+	isActivated, err := ms.tk.IsTopicActive(ctx, topicId)
 	if err != nil {
 		return errors.Wrapf(err, "error getting topic activation status")
 	}
 	if !isActivated {
-		params, err := ms.k.GetParams(ctx)
+		params, err := ms.pk.GetParams(ctx)
 		if err != nil {
 			return errors.Wrapf(err, "error getting params")
 		}
-		topic, err := ms.k.GetTopic(ctx, topicId)
+		topic, err := ms.tk.GetTopic(ctx, topicId)
 		if err != nil {
 			return errors.Wrapf(err, "error getting topic")
 		}
 
-		newTopicWeight, _, _, err := ms.k.GetCurrentTopicWeight(
+		newTopicWeight, _, _, err := ms.tk.GetCurrentTopicWeight(
 			ctx,
 			topicId,
 			topic.EpochLength,
@@ -47,7 +48,7 @@ func activateTopicIfWeightAtLeastGlobalMin(
 		}
 
 		if newTopicWeight.Gte(params.MinTopicWeight) {
-			err = ms.k.ActivateTopic(ctx, topicId)
+			err = ms.tk.ActivateTopic(ctx, topicId)
 			if err != nil {
 				return err
 			}
@@ -68,14 +69,14 @@ func checkBalanceAndSendFee(
 	if err != nil {
 		return err
 	}
-	balance := ms.k.GetBankBalance(ctx, accAddress, appParams.DefaultBondDenom)
+	balance := ms.bk.GetBalance(ctx, accAddress, appParams.DefaultBondDenom)
 	fee := sdk.NewCoin(balance.Denom, amount)
 
 	if balance.IsLT(fee) {
 		return errors.Wrapf(sdkerrors.ErrInsufficientFunds, "sender has insufficient balance to cover fees")
 	}
 
-	err = ms.k.SendCoinsFromAccountToModule(ctx, sender, minttypes.EcosystemModuleName, sdk.NewCoins(fee))
+	err = ms.bk.SendCoinsFromAccountToModule(ctx, sender, minttypes.EcosystemModuleName, sdk.NewCoins(fee))
 	if err != nil {
 		return err
 	}
@@ -88,6 +89,9 @@ func checkBalanceAndSendFee(
 // 2. Sends coins from sender to mint module Ecosystem bucket
 // 3. Adds the amount to the topic's effective revenue
 // 4. Activates the topic if the weight is at least the global minimum for active topics
+// A zero amount skips steps 1-3: there is nothing to transfer or credit, and the
+// bank and fee-revenue writes would be no-ops. Activation is still attempted
+// because it depends on the topic's current weight, not on the amount.
 // insufficientBalanceErrorMsg is appended to error message if sender has insufficient balance
 // Assumes the topic already exists
 func sendEffectiveRevenueActivateTopicIfWeightSufficient(
@@ -98,17 +102,19 @@ func sendEffectiveRevenueActivateTopicIfWeightSufficient(
 	amount Allo,
 ) error {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	err := checkBalanceAndSendFee(ctx, ms, sender, amount)
-	if err != nil {
-		return err
+	if !amount.IsZero() {
+		err := checkBalanceAndSendFee(ctx, ms, sender, amount)
+		if err != nil {
+			return err
+		}
+
+		err = ms.tk.AddTopicFeeRevenue(ctx, topicId, amount)
+		if err != nil {
+			return err
+		}
 	}
 
-	err = ms.k.AddTopicFeeRevenue(ctx, topicId, amount)
-	if err != nil {
-		return err
-	}
-
-	err = activateTopicIfWeightAtLeastGlobalMin(ctx, ms, topicId)
+	err := activateTopicIfWeightAtLeastGlobalMin(ctx, ms, topicId)
 	if err != nil {
 		sdkCtx.Logger().Error("Failed to activate topic", err)
 		return err

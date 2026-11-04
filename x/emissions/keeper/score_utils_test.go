@@ -4,32 +4,31 @@ import (
 	"context"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
-	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
 func (s *KeeperTestSuite) TestGetLowestScore() {
-	k := s.EmissionsKeeper()
+	k := s.ScoresKeeper()
 	ctx := s.Ctx()
 	topicId := uint64(1)
 
 	testCases := []struct {
 		name           string
 		setScore       func(ctx context.Context, topicId uint64, addr string, score types.Score) error
-		getLowestScore func(ctx context.Context, k *keeper.Keeper, topicId uint64, addresses []string) (types.Score, error)
+		getLowestScore func(ctx context.Context, topicId uint64, addresses []string) (types.Score, error)
 	}{
 		{
 			name:           "inferences",
 			setScore:       k.SetInfererScoreEma,
-			getLowestScore: keeper.GetLowestScoreFromAllInferers,
+			getLowestScore: k.GetLowestScoreFromAllInferers,
 		}, {
 			name:           "forecasts",
 			setScore:       k.SetForecasterScoreEma,
-			getLowestScore: keeper.GetLowestScoreFromAllForecasters,
+			getLowestScore: k.GetLowestScoreFromAllForecasters,
 		}, {
 			name:           "loss bundles",
 			setScore:       k.SetReputerScoreEma,
-			getLowestScore: keeper.GetLowestScoreFromAllReputers,
+			getLowestScore: k.GetLowestScoreFromAllReputers,
 		},
 	}
 	for _, tc := range testCases {
@@ -45,7 +44,7 @@ func (s *KeeperTestSuite) TestGetLowestScore() {
 				_ = tc.setScore(ctx, topicId, workers[i], scores[i])
 			}
 
-			lowScore, err := tc.getLowestScore(ctx, k, topicId, workers)
+			lowScore, err := tc.getLowestScore(ctx, topicId, workers)
 			s.Require().NoError(err)
 			s.Require().Equal(lowScore, scores[1])
 		})

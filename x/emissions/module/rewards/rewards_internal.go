@@ -594,6 +594,21 @@ func GetAllReputersOutput(
 		i++
 	}
 
+	// Check if all coefficients are zero
+	allZero := true
+	for _, coeff := range coefficients {
+		if !coeff.Equal(alloraMath.ZeroDec()) {
+			allZero = false
+			break
+		}
+	}
+	if allZero {
+		// set all coefficients to Epsilon:
+		for i := range coefficients {
+			coefficients[i] = params.EpsilonSafeDiv
+		}
+	}
+
 	return newScores, coefficients, nil
 }
 

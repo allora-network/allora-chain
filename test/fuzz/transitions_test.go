@@ -5,11 +5,12 @@ import (
 	"fmt"
 
 	cosmossdk_io_math "cosmossdk.io/math"
+
 	testcommon "github.com/allora-network/allora-chain/test/common"
 	fuzzcommon "github.com/allora-network/allora-chain/test/fuzz/common"
 )
 
-var UnusedActor Actor = Actor{} // nolint:exhaustruct
+var UnusedActor Actor = Actor{} //nolint:exhaustruct
 
 // Every function responsible for doing a state transition
 // should adhere to this function signature
@@ -103,7 +104,7 @@ func allTransitions(f *fuzzcommon.FuzzConfig) []StateTransition {
 		follow: nil, followWeight: 0,
 	}
 
-	//cancels come after the unstake/undelegate
+	// cancels come after the unstake/undelegate
 	transitionCancelStakeRemoval := StateTransition{
 		name: "cancelStakeRemoval", f: cancelStakeRemoval,
 		weight: transitionWeights.CancelStakeRemoval,

@@ -7,7 +7,6 @@ import (
 
 func (s *QueryServerTestSuite) TestGetForecastsAtBlock() {
 	ctx := s.Ctx()
-	keeper := s.EmissionsKeeper()
 	queryserver := s.EmissionsQueryServer()
 	topicId := uint64(1)
 	blockHeight := types.BlockHeight(100)
@@ -42,7 +41,7 @@ func (s *QueryServerTestSuite) TestGetForecastsAtBlock() {
 
 	// Assume InsertActiveForecasts correctly sets up forecasts
 	nonce := types.Nonce{BlockHeight: blockHeight}
-	err := keeper.InsertActiveForecasts(ctx, topicId, nonce.BlockHeight, expectedForecasts)
+	err := s.WorkerKeeper().InsertActiveForecasts(ctx, topicId, nonce.BlockHeight, expectedForecasts)
 	s.Require().NoError(err)
 
 	results, err := queryserver.GetForecastsAtBlock(

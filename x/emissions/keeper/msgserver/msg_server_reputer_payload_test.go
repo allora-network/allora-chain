@@ -15,7 +15,7 @@ func (s *MsgServerTestSuite) TestMsgInsertReputerPayloadFailsEarlyWindowAndWhite
 
 	topic := s.FullTopicSetup(workerIndexes, reputerIndexes)
 
-	nonce, _, _ := s.EmissionsKeeper().GetNextPossibleChurningBlockByTopicId(s.Ctx(), topic.Id)
+	nonce, _, _ := s.TopicKeeper().GetNextPossibleChurningBlockByTopicId(s.Ctx(), topic.Id)
 	s.WithBlockHeight(nonce)
 	s.EndBlock()
 
@@ -44,9 +44,9 @@ func (s *MsgServerTestSuite) TestMsgInsertReputerPayloadFailsEarlyWindowAndWhite
 	s.Require().ErrorIs(err, types.ErrReputerNonceWindowNotAvailable)
 
 	// Remove reputer from whitelist
-	err = s.EmissionsKeeper().RemoveFromGlobalWhitelist(s.Ctx(), reputerAddr.String())
+	err = s.WhitelistsKeeper().RemoveFromGlobalWhitelist(s.Ctx(), reputerAddr.String())
 	s.Require().NoError(err)
-	err = s.EmissionsKeeper().RemoveFromTopicReputerWhitelist(s.Ctx(), topic.Id, reputerAddr.String())
+	err = s.WhitelistsKeeper().RemoveFromTopicReputerWhitelist(s.Ctx(), topic.Id, reputerAddr.String())
 	s.Require().NoError(err)
 
 	newBlockheight = nonce + topic.GroundTruthLag*2
@@ -55,7 +55,7 @@ func (s *MsgServerTestSuite) TestMsgInsertReputerPayloadFailsEarlyWindowAndWhite
 	s.Require().ErrorIs(err, types.ErrNotPermittedToSubmitReputerPayload)
 
 	// Add reputer to whitelist so they could submit payload again
-	err = s.EmissionsKeeper().AddToTopicReputerWhitelist(s.Ctx(), topic.Id, reputerAddr.String())
+	err = s.WhitelistsKeeper().AddToTopicReputerWhitelist(s.Ctx(), topic.Id, reputerAddr.String())
 	s.Require().NoError(err)
 
 	// Valid reputer nonce window, end

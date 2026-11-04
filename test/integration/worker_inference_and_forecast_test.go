@@ -3,14 +3,16 @@ package integration_test
 import (
 	"context"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"time"
+
+	"github.com/cosmos/cosmos-sdk/types/tx/signing"
+	"github.com/stretchr/testify/require"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
 	testCommon "github.com/allora-network/allora-chain/test/common"
 	"github.com/allora-network/allora-chain/x/emissions/types"
-	"github.com/cosmos/cosmos-sdk/types/tx/signing"
-	"github.com/stretchr/testify/require"
 )
 
 func waitForNextChurningBlock(m testCommon.TestConfig, topicId uint64) (*types.Topic, error) {
@@ -29,6 +31,9 @@ func waitForNextChurningBlock(m testCommon.TestConfig, topicId uint64) (*types.T
 }
 
 func InsertSingleWorkerPayload(m testCommon.TestConfig, topic *types.Topic, blockHeight int64) error {
+	if len(m.InfererValues) == 0 {
+		return errors.New("values can not be empty")
+	}
 	ctx := context.Background()
 	// Nonce: calculate from EpochLastRan + EpochLength
 	topicId := topic.Id
@@ -47,7 +52,8 @@ func InsertSingleWorkerPayload(m testCommon.TestConfig, topic *types.Topic, bloc
 					TopicId:     topicId,
 					BlockHeight: blockHeight,
 					Inferer:     InfererAddress1,
-					Value:       alloraMath.MustNewBoundedExp40Dec(alloraMath.NewDecFromInt64(100)),
+					Value:       m.InfererValues[0].Value,
+					Values:      m.InfererValues,
 					ExtraData:   nil,
 					Proof:       "",
 				},
@@ -58,7 +64,7 @@ func InsertSingleWorkerPayload(m testCommon.TestConfig, topic *types.Topic, bloc
 					ForecastElements: []*types.InputForecastElement{
 						{
 							Inferer: InfererAddress1,
-							Value:   alloraMath.MustNewBoundedExp40Dec(alloraMath.NewDecFromInt64(100)),
+							Value:   m.InfererValues[0].Value,
 						},
 					},
 					ExtraData: nil,
@@ -254,7 +260,7 @@ func WorkerInferenceAndForecastChecks(m testCommon.TestConfig) {
 	addGlobalActor(m, m.BobAddr)
 	addGlobalActor(m, m.AliceAddr)
 
-	topic, err := waitForNextChurningBlock(m, 1)
+	topic, err := waitForNextChurningBlock(m, m.TopicID)
 	if err != nil {
 		require.NoError(m.T, err)
 	}
@@ -285,7 +291,12 @@ func WorkerInferenceAndForecastChecks(m testCommon.TestConfig) {
 	}
 
 	m.T.Log(time.Now(), "--- Insert Reputer Bundle ---")
-	err = InsertReputerBundle(m, topic, blockHeightNonce)
+	// The reputer window opens at exactly the block waited for above, and the
+	// client spreads calls across nodes, so the node that checks the payload
+	// can still be one block behind. Retry for about a block's time.
+	_, err = RunWithRetry(m, 3, 5*time.Second, func() (int64, error) {
+		return 0, InsertReputerBundle(m, topic, blockHeightNonce)
+	})
 	if err != nil {
 		m.T.Log(time.Now(), "--- Failed inserting reputer payload ---")
 		require.NoError(m.T, err)
@@ -304,9 +315,12 @@ func WorkerInferenceAndForecastChecks(m testCommon.TestConfig) {
 
 // RunWithRetry retries a function that returns an error, n times
 func RunWithRetry(m testCommon.TestConfig, retryCount int, sleep time.Duration, operation func() (int64, error)) (int64, error) {
-	var err error
+	var (
+		err error
+		val int64
+	)
 	for i := 0; i < retryCount; i++ {
-		val, err := operation()
+		val, err = operation()
 		if err == nil {
 			return val, nil // Success, no need to retry
 		}

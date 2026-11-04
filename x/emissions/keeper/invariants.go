@@ -5,10 +5,11 @@ import (
 
 	"cosmossdk.io/collections"
 	cosmosMath "cosmossdk.io/math"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	"github.com/allora-network/allora-chain/app/params"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // RegisterInvariants registers the emissions module invariants.
@@ -18,6 +19,8 @@ func RegisterInvariants(ir sdk.InvariantRegistry, k *Keeper) {
 	ir.RegisterRoute(emissionstypes.ModuleName, "stake-removals-length-same", StakingInvariantLenStakeRemovalsSame(*k))
 	ir.RegisterRoute(emissionstypes.ModuleName, "stake-sum-delegated-stakes", StakingInvariantDelegatedStakes(*k))
 	ir.RegisterRoute(emissionstypes.ModuleName, "pending-reward-for-delegators-equal-reward-per-share-minus-reward-debt", StakingInvariantPendingRewardForDelegatorsGreaterThanRewardPerShareMinusRewardDebt(*k))
+	ir.RegisterRoute(emissionstypes.ModuleName, "total-sum-previous-topic-weights-equal-active-topics-sum", TopicInvariantTotalSumPreviousTopicWeightsEqualActiveTopicsSum(*k))
+	ir.RegisterRoute(emissionstypes.ModuleName, "active-topics-scheduled-at-churning-block", TopicInvariantActiveTopicsScheduledAtChurningBlock(*k))
 }
 
 // AllInvariants is a convience function to run all invariants in the emissions module.
@@ -38,7 +41,146 @@ func AllInvariants(k Keeper) sdk.Invariant {
 		if res, stop := StakingInvariantPendingRewardForDelegatorsGreaterThanRewardPerShareMinusRewardDebt(k)(ctx); stop {
 			return res, stop
 		}
+		if res, stop := TopicInvariantTotalSumPreviousTopicWeightsEqualActiveTopicsSum(k)(ctx); stop {
+			return res, stop
+		}
+		if res, stop := TopicInvariantActiveTopicsScheduledAtChurningBlock(k)(ctx); stop {
+			return res, stop
+		}
 		return "", false
+	}
+}
+
+// TopicInvariantTotalSumPreviousTopicWeightsEqualActiveTopicsSum checks that
+// totalSumPreviousTopicWeights equals the sum of the stored previous weights
+// of the scheduled topics (those with a next churning block). Topics without a
+// schedule keep their stored weight but must not be counted.
+func TopicInvariantTotalSumPreviousTopicWeightsEqualActiveTopicsSum(k Keeper) sdk.Invariant {
+	return func(ctx sdk.Context) (string, bool) {
+		scheduledTopicIds, err := k.topicKeeper.GetScheduledTopicIds(ctx)
+		if err != nil {
+			panic(fmt.Sprintf("failed to get scheduled topic ids: %v", err))
+		}
+
+		activeSum := alloraMath.ZeroDec()
+		for _, topicId := range scheduledTopicIds {
+			weight, noPrior, err := k.topicKeeper.GetPreviousTopicWeight(ctx, topicId)
+			if err != nil {
+				panic(fmt.Sprintf("failed to get previous topic weight for topic %d: %v", topicId, err))
+			}
+			if noPrior {
+				continue
+			}
+			activeSum, err = activeSum.Add(weight)
+			if err != nil {
+				panic(fmt.Sprintf("failed to add previous topic weight for topic %d: %v", topicId, err))
+			}
+		}
+
+		totalSum, err := k.topicKeeper.GetTotalSumPreviousTopicWeights(ctx)
+		if err != nil {
+			panic(fmt.Sprintf("failed to get total sum of previous topic weights: %v", err))
+		}
+		broken := !totalSum.Equal(activeSum)
+		return sdk.FormatInvariant(
+			emissionstypes.ModuleName,
+			"total sum of previous topic weights equal sum over scheduled topics",
+			fmt.Sprintf("TotalSumPreviousTopicWeights: %s | Sum of previous weights of scheduled topics: %s",
+				totalSum.String(),
+				activeSum.String(),
+			),
+		), broken
+	}
+}
+
+// TopicInvariantActiveTopicsScheduledAtChurningBlock checks that the three stores that
+// encode topic activity agree: every scheduled topic (one with a next churning block) is
+// listed in that block's active topics and in the active-topic set, and both stores hold
+// only scheduled topics at their churning block. A weight overcount after a later activation
+// is detected by TopicInvariantTotalSumPreviousTopicWeightsEqualActiveTopicsSum. The
+// churning block is not compared with the current height on purpose: tests and replays
+// legitimately evaluate EndBlock at heights far beyond the last processed epoch, so a
+// schedule and its bucket listing that agree in the past are not reported here.
+func TopicInvariantActiveTopicsScheduledAtChurningBlock(k Keeper) sdk.Invariant {
+	return func(ctx sdk.Context) (string, bool) {
+		scheduledTopicIds, err := k.topicKeeper.GetScheduledTopicIds(ctx)
+		if err != nil {
+			panic(fmt.Sprintf("failed to get scheduled topic ids: %v", err))
+		}
+		scheduled := make(map[TopicId]BlockHeight, len(scheduledTopicIds))
+		problems := make([]string, 0)
+		for _, topicId := range scheduledTopicIds {
+			churningBlock, err := k.topicKeeper.topicToNextPossibleChurningBlock.Get(ctx, topicId)
+			if err != nil {
+				panic(fmt.Sprintf("failed to get next possible churning block for topic %d: %v", topicId, err))
+			}
+			scheduled[topicId] = churningBlock
+		}
+
+		buckets, err := k.topicKeeper.GetActiveTopicIdsByBlock(ctx)
+		if err != nil {
+			panic(fmt.Sprintf("failed to get active topic block buckets: %v", err))
+		}
+		listedAtSchedule := make(map[TopicId]struct{}, len(scheduledTopicIds))
+		for _, bucket := range buckets {
+			if bucket.TopicIds == nil {
+				continue
+			}
+			for _, topicId := range bucket.TopicIds.TopicIds {
+				churningBlock, isScheduled := scheduled[topicId]
+				if !isScheduled {
+					problems = append(problems, fmt.Sprintf("topic %d: listed at block %d without a churning block", topicId, bucket.BlockHeight))
+					continue
+				}
+				if churningBlock != bucket.BlockHeight {
+					problems = append(problems, fmt.Sprintf("topic %d: listed at block %d instead of its churning block %d", topicId, bucket.BlockHeight, churningBlock))
+					continue
+				}
+				if _, duplicate := listedAtSchedule[topicId]; duplicate {
+					problems = append(problems, fmt.Sprintf("topic %d: listed more than once at its churning block %d", topicId, churningBlock))
+					continue
+				}
+				listedAtSchedule[topicId] = struct{}{}
+			}
+		}
+
+		for _, topicId := range scheduledTopicIds {
+			churningBlock := scheduled[topicId]
+			if _, listed := listedAtSchedule[topicId]; !listed {
+				problems = append(problems, fmt.Sprintf("topic %d: not listed at its churning block %d", topicId, churningBlock))
+			}
+			inSet, err := k.topicKeeper.activeTopics.Has(ctx, topicId)
+			if err != nil {
+				panic(fmt.Sprintf("failed to check active set membership of topic %d: %v", topicId, err))
+			}
+			if !inSet {
+				problems = append(problems, fmt.Sprintf("topic %d: scheduled but missing from the active set", topicId))
+			}
+		}
+
+		iter, err := k.topicKeeper.activeTopics.Iterate(ctx, nil)
+		if err != nil {
+			panic(fmt.Sprintf("failed to get active topics iterator: %v", err))
+		}
+		defer iter.Close()
+		activeSetSize := 0
+		for ; iter.Valid(); iter.Next() {
+			topicId, err := iter.Key()
+			if err != nil {
+				panic(fmt.Sprintf("failed to get active topic id: %v", err))
+			}
+			activeSetSize++
+			if _, ok := scheduled[topicId]; !ok {
+				problems = append(problems, fmt.Sprintf("topic %d: in the active set without a churning block", topicId))
+			}
+		}
+
+		broken := len(problems) > 0
+		return sdk.FormatInvariant(
+			emissionstypes.ModuleName,
+			"active topics scheduled at their churning block",
+			fmt.Sprintf("Scheduled: %d | ActiveSet: %d | Problems: %v", len(scheduledTopicIds), activeSetSize, problems),
+		), broken
 	}
 }
 
@@ -47,12 +189,12 @@ func AllInvariants(k Keeper) sdk.Invariant {
 // of the Allora staking bank account.
 func StakingInvariantTotalStakeEqualAlloraStakingBankBalance(k Keeper) sdk.Invariant {
 	return func(ctx sdk.Context) (string, bool) {
-		totalStake, err := k.GetTotalStake(ctx)
+		totalStake, err := k.stakingKeeper.GetTotalStake(ctx)
 		if err != nil {
 			panic(fmt.Sprintf("failed to get total stake: %v", err))
 		}
 		alloraStakingAddr := k.authKeeper.GetModuleAccount(ctx, emissionstypes.AlloraStakingAccountName).GetAddress()
-		alloraStakingBalance := k.bankKeeper.GetBalance(
+		alloraStakingBalance := k.bankingKeeper.GetBalance(
 			ctx,
 			alloraStakingAddr,
 			params.DefaultBondDenom).Amount
@@ -72,7 +214,7 @@ func StakingInvariantTotalStakeEqualAlloraStakingBankBalance(k Keeper) sdk.Invar
 // should always equal the number of values in the stakeRemovalsByActor map
 func StakingInvariantLenStakeRemovalsSame(k Keeper) sdk.Invariant {
 	return func(ctx sdk.Context) (string, bool) {
-		iterByBlock, err := k.stakeRemovalsByBlock.Iterate(ctx, nil)
+		iterByBlock, err := k.stakingKeeper.stakeRemovalsByBlock.Iterate(ctx, nil)
 		if err != nil {
 			panic(fmt.Sprintf("failed to get stake removals iterator: %v", err))
 		}
@@ -82,7 +224,7 @@ func StakingInvariantLenStakeRemovalsSame(k Keeper) sdk.Invariant {
 			panic(fmt.Sprintf("failed to get stake removals values: %v", err))
 		}
 		lenByBlock := len(valuesByBlock)
-		iterByActor, err := k.stakeRemovalsByActor.Iterate(ctx, nil)
+		iterByActor, err := k.stakingKeeper.stakeRemovalsByActor.Iterate(ctx, nil)
 		if err != nil {
 			panic(fmt.Sprintf("failed to get stake removals iterator: %v", err))
 		}
@@ -116,7 +258,7 @@ func StakingInvariantLenStakeRemovalsSame(k Keeper) sdk.Invariant {
 			topicSumsRemove[value.TopicId] = topicSumBefore.Add(value.Amount)
 			totalSumRemove = totalSumRemove.Add(value.Amount)
 		}
-		totalStake, err := k.totalStake.Get(ctx)
+		totalStake, err := k.stakingKeeper.GetTotalStake(ctx)
 		if err != nil {
 			panic(fmt.Sprintf("failed to get total stake: %v", err))
 		}
@@ -131,8 +273,9 @@ func StakingInvariantLenStakeRemovalsSame(k Keeper) sdk.Invariant {
 				),
 			), broken
 		}
+		//nolint:maprange // invariant check only: map iteration order affects first reported offender, not state or broken result
 		for topicId, topicSumRemove := range topicSumsRemove {
-			topicStake, err := k.GetTopicStake(ctx, topicId)
+			topicStake, err := k.stakingKeeper.GetTopicStake(ctx, topicId)
 			if err != nil {
 				panic(fmt.Sprintf("failed to get topic stake: %v", err))
 			}
@@ -157,13 +300,13 @@ func StakingInvariantLenStakeRemovalsSame(k Keeper) sdk.Invariant {
 // stakeFromDelegatorsUponReputer = Sum(delegatedStakes[topicid, all delegators, reputer])
 func StakingInvariantDelegatedStakes(k Keeper) sdk.Invariant {
 	return func(ctx sdk.Context) (string, bool) {
-		numTopics, err := k.GetNextTopicId(ctx)
+		numTopics, err := k.topicKeeper.GetNextTopicId(ctx)
 		if err != nil {
 			panic(fmt.Sprintf("failed to get next topic id: %v", err))
 		}
 		for i := uint64(0); i < numTopics; i++ {
 			rng := collections.NewPrefixedTripleRange[uint64, string, string](i)
-			topicIter, err := k.delegatedStakes.Iterate(ctx, rng)
+			topicIter, err := k.stakingKeeper.delegatedStakes.Iterate(ctx, rng)
 			if err != nil {
 				panic(fmt.Sprintf("failed to get delegated stakes iterator: %v", err))
 			}
@@ -187,7 +330,7 @@ func StakingInvariantDelegatedStakes(k Keeper) sdk.Invariant {
 				}
 				existingSumsDelegator, presentDelegator := delegatorsToSumsMap[delegator]
 				if !presentDelegator {
-					stakeSumForDelegator, err := k.stakeSumFromDelegator.Get(ctx, collections.Join(i, delegator))
+					stakeSumForDelegator, err := k.stakingKeeper.stakeSumFromDelegator.Get(ctx, collections.Join(i, delegator))
 					if err != nil {
 						panic(fmt.Sprintf("failed to get stake sum from delegator: %v", err))
 					}
@@ -204,7 +347,7 @@ func StakingInvariantDelegatedStakes(k Keeper) sdk.Invariant {
 				}
 				existingSumsReputer, presentReputer := reputersToSumsMap[reputer]
 				if !presentReputer {
-					stakeSumForReputer, err := k.stakeFromDelegatorsUponReputer.Get(ctx, collections.Join(i, reputer))
+					stakeSumForReputer, err := k.stakingKeeper.stakeFromDelegatorsUponReputer.Get(ctx, collections.Join(i, reputer))
 					if err != nil {
 						panic(fmt.Sprintf("failed to get delegator stake upon reputer: %v", err))
 					}
@@ -220,6 +363,7 @@ func StakingInvariantDelegatedStakes(k Keeper) sdk.Invariant {
 					}
 				}
 			}
+			//nolint:maprange // invariant check only: map iteration order affects first reported offender, not state or broken result
 			for delegator, sums := range delegatorsToSumsMap {
 				broken := !sums.expected.Equal(sums.computed)
 				if broken {
@@ -235,6 +379,7 @@ func StakingInvariantDelegatedStakes(k Keeper) sdk.Invariant {
 					), broken
 				}
 			}
+			//nolint:maprange // invariant check only: map iteration order affects first reported offender, not state or broken result
 			for reputer, sums := range reputersToSumsMap {
 				broken := !sums.expected.Equal(sums.computed)
 				if broken {
@@ -257,17 +402,17 @@ func StakingInvariantDelegatedStakes(k Keeper) sdk.Invariant {
 
 func StakingInvariantSumStakeFromStakeReputerAuthorityEqualTotalStakeAndTopicStake(k Keeper) sdk.Invariant {
 	return func(ctx sdk.Context) (string, bool) {
-		totalStake, err := k.GetTotalStake(ctx)
+		totalStake, err := k.stakingKeeper.GetTotalStake(ctx)
 		if err != nil {
 			panic(fmt.Sprintf("failed to get total stake: %v", err))
 		}
-		numTopics, err := k.GetNextTopicId(ctx)
+		numTopics, err := k.topicKeeper.GetNextTopicId(ctx)
 		if err != nil {
 			panic(fmt.Sprintf("failed to get next topic id: %v", err))
 		}
 		sumTopicStakes := cosmosMath.ZeroInt()
 		for i := uint64(0); i < numTopics; i++ {
-			topicStake, err := k.GetTopicStake(ctx, i)
+			topicStake, err := k.stakingKeeper.GetTopicStake(ctx, i)
 			if err != nil {
 				panic(fmt.Sprintf("failed to get topic stake: %v", err))
 			}
@@ -275,7 +420,7 @@ func StakingInvariantSumStakeFromStakeReputerAuthorityEqualTotalStakeAndTopicSta
 
 			sumReputersThisTopic := cosmosMath.ZeroInt()
 			rng := collections.NewPrefixedPairRange[uint64, string](i)
-			reputerAuthoritiesForTopicIter, err := k.stakeReputerAuthority.Iterate(ctx, rng)
+			reputerAuthoritiesForTopicIter, err := k.stakingKeeper.stakeReputerAuthority.Iterate(ctx, rng)
 			if err != nil {
 				panic(fmt.Sprintf("failed to get reputer authorities iterator: %v", err))
 			}
@@ -319,10 +464,10 @@ func StakingInvariantPendingRewardForDelegatorsGreaterThanRewardPerShareMinusRew
 		// first get the balance of the pending reward for delegators account
 		// this is the total amount of rewards that we hold on behalf of delegators
 		alloraPendingAddr := k.authKeeper.GetModuleAccount(ctx, emissionstypes.AlloraPendingRewardForDelegatorAccountName).GetAddress()
-		alloraPendingBankBal := k.GetBankBalance(ctx, alloraPendingAddr, params.DefaultBondDenom).Amount
+		alloraPendingBankBal := k.bankingKeeper.GetBalance(ctx, alloraPendingAddr, params.DefaultBondDenom).Amount
 
 		// for every delegator stake position
-		delegatedStakesIter, err := k.delegatedStakes.Iterate(ctx, nil)
+		delegatedStakesIter, err := k.stakingKeeper.delegatedStakes.Iterate(ctx, nil)
 		if err != nil {
 			panic("failed to get delegated stakes iterator")
 		}
@@ -337,7 +482,7 @@ func StakingInvariantPendingRewardForDelegatorsGreaterThanRewardPerShareMinusRew
 			reputer := keyValue.Key.K3()
 			delegatorInfo := keyValue.Value
 			// Get share for this topicId and reputer
-			share, err := k.GetDelegateRewardPerShare(ctx, topicId, reputer)
+			share, err := k.stakingKeeper.GetDelegateRewardPerShare(ctx, topicId, reputer)
 			if err != nil {
 				panic("failed to get delegate reward per share")
 			}

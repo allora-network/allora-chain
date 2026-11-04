@@ -23,7 +23,7 @@ func (ms msgServer) AddStake(ctx context.Context, msg *types.AddStakeRequest) (_
 		return nil, err
 	}
 
-	canAddStake, err := ms.k.CanAddReputerStake(ctx, msg.TopicId, msg.Sender)
+	canAddStake, err := ms.wlk.CanAddReputerStake(ctx, msg.TopicId, msg.Sender)
 	if err != nil {
 		return nil, err
 	} else if !canAddStake {
@@ -31,7 +31,7 @@ func (ms msgServer) AddStake(ctx context.Context, msg *types.AddStakeRequest) (_
 	}
 
 	// Check the topic exists
-	topicExists, err := ms.k.TopicExists(ctx, msg.TopicId)
+	topicExists, err := ms.tk.TopicExists(ctx, msg.TopicId)
 	if err != nil {
 		return nil, err
 	} else if !topicExists {
@@ -39,7 +39,7 @@ func (ms msgServer) AddStake(ctx context.Context, msg *types.AddStakeRequest) (_
 	}
 
 	// Check sender is registered in topic
-	isReputerRegistered, err := ms.k.IsReputerRegisteredInTopic(ctx, msg.TopicId, msg.Sender)
+	isReputerRegistered, err := ms.rlk.IsReputerRegisteredInTopic(ctx, msg.TopicId, msg.Sender)
 	if err != nil {
 		return nil, err
 	} else if !isReputerRegistered {
@@ -50,13 +50,13 @@ func (ms msgServer) AddStake(ctx context.Context, msg *types.AddStakeRequest) (_
 	// bank module does this for us in module SendCoins / subUnlockedCoins so we don't need to check
 	// Send the funds
 	coins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, msg.Amount))
-	err = ms.k.SendCoinsFromAccountToModule(ctx, msg.Sender, types.AlloraStakingAccountName, coins)
+	err = ms.bk.SendCoinsFromAccountToModule(ctx, msg.Sender, types.AlloraStakingAccountName, coins)
 	if err != nil {
 		return nil, err
 	}
 
 	// Update the stake data structures, spread the stake across all topics evenly
-	err = ms.k.AddReputerStake(ctx, msg.TopicId, msg.Sender, msg.Amount)
+	err = ms.sk.AddReputerStake(ctx, msg.TopicId, msg.Sender, msg.Amount)
 	if err != nil {
 		return nil, err
 	}
@@ -75,7 +75,7 @@ func (ms msgServer) RemoveStake(ctx context.Context, msg *types.RemoveStakeReque
 		return nil, err
 	}
 
-	topicExists, err := ms.k.TopicExists(ctx, msg.TopicId)
+	topicExists, err := ms.tk.TopicExists(ctx, msg.TopicId)
 	if err != nil {
 		return nil, err
 	} else if !topicExists {
@@ -83,12 +83,12 @@ func (ms msgServer) RemoveStake(ctx context.Context, msg *types.RemoveStakeReque
 	}
 
 	// Check the sender has enough stake already placed on the topic to remove the stake
-	stakePlaced, err := ms.k.GetStakeReputerAuthority(ctx, msg.TopicId, msg.Sender)
+	stakePlaced, err := ms.sk.GetStakeReputerAuthority(ctx, msg.TopicId, msg.Sender)
 	if err != nil {
 		return nil, err
 	}
 
-	delegateStakeUponReputerInTopic, err := ms.k.GetDelegateStakeUponReputer(ctx, msg.TopicId, msg.Sender)
+	delegateStakeUponReputerInTopic, err := ms.sk.GetDelegateStakeUponReputer(ctx, msg.TopicId, msg.Sender)
 	if err != nil {
 		return nil, err
 	}
@@ -97,19 +97,19 @@ func (ms msgServer) RemoveStake(ctx context.Context, msg *types.RemoveStakeReque
 		return nil, types.ErrInsufficientStakeToRemove
 	}
 
-	moduleParams, err := ms.k.GetParams(ctx)
+	moduleParams, err := ms.pk.GetParams(ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	// find out if we have a stake removal in progress, if so overwrite it
-	removal, found, err := ms.k.GetStakeRemovalForReputerAndTopicId(sdkCtx, msg.Sender, msg.TopicId)
+	removal, found, err := ms.sk.GetStakeRemovalForReputerAndTopicId(sdkCtx, msg.Sender, msg.TopicId)
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "error while searching previous stake removal")
 	}
 	if found {
-		err = ms.k.DeleteStakeRemoval(ctx, removal.BlockRemovalCompleted, removal.TopicId, removal.Reputer)
+		err = ms.sk.DeleteStakeRemoval(ctx, removal.BlockRemovalCompleted, removal.TopicId, removal.Reputer)
 		if err != nil {
 			return nil, errorsmod.Wrap(err, "failed to delete previous stake removal")
 		}
@@ -123,7 +123,7 @@ func (ms msgServer) RemoveStake(ctx context.Context, msg *types.RemoveStakeReque
 	}
 
 	// If no errors have occurred and the removal is valid, add the stake removal to the delayed queue
-	if err = ms.k.SetStakeRemoval(ctx, stakeToRemove); err != nil {
+	if err = ms.sk.SetStakeRemoval(ctx, stakeToRemove); err != nil {
 		return nil, errorsmod.Wrap(err, "failed to set stake removal")
 	}
 
@@ -138,7 +138,7 @@ func (ms msgServer) CancelRemoveStake(ctx context.Context, msg *types.CancelRemo
 		return nil, err
 	}
 
-	topicExists, err := ms.k.TopicExists(ctx, msg.TopicId)
+	topicExists, err := ms.tk.TopicExists(ctx, msg.TopicId)
 	if err != nil {
 		return nil, err
 	} else if !topicExists {
@@ -146,7 +146,7 @@ func (ms msgServer) CancelRemoveStake(ctx context.Context, msg *types.CancelRemo
 	}
 
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	removal, found, err := ms.k.GetStakeRemovalForReputerAndTopicId(sdkCtx, msg.Sender, msg.TopicId)
+	removal, found, err := ms.sk.GetStakeRemovalForReputerAndTopicId(sdkCtx, msg.Sender, msg.TopicId)
 	// if the specific error is that we somehow got into a buggy invariant state
 	// where more than one removal request exists in the queue
 	// still allow people to cancel withdrawing their stake (fail open rather than closed)
@@ -156,7 +156,7 @@ func (ms msgServer) CancelRemoveStake(ctx context.Context, msg *types.CancelRemo
 	if !found {
 		return nil, types.ErrStakeRemovalNotFound
 	}
-	err = ms.k.DeleteStakeRemoval(ctx, removal.BlockRemovalCompleted, removal.TopicId, removal.Reputer)
+	err = ms.sk.DeleteStakeRemoval(ctx, removal.BlockRemovalCompleted, removal.TopicId, removal.Reputer)
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "failed to delete previous stake removal")
 	}
@@ -172,14 +172,14 @@ func (ms msgServer) DelegateStake(ctx context.Context, msg *types.DelegateStakeR
 		return nil, err
 	}
 
-	topicExists, err := ms.k.TopicExists(ctx, msg.TopicId)
+	topicExists, err := ms.tk.TopicExists(ctx, msg.TopicId)
 	if err != nil {
 		return nil, err
 	} else if !topicExists {
 		return nil, types.ErrTopicDoesNotExist
 	}
 
-	isRegistered, err := ms.k.IsReputerRegisteredInTopic(ctx, msg.TopicId, msg.Reputer)
+	isRegistered, err := ms.rlk.IsReputerRegisteredInTopic(ctx, msg.TopicId, msg.Reputer)
 	if err != nil {
 		return nil, err
 	} else if !isRegistered {
@@ -190,13 +190,13 @@ func (ms msgServer) DelegateStake(ctx context.Context, msg *types.DelegateStakeR
 	// bank module does this for us in module SendCoins / subUnlockedCoins so we don't need to check here
 	// Send the funds
 	coins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, msg.Amount))
-	err = ms.k.SendCoinsFromAccountToModule(ctx, msg.Sender, types.AlloraStakingAccountName, coins)
+	err = ms.bk.SendCoinsFromAccountToModule(ctx, msg.Sender, types.AlloraStakingAccountName, coins)
 	if err != nil {
 		return nil, err
 	}
 
 	// Update the stake data structures
-	err = ms.k.AddDelegateStake(ctx, msg.TopicId, msg.Sender, msg.Reputer, msg.Amount)
+	err = ms.sk.AddDelegateStake(ctx, msg.TopicId, msg.Sender, msg.Reputer, msg.Amount)
 	if err != nil {
 		return nil, err
 	}
@@ -215,7 +215,7 @@ func (ms msgServer) RemoveDelegateStake(ctx context.Context, msg *types.RemoveDe
 		return nil, err
 	}
 
-	topicExists, err := ms.k.TopicExists(ctx, msg.TopicId)
+	topicExists, err := ms.tk.TopicExists(ctx, msg.TopicId)
 	if err != nil {
 		return nil, err
 	} else if !topicExists {
@@ -223,7 +223,7 @@ func (ms msgServer) RemoveDelegateStake(ctx context.Context, msg *types.RemoveDe
 	}
 
 	// Check the delegator has enough stake already placed on the topic to remove the stake
-	delegateStakePlaced, err := ms.k.GetDelegateStakePlacement(ctx, msg.TopicId, msg.Sender, msg.Reputer)
+	delegateStakePlaced, err := ms.sk.GetDelegateStakePlacement(ctx, msg.TopicId, msg.Sender, msg.Reputer)
 	if err != nil {
 		return nil, err
 	}
@@ -236,7 +236,7 @@ func (ms msgServer) RemoveDelegateStake(ctx context.Context, msg *types.RemoveDe
 	}
 
 	// Check the reputer has enough stake already placed on the topic to remove the stake
-	totalStakeOnReputer, err := ms.k.GetStakeReputerAuthority(ctx, msg.TopicId, msg.Reputer)
+	totalStakeOnReputer, err := ms.sk.GetStakeReputerAuthority(ctx, msg.TopicId, msg.Reputer)
 	if err != nil {
 		return nil, err
 	}
@@ -245,19 +245,19 @@ func (ms msgServer) RemoveDelegateStake(ctx context.Context, msg *types.RemoveDe
 	}
 
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	moduleParams, err := ms.k.GetParams(ctx)
+	moduleParams, err := ms.pk.GetParams(ctx)
 	if err != nil {
 		return nil, err
 	}
 	// find out if we have a stake removal in progress, if so overwrite it
-	removal, found, err := ms.k.GetDelegateStakeRemovalForDelegatorReputerAndTopicId(
+	removal, found, err := ms.sk.GetDelegateStakeRemovalForDelegatorReputerAndTopicId(
 		sdkCtx, msg.Sender, msg.Reputer, msg.TopicId,
 	)
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "error during finding delegate stake removal")
 	}
 	if found {
-		err = ms.k.DeleteDelegateStakeRemoval(
+		err = ms.sk.DeleteDelegateStakeRemoval(
 			ctx,
 			removal.BlockRemovalCompleted,
 			removal.TopicId,
@@ -278,7 +278,7 @@ func (ms msgServer) RemoveDelegateStake(ctx context.Context, msg *types.RemoveDe
 	}
 
 	// If no errors have occurred and the removal is valid, add the stake removal to the delayed queue
-	if err = ms.k.SetDelegateStakeRemoval(ctx, stakeToRemove); err != nil {
+	if err = ms.sk.SetDelegateStakeRemoval(ctx, stakeToRemove); err != nil {
 		return nil, errorsmod.Wrap(err, "failed to set delegate stake removal")
 	}
 
@@ -293,7 +293,7 @@ func (ms msgServer) CancelRemoveDelegateStake(ctx context.Context, msg *types.Ca
 		return nil, err
 	}
 
-	topicExists, err := ms.k.TopicExists(ctx, msg.TopicId)
+	topicExists, err := ms.tk.TopicExists(ctx, msg.TopicId)
 	if err != nil {
 		return nil, err
 	} else if !topicExists {
@@ -301,7 +301,7 @@ func (ms msgServer) CancelRemoveDelegateStake(ctx context.Context, msg *types.Ca
 	}
 
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	removal, found, err := ms.k.GetDelegateStakeRemovalForDelegatorReputerAndTopicId(
+	removal, found, err := ms.sk.GetDelegateStakeRemovalForDelegatorReputerAndTopicId(
 		sdkCtx, msg.Sender, msg.Reputer, msg.TopicId,
 	)
 	// if the specific error is that we somehow got into a buggy invariant state
@@ -313,7 +313,7 @@ func (ms msgServer) CancelRemoveDelegateStake(ctx context.Context, msg *types.Ca
 	if !found {
 		return nil, types.ErrStakeRemovalNotFound
 	}
-	err = ms.k.DeleteDelegateStakeRemoval(
+	err = ms.sk.DeleteDelegateStakeRemoval(
 		ctx,
 		removal.BlockRemovalCompleted,
 		removal.TopicId,
@@ -335,18 +335,18 @@ func (ms msgServer) RewardDelegateStake(ctx context.Context, msg *types.RewardDe
 		return nil, err
 	}
 
-	topicExists, err := ms.k.TopicExists(ctx, msg.TopicId)
+	topicExists, err := ms.tk.TopicExists(ctx, msg.TopicId)
 	if err != nil {
 		return nil, err
 	} else if !topicExists {
 		return nil, types.ErrTopicDoesNotExist
 	}
 
-	delegateInfo, err := ms.k.GetDelegateStakePlacement(ctx, msg.TopicId, msg.Sender, msg.Reputer)
+	delegateInfo, err := ms.sk.GetDelegateStakePlacement(ctx, msg.TopicId, msg.Sender, msg.Reputer)
 	if err != nil {
 		return nil, err
 	}
-	share, err := ms.k.GetDelegateRewardPerShare(ctx, msg.TopicId, msg.Reputer)
+	share, err := ms.sk.GetDelegateRewardPerShare(ctx, msg.TopicId, msg.Reputer)
 	if err != nil {
 		return nil, err
 	}
@@ -364,7 +364,7 @@ func (ms msgServer) RewardDelegateStake(ctx context.Context, msg *types.RewardDe
 			return nil, err
 		}
 		coins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, pendingRewardInt))
-		err = ms.k.SendCoinsFromModuleToAccount(ctx, types.AlloraPendingRewardForDelegatorAccountName, msg.Sender, coins)
+		err = ms.bk.SendCoinsFromModuleToAccount(ctx, types.AlloraPendingRewardForDelegatorAccountName, msg.Sender, coins)
 		if err != nil {
 			return nil, err
 		}
@@ -372,7 +372,7 @@ func (ms msgServer) RewardDelegateStake(ctx context.Context, msg *types.RewardDe
 		if err != nil {
 			return nil, err
 		}
-		err = ms.k.SetDelegateStakePlacement(ctx, msg.TopicId, msg.Sender, msg.Reputer, delegateInfo)
+		err = ms.sk.SetDelegateStakePlacement(ctx, msg.TopicId, msg.Sender, msg.Reputer, delegateInfo)
 		if err != nil {
 			return nil, err
 		}

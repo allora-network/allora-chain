@@ -418,7 +418,7 @@ func (s *EmissionsV2MigrationTestSuite) TestMigrateParams() {
 	cdc := s.EmissionsKeeper().GetBinaryCodec()
 	// Create a Params with garbage in it
 	defaultParams := types.DefaultParams()
-	prevParams := oldtypes.Params{ // nolint: exhaustruct
+	prevParams := oldtypes.Params{ //nolint:exhaustruct
 		Version:                         "v1",
 		MinTopicWeight:                  alloraMath.OneDec(),
 		RequiredMinimumStake:            cosmosMath.OneUint(),
@@ -447,9 +447,9 @@ func (s *EmissionsV2MigrationTestSuite) TestMigrateParams() {
 	s.Require().NoError(err)
 
 	// Run migration
-	err = v2.MigrateParams(s.Ctx(), *s.EmissionsKeeper())
+	err = v2.MigrateParams(s.Ctx(), s.ParamsKeeper())
 	s.Require().NoError(err)
-	newParams, err := s.EmissionsKeeper().GetParams(s.Ctx())
+	newParams, err := s.ParamsKeeper().GetParams(s.Ctx())
 	s.Require().NoError(err)
 
 	// Check params after migration

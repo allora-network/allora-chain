@@ -82,7 +82,7 @@ func TestNewBoundedExp40Dec(t *testing.T) {
 			require.NoError(t, err, "NewBoundedExp40Dec failed")
 
 			// Verify the value was stored correctly
-			original, err := bounded.ToDec()
+			original := bounded.ToDec()
 			require.NoError(t, err)
 			require.True(t, dec.Equal(original), "stored value should equal input value")
 		})
@@ -173,7 +173,7 @@ func TestNewCappedBoundedExp40Dec(t *testing.T) {
 			}
 			require.NoError(t, err, "NewCappedBoundedExp40Dec failed")
 
-			actual, err := bounded.ToDec()
+			actual := bounded.ToDec()
 			require.NoError(t, err, "ToDec failed")
 			require.True(t, tt.expectedValue.Equal(actual),
 				"capped value should equal expected value. got: %v, want: %v",
@@ -278,7 +278,7 @@ func TestNewCappedBoundedExp40DecFromString(t *testing.T) {
 			}
 			require.NoError(t, err, "NewCappedBoundedExp40DecFromString failed")
 
-			actual, err := bounded.ToDec()
+			actual := bounded.ToDec()
 			require.NoError(t, err, "ToDec failed")
 			require.True(t, tt.expectedValue.Equal(actual),
 				"capped value should equal expected value. got: %v, want: %v",
@@ -341,8 +341,7 @@ func TestMustNewCappedBoundedExp40Dec(t *testing.T) {
 
 			require.NotPanics(t, func() {
 				bounded := MustNewCappedBoundedExp40Dec(tt.input)
-				actual, err := bounded.ToDec()
-				require.NoError(t, err)
+				actual := bounded.ToDec()
 
 				// For values that get capped, verify they're within bounds
 				absValue, err := actual.Abs()
@@ -426,8 +425,7 @@ func TestMustNewCappedBoundedExp40DecFromString(t *testing.T) {
 
 			require.NotPanics(t, func() {
 				bounded := MustNewCappedBoundedExp40DecFromString(tt.input)
-				actual, err := bounded.ToDec()
-				require.NoError(t, err)
+				actual := bounded.ToDec()
 
 				// For values that get capped, verify they're within bounds
 				absValue, err := actual.Abs()
@@ -446,8 +444,7 @@ func TestGetMaxPositiveBoundaryExp40Dec(t *testing.T) {
 	require := require.New(t)
 
 	maxBoundary := GetMaxPositiveBoundaryExp40Dec()
-	value, err := maxBoundary.ToDec()
-	require.NoError(err)
+	value := maxBoundary.ToDec()
 
 	// Verify it equals the max bound value
 	require.True(value.Equal(maxBoundValue),
@@ -458,7 +455,7 @@ func TestGetMaxPositiveBoundaryExp40Dec(t *testing.T) {
 	largerDec := MustNewDecFromString("1e41")
 	capped, err := NewCappedBoundedExp40Dec(largerDec)
 	require.NoError(err)
-	cappedValue, err := capped.ToDec()
+	cappedValue := capped.ToDec()
 	require.NoError(err)
 	require.True(cappedValue.Equal(value),
 		"capped larger value should equal max boundary. got: %v, want: %v",
@@ -469,8 +466,7 @@ func TestGetMinPositiveBoundaryExp40Dec(t *testing.T) {
 	require := require.New(t)
 
 	minBoundary := GetMinPositiveBoundaryExp40Dec()
-	value, err := minBoundary.ToDec()
-	require.NoError(err)
+	value := minBoundary.ToDec()
 
 	// Verify it equals the min bound value
 	require.True(value.Equal(minBoundValue),
@@ -481,7 +477,7 @@ func TestGetMinPositiveBoundaryExp40Dec(t *testing.T) {
 	smallerDec := MustNewDecFromString("1e-41")
 	capped, err := NewCappedBoundedExp40Dec(smallerDec)
 	require.NoError(err)
-	cappedValue, err := capped.ToDec()
+	cappedValue := capped.ToDec()
 	require.NoError(err)
 	require.True(cappedValue.Equal(value),
 		"capped smaller value should equal min boundary. got: %v, want: %v",
@@ -491,7 +487,7 @@ func TestGetMinPositiveBoundaryExp40Dec(t *testing.T) {
 	zeroDec := ZeroDec()
 	zeroValue, err := NewCappedBoundedExp40Dec(zeroDec)
 	require.NoError(err)
-	zeroDecValue, err := zeroValue.ToDec()
+	zeroDecValue := zeroValue.ToDec()
 	require.NoError(err)
 	require.True(zeroDecValue.Lt(value),
 		"zero should be less than min boundary")

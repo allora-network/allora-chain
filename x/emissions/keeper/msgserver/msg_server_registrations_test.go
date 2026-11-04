@@ -16,7 +16,7 @@ func (s *MsgServerTestSuite) TestRegistration() {
 	topicId := uint64(1)
 
 	// Setup topic once
-	err := s.EmissionsKeeper().ActivateTopic(ctx, topicId)
+	err := s.TopicKeeper().ActivateTopic(ctx, topicId)
 	s.Require().NoError(err)
 
 	testCases := []struct {
@@ -27,12 +27,12 @@ func (s *MsgServerTestSuite) TestRegistration() {
 		{
 			name:      "Register reputer",
 			isReputer: true,
-			checkReg:  s.EmissionsKeeper().IsReputerRegisteredInTopic,
+			checkReg:  s.ReputerLossKeeper().IsReputerRegisteredInTopic,
 		},
 		{
 			name:      "Register worker",
 			isReputer: false,
-			checkReg:  s.EmissionsKeeper().IsWorkerRegisteredInTopic,
+			checkReg:  s.WorkerKeeper().IsWorkerRegisteredInTopic,
 		},
 	}
 
@@ -41,7 +41,7 @@ func (s *MsgServerTestSuite) TestRegistration() {
 			addr := s.Addrs(i)
 
 			// Fund the account
-			moduleParams, _ := s.EmissionsKeeper().GetParams(ctx)
+			moduleParams, _ := s.ParamsKeeper().GetParams(ctx)
 			s.FundAccount(moduleParams.RegistrationFee.Int64(), addr)
 
 			// Check not registered
@@ -72,7 +72,7 @@ func (s *MsgServerTestSuite) TestRemoveRegistration() {
 	topicId := uint64(1)
 
 	// Setup topic once
-	err := s.EmissionsKeeper().ActivateTopic(ctx, topicId)
+	err := s.TopicKeeper().ActivateTopic(ctx, topicId)
 	s.Require().NoError(err)
 
 	testCases := []struct {
@@ -83,12 +83,12 @@ func (s *MsgServerTestSuite) TestRemoveRegistration() {
 		{
 			name:      "Remove reputer registration",
 			isReputer: true,
-			checkReg:  s.EmissionsKeeper().IsReputerRegisteredInTopic,
+			checkReg:  s.ReputerLossKeeper().IsReputerRegisteredInTopic,
 		},
 		{
 			name:      "Remove worker registration",
 			isReputer: false,
-			checkReg:  s.EmissionsKeeper().IsWorkerRegisteredInTopic,
+			checkReg:  s.WorkerKeeper().IsWorkerRegisteredInTopic,
 		},
 	}
 
@@ -97,7 +97,7 @@ func (s *MsgServerTestSuite) TestRemoveRegistration() {
 			addr := s.Addrs(i)
 
 			// Setup: Register first
-			moduleParams, _ := s.EmissionsKeeper().GetParams(ctx)
+			moduleParams, _ := s.ParamsKeeper().GetParams(ctx)
 			s.FundAccount(moduleParams.RegistrationFee.Int64(), addr)
 
 			registerMsg := &types.RegisterRequest{
@@ -156,7 +156,7 @@ func (s *MsgServerTestSuite) TestRegistrationErrors() {
 			name: "Insufficient balance for registration fee",
 			setup: func() *types.RegisterRequest {
 				topicId := uint64(1)
-				err := s.EmissionsKeeper().ActivateTopic(ctx, topicId)
+				err := s.TopicKeeper().ActivateTopic(ctx, topicId)
 				s.Require().NoError(err)
 
 				addr := sdk.AccAddress(secp256k1.GenPrivKey().PubKey().Address())
@@ -175,14 +175,14 @@ func (s *MsgServerTestSuite) TestRegistrationErrors() {
 			name: "Insufficient funds with partial stake",
 			setup: func() *types.RegisterRequest {
 				topicId := uint64(1)
-				err := s.EmissionsKeeper().ActivateTopic(ctx, topicId)
+				err := s.TopicKeeper().ActivateTopic(ctx, topicId)
 				s.Require().NoError(err)
 
 				addr := sdk.AccAddress(secp256k1.GenPrivKey().PubKey().Address())
 				registrationInitialStake := cosmosMath.NewInt(100)
 
 				// Add some stake but no funds to pay fees
-				err = s.EmissionsKeeper().AddReputerStake(ctx, topicId, addr.String(), registrationInitialStake.QuoRaw(2))
+				err = s.StakingKeeper().AddReputerStake(ctx, topicId, addr.String(), registrationInitialStake.QuoRaw(2))
 				s.Require().NoError(err)
 
 				return &types.RegisterRequest{
@@ -198,7 +198,7 @@ func (s *MsgServerTestSuite) TestRegistrationErrors() {
 			name: "Blacklisted address cannot register",
 			setup: func() *types.RegisterRequest {
 				topicId := uint64(1)
-				err := s.EmissionsKeeper().ActivateTopic(ctx, topicId)
+				err := s.TopicKeeper().ActivateTopic(ctx, topicId)
 				s.Require().NoError(err)
 
 				blockedReputer := sdk.AccAddress(secp256k1.GenPrivKey().PubKey().Address())

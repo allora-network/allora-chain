@@ -9,22 +9,21 @@ import (
 	"cosmossdk.io/log"
 	cosmosMath "cosmossdk.io/math"
 	storetypes "cosmossdk.io/store/types"
+
 	"github.com/allora-network/allora-chain/app/params"
 	alloraMath "github.com/allora-network/allora-chain/math"
 
-	"github.com/allora-network/allora-chain/x/mint/keeper"
-	mint "github.com/allora-network/allora-chain/x/mint/module"
-	"github.com/allora-network/allora-chain/x/mint/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/runtime"
 	"github.com/cosmos/cosmos-sdk/testutil"
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	authcodec "github.com/cosmos/cosmos-sdk/x/auth/codec"
 
-	emissionskeeper "github.com/allora-network/allora-chain/x/emissions/keeper"
-	emissions "github.com/allora-network/allora-chain/x/emissions/module"
-	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
-	secp256k1 "github.com/cometbft/cometbft/crypto/secp256k1"
+	"github.com/allora-network/allora-chain/x/mint/keeper"
+	mint "github.com/allora-network/allora-chain/x/mint/module"
+	"github.com/allora-network/allora-chain/x/mint/types"
+
+	"github.com/cometbft/cometbft/crypto/secp256k1"
 	addresscodec "github.com/cosmos/cosmos-sdk/codec/address"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	moduletestutil "github.com/cosmos/cosmos-sdk/types/module/testutil"
@@ -37,6 +36,10 @@ import (
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/stretchr/testify/suite"
+
+	emissionskeeper "github.com/allora-network/allora-chain/x/emissions/keeper"
+	emissions "github.com/allora-network/allora-chain/x/emissions/module"
+	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 )
 
 const (
@@ -188,7 +191,7 @@ func (s *MintModuleTestSuite) TestTotalStakeGoUpTargetEmissionPerUnitStakeGoDown
 	// stake enough tokens so that the networkStaked is non zero
 	stake, ok := cosmosMath.NewIntFromString("300000000000000000000000000")
 	s.Require().True(ok)
-	err = s.emissionsKeeper.AddReputerStake(
+	err = s.emissionsKeeper.GetStakingKeeper().AddReputerStake(
 		s.ctx,
 		topicId,
 		s.addrsStr[0],
@@ -211,7 +214,7 @@ func (s *MintModuleTestSuite) TestTotalStakeGoUpTargetEmissionPerUnitStakeGoDown
 	)
 	s.Require().NoError(err)
 
-	emissionsParams, err := s.emissionsKeeper.GetParams(s.ctx)
+	emissionsParams, err := s.emissionsKeeper.GetParamsKeeper().GetParams(s.ctx)
 	s.Require().NoError(err)
 	blocksPerMonth := emissionsParams.BlocksPerMonth
 	monthsUnlocked := cosmosMath.NewIntFromUint64(uint64(0))
@@ -233,7 +236,7 @@ func (s *MintModuleTestSuite) TestTotalStakeGoUpTargetEmissionPerUnitStakeGoDown
 	stake, ok = cosmosMath.NewIntFromString("400000000000000000000000000")
 	s.Require().True(ok)
 	// ok now add some stake
-	err = s.emissionsKeeper.AddReputerStake(
+	err = s.emissionsKeeper.GetStakingKeeper().AddReputerStake(
 		s.ctx,
 		topicId,
 		s.addrsStr[0],
@@ -311,7 +314,7 @@ func (s *MintModuleTestSuite) TestNoNewMintedTokensIfInferenceRequestFeesEnoughT
 	// stake enough tokens so that the networkStaked is non zero
 	stake, ok := cosmosMath.NewIntFromString("40000000000000000000")
 	s.Require().True(ok)
-	err := s.emissionsKeeper.AddReputerStake(
+	err := s.emissionsKeeper.GetStakingKeeper().AddReputerStake(
 		s.ctx,
 		topicId,
 		s.addrsStr[0],
@@ -319,8 +322,8 @@ func (s *MintModuleTestSuite) TestNoNewMintedTokensIfInferenceRequestFeesEnoughT
 	)
 	s.Require().NoError(err)
 
-	//mint enough tokens so that the circulating supply is non zero
-	//mint them to the ecosystem account to simulate paying for inference requests
+	// mint enough tokens so that the circulating supply is non zero
+	// mint them to the ecosystem account to simulate paying for inference requests
 	spareCoins, ok := cosmosMath.NewIntFromString("100000000000000000000000")
 	s.Require().True(ok)
 	err = s.bankKeeper.MintCoins(
@@ -390,7 +393,7 @@ func (s *MintModuleTestSuite) TestTokensAreMintedIfInferenceRequestFeesNotEnough
 	// stake enough tokens so that the networkStaked is non zero
 	stake, ok := cosmosMath.NewIntFromString("40000000000000000000")
 	s.Require().True(ok)
-	err = s.emissionsKeeper.AddReputerStake(
+	err = s.emissionsKeeper.GetStakingKeeper().AddReputerStake(
 		s.ctx,
 		topicId,
 		s.addrsStr[0],
@@ -487,7 +490,7 @@ func (s *MintModuleTestSuite) TestNotEnoughTokensToMintToCoverInflation() {
 	// stake enough tokens so that the networkStaked is non zero
 	stake, ok := cosmosMath.NewIntFromString("40000000000000000000")
 	s.Require().True(ok)
-	err := s.emissionsKeeper.AddReputerStake(
+	err := s.emissionsKeeper.GetStakingKeeper().AddReputerStake(
 		s.ctx,
 		topicId,
 		s.addrsStr[0],
@@ -583,7 +586,7 @@ func (s *MintModuleTestSuite) TestInflationRateAsMorePeopleStakeGoesUp() {
 	// stake enough tokens so that the networkStaked is non zero
 	changeInAmountStakedBefore, ok := cosmosMath.NewIntFromString("300000000000000000000000000")
 	s.Require().True(ok)
-	err := s.emissionsKeeper.AddReputerStake(
+	err := s.emissionsKeeper.GetStakingKeeper().AddReputerStake(
 		s.ctx,
 		topicId,
 		s.addrsStr[0],
@@ -635,7 +638,7 @@ func (s *MintModuleTestSuite) TestInflationRateAsMorePeopleStakeGoesUp() {
 	// then move to the blockheight where we calculate inflation again
 	changeInAmounStakedAfter, ok := cosmosMath.NewIntFromString("400000000000000000000000000")
 	s.Require().True(ok)
-	err = s.emissionsKeeper.AddReputerStake(
+	err = s.emissionsKeeper.GetStakingKeeper().AddReputerStake(
 		s.ctx,
 		topicId,
 		s.addrsStr[1],
@@ -643,7 +646,7 @@ func (s *MintModuleTestSuite) TestInflationRateAsMorePeopleStakeGoesUp() {
 	)
 	s.Require().NoError(err)
 
-	emissionsParams, err := s.emissionsKeeper.GetParams(s.ctx)
+	emissionsParams, err := s.emissionsKeeper.GetParamsKeeper().GetParams(s.ctx)
 	s.Require().NoError(err)
 	blocksPerMonth := emissionsParams.BlocksPerMonth
 	blocks := new(big.Int).SetUint64(blocksPerMonth)
@@ -690,7 +693,7 @@ func (s *MintModuleTestSuite) TestEcosystemRefundReducesMintingInSubsequentBlock
 	// 1. Initial setup: stake, initial supply (mint to a regular account)
 	stake, ok := cosmosMath.NewIntFromString("40000000000000000000") // Sufficient stake
 	s.Require().True(ok)
-	err := s.emissionsKeeper.AddReputerStake(s.ctx, topicId, s.addrsStr[0], stake)
+	err := s.emissionsKeeper.GetStakingKeeper().AddReputerStake(s.ctx, topicId, s.addrsStr[0], stake)
 	s.Require().NoError(err)
 
 	initialSupply, ok := cosmosMath.NewIntFromString("500000000000000000000000000")
@@ -843,11 +846,11 @@ func (s *MintModuleTestSuite) TestMonthlyPercentageRewardCalculation() {
 	s.Require().NoError(err)
 
 	// 1. Setup Params
-	params, err := s.emissionsKeeper.GetParams(s.ctx)
+	params, err := s.emissionsKeeper.GetParamsKeeper().GetParams(s.ctx)
 	s.Require().NoError(err)
 	blocksPerMonth := int64(10)
 	params.BlocksPerMonth = uint64(blocksPerMonth)
-	err = s.emissionsKeeper.SetParams(s.ctx, params)
+	err = s.emissionsKeeper.GetParamsKeeper().SetParams(s.ctx, params)
 	s.Require().NoError(err)
 
 	// 2. Fund Rewards Module (required for EndBlocker checks)
@@ -873,7 +876,7 @@ func (s *MintModuleTestSuite) TestMonthlyPercentageRewardCalculation() {
 		// Manually add rewards to simulate accumulation during the month
 		// Skip adding rewards at block 1 since that's when the first reset happens
 		if i > 1 && i%blocksPerMonth != 1 {
-			err = s.emissionsKeeper.AddMonthlyRewards(s.ctx, reputerIncrement, topicIncrement)
+			err = s.emissionsKeeper.GetWeightsKeeper().AddMonthlyRewards(s.ctx, reputerIncrement, topicIncrement)
 			s.Require().NoError(err, "Failed to add rewards at block %d", i)
 		}
 	}
@@ -894,10 +897,10 @@ func (s *MintModuleTestSuite) TestMonthlyPercentageRewardCalculation() {
 	}
 
 	// Sanity check the accumulated values before the reset block
-	reputerRewardsBeforeFinal, err := s.emissionsKeeper.GetMonthlyReputerRewards(s.ctx)
+	reputerRewardsBeforeFinal, err := s.emissionsKeeper.GetWeightsKeeper().GetMonthlyReputerRewards(s.ctx)
 	s.Require().NoError(err)
 	s.Require().True(totalReputerRewards.Equal(reputerRewardsBeforeFinal), "Mismatch in accumulated reputer rewards before reset")
-	topicRewardsBeforeFinal, err := s.emissionsKeeper.GetMonthlyTopicRewards(s.ctx)
+	topicRewardsBeforeFinal, err := s.emissionsKeeper.GetWeightsKeeper().GetMonthlyTopicRewards(s.ctx)
 	s.Require().NoError(err)
 	s.Require().True(totalTopicRewards.Equal(topicRewardsBeforeFinal), "Mismatch in accumulated topic rewards before reset")
 
@@ -907,17 +910,17 @@ func (s *MintModuleTestSuite) TestMonthlyPercentageRewardCalculation() {
 	s.BeginBlock()
 
 	// 7. Verify State After BeginBlocker (monthly reset happens here)
-	actualPercentageAfter, err := s.emissionsKeeper.GetPreviousPercentageRewardToStakedReputers(s.ctx)
+	actualPercentageAfter, err := s.emissionsKeeper.GetScoresKeeper().GetPreviousPercentageRewardToStakedReputers(s.ctx)
 	s.Require().NoError(err)
 	s.T().Logf("Expected percentage %s, got %s", expectedPercentage.String(), actualPercentageAfter.String())
 	s.Require().True(expectedPercentage.Equal(actualPercentageAfter), "Expected percentage %s, got %s", expectedPercentage.String(), actualPercentageAfter.String())
 
 	// Verify counters reset by BeginBlocker
-	reputerRewardsAfter, err := s.emissionsKeeper.GetMonthlyReputerRewards(s.ctx)
+	reputerRewardsAfter, err := s.emissionsKeeper.GetWeightsKeeper().GetMonthlyReputerRewards(s.ctx)
 	s.Require().NoError(err)
 	s.Require().True(reputerRewardsAfter.IsZero(), "Monthly reputer rewards not reset by BeginBlocker")
 
-	topicRewardsAfter, err := s.emissionsKeeper.GetMonthlyTopicRewards(s.ctx)
+	topicRewardsAfter, err := s.emissionsKeeper.GetWeightsKeeper().GetMonthlyTopicRewards(s.ctx)
 	s.Require().NoError(err)
 	s.Require().True(topicRewardsAfter.IsZero(), "Monthly topic rewards not reset by BeginBlocker")
 }
@@ -934,11 +937,11 @@ func (s *MintModuleTestSuite) TestMonthlyPercentageRewardCalculation_ZeroTopicRe
 	s.Require().NoError(err)
 
 	// 1. Setup Params
-	params, err := s.emissionsKeeper.GetParams(s.ctx)
+	params, err := s.emissionsKeeper.GetParamsKeeper().GetParams(s.ctx)
 	s.Require().NoError(err)
 	blocksPerMonth := int64(10)
 	params.BlocksPerMonth = uint64(blocksPerMonth)
-	err = s.emissionsKeeper.SetParams(s.ctx, params)
+	err = s.emissionsKeeper.GetParamsKeeper().SetParams(s.ctx, params)
 	s.Require().NoError(err)
 
 	// 2. Fund Rewards Module (required for EndBlocker checks)
@@ -960,7 +963,7 @@ func (s *MintModuleTestSuite) TestMonthlyPercentageRewardCalculation_ZeroTopicRe
 		s.EndBlock()
 
 		// Sanity check: Verify topic rewards remain zero during the month
-		topicRewards, err := s.emissionsKeeper.GetMonthlyTopicRewards(s.ctx)
+		topicRewards, err := s.emissionsKeeper.GetWeightsKeeper().GetMonthlyTopicRewards(s.ctx)
 		s.Require().NoError(err)
 		s.Require().True(topicRewards.IsZero(), "Topic rewards became non-zero before month end at block %d", i)
 	}
@@ -972,16 +975,16 @@ func (s *MintModuleTestSuite) TestMonthlyPercentageRewardCalculation_ZeroTopicRe
 	// 6. Verify State After BeginBlocker
 	// Verify percentage is zero due to zero topic rewards
 	expectedPercentage := alloraMath.ZeroDec()
-	actualPercentageAfter, err := s.emissionsKeeper.GetPreviousPercentageRewardToStakedReputers(s.ctx)
+	actualPercentageAfter, err := s.emissionsKeeper.GetScoresKeeper().GetPreviousPercentageRewardToStakedReputers(s.ctx)
 	s.Require().NoError(err)
 	s.Require().True(expectedPercentage.Equal(actualPercentageAfter), "Expected percentage %s, got %s", expectedPercentage.String(), actualPercentageAfter.String())
 
 	// Verify counters reset by BeginBlocker
-	reputerRewardsAfter, err := s.emissionsKeeper.GetMonthlyReputerRewards(s.ctx)
+	reputerRewardsAfter, err := s.emissionsKeeper.GetWeightsKeeper().GetMonthlyReputerRewards(s.ctx)
 	s.Require().NoError(err)
 	s.Require().True(reputerRewardsAfter.IsZero(), "Monthly reputer rewards not reset by BeginBlocker")
 
-	topicRewardsAfter, err := s.emissionsKeeper.GetMonthlyTopicRewards(s.ctx)
+	topicRewardsAfter, err := s.emissionsKeeper.GetWeightsKeeper().GetMonthlyTopicRewards(s.ctx)
 	s.Require().NoError(err)
 	s.Require().True(topicRewardsAfter.IsZero(), "Monthly topic rewards not reset by BeginBlocker")
 }

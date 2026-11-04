@@ -52,7 +52,7 @@ func MigrateStore(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 
 // getOldCNormFromParams extracts the CNorm value from the old params before migration
 func getOldCNormFromParams(store storetypes.KVStore) (alloraMath.Dec, error) {
-	oldParams := oldV11Types.Params{} //nolint: exhaustruct
+	oldParams := oldV11Types.Params{} //nolint:exhaustruct
 	oldParamsBytes := store.Get(emissionstypes.ParamsKey)
 	if oldParamsBytes == nil {
 		return alloraMath.Dec{}, errorsmod.Wrapf(emissionstypes.ErrNotFound, "old parameters not found")
@@ -67,7 +67,7 @@ func getOldCNormFromParams(store storetypes.KVStore) (alloraMath.Dec, error) {
 // MigrateParams migrates params while keeping the deprecated CNorm field for backwards
 // compatibility. CNorm is now stored per-topic instead of being read from params.
 func MigrateParams(store storetypes.KVStore, cdc codec.BinaryCodec) error {
-	oldParams := oldV11Types.Params{} //nolint: exhaustruct
+	oldParams := oldV11Types.Params{} //nolint:exhaustruct
 	oldParamsBytes := store.Get(emissionstypes.ParamsKey)
 	if oldParamsBytes == nil {
 		return errorsmod.Wrapf(emissionstypes.ErrNotFound, "old parameters not found")
@@ -79,7 +79,7 @@ func MigrateParams(store storetypes.KVStore, cdc codec.BinaryCodec) error {
 
 	// DIFFERENCE BETWEEN OLD PARAMS AND NEW PARAMS:
 	// DEPRECATED (kept for backwards compatibility): CNorm
-	newParams := emissionstypes.Params{ //nolint: exhaustruct
+	newParams := emissionstypes.Params{ //nolint:exhaustruct
 		Version:                         oldParams.Version,
 		MaxSerializedMsgLength:          oldParams.MaxSerializedMsgLength,
 		MinTopicWeight:                  oldParams.MinTopicWeight,
@@ -163,7 +163,7 @@ func MigrateTopics(
 			return errorsmod.Wrapf(err, "failed to unmarshal topic")
 		}
 
-		ctx.Logger().Debug("MIGRATION V13: Updating topic", "topicId", topic.Id)
+		ctx.Logger().Info("MIGRATION V13: Updating topic", "topicId", topic.Id)
 
 		topic.CNorm = oldCNorm
 
@@ -172,7 +172,7 @@ func MigrateTopics(
 
 	for key, topic := range topicsToChange {
 		topicStore.Set([]byte(key), cdc.MustMarshal(&topic))
-		ctx.Logger().Debug("MIGRATION V13: Updated topic with CNorm", "topicId", topic.Id, "cNorm", oldCNorm)
+		ctx.Logger().Info("MIGRATION V13: Updated topic with CNorm", "topicId", topic.Id, "cNorm", oldCNorm)
 	}
 
 	ctx.Logger().Info("MIGRATION V13: Topics migration complete", "topicsUpdated", len(topicsToChange))

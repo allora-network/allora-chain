@@ -21,13 +21,13 @@ func (s *RewardsTestSuite) TestGetAndUpdateActiveTopicWeights() {
 	params.TopicRewardAlpha = alloraMath.MustNewDecFromString("0.5")
 	params.TopicRewardStakeImportance = alloraMath.OneDec()
 	params.TopicRewardFeeRevenueImportance = alloraMath.OneDec()
-	err := s.EmissionsKeeper().SetParams(s.Ctx(), params)
+	err := s.ParamsKeeper().SetParams(s.Ctx(), params)
 	s.Require().NoError(err, "Setting parameters should not fail")
 
 	setTopicWeight := func(topicId uint64, revenue, stake int64) {
-		err = s.EmissionsKeeper().AddTopicFeeRevenue(s.Ctx(), topicId, cosmosMath.NewInt(revenue))
+		err = s.TopicKeeper().AddTopicFeeRevenue(s.Ctx(), topicId, cosmosMath.NewInt(revenue))
 		s.Require().NoError(err)
-		err = s.EmissionsKeeper().SetTopicStake(s.Ctx(), topicId, cosmosMath.NewInt(stake))
+		err = s.StakingKeeper().SetTopicStake(s.Ctx(), topicId, cosmosMath.NewInt(stake))
 		s.Require().NoError(err)
 	}
 
@@ -44,23 +44,23 @@ func (s *RewardsTestSuite) TestGetAndUpdateActiveTopicWeights() {
 	topic2.GroundTruthLag = topic2.EpochLength
 	topic2.WorkerSubmissionWindow = topic2.EpochLength
 
-	totalSumPreviousTopicWeights, err := s.EmissionsKeeper().GetTotalSumPreviousTopicWeights(s.Ctx())
+	totalSumPreviousTopicWeights, err := s.TopicKeeper().GetTotalSumPreviousTopicWeights(s.Ctx())
 	s.Require().NoError(err)
 	s.Require().Equal(totalSumPreviousTopicWeights, alloraMath.ZeroDec(), "Total sum of previous topic weights at start should be zero")
 	setTopicWeight(topic1.Id, 10, 10)
-	err = s.EmissionsKeeper().SetTopic(s.Ctx(), topic1.Id, topic1)
+	err = s.TopicKeeper().SetTopic(s.Ctx(), topic1.Id, topic1)
 	s.Require().NoError(err)
-	err = s.EmissionsKeeper().ActivateTopic(s.Ctx(), topic1.Id)
+	err = s.TopicKeeper().ActivateTopic(s.Ctx(), topic1.Id)
 	s.Require().NoError(err, "Activating topic should not fail")
 
-	totalSumPreviousTopicWeights, err = s.EmissionsKeeper().GetTotalSumPreviousTopicWeights(s.Ctx())
+	totalSumPreviousTopicWeights, err = s.TopicKeeper().GetTotalSumPreviousTopicWeights(s.Ctx())
 	s.Require().NoError(err)
 	s.Require().Equal(totalSumPreviousTopicWeights, alloraMath.ZeroDec(), "Total sum of previous topic weights should still be 0 bc previous topic weight is not set")
 
 	setTopicWeight(topic2.Id, 30, 10)
-	err = s.EmissionsKeeper().SetTopic(s.Ctx(), topic2.Id, topic2)
+	err = s.TopicKeeper().SetTopic(s.Ctx(), topic2.Id, topic2)
 	s.Require().NoError(err)
-	err = s.EmissionsKeeper().ActivateTopic(s.Ctx(), topic2.Id)
+	err = s.TopicKeeper().ActivateTopic(s.Ctx(), topic2.Id)
 	s.Require().NoError(err, "Activating topic should not fail")
 
 	block := 10
@@ -69,12 +69,12 @@ func (s *RewardsTestSuite) TestGetAndUpdateActiveTopicWeights() {
 	s.Require().NoError(err, "Activating topic should not fail")
 
 	// Previous weights still not moved
-	totalSumPreviousTopicWeights, err = s.EmissionsKeeper().GetTotalSumPreviousTopicWeights(s.Ctx())
+	totalSumPreviousTopicWeights, err = s.TopicKeeper().GetTotalSumPreviousTopicWeights(s.Ctx())
 	s.T().Logf("totalSumPreviousTopicWeights: %v", totalSumPreviousTopicWeights)
 	s.Require().NoError(err)
 	s.Require().Equal(totalSumPreviousTopicWeights, alloraMath.ZeroDec(), "Total sum of previous topic weights should not be 0 after settings topic weights")
 
-	previousTopicWeights, _, err := s.EmissionsKeeper().GetPreviousTopicWeight(s.Ctx(), topic1.Id)
+	previousTopicWeights, _, err := s.TopicKeeper().GetPreviousTopicWeight(s.Ctx(), topic1.Id)
 	s.T().Logf("topic1 previousTopicWeights: %v", previousTopicWeights)
 	s.Require().NoError(err)
 	s.Require().Equal(previousTopicWeights, alloraMath.ZeroDec(), "Previous topic weights should still be 0 after settings topic weights")
@@ -84,11 +84,11 @@ func (s *RewardsTestSuite) TestGetAndUpdateActiveTopicWeights() {
 	_, _, _, err = rewards.GetAndUpdateActiveTopicWeights(s.Ctx(), *s.EmissionsKeeper(), int64(block))
 	s.Require().NoError(err, "Activating topic should not fail")
 
-	activeTopics, err := s.EmissionsKeeper().GetActiveTopicIdsAtBlock(s.Ctx(), 31)
+	activeTopics, err := s.TopicKeeper().GetActiveTopicIdsAtBlock(s.Ctx(), 31)
 	s.Require().NoError(err, "Fetching active topics should not produce an error")
 	s.Require().Equal(2, len(activeTopics.TopicIds), "Should retrieve exactly two active topics")
 
-	err = s.EmissionsKeeper().SetParams(s.Ctx(), params)
+	err = s.ParamsKeeper().SetParams(s.Ctx(), params)
 	s.Require().NoError(err)
 
 	block = 31
@@ -96,9 +96,78 @@ func (s *RewardsTestSuite) TestGetAndUpdateActiveTopicWeights() {
 	_, _, _, err = rewards.GetAndUpdateActiveTopicWeights(s.Ctx(), *s.EmissionsKeeper(), int64(block))
 	s.Require().NoError(err, "Activating topic should not fail")
 
-	activeTopics, err = s.EmissionsKeeper().GetActiveTopicIdsAtBlock(s.Ctx(), 46)
+	activeTopics, err = s.TopicKeeper().GetActiveTopicIdsAtBlock(s.Ctx(), 46)
 	s.Require().NoError(err, "Fetching active topics should not produce an error")
 	s.Require().Equal(1, len(activeTopics.TopicIds), "Should retrieve exactly one active topics")
+}
+
+// A topic refused at epoch-end reactivation is inactivated by AttemptTopicReactivation and
+// must not be rewarded for the epoch, matching the below-minimum-weight branch.
+func (s *RewardsTestSuite) TestGetAndUpdateActiveTopicWeightsSkipsRefusedReactivation() {
+	params := types.DefaultParams()
+	params.BlocksPerMonth = 864000
+	params.MaxActiveTopicsPerBlock = 1
+	params.MaxPageLimit = uint64(100)
+	params.MinEpochLength = 1
+	params.MinTopicWeight = alloraMath.ZeroDec()
+	params.TopicRewardAlpha = alloraMath.MustNewDecFromString("0.5")
+	params.TopicRewardStakeImportance = alloraMath.OneDec()
+	params.TopicRewardFeeRevenueImportance = alloraMath.OneDec()
+	s.Require().NoError(s.ParamsKeeper().SetParams(s.Ctx(), params))
+
+	setTopicWeight := func(topicId uint64, revenue, stake int64) {
+		s.Require().NoError(s.TopicKeeper().AddTopicFeeRevenue(s.Ctx(), topicId, cosmosMath.NewInt(revenue)))
+		s.Require().NoError(s.StakingKeeper().SetTopicStake(s.Ctx(), topicId, cosmosMath.NewInt(stake)))
+	}
+
+	// The heavy topic holds block 20; the light topic's epoch also targets block 20.
+	heavyTopic := s.MockTopic()
+	heavyTopic.Id = 2
+	heavyTopic.EpochLength = 20
+	heavyTopic.GroundTruthLag = heavyTopic.EpochLength
+	heavyTopic.WorkerSubmissionWindow = heavyTopic.EpochLength
+	lightTopic := s.MockTopic()
+	lightTopic.Id = 3
+	lightTopic.EpochLength = 8
+	lightTopic.GroundTruthLag = lightTopic.EpochLength
+	lightTopic.WorkerSubmissionWindow = lightTopic.EpochLength
+
+	s.WithBlockHeight(0)
+	setTopicWeight(heavyTopic.Id, 1_000_000, 1_000_000)
+	s.Require().NoError(s.TopicKeeper().SetTopic(s.Ctx(), heavyTopic.Id, heavyTopic))
+	s.Require().NoError(s.TopicKeeper().ActivateTopic(s.Ctx(), heavyTopic.Id))
+
+	s.WithBlockHeight(4)
+	setTopicWeight(lightTopic.Id, 10, 10)
+	s.Require().NoError(s.TopicKeeper().SetTopic(s.Ctx(), lightTopic.Id, lightTopic))
+	s.Require().NoError(s.TopicKeeper().ActivateTopic(s.Ctx(), lightTopic.Id))
+
+	// Store both weights so the lowest-weight comparison at block 20 is deterministic.
+	heavyWeight, err := s.TopicKeeper().GetTopicWeightFromTopicId(s.Ctx(), heavyTopic.Id)
+	s.Require().NoError(err)
+	s.Require().NoError(s.TopicKeeper().SetPreviousTopicWeight(s.Ctx(), heavyTopic.Id, heavyWeight))
+	lightWeight, err := s.TopicKeeper().GetTopicWeightFromTopicId(s.Ctx(), lightTopic.Id)
+	s.Require().NoError(err)
+	s.Require().NoError(s.TopicKeeper().SetPreviousTopicWeight(s.Ctx(), lightTopic.Id, lightWeight))
+	s.Require().True(lightWeight.Lt(heavyWeight))
+
+	// Block 12: the light topic's epoch ends and its next block (20) is held by the heavier topic.
+	block := int64(12)
+	s.WithBlockHeight(block)
+	weights, _, _, err := rewards.GetAndUpdateActiveTopicWeights(s.Ctx(), *s.EmissionsKeeper(), block)
+	s.Require().NoError(err)
+
+	_, rewarded := weights[lightTopic.Id]
+	s.Require().False(rewarded, "a topic refused at reactivation must not be rewarded")
+	_, rewardedHeavy := weights[heavyTopic.Id]
+	s.Require().False(rewardedHeavy, "only topics whose epoch ends at this block are processed")
+	scheduled, err := s.TopicKeeper().IsTopicScheduled(s.Ctx(), lightTopic.Id)
+	s.Require().NoError(err)
+	s.Require().False(scheduled, "a refused topic must be inactivated")
+
+	total, err := s.TopicKeeper().GetTotalSumPreviousTopicWeights(s.Ctx())
+	s.Require().NoError(err)
+	s.Require().Equal(heavyWeight.String(), total.String(), "only the scheduled topic stays counted")
 }
 
 func (s *RewardsTestSuite) TestGetRewardAndRemovedRewardableTopics() {
@@ -120,14 +189,14 @@ func (s *RewardsTestSuite) TestGetRewardAndRemovedRewardableTopics() {
 	s.MintTokensToModule(types.AlloraRewardsAccountName, cosmosMath.NewInt(100000))
 
 	// Move to end of this epoch block
-	nextBlock, _, err := s.EmissionsKeeper().GetNextPossibleChurningBlockByTopicId(s.Ctx(), topicId)
+	nextBlock, _, err := s.TopicKeeper().GetNextPossibleChurningBlockByTopicId(s.Ctx(), topicId)
 	s.Require().NoError(err)
 	block = nextBlock
 	s.WithBlockHeight(block)
 	err = s.EmissionsAppModule().EndBlock(s.Ctx())
 	s.Require().NoError(err)
 
-	topic, err = s.EmissionsKeeper().GetTopic(s.Ctx(), topicId)
+	topic, err = s.TopicKeeper().GetTopic(s.Ctx(), topicId)
 	s.Require().NoError(err)
 
 	// Insert inference
@@ -169,7 +238,7 @@ func (s *RewardsTestSuite) TestGetRewardAndRemovedRewardableTopics() {
 	s.Require().NoError(err)
 
 	// Move to next end of epoch
-	nextBlock, _, err = s.EmissionsKeeper().GetNextPossibleChurningBlockByTopicId(s.Ctx(), topicId)
+	nextBlock, _, err = s.TopicKeeper().GetNextPossibleChurningBlockByTopicId(s.Ctx(), topicId)
 	s.Require().NoError(err)
 	block = nextBlock
 	s.WithBlockHeight(block)
@@ -177,7 +246,7 @@ func (s *RewardsTestSuite) TestGetRewardAndRemovedRewardableTopics() {
 	err = s.EmissionsAppModule().EndBlock(s.Ctx())
 	s.Require().NoError(err)
 
-	totalSumPreviousTopicWeights, err := s.EmissionsKeeper().GetTotalSumPreviousTopicWeights(s.Ctx())
+	totalSumPreviousTopicWeights, err := s.TopicKeeper().GetTotalSumPreviousTopicWeights(s.Ctx())
 	s.T().Logf("totalSumPreviousTopicWeights: %v", totalSumPreviousTopicWeights)
 	s.Require().NoError(err)
 	s.Require().NotEqual(totalSumPreviousTopicWeights, alloraMath.MustNewDecFromString("0"), "Total sum of previous topic weights should not be 0 after endBlocker topic weights")
@@ -208,12 +277,12 @@ func (s *RewardsTestSuite) TestPreviousTopicWeightsAfterInactivation() {
 	workerValues := testutil.GetWorkerValuesFromIndexes(workerIndexes, "0.2")
 
 	s.MintTokensToModule(types.AlloraRewardsAccountName, cosmosMath.NewInt(100000))
-	totalSumPreviousTopicWeights, err := s.EmissionsKeeper().GetTotalSumPreviousTopicWeights(s.Ctx())
+	totalSumPreviousTopicWeights, err := s.TopicKeeper().GetTotalSumPreviousTopicWeights(s.Ctx())
 	s.Require().NoError(err)
 	s.Require().Equal(totalSumPreviousTopicWeights.String(), alloraMath.ZeroDec().String(), "Total sum of previous topic weights should be zero on start")
 
 	// Move to end of this epoch block
-	nextBlock, _, err := s.EmissionsKeeper().GetNextPossibleChurningBlockByTopicId(s.Ctx(), topicId)
+	nextBlock, _, err := s.TopicKeeper().GetNextPossibleChurningBlockByTopicId(s.Ctx(), topicId)
 	s.Require().NoError(err)
 	block = nextBlock
 	s.WithBlockHeight(block)
@@ -221,19 +290,19 @@ func (s *RewardsTestSuite) TestPreviousTopicWeightsAfterInactivation() {
 	err = s.EmissionsAppModule().EndBlock(s.Ctx())
 	s.Require().NoError(err)
 
-	topicPreviousWeight, noPrior, err := s.EmissionsKeeper().GetPreviousTopicWeight(s.Ctx(), topicId)
+	topicPreviousWeight, noPrior, err := s.TopicKeeper().GetPreviousTopicWeight(s.Ctx(), topicId)
 	s.Require().NoError(err)
 	s.Require().False(topicPreviousWeight.Equal(alloraMath.ZeroDec()), "Previous topic weight should be zero after endBlocker")
 	s.Require().Equal(noPrior, false, "A prior weight should have been set")
 
-	totalSumPreviousTopicWeights, err = s.EmissionsKeeper().GetTotalSumPreviousTopicWeights(s.Ctx())
+	totalSumPreviousTopicWeights, err = s.TopicKeeper().GetTotalSumPreviousTopicWeights(s.Ctx())
 	s.T().Logf("totalSumPreviousTopicWeights: %v", totalSumPreviousTopicWeights)
 	s.Require().NoError(err)
 	s.Require().NotEqual(totalSumPreviousTopicWeights.String(), alloraMath.ZeroDec().String(), "Total sum of previous topic weights should be zero after endBlocker")
 	// At this point, topic total weight should be equal to the topic's previous weight
 	s.Require().True(topicPreviousWeight.Equal(totalSumPreviousTopicWeights), "Topic total weight should be equal to the topic's previous weight")
 
-	topic, err = s.EmissionsKeeper().GetTopic(s.Ctx(), topicId)
+	topic, err = s.TopicKeeper().GetTopic(s.Ctx(), topicId)
 	s.Require().NoError(err)
 
 	// Insert inference
@@ -264,7 +333,7 @@ func (s *RewardsTestSuite) TestPreviousTopicWeightsAfterInactivation() {
 	s.T().Logf("Inserted loss data for topic %d at block %d", topicId, block)
 
 	// Move to next end of epoch
-	nextBlock, _, err = s.EmissionsKeeper().GetNextPossibleChurningBlockByTopicId(s.Ctx(), topicId)
+	nextBlock, _, err = s.TopicKeeper().GetNextPossibleChurningBlockByTopicId(s.Ctx(), topicId)
 	s.Require().NoError(err)
 	block = nextBlock
 	s.WithBlockHeight(block)
@@ -273,39 +342,39 @@ func (s *RewardsTestSuite) TestPreviousTopicWeightsAfterInactivation() {
 	s.Require().NoError(err)
 
 	// Check previousTopicWeights and totalPreviousTopicWeights
-	previousTopicWeight, _, err := s.EmissionsKeeper().GetPreviousTopicWeight(s.Ctx(), topicId)
+	previousTopicWeight, _, err := s.TopicKeeper().GetPreviousTopicWeight(s.Ctx(), topicId)
 	s.Require().NoError(err)
 	s.Require().False(alloraMath.ZeroDec().Equal(previousTopicWeight), "Previous topic weight should not be zero after endBlocker")
 
-	totalSumPreviousTopicWeights, err = s.EmissionsKeeper().GetTotalSumPreviousTopicWeights(s.Ctx())
+	totalSumPreviousTopicWeights, err = s.TopicKeeper().GetTotalSumPreviousTopicWeights(s.Ctx())
 	s.Require().NoError(err)
 	s.Require().True(previousTopicWeight.Equal(totalSumPreviousTopicWeights), "Total sum of previous topic weights should not be zero after endBlocker")
 
 	// Inactivate the topic
-	err = s.EmissionsKeeper().InactivateTopic(s.Ctx(), topicId)
+	err = s.TopicKeeper().InactivateTopic(s.Ctx(), topicId)
 	s.Require().NoError(err)
 
 	// Check previousTopicWeights and totalPreviousTopicWeights after inactivation
-	inactivePreviousTopicWeight, _, err := s.EmissionsKeeper().GetPreviousTopicWeight(s.Ctx(), topicId)
+	inactivePreviousTopicWeight, _, err := s.TopicKeeper().GetPreviousTopicWeight(s.Ctx(), topicId)
 	s.Require().NoError(err)
 	s.Require().Equal(previousTopicWeight, inactivePreviousTopicWeight, "Previous topic weight should remain unchanged after inactivation")
 	s.Require().False(alloraMath.ZeroDec().Equal(inactivePreviousTopicWeight), "Previous topic weight should not be zero after inactivation")
 
-	inactiveTotalSumPreviousTopicWeights, err := s.EmissionsKeeper().GetTotalSumPreviousTopicWeights(s.Ctx())
+	inactiveTotalSumPreviousTopicWeights, err := s.TopicKeeper().GetTotalSumPreviousTopicWeights(s.Ctx())
 	s.Require().NoError(err)
 	s.Require().True(alloraMath.ZeroDec().Equal(inactiveTotalSumPreviousTopicWeights), "Total sum of previous topic weights should be zero after inactivation")
 
 	// Reactivate the topic
-	err = s.EmissionsKeeper().ActivateTopic(s.Ctx(), topicId)
+	err = s.TopicKeeper().ActivateTopic(s.Ctx(), topicId)
 	s.Require().NoError(err)
 
 	// Check previousTopicWeights and totalPreviousTopicWeights after reactivation
-	reactivePreviousTopicWeight, _, err := s.EmissionsKeeper().GetPreviousTopicWeight(s.Ctx(), topicId)
+	reactivePreviousTopicWeight, _, err := s.TopicKeeper().GetPreviousTopicWeight(s.Ctx(), topicId)
 	s.Require().NoError(err)
 	s.Require().Equal(previousTopicWeight, reactivePreviousTopicWeight, "Previous topic weight should remain unchanged after reactivation")
 	s.Require().False(alloraMath.ZeroDec().Equal(reactivePreviousTopicWeight), "Previous topic weight should not be zero after reactivation")
 
-	reactiveTotalSumPreviousTopicWeights, err := s.EmissionsKeeper().GetTotalSumPreviousTopicWeights(s.Ctx())
+	reactiveTotalSumPreviousTopicWeights, err := s.TopicKeeper().GetTotalSumPreviousTopicWeights(s.Ctx())
 	s.Require().NoError(err)
 	s.Require().True(previousTopicWeight.Equal(reactiveTotalSumPreviousTopicWeights), "Total sum of previous topic weights should be equal to previous topic weight after reactivation")
 }

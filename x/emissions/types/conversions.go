@@ -2,46 +2,22 @@ package types
 
 import (
 	"cosmossdk.io/errors"
-)
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
-// NewInferenceFromInput converts InputInference to Inference
-func NewInferenceFromInput(bi *InputInference) (*Inference, error) {
-	if bi == nil {
-		return nil, ErrInvalidValue
-	}
-	dec, err := bi.Value.ToDec()
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to convert value")
-	}
-	inference := &Inference{
-		TopicId:     bi.TopicId,
-		BlockHeight: bi.BlockHeight,
-		Inferer:     bi.Inferer,
-		Value:       dec,
-		ExtraData:   bi.ExtraData,
-		Proof:       bi.Proof,
-	}
-	err = inference.Validate()
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to validate inference")
-	}
-	return inference, nil
-}
+	alloraMath "github.com/allora-network/allora-chain/math"
+)
 
 // NewForecastElementFromInput converts InputForecastElement to ForecastElement
 func NewForecastElementFromInput(bfe *InputForecastElement) (*ForecastElement, error) {
 	if bfe == nil {
 		return nil, ErrInvalidValue
 	}
-	dec, err := bfe.Value.ToDec()
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to convert value")
-	}
+	dec := bfe.Value.ToDec()
 	forecastElement := &ForecastElement{
 		Inferer: bfe.Inferer,
 		Value:   dec,
 	}
-	err = forecastElement.Validate()
+	err := forecastElement.Validate()
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to validate forecast element")
 	}
@@ -75,75 +51,17 @@ func NewForecastFromInput(bf *InputForecast) (*Forecast, error) {
 	return forecast, nil
 }
 
-// NewInferenceForecastBundleFromInput converts InputInferenceForecastBundle to InferenceForecastBundle
-func NewInferenceForecastBundleFromInput(bifb *InputInferenceForecastBundle) (*InferenceForecastBundle, error) {
-	if bifb == nil {
-		return nil, ErrInvalidValue
-	}
-	var err error
-	var inference *Inference
-	if bifb.Inference != nil {
-		inference, err = NewInferenceFromInput(bifb.Inference)
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to convert inference")
-		}
-	}
-	var forecast *Forecast
-	if bifb.Forecast != nil {
-		forecast, err = NewForecastFromInput(bifb.Forecast)
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to convert forecast")
-		}
-	}
-	inferenceForecastBundle := &InferenceForecastBundle{
-		Inference: inference,
-		Forecast:  forecast,
-	}
-	err = inferenceForecastBundle.Validate()
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to validate inference forecast bundle")
-	}
-	return inferenceForecastBundle, nil
-}
-
-// NewWorkerDataBundleFromInput converts InputWorkerDataBundle to WorkerDataBundle
-func NewWorkerDataBundleFromInput(bwdb *InputWorkerDataBundle) (*WorkerDataBundle, error) {
-	if bwdb == nil {
-		return nil, ErrInvalidValue
-	}
-	bundle, err := NewInferenceForecastBundleFromInput(bwdb.InferenceForecastsBundle)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to convert inference forecasts bundle")
-	}
-	workerDataBundle := &WorkerDataBundle{
-		Worker:                             bwdb.Worker,
-		Nonce:                              bwdb.Nonce,
-		TopicId:                            bwdb.TopicId,
-		InferenceForecastsBundle:           bundle,
-		InferencesForecastsBundleSignature: bwdb.InferencesForecastsBundleSignature,
-		Pubkey:                             bwdb.Pubkey,
-	}
-	err = workerDataBundle.Validate()
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to validate worker data bundle")
-	}
-	return workerDataBundle, nil
-}
-
 // NewWorkerAttributedValueFromInput converts InputWorkerAttributedValue to WorkerAttributedValue
 func NewWorkerAttributedValueFromInput(bwav *InputWorkerAttributedValue) (*WorkerAttributedValue, error) {
 	if bwav == nil {
 		return nil, ErrInvalidValue
 	}
-	dec, err := bwav.Value.ToDec()
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to convert value")
-	}
+	dec := bwav.Value.ToDec()
 	workerAttributedValue := &WorkerAttributedValue{
 		Worker: bwav.Worker,
 		Value:  dec,
 	}
-	err = workerAttributedValue.Validate()
+	err := workerAttributedValue.Validate()
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to validate worker attributed value")
 	}
@@ -155,15 +73,12 @@ func NewWithheldWorkerAttributedValueFromInput(bwwav *InputWithheldWorkerAttribu
 	if bwwav == nil {
 		return nil, ErrInvalidValue
 	}
-	dec, err := bwwav.Value.ToDec()
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to convert value")
-	}
+	dec := bwwav.Value.ToDec()
 	withheldWorkerAttributedValue := &WithheldWorkerAttributedValue{
 		Worker: bwwav.Worker,
 		Value:  dec,
 	}
-	err = withheldWorkerAttributedValue.Validate()
+	err := withheldWorkerAttributedValue.Validate()
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to validate withheld worker attributed value")
 	}
@@ -200,15 +115,8 @@ func NewValueBundleFromInput(bvb *InputValueBundle) (*ValueBundle, error) {
 		return nil, ErrInvalidValue
 	}
 
-	combinedValue, err := bvb.CombinedValue.ToDec()
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to convert combined value")
-	}
-
-	naiveValue, err := bvb.NaiveValue.ToDec()
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to convert naive value")
-	}
+	combinedValue := bvb.CombinedValue.ToDec()
+	naiveValue := bvb.NaiveValue.ToDec()
 
 	infererValues := make([]*WorkerAttributedValue, len(bvb.InfererValues))
 	for i, val := range bvb.InfererValues {
@@ -278,15 +186,15 @@ func NewValueBundleFromInput(bvb *InputValueBundle) (*ValueBundle, error) {
 		OneInForecasterValues:         oneInForecasterValues,
 		OneOutInfererForecasterValues: oneOutInfererForecasterValues,
 	}
-	err = valueBundle.Validate()
+	err := valueBundle.Validate()
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to validate value bundle")
 	}
 	return valueBundle, nil
 }
 
-// NewInputReputerValueBundleFromInput converts InputReputerValueBundle to ReputerValueBundle
-func NewInputReputerValueBundleFromInput(brvb *InputReputerValueBundle) (*ReputerValueBundle, error) {
+// NewReputerValueBundleFromInput converts InputReputerValueBundle to ReputerValueBundle.
+func NewReputerValueBundleFromInput(brvb *InputReputerValueBundle) (*ReputerValueBundle, error) {
 	if brvb == nil {
 		return nil, ErrInvalidValue
 	}
@@ -299,9 +207,229 @@ func NewInputReputerValueBundleFromInput(brvb *InputReputerValueBundle) (*Repute
 		Signature:   brvb.Signature,
 		Pubkey:      brvb.Pubkey,
 	}
-	err = reputerValueBundle.Validate()
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to validate reputer value bundle")
-	}
 	return reputerValueBundle, nil
+}
+
+// TODO: remove once the system completely moves to using NetworkInferenceBundle
+func ValueBundleToNetworkInferenceBundle(vb *ValueBundle) *NetworkInferenceBundle {
+	if vb == nil {
+		return nil
+	}
+
+	label0Id := SingleArityCanonicalLabelID
+	label0Name := SingleArityCanonicalLabel
+
+	var nonce int64
+	if vb.ReputerRequestNonce != nil && vb.ReputerRequestNonce.ReputerNonce != nil {
+		nonce = vb.ReputerRequestNonce.ReputerNonce.BlockHeight
+	}
+
+	//nolint:exhaustruct
+	out := &NetworkInferenceBundle{
+		TopicId: vb.TopicId,
+		Nonce:   nonce,
+		CombinedValue: []*LabeledValue{
+			{LabelId: label0Id, LabelName: label0Name, Value: vb.CombinedValue},
+		},
+		NaiveValue: []*LabeledValue{
+			{LabelId: label0Id, LabelName: label0Name, Value: vb.NaiveValue},
+		},
+	}
+
+	// InfererValues: []*WorkerAttributedValue -> []*WorkerInference
+	if n := len(vb.InfererValues); n > 0 {
+		out.InfererValues = make([]*WorkerInference, n)
+		for i, v := range vb.InfererValues {
+			out.InfererValues[i] = &WorkerInference{
+				Worker: v.Worker,
+				Values: []*LabeledValue{
+					{LabelId: label0Id, LabelName: label0Name, Value: v.Value},
+				},
+			}
+		}
+	}
+
+	// ForecasterValues: []*WorkerAttributedValue -> []*WorkerInference
+	if n := len(vb.ForecasterValues); n > 0 {
+		out.ForecasterValues = make([]*WorkerInference, n)
+		for i, v := range vb.ForecasterValues {
+			out.ForecasterValues[i] = &WorkerInference{
+				Worker: v.Worker,
+				Values: []*LabeledValue{
+					{LabelId: label0Id, LabelName: label0Name, Value: v.Value},
+				},
+			}
+		}
+	}
+
+	// OneOutInfererValues: []*WithheldWorkerAttributedValue -> []*OneOutInfererValue
+	if n := len(vb.OneOutInfererValues); n > 0 {
+		out.OneOutInfererValues = make([]*OneOutInfererValue, n)
+		for i, v := range vb.OneOutInfererValues {
+			out.OneOutInfererValues[i] = &OneOutInfererValue{
+				WithheldInferer: v.Worker,
+				CombinedInference: []*LabeledValue{
+					{LabelId: label0Id, LabelName: label0Name, Value: v.Value},
+				},
+			}
+		}
+	}
+
+	// OneOutForecasterValues: []*WithheldWorkerAttributedValue -> []*OneOutForecasterValue
+	if n := len(vb.OneOutForecasterValues); n > 0 {
+		out.OneOutForecasterValues = make([]*OneOutForecasterValue, n)
+		for i, v := range vb.OneOutForecasterValues {
+			out.OneOutForecasterValues[i] = &OneOutForecasterValue{
+				WithheldForecaster: v.Worker,
+				CombinedInference: []*LabeledValue{
+					{LabelId: label0Id, LabelName: label0Name, Value: v.Value},
+				},
+			}
+		}
+	}
+
+	// OneInForecasterValues: []*WorkerAttributedValue -> []*OneInForecasterValue
+	if n := len(vb.OneInForecasterValues); n > 0 {
+		out.OneInForecasterValues = make([]*OneInForecasterValue, n)
+		for i, v := range vb.OneInForecasterValues {
+			out.OneInForecasterValues[i] = &OneInForecasterValue{
+				Forecaster: v.Worker,
+				CombinedInference: []*LabeledValue{
+					{LabelId: label0Id, LabelName: label0Name, Value: v.Value},
+				},
+			}
+		}
+	}
+
+	// OneOutInfererForecasterValues: []*OneOutInfererForecasterValues -> []*OneOutInfererForecasterValue
+	// Old structure: per forecaster -> list of withheld-inferer values (but no explicit withheld-inferer in output).
+	// Here we emit one record per (forecaster, withheldInferer) pair.
+	if n := len(vb.OneOutInfererForecasterValues); n > 0 {
+		// pre-size approximately: sum of per-forecaster rows
+		total := 0
+		for _, row := range vb.OneOutInfererForecasterValues {
+			total += len(row.OneOutInfererValues)
+		}
+		if total > 0 {
+			out.OneOutInfererForecasterValues = make([]*OneOutInfererForecasterValue, 0, total)
+			for _, row := range vb.OneOutInfererForecasterValues {
+				fc := row.Forecaster
+				for _, cell := range row.OneOutInfererValues {
+					out.OneOutInfererForecasterValues = append(out.OneOutInfererForecasterValues,
+						&OneOutInfererForecasterValue{
+							Forecaster:      fc,
+							WithheldInferer: cell.Worker,
+							CombinedInference: []*LabeledValue{
+								{LabelId: label0Id, LabelName: label0Name, Value: cell.Value},
+							},
+						},
+					)
+				}
+			}
+		}
+	}
+
+	return out
+}
+
+// ConvertInferenceValuesFromProto converts a stored Inference proto into the internal
+// InferenceValues representation used by math code.
+func ConvertInferenceValuesFromProto(
+	topicArity TopicOutputArity,
+	labels []*TopicLabel,
+	labelDefaultValue alloraMath.Dec,
+	inf *Inference,
+) (InferenceValues, error) {
+	if inf == nil {
+		return InferenceValues{}, errors.Wrap(sdkerrors.ErrInvalidRequest, "inference is nil")
+	}
+
+	switch topicArity {
+	case TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE:
+		if len(inf.Values) != 1 {
+			return InferenceValues{}, errors.Wrap(sdkerrors.ErrInvalidRequest, "single-arity inference accepts exactly one value")
+		}
+
+		dec := inf.Values[0]
+
+		if dec.IsNaN() || !dec.IsFinite() {
+			return InferenceValues{}, errors.Wrap(sdkerrors.ErrInvalidRequest, "invalid scalar inference value")
+		}
+
+		return alloraMath.DecArray{dec}, nil
+	case TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI:
+		regLen := len(labels)
+		if regLen == 0 {
+			return InferenceValues{}, errors.Wrap(sdkerrors.ErrLogic, "epoch label registry is empty for multi-arity")
+		}
+		if len(inf.Values) == 0 {
+			return InferenceValues{}, errors.Wrap(sdkerrors.ErrInvalidRequest, "multi-arity inference requires values")
+		}
+		if len(inf.Values) > regLen {
+			return InferenceValues{}, errors.Wrapf(
+				sdkerrors.ErrLogic,
+				"multi-arity inference length exceeds registry: got=%d reg=%d",
+				len(inf.Values), regLen,
+			)
+		}
+
+		// Pad unset trailing slots with topic.LabelDefaultValue (NOT zero): the
+		// rest of the chain (NormalizeInputInference, close-time compaction) treats
+		// an unset label slot as LabelDefaultValue, which may be non-zero when
+		// require_unity is false. Padding with zero here would silently diverge.
+		out := make(alloraMath.DecArray, regLen)
+		for i := range out {
+			out[i] = labelDefaultValue
+		}
+		copy(out, inf.Values)
+		if err := ValidateInferenceValues(out, labels); err != nil {
+			return InferenceValues{}, err
+		}
+		return out, nil
+	default:
+		return InferenceValues{}, errors.Wrap(sdkerrors.ErrInvalidRequest, "output_arity is invalid")
+	}
+}
+
+// ConvertInferenceValuesToLabeledValues converts the internal InferenceValues representation into
+// a slice of LabeledValue suitable for RPC responses or event emission.
+func ConvertInferenceValuesToLabeledValues(iv InferenceValues, reg *EpochLabelRegistry) ([]*LabeledValue, error) {
+	if reg == nil {
+		return nil, errors.Wrap(sdkerrors.ErrLogic, "label registry can not be nil")
+	}
+	want := len(reg.GetLabels())
+	if len(iv) != want {
+		return nil, errors.Wrapf(
+			sdkerrors.ErrInvalidRequest,
+			"inference values length mismatch: got=%d want=%d",
+			len(iv), want,
+		)
+	}
+	out := make([]*LabeledValue, 0, len(iv))
+	for i, v := range iv {
+		lbl := reg.GetLabels()[i]
+		if lbl == nil {
+			return nil, errors.Wrapf(sdkerrors.ErrLogic, "nil label in registry at idx=%d", i)
+		}
+		out = append(out, &LabeledValue{
+			LabelId:   lbl.Id,
+			LabelName: lbl.Name,
+			Value:     v,
+		})
+	}
+	return out, nil
+}
+
+func ConvertLabeledValuesToDecArray(in []*LabeledValue) alloraMath.DecArray {
+	out := make(alloraMath.DecArray, len(in))
+	for i := range in {
+		out[i] = in[i].Value
+	}
+	return out
+}
+
+// Deprecated: use NewReputerValueBundleFromInput. Retained under the v0.16
+// name so existing importers keep compiling.
+func NewInputReputerValueBundleFromInput(brvb *InputReputerValueBundle) (*ReputerValueBundle, error) {
+	return NewReputerValueBundleFromInput(brvb)
 }

@@ -1,46 +1,49 @@
 package rewards
 
 import (
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	allorautils "github.com/allora-network/allora-chain/x/emissions/keeper/actor_utils"
 	"github.com/allora-network/allora-chain/x/emissions/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // Update unfullfilled reputer nonces for topic
 func UpdateReputerNonce(ctx sdk.Context, k keeper.Keeper, topic types.Topic, block BlockHeight) error {
-	nonces, err := k.GetUnfulfilledReputerNonces(ctx, topic.Id)
+	nonces, err := k.GetNonceKeeper().GetUnfulfilledReputerNonces(ctx, topic.Id)
 	if err != nil {
 		ctx.Logger().Warn("Error getting unfulfilled worker nonces", "error", err)
 		return err
 	}
-	extraLag := topic.GroundTruthLag % topic.EpochLength
-	if extraLag != 0 {
-		extraLag = topic.EpochLength - extraLag
-	}
+	var updateErr error
 	for _, nonce := range nonces.Nonces {
-		if block >= nonce.ReputerNonce.BlockHeight+topic.GroundTruthLag && block <= nonce.ReputerNonce.BlockHeight+topic.GroundTruthLag+extraLag {
-			windowEndBlock := nonce.ReputerNonce.BlockHeight + topic.GroundTruthLag + extraLag + topic.EpochLength
-			types.EmitNewReputerSubmissionWindowOpenedEvent(ctx, topic.Id, nonce.ReputerNonce.BlockHeight, windowEndBlock)
+		windowStart, windowEnd, boundsErr := keeper.ReputerSubmissionWindowBounds(topic, *nonce)
+		if boundsErr != nil {
+			ctx.Logger().Warn("Error computing reputer submission window bounds", "error", boundsErr)
+			updateErr = boundsErr
+			continue
 		}
-		// Check if current blockheight has reached the blockheight of the nonce + groundTruthLag + epochLength
-		// This means one epochLength is allowed for reputation responses to be sent since ground truth is revealed.
-		closingReputerNonceMinBlockHeight := nonce.ReputerNonce.BlockHeight + topic.GroundTruthLag + topic.EpochLength
-		if block >= closingReputerNonceMinBlockHeight {
-			ctx.Logger().Debug("ABCI EndBlocker: Closing reputer nonce", "topic", topic.Id, "nonce", nonce, "min", closingReputerNonceMinBlockHeight)
-			err = allorautils.CloseReputerNonce(&k, ctx, topic, *nonce.ReputerNonce)
-			if err != nil {
-				ctx.Logger().Error("Error closing reputer nonce", "error", err)
+		// Active topics are processed once per epoch, so this half-open interval
+		// emits at most once and attributes a shared boundary to the newer nonce.
+		if block >= windowStart && block < windowEnd {
+			types.EmitNewReputerSubmissionWindowOpenedEvent(ctx, topic.Id, nonce.ReputerNonce.BlockHeight, windowEnd)
+		}
+		if block >= windowEnd {
+			ctx.Logger().Debug("ABCI EndBlocker: Closing reputer nonce", "topic", topic.Id, "nonce", nonce, "min", windowEnd)
+			closeErr := allorautils.CloseReputerNonce(&k, ctx, topic, *nonce.ReputerNonce)
+			if closeErr != nil {
+				ctx.Logger().Error("Error closing reputer nonce", "error", closeErr)
+				updateErr = closeErr
 			}
 		}
 	}
-	return err
+	return updateErr
 }
 
 // Prune reputer and worker nonces
 func PruneReputerAndWorkerNonces(ctx sdk.Context, k keeper.Keeper, topic types.Topic, block BlockHeight) error {
 	var maxUnfulfilledReputerRequests uint64
-	moduleParams, err := k.GetParams(ctx)
+	moduleParams, err := k.GetParamsKeeper().GetParams(ctx)
 	if err != nil {
 		ctx.Logger().Warn("Error getting max retries to fulfil nonces for worker requests (using default)", "error", err)
 		return err
@@ -51,9 +54,19 @@ func PruneReputerAndWorkerNonces(ctx sdk.Context, k keeper.Keeper, topic types.T
 	reputerPruningBlock := block - (int64(maxUnfulfilledReputerRequests+1)*topic.EpochLength + topic.GroundTruthLag) //nolint:gosec // G115: integer overflow conversion uint64 -> int64 (gosec)
 	if reputerPruningBlock > 0 {
 		ctx.Logger().Debug("Pruning reputer nonces before block", "reputerPruningBlock", reputerPruningBlock, "topicId", topic.Id, "block", block)
-		err = k.PruneReputerNonces(ctx, topic.Id, reputerPruningBlock)
+		err = k.GetNonceKeeper().PruneReputerNonces(ctx, topic.Id, reputerPruningBlock)
 		if err != nil {
 			ctx.Logger().Warn("Error pruning reputer nonces", "error", err)
+		}
+
+		// Nonces below the pruning threshold can no longer be closed, so
+		// submissions still stored for them would never be consumed and would
+		// block their reputers from submitting again. The sweep is best
+		// effort: it retries on the next processed block, so its failures
+		// must not gate the topic's nonce updates.
+		retireErr := k.GetReputerLossKeeper().RetireReputerSubmissionsBeforeBlock(ctx, topic.Id, reputerPruningBlock)
+		if retireErr != nil {
+			ctx.Logger().Warn("Error retiring submissions of pruned reputer nonces", "error", retireErr)
 		}
 
 		// Reputer nonces need to check worker nonces from one epoch before
@@ -61,7 +74,7 @@ func PruneReputerAndWorkerNonces(ctx sdk.Context, k keeper.Keeper, topic types.T
 		if workerPruningBlock > 0 {
 			ctx.Logger().Debug("Pruning worker nonces before block", "workerPruningBlock", workerPruningBlock, "topicId", topic.Id)
 			// Prune old worker nonces previous to current block to avoid inserting inferences after its time has passed
-			err = k.PruneWorkerNonces(ctx, topic.Id, workerPruningBlock)
+			err = k.GetNonceKeeper().PruneWorkerNonces(ctx, topic.Id, workerPruningBlock)
 			if err != nil {
 				ctx.Logger().Warn("Error pruning worker nonces", "error", err)
 			}

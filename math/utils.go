@@ -121,10 +121,10 @@ func NCalcEma(
 // Used for deterministic ranging of maps
 func GetSortedKeys[K cmp.Ordered, V any](m map[K]V) []K {
 	keys := make([]K, 0, len(m))
-	for k := range m { // nolint: maprange // reason: iteration to array before sorting
+	for k := range m { //nolint:maprange // reason: iteration to array before sorting
 		keys = append(keys, k)
 	}
-	sort.Slice(keys, func(i, j int) bool { return keys[i] < keys[j] })
+	slices.Sort(keys)
 	return keys
 }
 
@@ -136,7 +136,7 @@ func GetSortedKeys[K cmp.Ordered, V any](m map[K]V) []K {
 func GetSortedElementsByDecWeightDesc[K cmp.Ordered](m map[K]*Dec) []K {
 	// Create a new array that only contains unique elements that are in the map
 	newL := make([]K, 0)
-	for id := range m { // nolint: maprange // reason: iteration to array before sorting
+	for id := range m { //nolint:maprange // reason: iteration to array before sorting
 		newL = append(newL, id)
 	}
 
@@ -228,19 +228,23 @@ func Median(data []Dec) (Dec, error) {
 		return ZeroDec(), nil
 	}
 
-	// Sort the data
-	slices.SortFunc(data, func(x, y Dec) int {
+	// Create a copy to avoid modifying the original slice
+	dataCopy := make([]Dec, n)
+	copy(dataCopy, data)
+
+	// Sort the copy
+	slices.SortFunc(dataCopy, func(x, y Dec) int {
 		return x.Cmp(y)
 	})
 
 	if n%2 == 1 {
 		// Odd number of elements, return the middle one
-		return data[n/2], nil
+		return dataCopy[n/2], nil
 	}
 
 	// Even number of elements, return the average of the two middle ones
-	mid1 := data[n/2-1]
-	mid2 := data[n/2]
+	mid1 := dataCopy[n/2-1]
+	mid2 := dataCopy[n/2]
 	sum, err := mid1.Add(mid2)
 	if err != nil {
 		return ZeroDec(), err
@@ -562,8 +566,12 @@ func GetQuantileOfDecs(
 		return ZeroDec(), nil
 	}
 
-	// Sort decs in descending order. Address is used to break ties.
-	slices.SortStableFunc(decs, func(x, y Dec) int {
+	// Create a copy to avoid modifying the original slice
+	decsCopy := make([]Dec, len(decs))
+	copy(decsCopy, decs)
+
+	// Sort the copy in descending order. Address is used to break ties.
+	slices.SortStableFunc(decsCopy, func(x, y Dec) int {
 		if x.Lt(y) {
 			return 1
 		}
@@ -572,7 +580,7 @@ func GetQuantileOfDecs(
 
 	// n elements, q quantile
 	// position = (1 - q) * (n - 1)
-	nLessOne, err := NewDecFromUint64(uint64(len(decs) - 1))
+	nLessOne, err := NewDecFromUint64(uint64(len(decsCopy) - 1))
 	if err != nil {
 		return Dec{}, err
 	}
@@ -603,16 +611,16 @@ func GetQuantileOfDecs(
 	}
 
 	if lowerIndex == upperIndex {
-		return decs[lowerIndexInt], nil
+		return decsCopy[lowerIndexInt], nil
 	}
 
-	if lowerIndexInt < 0 || upperIndexInt >= int64(len(decs)) {
+	if lowerIndexInt < 0 || upperIndexInt >= int64(len(decsCopy)) {
 		return Dec{}, errorsmod.Wrapf(ErrNaN, "cannot calculate quantile")
 	}
 	// in cases where the quantile is between two values
 	// return lowerValue + (upperValue-lowerValue)*(position-lowerIndex)
-	lowerDec := decs[lowerIndexInt]
-	upperDec := decs[upperIndexInt]
+	lowerDec := decsCopy[lowerIndexInt]
+	upperDec := decsCopy[upperIndexInt]
 	positionMinusLowerIndex, err := position.Sub(lowerIndex)
 	if err != nil {
 		return Dec{}, err

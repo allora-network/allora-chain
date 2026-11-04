@@ -2,14 +2,14 @@ package module
 
 import (
 	autocliv1 "cosmossdk.io/api/cosmos/autocli/v1"
-	statev9 "github.com/allora-network/allora-chain/x/emissions/api/emissions/v9"
+	statev10 "github.com/allora-network/allora-chain/x/emissions/api/emissions/v10"
 )
 
 // AutoCLIOptions implements the autocli.HasAutoCLIConfig interface.
 func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 	return &autocliv1.ModuleOptions{
 		Query: &autocliv1.ServiceCommandDescriptor{
-			Service: statev9.QueryService_ServiceDesc.ServiceName,
+			Service: statev10.QueryService_ServiceDesc.ServiceName,
 			RpcCommandOptions: []*autocliv1.RpcCommandOptions{
 				{
 					RpcMethod: "GetParams",
@@ -65,7 +65,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "GetDelegateRewardPerShare",
-					Use:       "delegate-reward-per-share [topic_id] [reputer_address]",
+					Use:       "delegate-reward-per-share [topic_id] [reputer]",
 					Short:     "Get total delegate reward per share stake in a reputer for a topic",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "topic_id"},
@@ -506,21 +506,21 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					},
 				},
 				{
-					RpcMethod: "GetWorkerLatestInferenceByTopicId",
-					Use:       "worker-latest-inference [topic_id] [worker_address]",
-					Short:     "Get the latest inference for a given worker and topic within a worker submission window",
-					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
-						{ProtoField: "topic_id"},
-						{ProtoField: "worker_address"},
-					},
-				},
-				{
 					RpcMethod: "GetInferencesAtBlock",
 					Use:       "inferences-at-block [topic_id] [block_height]",
 					Short:     "Get All Inferences produced for a topic in a particular timestamp",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "topic_id"},
 						{ProtoField: "block_height"},
+					},
+				},
+				{
+					RpcMethod: "GetWorkerLatestInputInferenceByTopicId",
+					Use:       "latest-input-inference [topic_id] [worker_address]",
+					Short:     "Get the latest active WSW inference as an input inference",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+						{ProtoField: "worker_address"},
 					},
 				},
 				{
@@ -640,7 +640,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "GetStakeRemovalInfo",
-					Use:       "stake-removal-info [address] [topic_id]",
+					Use:       "stake-removal-info [reputer] [topic_id]",
 					Short:     "Get a pending stake removal for a reputer in a topic",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "reputer"},
@@ -949,7 +949,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 			Short:                "Emissions module query commands",
 		},
 		Tx: &autocliv1.ServiceCommandDescriptor{
-			Service: statev9.MsgService_ServiceDesc.ServiceName,
+			Service: statev10.MsgService_ServiceDesc.ServiceName,
 			RpcCommandOptions: []*autocliv1.RpcCommandOptions{
 				{
 					RpcMethod: "UpdateParams",
@@ -962,8 +962,14 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "CreateNewTopic",
-					Use:       "create-topic [creator] [metadata] [loss_method] [epoch_length] [ground_truth_lag] [worker_submission_window] [p_norm] [alpha_regret] [allow_negative] [epsilon] [merit_sortition_alpha] [active_inferer_quantile] [active_forecaster_quantile] [active_reputer_quantile] [enable_worker_whitelist] [enable_reputer_whitelist] [c_norm]",
+					Use:       "create-topic [creator] [metadata] [loss_method] [epoch_length] [ground_truth_lag] [worker_submission_window] [p_norm] [alpha_regret] [allow_negative] [epsilon] [merit_sortition_alpha] [active_inferer_quantile] [active_forecaster_quantile] [active_reputer_quantile] [enable_worker_whitelist] [enable_reputer_whitelist] [c_norm] [topic_type] [output_arity] [require_unity] [unity_tolerance] [max_labels_per_submission] [label_whitelist] [label_default_value] [label_case_sensitive] [max_top_inferers_to_reward]",
 					Short:     "Add a new topic to the network",
+					Long: `Add a new topic to the network.
+
+max_top_inferers_to_reward caps how many inferers are admitted to the topic's
+active set. It must lie within the global
+[min_top_inferers_to_reward, max_top_inferers_to_reward] range; query the
+emissions params to see the current range.`,
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "creator"},
 						{ProtoField: "metadata"},
@@ -982,12 +988,35 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 						{ProtoField: "enable_worker_whitelist"},
 						{ProtoField: "enable_reputer_whitelist"},
 						{ProtoField: "c_norm"},
+						{ProtoField: "topic_type"},
+						{ProtoField: "output_arity"},
+						{ProtoField: "require_unity"},
+						{ProtoField: "unity_tolerance"},
+						{ProtoField: "max_labels_per_submission"},
+						{ProtoField: "label_whitelist"},
+						{ProtoField: "label_default_value"},
+						{ProtoField: "label_case_sensitive"},
+						{ProtoField: "max_top_inferers_to_reward"},
 					},
 				},
 				{
 					RpcMethod: "UpdateTopic",
-					Use:       "update-topic [sender] [topic_id] [metadata] [loss_method] [alpha_regret] [merit_sortition_alpha] [p_norm] [c_norm]",
+					Use:       "update-topic [sender] [topic_id] [metadata] [loss_method] [alpha_regret] [merit_sortition_alpha] [p_norm] [c_norm] [max_labels_per_submission] [label_whitelist] [label_default_value] [max_top_inferers_to_reward]",
 					Short:     "Update an existing topic's modifiable configuration",
+					Long: `Update a topic's modifiable fields. Only the creator may do so;
+topic_type, output_arity, require_unity and label_case_sensitive are fixed at
+creation.
+
+Fields sent here REPLACE the stored values — there is no "leave as-is". In
+particular an empty label_whitelist sets the topic to UNRESTRICTED instead of
+preserving the current one, so re-send the full list to keep a restriction.
+max_top_inferers_to_reward must lie within the global
+[min_top_inferers_to_reward, max_top_inferers_to_reward] range. Because it is a
+full replacement, a topic whose stored cap sits outside the current range must
+send a value inside it to change any other field.
+
+The keeper rejects these label changes and max_top_inferers_to_reward changes
+while a worker submission window is open.`,
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "sender"},
 						{ProtoField: "topic_id"},
@@ -997,11 +1026,15 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 						{ProtoField: "merit_sortition_alpha"},
 						{ProtoField: "p_norm"},
 						{ProtoField: "c_norm"},
+						{ProtoField: "max_labels_per_submission"},
+						{ProtoField: "label_whitelist"},
+						{ProtoField: "label_default_value"},
+						{ProtoField: "max_top_inferers_to_reward"},
 					},
 				},
 				{
 					RpcMethod: "Register",
-					Use:       "register [sender] [topic_ids] [owner] [is_reputer]",
+					Use:       "register [sender] [topic_id] [owner] [is_reputer]",
 					Short:     "Register a new reputer or worker for a topic",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "sender"},
@@ -1021,8 +1054,9 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					},
 				},
 				{
+
 					RpcMethod: "RemoveRegistration",
-					Use:       "remove-registration [sender] [owner] [is_reputer]",
+					Use:       "remove-registration [sender] [topic_id] [is_reputer]",
 					Short:     "Remove a reputer or worker from a topic",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "sender"},
@@ -1083,11 +1117,12 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "CancelRemoveDelegateStake",
-					Use:       "cancel-remove-delegate-stake [sender] [topic_id] [reputer]",
+					Use:       "cancel-remove-delegate-stake [sender] [topic_id] [delegator] [reputer]",
 					Short:     "Cancel the removal of delegated stake for a delegator staking on a reputer in a topic",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "sender"},
 						{ProtoField: "topic_id"},
+						{ProtoField: "delegator"},
 						{ProtoField: "reputer"},
 					},
 				},
@@ -1103,7 +1138,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "FundTopic",
-					Use:       "fund-topic [sender] [topic_id] [amount] [extra_data]",
+					Use:       "fund-topic [sender] [topic_id] [amount]",
 					Short:     "send funds to a topic to pay for inferences",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "sender"},

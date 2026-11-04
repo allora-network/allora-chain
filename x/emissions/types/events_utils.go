@@ -1,6 +1,8 @@
 package types
 
 import (
+	"fmt"
+
 	"cosmossdk.io/math"
 	"github.com/cosmos/gogoproto/proto"
 
@@ -24,7 +26,7 @@ func NewScoresSetEventBase(actorType ActorType, scores []Score) proto.Message {
 		TopicId:     topicId,
 		BlockHeight: blockHeight,
 		Addresses:   addresses,
-		Scores:      scoreValues,
+		Scores:      clampDecs(scoreValues),
 	}
 }
 
@@ -38,30 +40,101 @@ func NewNetworkLossSetEventBase(lossBundle ValueBundle) proto.Message {
 	}
 }
 
-func NewNetworkInferencesEventBase(networkInferences ValueBundle) proto.Message {
-	return &EventNetworkInferences{
-		TopicId:     networkInferences.TopicId,
-		BlockHeight: networkInferences.ReputerRequestNonce.ReputerNonce.BlockHeight,
-		ValueBundle: nil,
-		Nonce:       networkInferences.ReputerRequestNonce.ReputerNonce.BlockHeight,
-		Bundle:      ValueBundleToEventValueBundleBase(&networkInferences),
+func NewNetworkInferencesEventBase(networkInferences NetworkInferenceBundle) proto.Message {
+	return convertNetworkInferenceBundleToEvent(networkInferences, false)
+}
+
+func NewOutlierResistantNetworkInferencesEventBase(networkInferences NetworkInferenceBundle) proto.Message {
+	return convertNetworkInferenceBundleToEvent(networkInferences, true)
+}
+
+func convertNetworkInferenceBundleToEvent(b NetworkInferenceBundle, outlierResistant bool) *EventNetworkInferenceBundle {
+	// clamp during extraction: single pass, covers every bundle array/matrix
+	labeledValuesToArray := func(vals []*LabeledValue) alloraMath.DecArray {
+		return convertArray(vals, func(v *LabeledValue) alloraMath.Dec { return clampDec(v.Value) })
+	}
+
+	labelNames := convertArray(b.GetCombinedValue(), func(v *LabeledValue) string { return v.GetLabelName() })
+
+	infererAddrs := convertArray(b.GetInfererValues(), func(w *WorkerInference) string { return w.GetWorker() })
+	infererMatrix := convertArray(b.GetInfererValues(), func(w *WorkerInference) alloraMath.DecArray {
+		return labeledValuesToArray(w.GetValues())
+	})
+
+	forecasterAddrs := convertArray(b.GetForecasterValues(), func(w *WorkerInference) string { return w.GetWorker() })
+	forecasterMatrix := convertArray(b.GetForecasterValues(), func(w *WorkerInference) alloraMath.DecArray {
+		return labeledValuesToArray(w.GetValues())
+	})
+
+	oneOutInferer := convertArray(b.GetOneOutInfererValues(), func(v *OneOutInfererValue) alloraMath.DecArray {
+		return labeledValuesToArray(v.GetCombinedInference())
+	})
+	oneOutForecaster := convertArray(b.GetOneOutForecasterValues(), func(v *OneOutForecasterValue) alloraMath.DecArray {
+		return labeledValuesToArray(v.GetCombinedInference())
+	})
+	oneInForecaster := convertArray(b.GetOneInForecasterValues(), func(v *OneInForecasterValue) alloraMath.DecArray {
+		return labeledValuesToArray(v.GetCombinedInference())
+	})
+
+	ooif := groupOneOutInfererForecaster(b.GetOneOutInfererForecasterValues(), labeledValuesToArray)
+
+	return &EventNetworkInferenceBundle{
+		TopicId:                       b.GetTopicId(),
+		Nonce:                         b.GetNonce(),
+		LabelNames:                    labelNames,
+		InfererAddresses:              infererAddrs,
+		ForecasterAddresses:           forecasterAddrs,
+		CombinedValue:                 labeledValuesToArray(b.GetCombinedValue()),
+		NaiveValue:                    labeledValuesToArray(b.GetNaiveValue()),
+		InfererValues:                 infererMatrix,
+		ForecasterValues:              forecasterMatrix,
+		OneOutInfererValues:           oneOutInferer,
+		OneOutForecasterValues:        oneOutForecaster,
+		OneInForecasterValues:         oneInForecaster,
+		OneOutInfererForecasterValues: ooif,
+		OutlierResistant:              outlierResistant,
 	}
 }
 
-func NewOutlierResistantNetworkInferencesEventBase(networkInferences ValueBundle) proto.Message {
-	return &EventOutlierResistantNetworkInferences{
-		TopicId: networkInferences.TopicId,
-		Nonce:   networkInferences.ReputerRequestNonce.ReputerNonce.BlockHeight,
-		Bundle:  ValueBundleToEventValueBundleBase(&networkInferences),
+func groupOneOutInfererForecaster(
+	in []*OneOutInfererForecasterValue,
+	labeledValuesToArray func([]*LabeledValue) alloraMath.DecArray,
+) []alloraMath.DecMatrix {
+	if len(in) == 0 {
+		return nil
 	}
+
+	order := make([]string, 0)
+	rowsByForecaster := make(map[string][]alloraMath.DecArray)
+
+	for _, x := range in {
+		if x == nil {
+			continue
+		}
+		fc := x.GetForecaster()
+		if _, ok := rowsByForecaster[fc]; !ok {
+			order = append(order, fc)
+		}
+		rowsByForecaster[fc] = append(rowsByForecaster[fc], labeledValuesToArray(x.GetCombinedInference()))
+	}
+
+	out := make([]alloraMath.DecMatrix, 0, len(order))
+	for _, fc := range order {
+		rows := rowsByForecaster[fc]
+		m := make(alloraMath.DecMatrix, len(rows))
+		copy(m, rows)
+		out = append(out, m)
+	}
+	return out
 }
 
-func NewInsertInfererPayloadEventBase(bundle *WorkerDataBundle) proto.Message {
+func NewInsertInfererPayloadEventBase(bundle *InputWorkerDataBundle) proto.Message {
 	return &EventInsertInfererPayload{
 		Inferer:   bundle.Worker,
 		Nonce:     bundle.Nonce.BlockHeight,
 		TopicId:   bundle.TopicId,
 		Value:     bundle.InferenceForecastsBundle.Inference.Value,
+		Values:    bundle.InferenceForecastsBundle.Inference.Values,
 		ExtraData: bundle.InferenceForecastsBundle.Inference.ExtraData,
 	}
 }
@@ -145,34 +218,35 @@ func NewRewardDelegateStakeEventBase(topicId TopicId, reputer, delegator string,
 		TopicId:   topicId,
 		Reputer:   reputer,
 		Delegator: delegator,
-		Amount:    amount,
+		Amount:    clampDec(amount),
 	}
 }
 
-func NewInsertReputerPayloadEventBase(bundle *ReputerValueBundle) proto.Message {
+func NewInsertReputerPayloadEventBase(bundle *LossBundle) proto.Message {
 	return &EventInsertReputerPayload{
-		TopicId: bundle.ValueBundle.TopicId,
-		Nonce:   bundle.ValueBundle.ReputerRequestNonce.ReputerNonce.BlockHeight,
-		Reputer: bundle.ValueBundle.Reputer,
-		Bundle:  ValueBundleToEventValueBundleBase(bundle.ValueBundle),
+		TopicId: bundle.TopicId,
+		Nonce:   bundle.ReputerRequestNonce.ReputerNonce.BlockHeight,
+		Reputer: bundle.Reputer,
+		Bundle:  ValueBundleToEventValueBundleBase(bundle),
 	}
 }
 
 func ValueBundleToEventValueBundleBase(bundle *ValueBundle) *EventValueBundle {
-	// nolint:exhaustruct
+	//nolint:exhaustruct
 	evb := &EventValueBundle{
 		ExtraData:     bundle.ExtraData,
-		CombinedValue: bundle.CombinedValue,
-		NaiveValue:    bundle.NaiveValue,
+		CombinedValue: clampDec(bundle.CombinedValue),
+		NaiveValue:    clampDec(bundle.NaiveValue),
 	}
 
-	evb.InfererValues = convertArray(bundle.InfererValues, func(i *WorkerAttributedValue) alloraMath.Dec { return i.GetValue() })
+	// value fields clamp during extraction; address fields are untouched
+	evb.InfererValues = convertArray(bundle.InfererValues, func(i *WorkerAttributedValue) alloraMath.Dec { return clampDec(i.GetValue()) })
 	evb.InfererAddresses = convertArray(bundle.InfererValues, func(i *WorkerAttributedValue) string { return i.GetWorker() })
-	evb.ForecasterValues = convertArray(bundle.ForecasterValues, func(i *WorkerAttributedValue) alloraMath.Dec { return i.GetValue() })
+	evb.ForecasterValues = convertArray(bundle.ForecasterValues, func(i *WorkerAttributedValue) alloraMath.Dec { return clampDec(i.GetValue()) })
 	evb.ForecasterAddresses = convertArray(bundle.ForecasterValues, func(i *WorkerAttributedValue) string { return i.GetWorker() })
-	evb.OneOutInfererValues = convertArray(bundle.OneOutInfererValues, func(i *WithheldWorkerAttributedValue) alloraMath.Dec { return i.GetValue() })
-	evb.OneInForecasterValues = convertArray(bundle.OneInForecasterValues, func(i *WorkerAttributedValue) alloraMath.Dec { return i.GetValue() })
-	evb.OneOutForecasterValues = convertArray(bundle.OneOutForecasterValues, func(i *WithheldWorkerAttributedValue) alloraMath.Dec { return i.GetValue() })
+	evb.OneOutInfererValues = convertArray(bundle.OneOutInfererValues, func(i *WithheldWorkerAttributedValue) alloraMath.Dec { return clampDec(i.GetValue()) })
+	evb.OneInForecasterValues = convertArray(bundle.OneInForecasterValues, func(i *WorkerAttributedValue) alloraMath.Dec { return clampDec(i.GetValue()) })
+	evb.OneOutForecasterValues = convertArray(bundle.OneOutForecasterValues, func(i *WithheldWorkerAttributedValue) alloraMath.Dec { return clampDec(i.GetValue()) })
 
 	lenInf, looif := len(evb.InfererAddresses), len(bundle.OneOutInfererForecasterValues)
 	if lenInf == 0 || looif == 0 {
@@ -195,7 +269,7 @@ func ValueBundleToEventValueBundleBase(bundle *ValueBundle) *EventValueBundle {
 		}
 		for _, cell := range row.OneOutInfererValues {
 			if j, ok := infererIndex[cell.Worker]; ok {
-				oo[j] = cell.Value
+				oo[j] = clampDec(cell.Value)
 			}
 		}
 		evb.OneOutInfererForecasterValues[idx] = oo
@@ -213,6 +287,33 @@ func convertArray[I, O any](in []I, get func(I) O) (out []O) {
 		out[i] = get(v)
 	}
 	return
+}
+
+// Magnitude window for Dec values emitted in events, so tiny/huge computed
+// values don't serialize into oversized strings. Independent of the ingress
+// BoundedExp40Dec guard; shapes event output only, never consensus state.
+const eventDecClampExponent = 40
+
+var (
+	eventDecMinMagnitude = alloraMath.MustNewDecFromString(fmt.Sprintf("1e-%d", eventDecClampExponent))
+	eventDecMaxMagnitude = alloraMath.MustNewDecFromString(fmt.Sprintf("1e%d", eventDecClampExponent))
+)
+
+// clampDec bounds one Dec for event output.
+func clampDec(d alloraMath.Dec) alloraMath.Dec {
+	return alloraMath.ClampMagnitude(d, eventDecMinMagnitude, eventDecMaxMagnitude)
+}
+
+// clampDecs clamps a pre-built slice (params not routed through convertArray).
+func clampDecs(in []alloraMath.Dec) []alloraMath.Dec {
+	if in == nil {
+		return nil
+	}
+	out := make([]alloraMath.Dec, len(in))
+	for i := range in {
+		out[i] = clampDec(in[i])
+	}
+	return out
 }
 
 func NewReputerRegisteredEventBase(topicId TopicId, reputer, owner string) proto.Message {
@@ -395,7 +496,7 @@ func NewTopicReputerWhitelistRemovedEventBase(topicId TopicId, address string) p
 func NewForecastTaskScoreSetEventBase(topicId TopicId, score alloraMath.Dec, nonce int64) proto.Message {
 	return &EventForecastTaskScoreSet{
 		TopicId:          topicId,
-		Score:            score,
+		Score:            clampDec(score),
 		NonceBlockHeight: nonce,
 	}
 }
@@ -416,7 +517,7 @@ func NewEMAScoresSetEventBase(actorType ActorType, nonceBlockHeight BlockHeight,
 		TopicId:   topicId,
 		Nonce:     nonceBlockHeight,
 		Addresses: addresses,
-		Scores:    scoreValues,
+		Scores:    clampDecs(scoreValues),
 		IsActive:  activeArr,
 	}
 }
@@ -437,7 +538,7 @@ func NewRewardsSetEventBase(actorType ActorType, blockHeight, blockHeightTx Bloc
 		TopicId:       topicId,
 		BlockHeight:   blockHeight,
 		Addresses:     addresses,
-		Rewards:       rewardValues,
+		Rewards:       clampDecs(rewardValues),
 		BlockHeightTx: blockHeightTx,
 	}
 }
@@ -450,7 +551,7 @@ func NewTopicRewardSetEventBase(topicRewards map[uint64]*alloraMath.Dec) proto.M
 	}
 	return &EventTopicRewardsSet{
 		TopicIds: ids,
-		Rewards:  rewardValues,
+		Rewards:  clampDecs(rewardValues),
 	}
 }
 
@@ -480,7 +581,7 @@ func NewListeningCoefficientsSetEventBase(topicID uint64, blockHeight int64, add
 		TopicId:      topicID,
 		BlockHeight:  blockHeight,
 		Addresses:    addresses,
-		Coefficients: coefficients,
+		Coefficients: clampDecs(coefficients),
 	}
 }
 
@@ -491,7 +592,7 @@ func NewInfererNetworkRegretSetEventBase(topicID uint64, blockHeight int64, addr
 		TopicId:     topicID,
 		BlockHeight: blockHeight,
 		Addresses:   addresses,
-		Regrets:     regrets,
+		Regrets:     clampDecs(regrets),
 	}
 }
 
@@ -500,7 +601,7 @@ func NewForecasterNetworkRegretSetEventBase(topicID uint64, blockHeight int64, a
 		TopicId:     topicID,
 		BlockHeight: blockHeight,
 		Addresses:   addresses,
-		Regrets:     regrets,
+		Regrets:     clampDecs(regrets),
 	}
 }
 
@@ -509,7 +610,7 @@ func NewNaiveInfererNetworkRegretSetEventBase(topicID uint64, blockHeight int64,
 		TopicId:     topicID,
 		BlockHeight: blockHeight,
 		Addresses:   addresses,
-		Regrets:     regrets,
+		Regrets:     clampDecs(regrets),
 	}
 }
 
@@ -517,7 +618,7 @@ func NewTopicInitialRegretSetEventBase(topicID uint64, blockHeight int64, regret
 	return &EventTopicInitialRegretSet{
 		TopicId:     topicID,
 		BlockHeight: blockHeight,
-		Regret:      regret,
+		Regret:      clampDec(regret),
 	}
 }
 
@@ -526,7 +627,7 @@ func NewTopicInitialEmaScoreSetEventBase(actorType ActorType, topicId uint64, bl
 		ActorType:   actorType,
 		TopicId:     topicId,
 		BlockHeight: blockHeight,
-		Score:       score,
+		Score:       clampDec(score),
 	}
 }
 
@@ -534,7 +635,7 @@ func NewRegretStdNormSetEventBase(topicId uint64, blockHeight int64, stdNorm all
 	return &EventRegretStdNormSet{
 		TopicId:     topicId,
 		BlockHeight: blockHeight,
-		Stdnorm:     stdNorm,
+		Stdnorm:     clampDec(stdNorm),
 	}
 }
 
@@ -543,7 +644,7 @@ func NewInfererWeightsSetEventBase(topicId uint64, blockHeight int64, addresses 
 		TopicId:     topicId,
 		BlockHeight: blockHeight,
 		Addresses:   addresses,
-		Weights:     weights,
+		Weights:     clampDecs(weights),
 	}
 }
 
@@ -552,7 +653,7 @@ func NewForecasterWeightsSetEventBase(topicId uint64, blockHeight int64, address
 		TopicId:     topicId,
 		BlockHeight: blockHeight,
 		Addresses:   addresses,
-		Weights:     weights,
+		Weights:     clampDecs(weights),
 	}
 }
 
@@ -561,7 +662,7 @@ func NewForecasterWeightsSetEventBase(topicId uint64, blockHeight int64, address
 func NewPreviousPercentageRewardToStakedReputersSetEventBase(blockHeight int64, percentage alloraMath.Dec) proto.Message {
 	return &EventPreviousPercentageRewardToStakedReputersSet{
 		BlockHeight: blockHeight,
-		Percentage:  percentage,
+		Percentage:  clampDec(percentage),
 	}
 }
 
@@ -577,7 +678,7 @@ func NewDelegateRewardShareUpdatedEventBase(topicId TopicId, reputer string, rew
 	return &EventDelegateRewardShareUpdated{
 		TopicId:        topicId,
 		Reputer:        reputer,
-		RewardPerShare: rewardPerShare,
+		RewardPerShare: clampDec(rewardPerShare),
 	}
 }
 
@@ -625,7 +726,7 @@ func NewNetworkInferenceInfererWeightsSetEventBase(topicId TopicId, blockHeight 
 		TopicId:          topicId,
 		NonceBlockHeight: blockHeight,
 		Addresses:        addresses,
-		Weights:          weights,
+		Weights:          clampDecs(weights),
 	}
 }
 
@@ -634,7 +735,7 @@ func NewNetworkInferenceForecasterWeightsSetEventBase(topicId TopicId, blockHeig
 		TopicId:          topicId,
 		NonceBlockHeight: blockHeight,
 		Addresses:        addresses,
-		Weights:          weights,
+		Weights:          clampDecs(weights),
 	}
 }
 
@@ -643,7 +744,7 @@ func NewNetworkInferenceInfererRegretsUsedSetEventBase(topicId TopicId, blockHei
 		TopicId:          topicId,
 		NonceBlockHeight: blockHeight,
 		Addresses:        addresses,
-		Regrets:          regrets,
+		Regrets:          clampDecs(regrets),
 	}
 }
 
@@ -652,14 +753,14 @@ func NewNetworkInferenceForecasterRegretsUsedSetEventBase(topicId TopicId, block
 		TopicId:          topicId,
 		NonceBlockHeight: blockHeight,
 		Addresses:        addresses,
-		Regrets:          regrets,
+		Regrets:          clampDecs(regrets),
 	}
 }
 
 func NewTopicWeightUpdatedEventBase(topicId TopicId, newWeight alloraMath.Dec, topicStake math.Int, topicFeeRevenue math.Int) proto.Message {
 	return &EventTopicWeightUpdated{
 		TopicId:         topicId,
-		NewWeight:       newWeight,
+		NewWeight:       clampDec(newWeight),
 		TopicStake:      topicStake,
 		TopicFeeRevenue: topicFeeRevenue,
 	}
@@ -702,5 +803,18 @@ func NewReputerSubmissionWindowClosedEventBase(topicId TopicId, nonceBlockHeight
 	return &EventReputerSubmissionWindowClosed{
 		TopicId:          topicId,
 		NonceBlockHeight: nonceBlockHeight,
+	}
+}
+
+// NewEpochLabelRegistryFrozenEventBase is emitted once per (topicId, nonce)
+// after the final active inputs have been finalized into a registry at
+// CloseWorkerNonce time. Offchain indexers can reconstruct the full
+// registry by looking up topicLabelRegistry at the same key, but we
+// advertise the size here so explorers don't have to read state.
+func NewEpochLabelRegistryFrozenEventBase(topicId TopicId, nonceBlockHeight int64, registrySize uint64) proto.Message {
+	return &EventEpochLabelRegistryFrozen{
+		TopicId:          topicId,
+		NonceBlockHeight: nonceBlockHeight,
+		RegistrySize:     registrySize,
 	}
 }

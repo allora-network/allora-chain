@@ -5,35 +5,54 @@ import (
 	"time"
 
 	errorsmod "cosmossdk.io/errors"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/metrics"
 	"github.com/allora-network/allora-chain/x/emissions/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
+
+// validateMaxTopInferersToReward rejects a create/update request outside the
+// global [min, max] range.
+func validateMaxTopInferersToReward(requested, globalMin, globalMax uint64) error {
+	if requested > globalMax {
+		return errorsmod.Wrapf(
+			types.ErrTopicMaxTopInferersToRewardTooBig,
+			"requested %d exceeds global maximum %d", requested, globalMax,
+		)
+	}
+	if requested < globalMin {
+		return errorsmod.Wrapf(
+			types.ErrTopicMaxTopInferersToRewardTooSmall,
+			"requested %d is below global minimum %d", requested, globalMin,
+		)
+	}
+	return nil
+}
 
 func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.CreateNewTopicRequest) (_ *types.CreateNewTopicResponse, err error) {
 	defer metrics.RecordMetrics("CreateNewTopic", time.Now(), &err)
 
 	// Validate the address
-	if err := ms.k.ValidateStringIsBech32(msg.Creator); err != nil {
+	if err := types.ValidateStringIsBech32(msg.Creator); err != nil {
 		return nil, err
 	}
-	canCreate, err := ms.k.CanCreateTopic(ctx, msg.Creator)
+	canCreate, err := ms.wlk.CanCreateTopic(ctx, msg.Creator)
 	if err != nil {
 		return nil, err
 	} else if !canCreate {
 		return nil, types.ErrNotPermittedToCreateTopic
 	}
 
-	params, err := ms.k.GetParams(ctx)
+	params, err := ms.pk.GetParams(ctx)
 	if err != nil {
 		return nil, errorsmod.Wrapf(err, "Error getting params for sender: %v", &msg.Creator)
 	}
-	if err := msg.Validate(params.MaxStringLength); err != nil {
+	if err := msg.Validate(params.MaxStringLength, params.MaxTopicLabelWhitelistSize); err != nil {
 		return nil, err
 	}
 
-	topicId, err := ms.k.GetNextTopicId(ctx)
+	topicId, err := ms.tk.GetNextTopicId(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -44,11 +63,20 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.CreateNewTopi
 	if uint64(msg.GroundTruthLag) > params.MaxUnfulfilledReputerRequests*uint64(msg.EpochLength) {
 		return nil, types.ErrGroundTruthLagTooBig
 	}
-
-	// Before creating topic, transfer fee amount from creator to ecosystem bucket
-	err = checkBalanceAndSendFee(ctx, ms, msg.Creator, params.CreateTopicFee)
-	if err != nil {
+	if err := validateMaxTopInferersToReward(
+		msg.MaxTopInferersToReward, params.MinTopInferersToReward, params.MaxTopInferersToReward); err != nil {
 		return nil, err
+	}
+
+	// Before creating topic, transfer fee amount from creator to ecosystem bucket.
+	// A zero create fee moves and credits nothing, so the payment, the fee
+	// revenue credit, and the funding event are all skipped.
+	chargeFee := !params.CreateTopicFee.IsZero()
+	if chargeFee {
+		err = checkBalanceAndSendFee(ctx, ms, msg.Creator, params.CreateTopicFee)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	topic := types.Topic{
@@ -70,49 +98,85 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.CreateNewTopi
 		ActiveForecasterQuantile: msg.ActiveForecasterQuantile,
 		ActiveReputerQuantile:    msg.ActiveReputerQuantile,
 		CNorm:                    msg.CNorm,
+		TopicType:                msg.TopicType,
+		OutputArity:              msg.OutputArity,
+		RequireUnity:             msg.RequireUnity,
+		UnityTolerance:           msg.UnityTolerance,
+		// Label registry fields. Canonicalization of LabelWhitelist is
+		// applied by SetTopic.
+		MaxLabelsPerSubmission: msg.MaxLabelsPerSubmission,
+		LabelWhitelist:         msg.LabelWhitelist,
+		LabelDefaultValue:      msg.LabelDefaultValue,
+		// LabelCaseSensitive is immutable after creation (UpdateTopic never
+		// changes it because updatedTopic is derived from the existing topic).
+		LabelCaseSensitive:     msg.LabelCaseSensitive,
+		MaxTopInferersToReward: msg.MaxTopInferersToReward,
 	}
-	_, err = ms.k.IncrementTopicId(ctx)
+	_, err = ms.tk.IncrementTopicId(ctx)
 	if err != nil {
 		return nil, err
 	}
-	if err := ms.k.SetTopic(ctx, topicId, topic); err != nil {
+	if err := ms.tk.SetTopic(ctx, topicId, topic); err != nil {
 		return nil, err
 	}
 
+	// Emit the creation event first so indexers that materialize the topic
+	// on EventCreateNewTopic only ever see gate and funding events for a
+	// topic they already know.
+	types.EmitNewCreateNewTopicEvent(ctx, &topic)
+
 	// Turn topic whitelist on by default so no one can squeeze in payloads before an admin notices or can act
 	if msg.EnableWorkerWhitelist {
-		err = ms.k.EnableTopicWorkerWhitelist(ctx, topicId)
+		err = ms.wlk.EnableTopicWorkerWhitelist(ctx, topicId)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if msg.EnableReputerWhitelist {
-		err = ms.k.EnableTopicReputerWhitelist(ctx, topicId)
+		err = ms.wlk.EnableTopicReputerWhitelist(ctx, topicId)
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	err = ms.k.AddTopicFeeRevenue(ctx, topicId, params.CreateTopicFee)
+	if chargeFee {
+		err = ms.tk.AddTopicFeeRevenue(ctx, topicId, params.CreateTopicFee)
+		if err != nil {
+			return nil, errorsmod.Wrap(err, "error adding topic fee revenue")
+		}
+	}
 
-	types.EmitNewCreateNewTopicEvent(ctx, &topic)
-	return &types.CreateNewTopicResponse{TopicId: topicId}, err
+	if chargeFee {
+		// The creation fee is credited to the topic's fee revenue, so emit the
+		// same event as FundTopic to keep the fee-revenue event stream complete.
+		types.EmitNewFundTopicEvent(ctx, topicId, msg.Creator, params.CreateTopicFee)
+	}
+	return &types.CreateNewTopicResponse{TopicId: topicId}, nil
 }
 
 func (ms msgServer) UpdateTopic(ctx context.Context, msg *types.UpdateTopicRequest) (_ *types.UpdateTopicResponse, err error) {
 	defer metrics.RecordMetrics("UpdateTopic", time.Now(), &err)
 
-	if err := ms.k.ValidateStringIsBech32(msg.Sender); err != nil {
+	params, err := ms.pk.GetParams(ctx)
+	if err != nil {
+		return nil, errorsmod.Wrapf(err, "Error getting params for sender: %v", &msg.Sender)
+	}
+	if err := msg.Validate(params.MaxStringLength, params.MaxTopicLabelWhitelistSize); err != nil {
 		return nil, err
 	}
 
-	topic, err := ms.k.GetTopic(ctx, msg.TopicId)
+	topic, err := ms.tk.GetTopic(ctx, msg.TopicId)
 	if err != nil {
 		return nil, err
 	}
 
 	if topic.Creator != msg.Sender {
 		return nil, errorsmod.Wrap(sdkerrors.ErrUnauthorized, "not permitted to modify topic")
+	}
+
+	if err := validateMaxTopInferersToReward(
+		msg.MaxTopInferersToReward, params.MinTopInferersToReward, params.MaxTopInferersToReward); err != nil {
+		return nil, err
 	}
 
 	updatedTopic := topic
@@ -122,8 +186,17 @@ func (ms msgServer) UpdateTopic(ctx context.Context, msg *types.UpdateTopicReque
 	updatedTopic.MeritSortitionAlpha = msg.MeritSortitionAlpha
 	updatedTopic.PNorm = msg.PNorm
 	updatedTopic.CNorm = msg.CNorm
+	// Full replacement; the keeper's UpdateTopic rejects a change while a worker
+	// submission window is open.
+	updatedTopic.MaxTopInferersToReward = msg.MaxTopInferersToReward
+	// Label registry settings: always apply the requested value. The keeper
+	// rejects unsafe mutations while a worker submission window is open and
+	// canonicalizes the whitelist before persistence.
+	updatedTopic.MaxLabelsPerSubmission = msg.MaxLabelsPerSubmission
+	updatedTopic.LabelWhitelist = msg.LabelWhitelist
+	updatedTopic.LabelDefaultValue = msg.LabelDefaultValue
 
-	updatedTopic, err = ms.k.UpdateTopic(ctx, topic, updatedTopic)
+	updatedTopic, err = ms.tk.UpdateTopic(ctx, topic, updatedTopic)
 	if err != nil {
 		return nil, err
 	}

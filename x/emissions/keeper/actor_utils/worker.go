@@ -19,7 +19,7 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topic types.Topic, nonc
 	blockHeight := ctx.BlockHeight()
 
 	// Check if the nonce is unfulfilled
-	nonceUnfulfilled, err := k.IsWorkerNonceUnfulfilled(ctx, topic.Id, &nonce)
+	nonceUnfulfilled, err := k.GetNonceKeeper().IsWorkerNonceUnfulfilled(ctx, topic.Id, &nonce)
 	if err != nil {
 		return err
 	}
@@ -44,7 +44,7 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topic types.Topic, nonc
 			)
 		}
 
-		_, fulfillErr := k.FulfillWorkerNonce(ctx, topic.Id, &nonce)
+		_, fulfillErr := k.GetNonceKeeper().FulfillWorkerNonce(ctx, topic.Id, &nonce)
 		if fulfillErr != nil {
 			ctx.Logger().Error(
 				"Error fulfilling worker nonce during deferred cleanup",
@@ -54,7 +54,7 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topic types.Topic, nonc
 			)
 		}
 
-		resetActiveErr := k.ResetActiveWorkersForTopic(ctx, topic.Id)
+		resetActiveErr := k.GetWorkerKeeper().ResetActiveWorkersForTopic(ctx, topic.Id)
 		if resetActiveErr != nil {
 			ctx.Logger().Error(
 				"Error resetting active workers during deferred cleanup",
@@ -63,7 +63,7 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topic types.Topic, nonc
 			)
 		}
 
-		resetSubmissionsErr := k.ResetWorkersIndividualSubmissionsForTopic(ctx, topic.Id)
+		resetSubmissionsErr := k.GetWorkerKeeper().ResetWorkersIndividualSubmissionsForTopic(ctx, topic.Id)
 		if resetSubmissionsErr != nil {
 			ctx.Logger().Error(
 				"Error resetting worker individual submissions during deferred cleanup",
@@ -79,7 +79,7 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topic types.Topic, nonc
 	}()
 
 	// Get all active inferers for this topic
-	activeInfererAddresses, err := k.GetActiveInferersForTopic(ctx, topic.Id)
+	activeInfererAddresses, err := k.GetWorkerKeeper().GetActiveInferersForTopic(ctx, topic.Id)
 	if err != nil {
 		return err
 	}
@@ -92,7 +92,7 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topic types.Topic, nonc
 	activeInfererAddressesMap, activeInferences, err := closeActiveInferencesSet(
 		ctx,
 		k,
-		topic.Id,
+		topic,
 		nonce,
 		activeInfererAddresses,
 	)
@@ -101,7 +101,7 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topic types.Topic, nonc
 	}
 
 	// Get all active forecasters for this topic
-	activeForecastAddresses, err := k.GetActiveForecastersForTopic(ctx, topic.Id)
+	activeForecastAddresses, err := k.GetWorkerKeeper().GetActiveForecastersForTopic(ctx, topic.Id)
 	if err != nil {
 		return err
 	}
@@ -120,24 +120,26 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topic types.Topic, nonc
 		return err
 	}
 
-	err = k.AddReputerNonce(ctx, topic.Id, &nonce)
+	err = k.GetNonceKeeper().AddReputerNonce(ctx, topic.Id, &nonce)
 	if err != nil {
 		return err
 	}
 
-	err = k.SetWorkerTopicLastCommit(ctx, topic.Id, blockHeight, &nonce)
+	err = k.GetTopicKeeper().SetWorkerTopicLastCommit(ctx, topic.Id, blockHeight, &nonce)
 	if err != nil {
 		return err
 	}
 
-	// Once inferences are closed, update the network inferences outlier metrics
-	err = k.UpdateNetworkInferencesOutlierMetrics(ctx, topic.Id, nonce.BlockHeight)
-	if err != nil {
-		return err
+	if topic.OutputArity == types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE {
+		// Once inferences are closed, update the network inferences outlier metrics
+		err = k.GetWorkerKeeper().UpdateNetworkInferencesOutlierMetrics(ctx, topic, nonce.BlockHeight)
+		if err != nil {
+			return err
+		}
 	}
 
 	// Computes and stores both regular and outlier-resistant network inferences
-	err = ProcessAndStoreNetworkInferences(k, ctx, topic.Id, nonce.BlockHeight, activeInferences, activeForecasts)
+	err = ProcessAndStoreNetworkInferences(k, ctx, topic, nonce.BlockHeight, activeInferences, activeForecasts)
 	if err != nil {
 		return err
 	}
@@ -153,8 +155,8 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topic types.Topic, nonc
 func ProcessAndStoreNetworkInferences(
 	k *keeper.Keeper,
 	ctx sdk.Context,
-	topicId uint64,
-	blockHeight int64,
+	topic types.Topic,
+	nonce int64,
 	activeInferences *types.Inferences,
 	activeForecasts *types.Forecasts,
 ) error {
@@ -162,109 +164,122 @@ func ProcessAndStoreNetworkInferences(
 	networkInferencesResult, err := synth.GetNetworkInferences(
 		sdk.UnwrapSDKContext(ctx),
 		*k,
-		topicId,
-		&blockHeight,
+		topic.Id,
+		&nonce,
 		activeInferences,
 		activeForecasts,
-		false,
 	)
 	if err != nil {
 		return errorsmod.Wrap(err, "failed to calculate network inferences")
 	}
 
 	// Store regular network inferences
-	if err := k.InsertNetworkInferences(ctx, topicId, blockHeight, *networkInferencesResult.NetworkInferences); err != nil {
+	if err := k.InsertNetworkInferenceBundle(ctx, topic.Id, nonce, *networkInferencesResult.NetworkInferences); err != nil {
 		return errorsmod.Wrap(err, "failed to insert network inference")
 	}
 
 	types.EmitNewNetworkInferencesEvent(ctx, *networkInferencesResult.NetworkInferences)
 
 	// Emit packed network inference weight events
-	if len(networkInferencesResult.InfererToWeight) > 0 {
-		infererAddresses := make([]string, 0, len(networkInferencesResult.InfererToWeight))
-		infererWeights := make([]alloraMath.Dec, 0, len(networkInferencesResult.InfererToWeight))
-		for inferer, weight := range networkInferencesResult.InfererToWeight {
-			infererAddresses = append(infererAddresses, inferer)
-			infererWeights = append(infererWeights, weight)
-		}
-		types.EmitNewNetworkInferenceInfererWeightsSetEvent(ctx, topicId, blockHeight, infererAddresses, infererWeights)
+	infererAddresses, infererWeights := buildSortedAddressWeights(networkInferencesResult.InfererToWeight)
+	if len(infererAddresses) > 0 {
+		types.EmitNewNetworkInferenceInfererWeightsSetEvent(ctx, topic.Id, nonce, infererAddresses, infererWeights)
 	}
 
-	if len(networkInferencesResult.ForecasterToWeight) > 0 {
-		forecasterAddresses := make([]string, 0, len(networkInferencesResult.ForecasterToWeight))
-		forecasterWeights := make([]alloraMath.Dec, 0, len(networkInferencesResult.ForecasterToWeight))
-		for forecaster, weight := range networkInferencesResult.ForecasterToWeight {
-			forecasterAddresses = append(forecasterAddresses, forecaster)
-			forecasterWeights = append(forecasterWeights, weight)
-		}
-		types.EmitNewNetworkInferenceForecasterWeightsSetEvent(ctx, topicId, blockHeight, forecasterAddresses, forecasterWeights)
+	forecasterAddresses, forecasterWeights := buildSortedAddressWeights(networkInferencesResult.ForecasterToWeight)
+	if len(forecasterAddresses) > 0 {
+		types.EmitNewNetworkInferenceForecasterWeightsSetEvent(ctx, topic.Id, nonce, forecasterAddresses, forecasterWeights)
 	}
 
-	// Get outlier resistant inferences
-	outlierResistantFilteredInferences, err := k.FilterOutlierResistantInferences(ctx, topicId, *activeInferences)
-	if err != nil {
-		return errorsmod.Wrap(err, "failed to filter outlier resistant inferences")
-	}
-
-	// Initialize outlier resistant result with regular result
-	outlierResistantNetworkInferencesResult := networkInferencesResult
-
-	// Recalculate only if outlier filtering changed the inference set
-	if len(outlierResistantFilteredInferences.Inferences) != len(activeInferences.Inferences) {
-		outlierResistantNetworkInferencesResult, err = synth.GetNetworkInferences(
-			sdk.UnwrapSDKContext(ctx),
-			*k,
-			topicId,
-			&blockHeight,
-			&outlierResistantFilteredInferences,
-			activeForecasts,
-			true,
-		)
+	if topic.OutputArity == types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE {
+		// Get outlier resistant inferences
+		outlierResistantFilteredInferences, err := k.GetTopicKeeper().FilterOutlierResistantInferences(ctx, topic, *activeInferences)
 		if err != nil {
-			return errorsmod.Wrap(err, "failed to calculate outlier resistant network inferences")
+			return errorsmod.Wrap(err, "failed to filter outlier resistant inferences")
 		}
-	}
 
-	// Store outlier resistant network inferences
-	if err := k.InsertOutlierResistantNetworkInferences(ctx, topicId, blockHeight, *outlierResistantNetworkInferencesResult.NetworkInferences); err != nil {
-		return errorsmod.Wrap(err, "failed to insert outlier resistant network inference")
-	}
+		// Initialize outlier resistant result with regular result
+		outlierResistantNetworkInferencesResult := networkInferencesResult
 
-	types.EmitNewOutlierResistantNetworkInferencesEvent(ctx, *outlierResistantNetworkInferencesResult.NetworkInferences)
+		// Recalculate only if outlier filtering changed the inference set
+		if len(outlierResistantFilteredInferences.Inferences) != len(activeInferences.Inferences) {
+			outlierResistantNetworkInferencesResult, err = synth.GetNetworkInferences(sdk.UnwrapSDKContext(ctx), *k, topic.Id, &nonce, &outlierResistantFilteredInferences, activeForecasts)
+			if err != nil {
+				return errorsmod.Wrap(err, "failed to calculate outlier resistant network inferences")
+			}
+		}
+
+		// Store outlier resistant network inferences
+		if err := k.InsertOutlierResistantNetworkInferenceBundle(ctx, topic.Id, nonce, *outlierResistantNetworkInferencesResult.NetworkInferences); err != nil {
+			return errorsmod.Wrap(err, "failed to insert outlier resistant network inference")
+		}
+
+		types.EmitNewOutlierResistantNetworkInferencesEvent(ctx, *outlierResistantNetworkInferencesResult.NetworkInferences)
+	}
 
 	return nil
 }
 
-// Returns a map of active inferer addresses to their latest inference and the inferences themselves
+func buildSortedAddressWeights(weightsByAddress map[string]alloraMath.Dec) ([]string, []alloraMath.Dec) {
+	if len(weightsByAddress) == 0 {
+		return nil, nil
+	}
+
+	addresses := make([]string, 0, len(weightsByAddress))
+	for address := range weightsByAddress { //nolint:maprange // it is later sorted below
+		addresses = append(addresses, address)
+	}
+	sort.Strings(addresses)
+
+	weights := make([]alloraMath.Dec, 0, len(addresses))
+	for _, address := range addresses {
+		weights = append(weights, weightsByAddress[address])
+	}
+	return addresses, weights
+}
+
+// closeActiveInferencesSet freezes the active workers' surviving labels into a
+// compact final EpochLabelRegistry, then remaps each vector into a committed
+// types.Inference aligned to the final compact registry.
+//
+// This is where the classification design transitions from temporary label
+// ids to final label ids: during the WSW, active inferences are dense vectors
+// aligned to the temporary first-seen ELR; after this call every downstream
+// consumer sees dense Values aligned to the final compact ELR.
+//
+// Returns (inferer address set, finalized inferences) and also emits
+// EventEpochLabelRegistryFrozen so offchain indexers can track the committed
+// registry size for this epoch.
 func closeActiveInferencesSet(
 	ctx sdk.Context,
 	k *keeper.Keeper,
-	topicId uint64,
+	topic types.Topic,
 	nonce types.Nonce,
 	activeInfererAddresses []string,
 ) (activeInfererAddressesMap map[string]bool, inferences *types.Inferences, err error) {
-	activeInferences := make([]*types.Inference, 0)
 	activeInfererAddressesMap = make(map[string]bool, 0)
 
-	for _, address := range activeInfererAddresses {
-		inference, err := k.GetWorkerLatestInferenceByTopicId(ctx, topicId, address)
-		if err != nil {
-			return nil, nil, err
-		}
-		activeInferences = append(activeInferences, &inference)
+	inferences, registry, err := k.GetWorkerKeeper().FinalizeInferencesAndRegistryAtClose(
+		ctx, topic, nonce.BlockHeight, activeInfererAddresses,
+	)
+	if err != nil {
+		return nil, nil, errorsmod.Wrapf(err, "failed to finalize active inferences for topic %d nonce %d", topic.Id, nonce.BlockHeight)
+	}
+
+	err = k.GetTopicKeeper().SetEpochLabelRegistry(ctx, registry)
+	if err != nil {
+		return nil, nil, errorsmod.Wrap(err, "error setting final epoch label registry")
+	}
+
+	//nolint:gosec // registry size is bounded by MaxLabelsPerSubmission (uint64), safe to cast
+	registrySize := uint64(len(registry.Labels))
+	types.EmitNewEpochLabelRegistryFrozenEvent(ctx, topic.Id, nonce.BlockHeight, registrySize)
+
+	for _, inference := range inferences.Inferences {
 		activeInfererAddressesMap[inference.Inferer] = true
 	}
 
-	// Ensure deterministic ordering
-	sort.Slice(activeInferences, func(i, j int) bool {
-		return activeInferences[i].Inferer < activeInferences[j].Inferer
-	})
-
-	inferences = &types.Inferences{
-		Inferences: activeInferences,
-	}
-
-	err = k.InsertActiveInferences(ctx, topicId, nonce.BlockHeight, *inferences)
+	err = k.GetWorkerKeeper().InsertActiveInferences(ctx, topic.Id, nonce.BlockHeight, *inferences)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -287,7 +302,7 @@ func closeActiveForecastsSet(
 	activeForecasts := make([]*types.Forecast, 0)
 
 	for _, address := range activeForecastAddresses {
-		forecast, err := k.GetWorkerLatestForecastByTopicId(ctx, topicId, address)
+		forecast, err := k.GetWorkerKeeper().GetWorkerLatestForecastByTopicId(ctx, topicId, address)
 		if err != nil {
 			return nil, err
 		}
@@ -340,7 +355,7 @@ func closeActiveForecastsSet(
 		Forecasts: activeForecasts,
 	}
 
-	err = k.InsertActiveForecasts(ctx, topicId, nonce.BlockHeight, *forecasts)
+	err = k.GetWorkerKeeper().InsertActiveForecasts(ctx, topicId, nonce.BlockHeight, *forecasts)
 	if err != nil {
 		return nil, err
 	}

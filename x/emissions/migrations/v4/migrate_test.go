@@ -91,7 +91,7 @@ func (s *EmissionsV4MigrationTestSuite) TestMigrateParams() {
 
 	paramsExpected := defaultParams
 
-	params, err := s.EmissionsKeeper().GetParams(s.Ctx())
+	params, err := s.ParamsKeeper().GetParams(s.Ctx())
 	s.Require().NoError(err)
 	s.Require().Equal(paramsExpected.Version, params.Version)
 	s.Require().Equal(paramsExpected.MaxSerializedMsgLength, params.MaxSerializedMsgLength)
@@ -175,7 +175,7 @@ func (s *EmissionsV4MigrationTestSuite) TestMigratedTopicWithNoProblems() {
 	s.Require().NotEqual(0, countWritten)
 	topicStore.Set(bytesKey, bz)
 
-	err = v4.MigrateTopics(s.Ctx(), store, cdc, *s.EmissionsKeeper())
+	err = v4.MigrateTopics(s.Ctx(), store, cdc, s.TopicKeeper())
 	s.Require().NoError(err)
 
 	// Verify the store has been updated correctly
@@ -208,7 +208,7 @@ func (s *EmissionsV4MigrationTestSuite) TestMigratedTopicWithNoProblems() {
 	s.Require().Equal(migratedOldTopic.ActiveReputerQuantile.String(), newMsg.ActiveReputerQuantile.String())
 
 	// sanity check that the emissions keeper collections.go API also gets the same data
-	topic, err := s.EmissionsKeeper().GetTopic(s.Ctx(), topicId)
+	topic, err := s.TopicKeeper().GetTopic(s.Ctx(), topicId)
 	s.Require().NoError(err)
 	s.Require().Equal(newMsg, topic)
 }
@@ -249,7 +249,7 @@ func (s *EmissionsV4MigrationTestSuite) TestMigratedTopicWithNaNInitialRegret() 
 	s.Require().NoError(err)
 	s.Require().NotEqual(0, countWritten)
 	topicStore.Set(bytesKey, bz)
-	err = v4.MigrateTopics(s.Ctx(), store, cdc, *s.EmissionsKeeper())
+	err = v4.MigrateTopics(s.Ctx(), store, cdc, s.TopicKeeper())
 	s.Require().NoError(err)
 
 	// Verify the store has been updated correctly
@@ -282,7 +282,7 @@ func (s *EmissionsV4MigrationTestSuite) TestMigratedTopicWithNaNInitialRegret() 
 	s.Require().Equal("0", newMsg.InitialRegret.String())
 
 	// sanity check that the emissions keeper collections.go API also gets the same data
-	topic, err := s.EmissionsKeeper().GetTopic(s.Ctx(), 1)
+	topic, err := s.TopicKeeper().GetTopic(s.Ctx(), 1)
 	s.Require().NoError(err)
 	s.Require().Equal(newMsg, topic)
 }
@@ -319,10 +319,10 @@ func (s *EmissionsV4MigrationTestSuite) TestNotMigratedTopic() {
 	s.Require().NoError(err)
 	s.Require().NotEqual(0, countWritten)
 	topicStore.Set(bytesKey, bz)
-	err = v4.MigrateTopics(s.Ctx(), store, cdc, *s.EmissionsKeeper())
+	err = v4.MigrateTopics(s.Ctx(), store, cdc, s.TopicKeeper())
 	s.Require().NoError(err)
 
-	err = v4.MigrateTopics(s.Ctx(), store, cdc, *s.EmissionsKeeper())
+	err = v4.MigrateTopics(s.Ctx(), store, cdc, s.TopicKeeper())
 	s.Require().NoError(err)
 
 	// Verify the store has been updated correctly
@@ -355,7 +355,7 @@ func (s *EmissionsV4MigrationTestSuite) TestNotMigratedTopic() {
 	s.Require().Equal("0.25", newMsg.ActiveReputerQuantile.String())
 
 	// sanity check that the emissions keeper collections.go API also gets the same data
-	topic, err := s.EmissionsKeeper().GetTopic(s.Ctx(), 1)
+	topic, err := s.TopicKeeper().GetTopic(s.Ctx(), 1)
 	s.Require().NoError(err)
 	s.Require().Equal(newMsg, topic)
 }
@@ -392,13 +392,13 @@ func (s *EmissionsV4MigrationTestSuite) TestNotMigratedTopicWithNaNInitialRegret
 	s.Require().NoError(err)
 	s.Require().NotEqual(0, countWritten)
 	topicStore.Set(bytesKey, bz)
-	err = v4.MigrateTopics(s.Ctx(), store, cdc, *s.EmissionsKeeper())
+	err = v4.MigrateTopics(s.Ctx(), store, cdc, s.TopicKeeper())
 	s.Require().NoError(err)
 
-	err = v4.MigrateTopics(s.Ctx(), store, cdc, *s.EmissionsKeeper())
+	err = v4.MigrateTopics(s.Ctx(), store, cdc, s.TopicKeeper())
 	s.Require().NoError(err)
 
-	err = v4.MigrateTopics(s.Ctx(), store, cdc, *s.EmissionsKeeper())
+	err = v4.MigrateTopics(s.Ctx(), store, cdc, s.TopicKeeper())
 	s.Require().NoError(err)
 
 	// Verify the store has been updated correctly
@@ -432,7 +432,7 @@ func (s *EmissionsV4MigrationTestSuite) TestNotMigratedTopicWithNaNInitialRegret
 	s.Require().Equal("0", newMsg.InitialRegret.String())
 
 	// sanity check that the emissions keeper collections.go API also gets the same data
-	topic, err := s.EmissionsKeeper().GetTopic(s.Ctx(), 1)
+	topic, err := s.TopicKeeper().GetTopic(s.Ctx(), 1)
 	s.Require().NoError(err)
 	s.Require().Equal(newMsg, topic)
 }

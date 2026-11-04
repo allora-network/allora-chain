@@ -14,14 +14,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      # Buf 1.68+ uses a new compiler that fails when deps ship google/protobuf/descriptor.proto
+      # (e.g. cosmos-sdk on BSR); pin until a release includes the vendored-descriptor fix (currently in buf CHANGELOG Unreleased).
+      # https://raw.githubusercontent.com/bufbuild/buf/main/CHANGELOG.md # Unreleased at time of writing
+      # Using the previously known version of buf that was working
       - uses: bufbuild/buf-action@v1
         with:
+          version: 1.67.0
           input: 'x/emissions/proto'
           format: true
           lint: true
           breaking: false
       - uses: bufbuild/buf-action@v1
         with:
+          version: 1.67.0
           input: 'x/mint/proto'
           format: true
           lint: true

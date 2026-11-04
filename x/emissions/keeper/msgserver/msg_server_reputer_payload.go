@@ -16,20 +16,31 @@ import (
 func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.InsertReputerPayloadRequest) (_ *types.InsertReputerPayloadResponse, err error) {
 	defer metrics.RecordMetrics("InsertReputerPayload", time.Now(), &err)
 
+	err = types.ValidateStringIsBech32(msg.Sender)
+	if err != nil {
+		return nil, errorsmod.Wrapf(err, "Error validating sender address")
+	}
+
+	if err = msg.ReputerValueBundle.Validate(); err != nil {
+		return nil, errorsmod.Wrap(err, "failed to validate reputer value bundle")
+	}
+
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	blockHeight := sdkCtx.BlockHeight()
 
-	moduleParams, err := ms.k.GetParams(ctx)
+	moduleParams, err := ms.pk.GetParams(ctx)
 	if err != nil {
 		return nil, errorsmod.Wrapf(err, "Error getting params for reputer: %v", &msg.ReputerValueBundle.ValueBundle.Reputer)
 	}
-	rvb, err := types.NewInputReputerValueBundleFromInput(msg.ReputerValueBundle)
+	rvb, err := types.NewReputerValueBundleFromInput(msg.ReputerValueBundle)
 	if err != nil {
 		return nil, errorsmod.Wrapf(err,
 			"Reputer bad data format for block: %d", blockHeight)
 	}
 
-	canSubmit, err := ms.k.CanSubmitReputerPayload(ctx, rvb.ValueBundle.TopicId, rvb.ValueBundle.Reputer)
+	vb := rvb.GetValueBundle()
+
+	canSubmit, err := ms.wlk.CanSubmitReputerPayload(ctx, vb.TopicId, vb.Reputer)
 	if err != nil {
 		return nil, err
 	} else if !canSubmit {
@@ -41,40 +52,42 @@ func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.InsertR
 		return nil, err
 	}
 
-	nonce := rvb.ValueBundle.ReputerRequestNonce
-	topicId := rvb.ValueBundle.TopicId
+	nonce := vb.ReputerRequestNonce
+	topicId := vb.TopicId
 
-	topic, err := ms.k.GetTopic(ctx, topicId)
+	topic, err := ms.tk.GetTopic(ctx, topicId)
 	if err != nil {
 		return nil, types.ErrInvalidTopicId
 	}
 
-	workerNonceUnfulfilled, err := ms.k.IsWorkerNonceUnfulfilled(ctx, topicId, nonce.ReputerNonce)
+	workerNonceUnfulfilled, err := ms.nk.IsWorkerNonceUnfulfilled(ctx, topicId, nonce.ReputerNonce)
 	if err != nil {
 		return nil, err
 	} else if workerNonceUnfulfilled {
 		return nil, errorsmod.Wrapf(types.ErrNonceStillUnfulfilled, "worker nonce")
 	}
 
-	reputerNonceUnfulfilled, err := ms.k.IsReputerNonceUnfulfilled(ctx, topicId, nonce.ReputerNonce)
+	reputerNonceUnfulfilled, err := ms.nk.IsReputerNonceUnfulfilled(ctx, topicId, nonce.ReputerNonce)
 	if err != nil {
 		return nil, err
 	} else if !reputerNonceUnfulfilled {
 		return nil, errorsmod.Wrapf(types.ErrUnfulfilledNonceNotFound, "reputer nonce")
 	}
 
-	withinWindow, err := keeper.BlockWithinReputerSubmissionWindowOfNonce(topic, *nonce, blockHeight)
+	// Use the same bounds for admission and the rejection message.
+	windowStart, windowEnd, err := keeper.ReputerSubmissionWindowBounds(topic, *nonce)
 	if err != nil {
 		return nil, err
-	} else if !withinWindow {
+	}
+	if blockHeight < windowStart || blockHeight > windowEnd {
 		return nil, errorsmod.Wrapf(
 			types.ErrReputerNonceWindowNotAvailable,
 			"Reputer window not open for topic: %d, current block %d, start window: %d, end window: %d",
-			topicId, blockHeight, nonce.ReputerNonce.BlockHeight+topic.GroundTruthLag, nonce.ReputerNonce.BlockHeight+topic.GroundTruthLag+topic.EpochLength*2,
+			topicId, blockHeight, windowStart, windowEnd,
 		)
 	}
 
-	isRegistered, err := ms.k.IsReputerRegisteredInTopic(ctx, topicId, rvb.ValueBundle.Reputer)
+	isRegistered, err := ms.rlk.IsReputerRegisteredInTopic(ctx, topicId, vb.Reputer)
 	if err != nil {
 		return nil, err
 	} else if !isRegistered {
@@ -82,7 +95,7 @@ func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.InsertR
 	}
 
 	// Check that the reputer enough stake in the topic
-	stake, err := ms.k.GetStakeReputerAuthority(ctx, topicId, rvb.ValueBundle.Reputer)
+	stake, err := ms.sk.GetStakeReputerAuthority(ctx, topicId, vb.Reputer)
 	if err != nil {
 		return nil, err
 	}
@@ -90,17 +103,17 @@ func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.InsertR
 		return nil, errorsmod.Wrapf(types.ErrInsufficientStake, "reputer does not have sufficient stake in the topic")
 	}
 
-	// Before accepting data, transfer fee amount from sender to ecosystem bucket
+	// Before accepting data, transfer the fee to the ecosystem bucket
 	err = sendEffectiveRevenueActivateTopicIfWeightSufficient(ctx, ms, msg.Sender, topicId, moduleParams.DataSendingFee)
 	if err != nil {
 		return nil, err
 	}
 
-	err = ms.k.AppendReputerLoss(sdkCtx, topic, moduleParams, nonce.ReputerNonce.BlockHeight, rvb)
+	err = ms.rlk.AppendReputerLoss(sdkCtx, topic, moduleParams, nonce.ReputerNonce.BlockHeight, rvb)
 	if err != nil {
 		return nil, err
 	}
 
-	types.EmitNewInsertReputerPayloadEvent(ctx, rvb)
+	types.EmitNewInsertReputerPayloadEvent(ctx, vb)
 	return &types.InsertReputerPayloadResponse{}, nil
 }

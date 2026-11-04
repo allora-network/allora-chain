@@ -32,6 +32,7 @@ func DefaultParams() Params {
 		TaskRewardAlpha:                 alloraMath.MustNewDecFromString("0.1"),       // alpha for task reward calculation used to calculate  ~U_ij, ~V_ik, ~W_im
 		ValidatorsVsAlloraPercentReward: alloraMath.MustNewDecFromString("0.25"),      // 25% rewards go to cosmos network validators
 		MaxSamplesToScaleScores:         uint64(10),                                   // maximum number of previous scores to store and use for standard deviation calculation
+		MinTopInferersToReward:          DefaultMinTopInferersToReward,                // floor for the per-topic inferer admission cap
 		MaxTopInferersToReward:          uint64(32),                                   // max this many top inferers by score are rewarded for a topic
 		MaxTopForecastersToReward:       uint64(6),                                    // max this many top forecasters by score are rewarded for a topic
 		MaxTopReputersToReward:          uint64(6),                                    // max this many top reputers by score are rewarded for a topic
@@ -66,9 +67,104 @@ func DefaultParams() Params {
 		GlobalReputerWhitelistEnabled:       true,                                        // global reputer whitelist enabled => the global reputer whitelist determines which reputers can participate in all topics
 		GlobalAdminWhitelistAppended:        true,                                        // global admins enabled => the global admins whitelist determines which admins can create topics and participate in all topics as workers and reputers
 		MaxWhitelistInputArrayLength:        uint64(2000),                                // maximum length of input arrays for whitelist operations
-		MinWeightThresholdForStdnorm:        alloraMath.MustNewDecFromString("0.000001"), // minimum weight threshold for stdnorm calculation
+		MinWeightThresholdForStdnorm:        alloraMath.MustNewDecFromString("0.000001"), // retained for compatibility; currently unused
+		MaxCanonicalLabelByteLength:         64,                                          // cap on canonical label name byte length after NFC + trim; bounded by [Min,Max]MaxCanonicalLabelByteLength
+		MaxTopicLabelWhitelistSize:          DefaultMaxTopicLabelWhitelistSize,           // maximum number of canonical labels allowed in a topic label whitelist
+		MaxEpochLabelRegistrySize:           DefaultMaxEpochLabelRegistrySize,            // maximum number of labels allowed in an epoch label registry
 	}
 }
+
+// DefaultMinTopInferersToReward is the default floor for the per-topic inferer
+// admission cap: a topic storing less than this is raised to it at admission.
+const DefaultMinTopInferersToReward = uint64(5)
+
+// DefaultMaxLabelsPerSubmission is the default topic-level cap on the number of
+// distinct canonical labels a worker may attach to a single InputInference.
+// Picked to be comfortably above typical classification schemas while still
+// keeping per-epoch label cardinality bounded in a deterministic way.
+const DefaultMaxLabelsPerSubmission = uint64(32)
+
+// MinMaxLabelsPerSubmission / MaxMaxLabelsPerSubmission bound the acceptable
+// per-topic cap on labels a single worker may attach to one payload.
+const (
+	MinMaxLabelsPerSubmission = uint64(1)
+	MaxMaxLabelsPerSubmission = uint64(1024)
+)
+
+// ValidateMaxLabelsPerSubmission validates the per-topic cap on the number of
+// labels a worker may attach to one submission. Exported so the keeper
+// topic-update path shares the same bound as create/update request validation.
+func ValidateMaxLabelsPerSubmission(i uint64) error {
+	if i < MinMaxLabelsPerSubmission {
+		return errorsmod.Wrapf(ErrValidationMustBeGreaterthanZero,
+			"max labels per submission must be >= %d, got %d",
+			MinMaxLabelsPerSubmission, i)
+	}
+	if i > MaxMaxLabelsPerSubmission {
+		return errorsmod.Wrapf(ErrInvalidValue,
+			"max labels per submission must be <= %d, got %d",
+			MaxMaxLabelsPerSubmission, i)
+	}
+	return nil
+}
+
+// DefaultMaxTopicLabelWhitelistSize is the default topic-level cap on the
+// number of canonical labels allowed in LabelWhitelist.
+const DefaultMaxTopicLabelWhitelistSize = uint64(256)
+
+// MinMaxTopicLabelWhitelistSize / MaxMaxTopicLabelWhitelistSize bound the
+// acceptable module param for topic label whitelist cardinality.
+const (
+	MinMaxTopicLabelWhitelistSize = uint64(1)
+	MaxMaxTopicLabelWhitelistSize = uint64(2000)
+)
+
+func validateMaxTopicLabelWhitelistSize(i uint64) error {
+	if i < MinMaxTopicLabelWhitelistSize {
+		return errorsmod.Wrapf(ErrValidationMustBeGreaterthanZero,
+			"max topic label whitelist size must be >= %d, got %d",
+			MinMaxTopicLabelWhitelistSize, i)
+	}
+	if i > MaxMaxTopicLabelWhitelistSize {
+		return errorsmod.Wrapf(ErrInvalidValue,
+			"max topic label whitelist size must be <= %d, got %d",
+			MaxMaxTopicLabelWhitelistSize, i)
+	}
+	return nil
+}
+
+// ValidateTopicLabelWhitelistSize enforces the configured topic label whitelist
+// cardinality cap before canonicalization or persistence.
+func ValidateTopicLabelWhitelistSize(labelWhitelist []string, maxTopicLabelWhitelistSize uint64) error {
+	if uint64(len(labelWhitelist)) > maxTopicLabelWhitelistSize {
+		return errorsmod.Wrapf(ErrInvalidValue,
+			"topic label whitelist size must be <= %d, got %d",
+			maxTopicLabelWhitelistSize, len(labelWhitelist))
+	}
+	return nil
+}
+
+// DefaultMaxEpochLabelRegistrySize is the default cap on labels in a single
+// (topic, nonce) epoch label registry.
+const DefaultMaxEpochLabelRegistrySize = uint64(32768)
+
+// ValidateMaxEpochLabelRegistrySize validates the module-level cap on labels
+// stored in a single epoch label registry. It is used by the registry growth
+// path (RegisterEpochLabels), which is the sole enforcement point for the cap.
+func ValidateMaxEpochLabelRegistrySize(i uint64) error {
+	if i == 0 {
+		return errorsmod.Wrapf(ErrValidationMustBeGreaterthanZero,
+			"max epoch label registry size must be greater than zero")
+	}
+	return nil
+}
+
+// MinMaxCanonicalLabelByteLength / MaxMaxCanonicalLabelByteLength bound the
+// acceptable values for Params.MaxCanonicalLabelByteLength.
+const (
+	MinMaxCanonicalLabelByteLength = uint64(1)
+	MaxMaxCanonicalLabelByteLength = uint64(1024)
+)
 
 // Validate does the sanity check on the params.
 func (p Params) Validate() error {
@@ -132,8 +228,14 @@ func (p Params) Validate() error {
 	if err := validateMaxSamplesToScaleScores(p.MaxSamplesToScaleScores); err != nil {
 		return errorsmod.Wrap(err, "params validation failure: max samples to scale scores")
 	}
+	if err := validateMinTopInferersToReward(p.MinTopInferersToReward); err != nil {
+		return errorsmod.Wrap(err, "params validation failure: min top inferers to reward")
+	}
 	if err := validateMaxTopInferersToReward(p.MaxTopInferersToReward); err != nil {
 		return errorsmod.Wrap(err, "params validation failure: max top inferers to reward")
+	}
+	if err := validateTopInferersToRewardRange(p.MinTopInferersToReward, p.MaxTopInferersToReward); err != nil {
+		return errorsmod.Wrap(err, "params validation failure: top inferers to reward range")
 	}
 	if err := validateMaxTopForecastersToReward(p.MaxTopForecastersToReward); err != nil {
 		return errorsmod.Wrap(err, "params validation failure: max top forecasters to reward")
@@ -224,6 +326,35 @@ func (p Params) Validate() error {
 	}
 	if err := validateMinWeightThresholdForStdnorm(p.MinWeightThresholdForStdnorm); err != nil {
 		return errorsmod.Wrap(err, "params validation failure: min weight threshold for stdnorm")
+	}
+	if err := validateMaxCanonicalLabelByteLength(p.MaxCanonicalLabelByteLength); err != nil {
+		return errorsmod.Wrap(err, "params validation failure: max canonical label byte length")
+	}
+	if err := validateMaxTopicLabelWhitelistSize(p.MaxTopicLabelWhitelistSize); err != nil {
+		return errorsmod.Wrap(err, "params validation failure: max topic label whitelist size")
+	}
+	if err := ValidateMaxEpochLabelRegistrySize(p.MaxEpochLabelRegistrySize); err != nil {
+		return errorsmod.Wrap(err, "params validation failure: max epoch label registry size")
+	}
+	return nil
+}
+
+// validateMaxCanonicalLabelByteLength enforces
+// MinMaxCanonicalLabelByteLength <= i <= MaxMaxCanonicalLabelByteLength on
+// every param change (genesis, gov param-change, and migration-backfill).
+// Zero is rejected because a zero cap would reject every label; the v15
+// migration backfills zero to 64 on upgrade, so this validator only ever
+// runs against backfilled or user-supplied values.
+func validateMaxCanonicalLabelByteLength(i uint64) error {
+	if i < MinMaxCanonicalLabelByteLength {
+		return errorsmod.Wrapf(ErrValidationMustBeGreaterthanZero,
+			"max canonical label byte length must be >= %d, got %d",
+			MinMaxCanonicalLabelByteLength, i)
+	}
+	if i > MaxMaxCanonicalLabelByteLength {
+		return errorsmod.Wrapf(ErrInvalidValue,
+			"max canonical label byte length must be <= %d, got %d",
+			MaxMaxCanonicalLabelByteLength, i)
 	}
 	return nil
 }
@@ -484,9 +615,32 @@ func validateMaxSamplesToScaleScores(i uint64) error {
 	return nil
 }
 
-// max this many top workers by score are rewarded for a topic
-// Should be zero or positive. Enforced by uint type
-func validateMaxTopInferersToReward(_ uint64) error {
+// Ceiling for the per-topic inferer admission cap, and the value a requested 0
+// resolves to. Must be greater than zero: a zero ceiling would admit nobody and
+// would zero the score-retention window that is sized against it.
+func validateMaxTopInferersToReward(i uint64) error {
+	if i == 0 {
+		return ErrValidationMustBeGreaterthanZero
+	}
+	return nil
+}
+
+// Floor for the per-topic inferer admission cap. Every value is accepted here:
+// zero means no floor, and the upper bound against the ceiling is enforced by
+// validateTopInferersToRewardRange.
+func validateMinTopInferersToReward(_ uint64) error {
+	return nil
+}
+
+// The floor may not exceed the ceiling. UpdateParams applies every supplied
+// field before validating once, so lowering the ceiling below the current floor
+// requires lowering both in the same transaction.
+func validateTopInferersToRewardRange(minTopInferers, maxTopInferers uint64) error {
+	if minTopInferers > maxTopInferers {
+		return errorsmod.Wrapf(ErrInvalidValue,
+			"min top inferers to reward must be <= max top inferers to reward, got %d > %d",
+			minTopInferers, maxTopInferers)
+	}
 	return nil
 }
 
@@ -603,18 +757,18 @@ func validatePNormSafeDiv(i alloraMath.Dec) error {
 
 // Whether an alloraDec is between the value of [0, 1] inclusive
 func isAlloraDecBetweenZeroAndOneInclusive(a alloraMath.Dec) bool {
-	return a.Gte(alloraMath.ZeroDec()) && a.Lte(alloraMath.OneDec())
+	return a.Gte(validationZeroDec) && a.Lte(validationOneDec)
 }
 
 // Whether an alloraDec is between the value of (0, 1) exclusive
 func isAlloraDecBetweenZeroAndOneExclusive(a alloraMath.Dec) bool {
-	return a.Gt(alloraMath.ZeroDec()) && a.Lt(alloraMath.OneDec())
+	return a.Gt(validationZeroDec) && a.Lt(validationOneDec)
 }
 
 // Whether an alloraDec is between the values of [0, 1)
 // inclusive on 0 and exclusive on 1
 func isAlloraDecZeroOrLessThanOne(a alloraMath.Dec) bool {
-	return a.Gte(alloraMath.ZeroDec()) && a.Lt(alloraMath.OneDec())
+	return a.Gte(validationZeroDec) && a.Lt(validationOneDec)
 }
 
 // How much workers and reputers must pay to send data.

@@ -30,6 +30,7 @@ func TestDefaultParams(t *testing.T) {
 		TaskRewardAlpha:                     alloraMath.MustNewDecFromString("0.1"),
 		ValidatorsVsAlloraPercentReward:     alloraMath.MustNewDecFromString("0.25"),
 		MaxSamplesToScaleScores:             uint64(10),
+		MinTopInferersToReward:              uint64(5),
 		MaxTopInferersToReward:              uint64(32),
 		MaxTopForecastersToReward:           uint64(6),
 		MaxTopReputersToReward:              uint64(6),
@@ -64,9 +65,199 @@ func TestDefaultParams(t *testing.T) {
 		GlobalAdminWhitelistAppended:        true,
 		MaxWhitelistInputArrayLength:        uint64(2000),
 		MinWeightThresholdForStdnorm:        alloraMath.MustNewDecFromString("0.000001"),
+		MaxCanonicalLabelByteLength:         64,
+		MaxTopicLabelWhitelistSize:          DefaultMaxTopicLabelWhitelistSize,
+		MaxEpochLabelRegistrySize:           DefaultMaxEpochLabelRegistrySize,
 	}
 
 	params := DefaultParams()
 
 	require.Equal(t, expectedParams, params)
+}
+
+// TestValidateMaxLabelsPerSubmission exercises the explicit bound on the
+// per-topic cap: 0 is rejected, 1 is accepted (smallest positive cap),
+// DefaultMaxLabelsPerSubmission round-trips validation, the upper bound is
+// inclusive, and one-above-bound is rejected.
+func TestValidateMaxLabelsPerSubmission(t *testing.T) {
+	cases := []struct {
+		name string
+		in   uint64
+		ok   bool
+	}{
+		{name: "zero rejected", in: 0, ok: false},
+		{name: "one ok", in: 1, ok: true},
+		{name: "default ok", in: DefaultMaxLabelsPerSubmission, ok: true},
+		{name: "upper bound ok", in: MaxMaxLabelsPerSubmission, ok: true},
+		{name: "above upper rejected", in: MaxMaxLabelsPerSubmission + 1, ok: false},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			err := ValidateMaxLabelsPerSubmission(tc.in)
+			if tc.ok {
+				require.NoError(t, err)
+			} else {
+				require.Error(t, err)
+			}
+		})
+	}
+}
+
+func TestValidateMaxTopicLabelWhitelistSize(t *testing.T) {
+	cases := []struct {
+		name string
+		in   uint64
+		ok   bool
+	}{
+		{name: "zero rejected", in: 0, ok: false},
+		{name: "one ok", in: MinMaxTopicLabelWhitelistSize, ok: true},
+		{name: "default ok", in: DefaultMaxTopicLabelWhitelistSize, ok: true},
+		{name: "upper bound ok", in: MaxMaxTopicLabelWhitelistSize, ok: true},
+		{name: "above upper rejected", in: MaxMaxTopicLabelWhitelistSize + 1, ok: false},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			err := validateMaxTopicLabelWhitelistSize(tc.in)
+			if tc.ok {
+				require.NoError(t, err)
+			} else {
+				require.Error(t, err)
+			}
+		})
+	}
+}
+
+func TestParamsValidate_RejectsZeroMaxTopicLabelWhitelistSize(t *testing.T) {
+	p := DefaultParams()
+	p.MaxTopicLabelWhitelistSize = 0
+	require.Error(t, p.Validate())
+}
+
+func TestValidateMaxEpochLabelRegistrySize(t *testing.T) {
+	cases := []struct {
+		name string
+		in   uint64
+		ok   bool
+	}{
+		{name: "zero rejected", in: 0, ok: false},
+		{name: "one ok", in: 1, ok: true},
+		{name: "default ok", in: DefaultMaxEpochLabelRegistrySize, ok: true},
+		{name: "larger than default ok", in: DefaultMaxEpochLabelRegistrySize + 1, ok: true},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			err := ValidateMaxEpochLabelRegistrySize(tc.in)
+			if tc.ok {
+				require.NoError(t, err)
+			} else {
+				require.Error(t, err)
+			}
+		})
+	}
+}
+
+func TestParamsValidate_RejectsZeroMaxEpochLabelRegistrySize(t *testing.T) {
+	p := DefaultParams()
+	p.MaxEpochLabelRegistrySize = 0
+	require.Error(t, p.Validate())
+}
+
+// TestValidateMaxCanonicalLabelByteLength exercises the explicit bound on
+// the canonical label byte cap: 0 is rejected, 1 is accepted (smallest
+// positive cap), the default round-trips, the upper bound is inclusive,
+// and one-above-bound is rejected. The migration backfills zero to the
+// default, so Params.Validate must reject the zero value.
+func TestValidateMaxCanonicalLabelByteLength(t *testing.T) {
+	cases := []struct {
+		name string
+		in   uint64
+		ok   bool
+	}{
+		{name: "zero rejected", in: 0, ok: false},
+		{name: "one ok", in: MinMaxCanonicalLabelByteLength, ok: true},
+		{name: "module-initial 64 ok", in: 64, ok: true},
+		{name: "upper bound ok", in: MaxMaxCanonicalLabelByteLength, ok: true},
+		{name: "above upper rejected", in: MaxMaxCanonicalLabelByteLength + 1, ok: false},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			err := validateMaxCanonicalLabelByteLength(tc.in)
+			if tc.ok {
+				require.NoError(t, err)
+			} else {
+				require.Error(t, err)
+			}
+		})
+	}
+}
+
+// TestParamsValidate_RejectsZeroMaxCanonicalLabelByteLength documents that
+// Params.Validate rejects a zero cap; the v15 migration is the only code
+// path that may observe zero and it backfills to the module-initial 64
+// before calling Validate.
+func TestParamsValidate_RejectsZeroMaxCanonicalLabelByteLength(t *testing.T) {
+	p := DefaultParams()
+	p.MaxCanonicalLabelByteLength = 0
+	require.Error(t, p.Validate())
+}
+
+// TestValidateMaxTopInferersToReward: zero is rejected because the global value
+// is the ceiling for Topic.MaxTopInferersToReward; any positive value is accepted.
+func TestValidateMaxTopInferersToReward(t *testing.T) {
+	cases := []struct {
+		name string
+		in   uint64
+		ok   bool
+	}{
+		{name: "zero rejected", in: 0, ok: false},
+		{name: "one ok", in: 1, ok: true},
+		{name: "default ok", in: DefaultParams().MaxTopInferersToReward, ok: true},
+		{name: "large ok", in: 1000, ok: true},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			err := validateMaxTopInferersToReward(tc.in)
+			if tc.ok {
+				require.NoError(t, err)
+			} else {
+				require.Error(t, err)
+			}
+		})
+	}
+}
+
+// TestParamsValidate_RejectsZeroMaxTopInferersToReward documents that
+// Params.Validate rejects a zero global cap. The emissions v16 migration is the
+// only code path that may observe zero and it repairs it to the module default
+// before persisting.
+func TestParamsValidate_RejectsZeroMaxTopInferersToReward(t *testing.T) {
+	p := DefaultParams()
+	p.MaxTopInferersToReward = 0
+	require.Error(t, p.Validate())
+}
+
+// TestValidateMinTopInferersToReward documents that the floor accepts any value:
+// zero means no floor, and a value above the ceiling is harmless because
+// EffectiveMaxTopInferersToReward applies the ceiling last.
+func TestValidateMinTopInferersToReward(t *testing.T) {
+	for _, in := range []uint64{0, 1, DefaultParams().MinTopInferersToReward, 1000} {
+		require.NoError(t, validateMinTopInferersToReward(in))
+	}
+}
+
+// TestParamsValidate_RejectsInvertedTopInferersRange asserts the global range is
+// always well formed: a floor above the ceiling is rejected, and equal is fine.
+func TestParamsValidate_RejectsInvertedTopInferersRange(t *testing.T) {
+	p := DefaultParams()
+	p.MinTopInferersToReward = p.MaxTopInferersToReward + 1
+	require.Error(t, p.Validate())
+
+	p.MinTopInferersToReward = p.MaxTopInferersToReward
+	require.NoError(t, p.Validate())
+}
+
+func TestValidateTopInferersToRewardRange(t *testing.T) {
+	require.NoError(t, validateTopInferersToRewardRange(0, 32))
+	require.NoError(t, validateTopInferersToRewardRange(32, 32))
+	require.Error(t, validateTopInferersToRewardRange(33, 32))
 }

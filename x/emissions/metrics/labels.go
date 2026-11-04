@@ -30,6 +30,7 @@ const (
 	TOPIC_FEE_REVENUE_DRIPPED_EVENT                         = "topic_fee_revenue_dripped_event"
 	WORKER_SUBMISSION_WINDOW_OPENED_EVENT                   = "worker_submission_window_opened_event"
 	WORKER_SUBMISSION_WINDOW_CLOSED_EVENT                   = "worker_submission_window_closed_event"
+	EPOCH_LABEL_REGISTRY_FROZEN_EVENT                       = "epoch_label_registry_frozen_event"
 	REPUTER_SUBMISSION_WINDOW_OPENED_EVENT                  = "reputer_submission_window_opened_event"
 	REPUTER_SUBMISSION_WINDOW_CLOSED_EVENT                  = "reputer_submission_window_closed_event"
 	INSERT_REPUTER_PAYLOAD_EVENT                            = "insert_reputer_payload_event"

@@ -28,7 +28,7 @@ func main() {
 	// get values from config.json
 	configJsonFile, err := os.ReadFile("test/fuzz/.config.json")
 	if err == nil {
-		unmarshalJson := fuzzcommon.FuzzConfigJson{} // nolint: exhaustruct // this is how unmarshalling works
+		unmarshalJson := fuzzcommon.FuzzConfigJson{} //nolint:exhaustruct // this is how unmarshalling works
 		err = json.Unmarshal(configJsonFile, &unmarshalJson)
 		if err != nil {
 			fmt.Printf("Error unmarshalling config.json: %s\n", err)

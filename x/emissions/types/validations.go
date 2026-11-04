@@ -5,19 +5,38 @@ import (
 
 	"cosmossdk.io/errors"
 	cosmosMath "cosmossdk.io/math"
-	alloraMath "github.com/allora-network/allora-chain/math"
-	"github.com/allora-network/allora-chain/utils"
 	"github.com/cometbft/cometbft/crypto/secp256k1"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+
+	alloraMath "github.com/allora-network/allora-chain/math"
+	"github.com/allora-network/allora-chain/utils"
+)
+
+const (
+	validationMinLossMethodLength       = 1
+	validationMinPositiveIntValue int64 = 1
+	validationMinEpochLastEnded   int64 = 0
+
+	validationZeroDecString     = "0"
+	validationOneDecString      = "1"
+	validationPNormMaxDecString = "10"
+	validationCNormMinDecString = "-100"
+	validationCNormMaxDecString = "100"
 )
 
 var (
+	validationZeroDec     = alloraMath.MustNewDecFromString(validationZeroDecString)
+	validationOneDec      = alloraMath.MustNewDecFromString(validationOneDecString)
+	validationPNormMaxDec = alloraMath.MustNewDecFromString(validationPNormMaxDecString)
+	validationCNormMinDec = alloraMath.MustNewDecFromString(validationCNormMinDecString)
+	validationCNormMaxDec = alloraMath.MustNewDecFromString(validationCNormMaxDecString)
+
 	reputerValueBundleBufferPool       = utils.NewBytesPool(1024, 0)
 	inferenceForecastsBundleBufferPool = utils.NewBytesPool(1024, 0)
 )
 
-/// EXTERNAL TYPE VALIDATIONS
+// / EXTERNAL TYPE VALIDATIONS
 
 // ValidateDec checks if the given value is a valid Dec by our standards
 func ValidateDec(value alloraMath.Dec) error {
@@ -29,6 +48,16 @@ func ValidateDec(value alloraMath.Dec) error {
 		return errors.Wrap(sdkerrors.ErrInvalidType, "value must be finite")
 	}
 
+	return nil
+}
+
+// ValidateDecs checks if the list of values are all valid Dec by our standards
+func ValidateDecs(values []alloraMath.Dec) error {
+	for i, val := range values {
+		if err := ValidateDec(val); err != nil {
+			return errors.Wrapf(err, "values[%d] cannot be %s", i, val.String())
+		}
+	}
 	return nil
 }
 
@@ -66,7 +95,7 @@ func ValidateBech32(value string) error {
 	return nil
 }
 
-/// PRIMITIVE TYPE VALIDATIONS
+// / PRIMITIVE TYPE VALIDATIONS
 
 // ValidateBlockHeight checks if the given value is a valid block height
 func ValidateBlockHeight(value BlockHeight) error {
@@ -84,7 +113,7 @@ func ValidateTopicId(value TopicId) error {
 	return nil
 }
 
-/// EMISSIONS TYPES PACKAGE VALIDATIONS
+// / EMISSIONS TYPES PACKAGE VALIDATIONS
 
 // Validate performs basic genesis state validation returning an error upon any
 func (gs *GenesisState) Validate() error {
@@ -127,8 +156,11 @@ func (inference *Inference) Validate() error {
 	if err := validateInferenceContents(inference.TopicId, inference.Inferer, inference.BlockHeight); err != nil {
 		return errors.Wrap(err, "inference contents are invalid")
 	}
-	if err := ValidateDec(inference.Value); err != nil {
-		return errors.Wrap(err, "inference value is invalid")
+	if len(inference.Values) == 0 {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "inference values cannot be empty")
+	}
+	if err := ValidateDecs(inference.Values); err != nil {
+		return errors.Wrap(err, "inference values are invalid")
 	}
 	// ExtraData not validated as it is not used by the chain
 	// Proof not validated as it is not used by the chain
@@ -145,6 +177,88 @@ func (inputInference *InputInference) Validate() error {
 	}
 	// ExtraData not validated as it is not used by the chain
 	// Proof not validated as it is not used by the chain
+	return nil
+}
+
+// ValidateWithLimits validates an InputInference against the per-topic and
+// per-submission constraints that apply to the worker payload path:
+//
+//   - labelCap is the topic MaxLabelsPerSubmission value applied to this
+//     payload. It is the maximum number of distinct canonical labels the
+//     submission may carry. Must be >= 1.
+//   - whitelist, when non-empty, is the set of canonical labels accepted by the
+//     topic. Nil and empty whitelists both mean unrestricted because repeated
+//     fields do not preserve a nil-vs-empty distinction across serialization.
+//   - maxLabelBytes is Params.MaxCanonicalLabelByteLength; it is threaded
+//     into CanonicalLabelName as the per-label byte cap.
+//   - labelCaseSensitive is the topic's LabelCaseSensitive flag; it is
+//     threaded into CanonicalLabelName so submission-time canonicalization
+//     matches the whitelist canonicalization the keeper applied in
+//     SetTopic/UpdateTopic.
+//
+// In addition to the basic InputInference.Validate() checks, this function:
+//
+//   - canonicalizes each labeled value's Label via CanonicalLabelName and
+//     rewrites the value in place so downstream consumers see canonical
+//     bytes only;
+//   - rejects duplicates after canonicalization (ErrInvalidLabelName);
+//   - enforces the label cap (ErrTooManyLabelsPerSubmission);
+//   - enforces whitelist membership post-canonicalization
+//     (ErrLabelNotInWhitelist).
+//
+// The canonicalized slice is left in its submitted order so temporary ELR
+// registration can preserve first-seen label order during the WSW.
+func (inputInference *InputInference) ValidateWithLimits(
+	labelCap uint64,
+	whitelist map[string]struct{},
+	maxLabelBytes uint64,
+	labelCaseSensitive bool,
+) error {
+	if err := inputInference.Validate(); err != nil {
+		return err
+	}
+	if labelCap == 0 {
+		// Defensive: topic validation rejects zero, so a zero here indicates a
+		// programming error rather than user input.
+		return errors.Wrap(ErrValidationMustBeGreaterthanZero,
+			"per-submission label cap must be >= 1")
+	}
+	n := uint64(len(inputInference.Values))
+	if n > labelCap {
+		return errors.Wrapf(ErrTooManyLabelsPerSubmission,
+			"submission has %d labels, per-topic cap is %d", n, labelCap)
+	}
+	seen := make(map[string]struct{}, len(inputInference.Values))
+	for i, lv := range inputInference.Values {
+		if lv == nil {
+			return errors.Wrapf(sdkerrors.ErrInvalidRequest,
+				"input labeled value at index %d is nil", i)
+		}
+		c, err := CanonicalLabelName(lv.Label, maxLabelBytes, labelCaseSensitive)
+		if err != nil {
+			return errors.Wrapf(err, "input labeled value at index %d", i)
+		}
+		if _, dup := seen[c]; dup {
+			return errors.Wrapf(ErrInvalidLabelName,
+				"duplicate label after canonicalization at index %d: %q", i, c)
+		}
+		seen[c] = struct{}{}
+		if len(whitelist) > 0 {
+			if _, ok := whitelist[c]; !ok {
+				return errors.Wrapf(ErrLabelNotInWhitelist,
+					"label %q is not in topic label whitelist", c)
+			}
+		}
+		// BoundedExp40Dec is intrinsically bounded on decode; convert to
+		// alloraMath.Dec and reuse ValidateDec so the validator only rejects
+		// explicitly-NaN values (the same rule applied to scalar Inference.Value).
+		if err := ValidateDec(lv.Value.ToDec()); err != nil {
+			return errors.Wrapf(err, "input labeled value %q", c)
+		}
+		// Rewrite in place to the canonical form so temporary registry
+		// registration and whitelist lookups use canonical bytes only.
+		lv.Label = c
+	}
 	return nil
 }
 
@@ -249,27 +363,6 @@ func (inputInferenceForecastBundle *InputInferenceForecastBundle) Validate() err
 		if err := inputInferenceForecastBundle.Forecast.Validate(); err != nil {
 			return errors.Wrap(err, "forecast is invalid")
 		}
-	}
-
-	return nil
-}
-
-// Validate only if each component is not nil
-func (inferenceForecastBundle *InferenceForecastBundle) Validate() error {
-
-	if inferenceForecastBundle.Inference != nil {
-		if err := inferenceForecastBundle.Inference.Validate(); err != nil {
-			return errors.Wrap(err, "inference is invalid")
-		}
-	}
-	if inferenceForecastBundle.Forecast != nil {
-		if err := inferenceForecastBundle.Forecast.Validate(); err != nil {
-			return errors.Wrap(err, "forecast is invalid")
-		}
-	}
-
-	if inferenceForecastBundle.Inference == nil && inferenceForecastBundle.Forecast == nil {
-		return errors.Wrap(sdkerrors.ErrInvalidRequest, "inference and forecast cannot both be nil")
 	}
 
 	return nil
@@ -387,19 +480,6 @@ func (bundle *WorkerDataBundle) Validate() error {
 	if len(bundle.Worker) == 0 {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "worker cannot be empty")
 	}
-	if len(bundle.Pubkey) == 0 {
-		return errors.Wrap(sdkerrors.ErrInvalidRequest, "public key cannot be empty")
-	}
-	pk, err := hex.DecodeString(bundle.Pubkey)
-	if err != nil || len(pk) != secp256k1.PubKeySize {
-		return errors.Wrap(sdkerrors.ErrInvalidRequest, "invalid pubkey")
-	}
-	pubkey := secp256k1.PubKey(pk)
-	pubKeyConvertedToAddress := sdk.AccAddress(pubkey.Address().Bytes()).String()
-
-	if len(bundle.InferencesForecastsBundleSignature) == 0 {
-		return errors.Wrap(sdkerrors.ErrInvalidRequest, "signature cannot be empty")
-	}
 	if bundle.InferenceForecastsBundle == nil {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "inference forecasts bundle cannot be nil")
 	}
@@ -411,12 +491,6 @@ func (bundle *WorkerDataBundle) Validate() error {
 	if bundle.InferenceForecastsBundle.Inference != nil {
 		if err := bundle.InferenceForecastsBundle.Inference.Validate(); err != nil {
 			return err
-		}
-		// Validate against the current bundle
-		if bundle.InferenceForecastsBundle.Inference.Inferer != pubKeyConvertedToAddress {
-			return errors.Wrapf(sdkerrors.ErrUnauthorized,
-				"Inference.Inferer %s does not match pubkey %s",
-				bundle.InferenceForecastsBundle.Inference.Inferer, pubKeyConvertedToAddress)
 		}
 		if bundle.Worker != bundle.InferenceForecastsBundle.Inference.Inferer {
 			return errors.Wrapf(sdkerrors.ErrUnauthorized,
@@ -434,12 +508,6 @@ func (bundle *WorkerDataBundle) Validate() error {
 		if err := bundle.InferenceForecastsBundle.Forecast.Validate(); err != nil {
 			return err
 		}
-		// Validate against the current bundle
-		if bundle.InferenceForecastsBundle.Forecast.Forecaster != pubKeyConvertedToAddress {
-			return errors.Wrapf(sdkerrors.ErrUnauthorized,
-				"Forecast.Forecaster %s does not match pubkey %s",
-				bundle.InferenceForecastsBundle.Forecast.Forecaster, pubKeyConvertedToAddress)
-		}
 		if bundle.Worker != bundle.InferenceForecastsBundle.Forecast.Forecaster {
 			return errors.Wrapf(sdkerrors.ErrUnauthorized,
 				"Forecast.Forecaster %s does not match worker address %s",
@@ -451,21 +519,6 @@ func (bundle *WorkerDataBundle) Validate() error {
 		if bundle.Nonce.BlockHeight != bundle.InferenceForecastsBundle.Forecast.BlockHeight {
 			return errors.Wrapf(sdkerrors.ErrInvalidRequest, "forecast block height %d does not match bundle block height %d", bundle.InferenceForecastsBundle.Forecast.BlockHeight, bundle.Nonce.BlockHeight)
 		}
-	}
-
-	// Check signature from the bundle, throw if invalid!
-	buf := inferenceForecastsBundleBufferPool.Get()
-	defer inferenceForecastsBundleBufferPool.Put(buf)
-	marshaled, err := bundle.InferenceForecastsBundle.XXX_Marshal(buf, true)
-	if err != nil {
-		return errors.Wrapf(sdkerrors.ErrInvalidRequest, "failed to marshal inference forecasts bundle: %s", err)
-	}
-	if !pubkey.VerifySignature(marshaled, bundle.InferencesForecastsBundleSignature) {
-		return errors.Wrap(sdkerrors.ErrUnauthorized, "signature verification failed")
-	}
-	// Source: https://docs.cosmos.network/v0.46/basics/accounts.html#addresses
-	if pubKeyConvertedToAddress != bundle.Worker {
-		return errors.Wrap(sdkerrors.ErrUnauthorized, "worker address does not match signature")
 	}
 
 	return nil
@@ -565,7 +618,7 @@ func (bundle *ValueBundle) Validate() error {
 	}
 	// Additional validation on zero height for bundles
 	if bundle.ReputerRequestNonce.ReputerNonce.BlockHeight <= 0 {
-		return errors.Wrap(sdkerrors.ErrInvalidType, "value bundle reputer request nonce block height must be greater than or equal to 0")
+		return errors.Wrap(sdkerrors.ErrInvalidType, "value bundle reputer request nonce block height must be greater than 0")
 	}
 	if err := ValidateBech32(bundle.Reputer); err != nil {
 		return errors.Wrap(err, "value bundle reputer address is invalid")
@@ -628,6 +681,100 @@ func (bundle *ValueBundle) Validate() error {
 	// are no one out inferer forecaster values for this bundle, and are allowed
 	for _, oneOutInfererForecaster := range bundle.OneOutInfererForecasterValues {
 		if err := oneOutInfererForecaster.Validate(); err != nil {
+			return errors.Wrap(err, "value bundle one out inferer forecaster value is invalid")
+		}
+	}
+	return nil
+}
+
+func FromLabeledValues(lvals []*LabeledValue) (out alloraMath.DecArray) {
+	out = make(alloraMath.DecArray, len(lvals))
+	for i := range lvals {
+		out[i] = lvals[i].Value
+	}
+	return
+}
+
+// validate that a network inference bundle follows the expected format
+func (bundle *NetworkInferenceBundle) Validate() error {
+	if bundle == nil {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "value bundle cannot be nil")
+	}
+	if err := ValidateTopicId(bundle.TopicId); err != nil {
+		return errors.Wrap(err, "value bundle topic id is invalid")
+	}
+	if err := ValidateBlockHeight(bundle.Nonce); err != nil {
+		return errors.Wrap(err, "value bundle nonce is invalid")
+	}
+	if bundle.Nonce <= 0 {
+		return errors.Wrap(sdkerrors.ErrInvalidType, "value bundle reputer request nonce block height must be greater than 0")
+	}
+
+	combinedValue := FromLabeledValues(bundle.CombinedValue)
+
+	if err := ValidateDecs(combinedValue); err != nil {
+		return errors.Wrap(err, "value bundle combined value is invalid")
+	}
+
+	if len(bundle.InfererValues) == 0 {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "value bundle inferer values cannot be nil")
+	}
+
+	// nil values for bundle.InfererValues are interpreted to mean that there
+	// are no inferer values for this bundle, and are allowed
+	for _, infererValue := range bundle.InfererValues {
+		vals := FromLabeledValues(infererValue.GetValues())
+		if err := ValidateDecs(vals); err != nil {
+			return errors.Wrap(err, "value bundle inferer value is invalid")
+		}
+	}
+
+	// nil values for bundle.ForecasterValues are interpreted to mean that there
+	// are no forecaster values for this bundle, and are allowed
+	for _, forecasterValue := range bundle.ForecasterValues {
+		vals := FromLabeledValues(forecasterValue.GetValues())
+		if err := ValidateDecs(vals); err != nil {
+			return errors.Wrap(err, "value bundle forecaster value is invalid")
+		}
+	}
+
+	naiveValue := FromLabeledValues(bundle.NaiveValue)
+	if err := ValidateDecs(naiveValue); err != nil {
+		return errors.Wrap(err, "value bundle naive value is invalid")
+	}
+
+	// nil values for bundle.OneOutInfererValues are interpreted to mean that there
+	// are no one out inferer values for this bundle, and are allowed
+	for _, oneOutInfererValue := range bundle.OneOutInfererValues {
+		vals := FromLabeledValues(oneOutInfererValue.GetCombinedInference())
+		if err := ValidateDecs(vals); err != nil {
+			return errors.Wrap(err, "value bundle one out inferer value is invalid")
+		}
+	}
+
+	// nil values for bundle.OneOutForecasterValues are interpreted to mean that there
+	// are no one out forecaster values for this bundle, and are allowed
+	for _, oneOutForecasterValue := range bundle.OneOutForecasterValues {
+		vals := FromLabeledValues(oneOutForecasterValue.GetCombinedInference())
+		if err := ValidateDecs(vals); err != nil {
+			return errors.Wrap(err, "value bundle one out forecaster value is invalid")
+		}
+	}
+
+	// nil values for bundle.OneInForecasterValues are interpreted to mean that there
+	// are no one in forecaster values for this bundle, and are allowed
+	for _, oneInForecasterValue := range bundle.OneInForecasterValues {
+		vals := FromLabeledValues(oneInForecasterValue.GetCombinedInference())
+		if err := ValidateDecs(vals); err != nil {
+			return errors.Wrap(err, "value bundle one in forecaster value is invalid")
+		}
+	}
+
+	// nil values for bundle.OneOutInfererForecasterValues are interpreted to mean that there
+	// are no one out inferer forecaster values for this bundle, and are allowed
+	for _, oneOutInfererForecaster := range bundle.OneOutInfererForecasterValues {
+		vals := FromLabeledValues(oneOutInfererForecaster.GetCombinedInference())
+		if err := ValidateDecs(vals); err != nil {
 			return errors.Wrap(err, "value bundle one out inferer forecaster value is invalid")
 		}
 	}
@@ -818,16 +965,32 @@ func (inputReputerValueBundles *InputReputerValueBundles) Validate() error {
 }
 
 // validate that a types.ReputerValueBundles follows the expected format
-func (bundle *ReputerValueBundles) Validate() error {
-	if bundle.ReputerValueBundles == nil {
-		return errors.Wrapf(sdkerrors.ErrInvalidType, "reputer value bundles cannot be nil")
+func (bundle LossBundles) Validate() error {
+	if bundle == nil {
+		return errors.Wrapf(sdkerrors.ErrInvalidType, "loss bundles cannot be nil")
 	}
-	for i, reputerValueBundle := range bundle.ReputerValueBundles {
+	for i, reputerValueBundle := range bundle {
 		if err := reputerValueBundle.Validate(); err != nil {
-			return errors.Wrapf(err, "reputer value bundle at index %d is invalid", i)
+			return errors.Wrapf(err, "loss bundle at index %d is invalid", i)
 		}
 	}
 	return nil
+}
+
+const (
+	maxTopicUnityTolerance = "0.01"
+)
+
+// EffectiveMaxTopInferersToReward clamps a stored per-topic cap into the global
+// range: the minimum raises it, and the maximum is applied last so it always
+// wins. Applying the ceiling last keeps the active set within the global-sized
+// score-retention window even if the range is inverted, which params validation
+// already prevents.
+func EffectiveMaxTopInferersToReward(topicCap, globalMin, globalMax uint64) uint64 {
+	if topicCap < globalMin {
+		topicCap = globalMin
+	}
+	return min(topicCap, globalMax)
 }
 
 // Validate checks if the given Topic is valid
@@ -841,22 +1004,22 @@ func (topic Topic) Validate(params Params) error {
 	if uint64(len(topic.Metadata)) > params.MaxStringLength {
 		return errors.Wrap(sdkerrors.ErrInvalidType, "topic metadata invalid")
 	}
-	if len(topic.LossMethod) == 0 || uint64(len(topic.LossMethod)) > params.MaxStringLength {
+	if len(topic.LossMethod) < validationMinLossMethodLength || uint64(len(topic.LossMethod)) > params.MaxStringLength {
 		return errors.Wrap(sdkerrors.ErrInvalidType, "topic loss method invalid")
 	}
-	if topic.EpochLastEnded < 0 {
+	if topic.EpochLastEnded < validationMinEpochLastEnded {
 		return errors.Wrap(sdkerrors.ErrInvalidType, "topic epoch last ended cannot be negative")
 	}
-	if topic.EpochLength <= 0 {
+	if topic.EpochLength < validationMinPositiveIntValue {
 		return errors.Wrap(sdkerrors.ErrInvalidType, "topic epoch length must be greater than zero")
 	}
 	if topic.EpochLength < params.MinEpochLength {
 		return errors.Wrap(sdkerrors.ErrInvalidType, "topic epoch length must be greater than minimum epoch length")
 	}
-	if topic.WorkerSubmissionWindow == 0 {
+	if topic.WorkerSubmissionWindow < validationMinPositiveIntValue {
 		return errors.Wrap(sdkerrors.ErrInvalidType, "topic worker submission window must be greater than zero")
 	}
-	if topic.GroundTruthLag <= 0 {
+	if topic.GroundTruthLag < validationMinPositiveIntValue {
 		return errors.Wrap(sdkerrors.ErrInvalidType, "topic ground truth lag must be greater than zero")
 	}
 	if topic.GroundTruthLag < topic.EpochLength {
@@ -865,7 +1028,7 @@ func (topic Topic) Validate(params Params) error {
 	if uint64(topic.GroundTruthLag) > params.MaxUnfulfilledReputerRequests*uint64(topic.EpochLength) {
 		return errors.Wrap(sdkerrors.ErrInvalidType, "topic ground truth lag cannot be higher than max unfulfilled reputer requests")
 	}
-	if topic.WorkerSubmissionWindow <= 0 {
+	if topic.WorkerSubmissionWindow < validationMinPositiveIntValue {
 		return errors.Wrap(sdkerrors.ErrInvalidType, "topic worker submission window must be greater than zero")
 	}
 	if topic.WorkerSubmissionWindow > topic.EpochLength {
@@ -874,19 +1037,19 @@ func (topic Topic) Validate(params Params) error {
 	if err := ValidateDec(topic.AlphaRegret); err != nil {
 		return errors.Wrap(err, "topic alpha regret is invalid")
 	}
-	if topic.AlphaRegret.Lte(alloraMath.ZeroDec()) || topic.AlphaRegret.Gt(alloraMath.OneDec()) {
+	if topic.AlphaRegret.Lte(validationZeroDec) || topic.AlphaRegret.Gt(validationOneDec) {
 		return errors.Wrap(sdkerrors.ErrInvalidType, "topic alpha regret must be greater than 0 and less than or equal to 1")
 	}
 	if err := ValidateDec(topic.PNorm); err != nil {
 		return errors.Wrap(err, "topic p-norm is invalid")
 	}
-	if topic.PNorm.Lt(alloraMath.MustNewDecFromString("2.5")) || topic.PNorm.Gt(alloraMath.MustNewDecFromString("4.5")) {
-		return errors.Wrap(sdkerrors.ErrInvalidType, "topic p-norm must be between 2.5 and 4.5")
+	if topic.PNorm.Lt(validationOneDec) || topic.PNorm.Gt(validationPNormMaxDec) {
+		return errors.Wrap(sdkerrors.ErrInvalidType, "topic p-norm must be between 1 and 10")
 	}
 	if err := ValidateDec(topic.Epsilon); err != nil {
 		return errors.Wrap(err, "topic epsilon is invalid")
 	}
-	if topic.Epsilon.Lte(alloraMath.ZeroDec()) {
+	if topic.Epsilon.Lte(validationZeroDec) {
 		return errors.Wrap(sdkerrors.ErrInvalidType, "topic epsilon must be greater than 0")
 	}
 	// no validation on AllowNegative because either it is true or false
@@ -896,33 +1059,94 @@ func (topic Topic) Validate(params Params) error {
 		return errors.Wrap(err, "topic merit sortition alpha is invalid")
 	}
 	if !isAlloraDecZeroOrLessThanOne(topic.MeritSortitionAlpha) {
-		return errors.Wrap(sdkerrors.ErrInvalidType, "topic merit sortition alpha must be between 0 and 1 inclusive")
+		return errors.Wrap(sdkerrors.ErrInvalidType, "topic merit sortition alpha must be greater than or equal to 0 and less than 1")
 	}
 	if err := ValidateDec(topic.ActiveInfererQuantile); err != nil {
 		return errors.Wrap(err, "topic active inferer quantile is invalid")
 	}
-	if !isAlloraDecZeroOrLessThanOne(topic.ActiveInfererQuantile) {
+	if !isAlloraDecBetweenZeroAndOneInclusive(topic.ActiveInfererQuantile) {
 		return errors.Wrap(sdkerrors.ErrInvalidType, "topic active inferer quantile must be between 0 and 1 inclusive")
 	}
 	if err := ValidateDec(topic.ActiveForecasterQuantile); err != nil {
 		return errors.Wrap(err, "topic active forecaster quantile is invalid")
 	}
-	if !isAlloraDecZeroOrLessThanOne(topic.ActiveForecasterQuantile) {
+	if !isAlloraDecBetweenZeroAndOneInclusive(topic.ActiveForecasterQuantile) {
 		return errors.Wrap(sdkerrors.ErrInvalidType, "topic active forecaster quantile must be between 0 and 1 inclusive")
 	}
 	if err := ValidateDec(topic.ActiveReputerQuantile); err != nil {
 		return errors.Wrap(err, "topic active reputer quantile is invalid")
 	}
-	if !isAlloraDecZeroOrLessThanOne(topic.ActiveReputerQuantile) {
+	if !isAlloraDecBetweenZeroAndOneInclusive(topic.ActiveReputerQuantile) {
 		return errors.Wrap(sdkerrors.ErrInvalidType, "topic active reputer quantile must be between 0 and 1 inclusive")
 	}
 	if err := ValidateDec(topic.CNorm); err != nil {
 		return errors.Wrap(err, "topic c_norm is invalid")
 	}
-	if topic.CNorm.Lt(alloraMath.MustNewDecFromString("-100")) || topic.CNorm.Gt(alloraMath.MustNewDecFromString("100")) {
+	if topic.CNorm.Lt(validationCNormMinDec) || topic.CNorm.Gt(validationCNormMaxDec) {
 		return errors.Wrap(sdkerrors.ErrInvalidType, "topic c_norm must be between -100 and 100")
 	}
+	// MaxTopInferersToReward is not bounded by the globals here: they bound
+	// admission, not storage, so a governance change cannot make an existing
+	// topic fail re-validation on write. EffectiveMaxTopInferersToReward clamps
+	// the stored value when it is used.
+	if err := ValidateClassificationConsistency(
+		topic.TopicType,
+		topic.OutputArity,
+		topic.RequireUnity,
+		topic.UnityTolerance,
+		topic.LabelDefaultValue,
+	); err != nil {
+		return err
+	}
+	if err := ValidateMaxLabelsPerSubmission(topic.MaxLabelsPerSubmission); err != nil {
+		return errors.Wrap(err, "topic max_labels_per_submission is invalid")
+	}
+	if err := ValidateTopicLabelWhitelistSize(topic.LabelWhitelist, params.MaxTopicLabelWhitelistSize); err != nil {
+		return errors.Wrap(err, "topic label_whitelist is invalid")
+	}
 
+	return nil
+}
+
+// ValidateClassificationConsistency enforces the topic_type / output_arity /
+// unity invariants shared by Topic.Validate (run by SetTopic before
+// persistence) and CreateNewTopicRequest.Validate, so the message layer and
+// the keeper layer cannot drift. Field validity is checked before the
+// cross-field consistency rules that depend on it.
+//
+// UpdateTopicRequest validates only the classification field it can mutate
+// (currently label_default_value); topic_type/output_arity/require_unity are
+// immutable after creation and absent from that message, so their consistency
+// is enforced by Topic.Validate on the merged topic in the keeper.
+func ValidateClassificationConsistency(
+	topicType TopicType,
+	outputArity TopicOutputArity,
+	requireUnity bool,
+	unityTolerance alloraMath.Dec,
+	labelDefaultValue alloraMath.Dec,
+) error {
+	if topicType <= TopicType_TOPIC_TYPE_UNSPECIFIED || topicType > TopicType_TOPIC_TYPE_CLASSIFICATION {
+		return errors.Wrap(sdkerrors.ErrInvalidType, "topic_type is invalid")
+	}
+	if outputArity <= TopicOutputArity_TOPIC_OUTPUT_ARITY_UNSPECIFIED || outputArity > TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI {
+		return errors.Wrap(sdkerrors.ErrInvalidType, "output_arity is invalid")
+	}
+	if outputArity == TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE && requireUnity {
+		return errors.Wrap(sdkerrors.ErrInvalidType, "topic require_unity MUST be false when output_arity is SINGLE")
+	}
+	if requireUnity &&
+		(unityTolerance.IsNaN() ||
+			unityTolerance.Lt(alloraMath.ZeroDec()) ||
+			unityTolerance.Gt(alloraMath.MustNewDecFromString(maxTopicUnityTolerance))) {
+		return errors.Wrapf(sdkerrors.ErrInvalidType,
+			"unity_tolerance must be in (0, %s] when require_unity is true", maxTopicUnityTolerance)
+	}
+	if err := ValidateDec(labelDefaultValue); err != nil {
+		return errors.Wrap(err, "topic label_default_value is invalid")
+	}
+	if requireUnity && !labelDefaultValue.IsZero() {
+		return errors.Wrap(sdkerrors.ErrInvalidType, "topic label_default_value must be zero when require_unity is true")
+	}
 	return nil
 }
 
@@ -1087,7 +1311,7 @@ func (oc *OffchainNode) Validate() error {
 	return nil
 }
 
-/// PROTOBUF MESSAGE VALIDATIONS
+// / PROTOBUF MESSAGE VALIDATIONS
 
 // validate that a register request follows the expected format
 func (msg *RegisterRequest) Validate() error {
@@ -1183,18 +1407,18 @@ func (msg *CancelRemoveStakeRequest) Validate() error {
 }
 
 // Validate checks if the given CreateNewTopicRequest is valid
-func (msg *CreateNewTopicRequest) Validate(maxStringLen uint64) error {
+func (msg *CreateNewTopicRequest) Validate(maxStringLen uint64, maxTopicLabelWhitelistSize uint64) error {
 	if err := ValidateBech32(msg.Creator); err != nil {
 		return errors.Wrap(err, "invalid msg Creator address")
 	}
 
-	if len(msg.LossMethod) == 0 || uint64(len(msg.LossMethod)) > maxStringLen {
+	if len(msg.LossMethod) < validationMinLossMethodLength || uint64(len(msg.LossMethod)) > maxStringLen {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "loss method invalid")
 	}
-	if msg.EpochLength <= 0 {
+	if msg.EpochLength < validationMinPositiveIntValue {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "epoch length must be greater than zero")
 	}
-	if msg.WorkerSubmissionWindow == 0 {
+	if msg.WorkerSubmissionWindow < validationMinPositiveIntValue {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "worker submission window must be greater than zero")
 	}
 	if msg.GroundTruthLag < msg.EpochLength {
@@ -1203,16 +1427,16 @@ func (msg *CreateNewTopicRequest) Validate(maxStringLen uint64) error {
 	if msg.WorkerSubmissionWindow > msg.EpochLength {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "worker submission window cannot be higher than epoch length")
 	}
-	if msg.AlphaRegret.Lte(alloraMath.ZeroDec()) || msg.AlphaRegret.Gt(alloraMath.OneDec()) || ValidateDec(msg.AlphaRegret) != nil {
+	if msg.AlphaRegret.Lte(validationZeroDec) || msg.AlphaRegret.Gt(validationOneDec) || ValidateDec(msg.AlphaRegret) != nil {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "alpha regret must be greater than 0 and less than or equal to 1")
 	}
-	if msg.PNorm.Lt(alloraMath.MustNewDecFromString("2.5")) || msg.PNorm.Gt(alloraMath.MustNewDecFromString("4.5")) || ValidateDec(msg.PNorm) != nil {
-		return errors.Wrap(sdkerrors.ErrInvalidRequest, "p-norm must be between 2.5 and 4.5")
+	if msg.PNorm.Lt(validationOneDec) || msg.PNorm.Gt(validationPNormMaxDec) || ValidateDec(msg.PNorm) != nil {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "p-norm must be between 1 and 10")
 	}
-	if msg.CNorm.Lt(alloraMath.MustNewDecFromString("-100")) || msg.CNorm.Gt(alloraMath.MustNewDecFromString("100")) || ValidateDec(msg.CNorm) != nil {
+	if msg.CNorm.Lt(validationCNormMinDec) || msg.CNorm.Gt(validationCNormMaxDec) || ValidateDec(msg.CNorm) != nil {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "c_norm must be between -100 and 100")
 	}
-	if msg.Epsilon.Lte(alloraMath.ZeroDec()) || msg.Epsilon.IsNaN() || !msg.Epsilon.IsFinite() {
+	if msg.Epsilon.Lte(validationZeroDec) || msg.Epsilon.IsNaN() || !msg.Epsilon.IsFinite() {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "epsilon must be greater than 0")
 	}
 	if uint64(len(msg.Metadata)) > maxStringLen {
@@ -1223,17 +1447,100 @@ func (msg *CreateNewTopicRequest) Validate(maxStringLen uint64) error {
 	//	AllowNegative            bool
 
 	if !isAlloraDecZeroOrLessThanOne(msg.MeritSortitionAlpha) {
-		return errors.Wrap(sdkerrors.ErrInvalidRequest, "merit sortition alpha must be between 0 and 1 inclusive")
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "merit sortition alpha must be greater than or equal to 0 and less than 1")
 	}
-	if !isAlloraDecZeroOrLessThanOne(msg.ActiveInfererQuantile) {
+	if !isAlloraDecBetweenZeroAndOneInclusive(msg.ActiveInfererQuantile) {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "active inferer quantile must be between 0 and 1 inclusive")
 	}
-	if !isAlloraDecZeroOrLessThanOne(msg.ActiveForecasterQuantile) {
+	if !isAlloraDecBetweenZeroAndOneInclusive(msg.ActiveForecasterQuantile) {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "active forecaster quantile must be between 0 and 1 inclusive")
 	}
-	if !isAlloraDecZeroOrLessThanOne(msg.ActiveReputerQuantile) {
+	if !isAlloraDecBetweenZeroAndOneInclusive(msg.ActiveReputerQuantile) {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "active reputer quantile must be between 0 and 1 inclusive")
 	}
+	if err := ValidateClassificationConsistency(
+		msg.TopicType,
+		msg.OutputArity,
+		msg.RequireUnity,
+		msg.UnityTolerance,
+		msg.LabelDefaultValue,
+	); err != nil {
+		return err
+	}
+	if err := ValidateMaxLabelsPerSubmission(msg.MaxLabelsPerSubmission); err != nil {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, err.Error())
+	}
+	if err := ValidateTopicLabelWhitelistSize(msg.LabelWhitelist, maxTopicLabelWhitelistSize); err != nil {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, err.Error())
+	}
 
+	return nil
+}
+
+// Validate checks if the given UpdateTopicRequest is valid
+func (msg *UpdateTopicRequest) Validate(maxStringLen uint64, maxTopicLabelWhitelistSize uint64) error {
+	if err := ValidateBech32(msg.Sender); err != nil {
+		return errors.Wrap(err, "invalid msg Sender address")
+	}
+	if len(msg.LossMethod) < validationMinLossMethodLength || uint64(len(msg.LossMethod)) > maxStringLen {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "loss method invalid")
+	}
+	if msg.AlphaRegret.Lte(validationZeroDec) || msg.AlphaRegret.Gt(validationOneDec) || ValidateDec(msg.AlphaRegret) != nil {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "alpha regret must be greater than 0 and less than or equal to 1")
+	}
+	if msg.PNorm.Lt(validationOneDec) || msg.PNorm.Gt(validationPNormMaxDec) || ValidateDec(msg.PNorm) != nil {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "p-norm must be between 1 and 10")
+	}
+	if msg.CNorm.Lt(validationCNormMinDec) || msg.CNorm.Gt(validationCNormMaxDec) || ValidateDec(msg.CNorm) != nil {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "c_norm must be between -100 and 100")
+	}
+	if uint64(len(msg.Metadata)) > maxStringLen {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "metadata invalid")
+	}
+	if !isAlloraDecZeroOrLessThanOne(msg.MeritSortitionAlpha) {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "merit sortition alpha must be greater than or equal to 0 and less than 1")
+	}
+	// label_default_value is the only classification field UpdateTopicRequest can
+	// mutate; topic_type/output_arity/require_unity are immutable after creation
+	// and absent here, so the require_unity coupling is enforced by Topic.Validate
+	// on the merged topic in the keeper. If those fields become mutable on update,
+	// switch this to ValidateClassificationConsistency.
+	if err := ValidateDec(msg.LabelDefaultValue); err != nil {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "label_default_value is invalid")
+	}
+	if err := ValidateMaxLabelsPerSubmission(msg.MaxLabelsPerSubmission); err != nil {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, err.Error())
+	}
+	if err := ValidateTopicLabelWhitelistSize(msg.LabelWhitelist, maxTopicLabelWhitelistSize); err != nil {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, err.Error())
+	}
+
+	return nil
+}
+
+// ValidateInferenceValues verifies that the inference values are consistent
+// with the provided epoch label registry.
+func ValidateInferenceValues(iv InferenceValues, labels []*TopicLabel) error {
+	want := len(labels)
+	if len(iv) != want {
+		return errors.Wrapf(
+			sdkerrors.ErrLogic,
+			"inference values length mismatch: got=%d want=%d",
+			len(iv), want,
+		)
+	}
+	for i := range iv {
+		if iv[i].IsNaN() || !iv[i].IsFinite() {
+			return errors.Wrapf(sdkerrors.ErrInvalidRequest, "invalid inference value at idx=%d", i)
+		}
+	}
+	return nil
+}
+
+func ValidateStringIsBech32(actor string) error {
+	_, err := sdk.AccAddressFromBech32(actor)
+	if err != nil {
+		return errors.Wrap(err, "error validating actor id")
+	}
 	return nil
 }

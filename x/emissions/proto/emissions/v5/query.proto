@@ -12,6 +12,8 @@ import "emissions/v3/score.proto";
 import "emissions/v3/stake.proto";
 import "emissions/v3/topic.proto";
 import "emissions/v3/types.proto";
+import "emissions/v3/value_bundle.proto";
+import "emissions/v3/weights.proto";
 import "emissions/v3/worker.proto";
 import "emissions/v5/params.proto";
 import "gogoproto/gogo.proto";

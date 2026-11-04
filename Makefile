@@ -10,6 +10,9 @@ ifeq (,$(VERSION))
   endif
 endif
 
+# Sanitized version for filenames: strip leading v, replace / with -
+BUILD_VERSION := $(subst /,-,$(VERSION:v%=%))
+
 # process build tags
 LEDGER_ENABLED ?= true
 build_tags = netgo
@@ -92,12 +95,12 @@ build-local-edits:
 
 build-all-platforms:
 	mkdir -p $(BUILDDIR)/
-	GOOS=linux GOARCH=amd64 GOWORK=off go build -mod=readonly  $(BUILD_FLAGS) -o $(BUILDDIR)/allorad_linux_amd64 github.com/allora-network/allora-chain/cmd/allorad
-	GOOS=linux GOARCH=arm64 GOWORK=off go build -mod=readonly  $(BUILD_FLAGS) -o $(BUILDDIR)/allorad_linux_arm64 github.com/allora-network/allora-chain/cmd/allorad
-	GOOS=darwin GOARCH=amd64 GOWORK=off go build -mod=readonly  $(BUILD_FLAGS) -o $(BUILDDIR)/allorad_darwin_amd64 github.com/allora-network/allora-chain/cmd/allorad
-	GOOS=darwin GOARCH=arm64 GOWORK=off go build -mod=readonly  $(BUILD_FLAGS) -o $(BUILDDIR)/allorad_darwin_arm64 github.com/allora-network/allora-chain/cmd/allorad
-	GOOS=windows GOARCH=amd64 GOWORK=off go build -mod=readonly  $(BUILD_FLAGS) -o $(BUILDDIR)/allorad_windows_amd64 github.com/allora-network/allora-chain/cmd/allorad
-	GOOS=windows GOARCH=arm64 GOWORK=off go build -mod=readonly  $(BUILD_FLAGS) -o $(BUILDDIR)/allorad_windows_amd64 github.com/allora-network/allora-chain/cmd/allorad
+	GOOS=linux GOARCH=amd64 GOWORK=off go build -mod=readonly  $(BUILD_FLAGS) -o $(BUILDDIR)/allora-chain_$(BUILD_VERSION)_linux_amd64 github.com/allora-network/allora-chain/cmd/allorad
+	GOOS=linux GOARCH=arm64 GOWORK=off go build -mod=readonly  $(BUILD_FLAGS) -o $(BUILDDIR)/allora-chain_$(BUILD_VERSION)_linux_arm64 github.com/allora-network/allora-chain/cmd/allorad
+	GOOS=darwin GOARCH=amd64 GOWORK=off go build -mod=readonly  $(BUILD_FLAGS) -o $(BUILDDIR)/allora-chain_$(BUILD_VERSION)_darwin_amd64 github.com/allora-network/allora-chain/cmd/allorad
+	GOOS=darwin GOARCH=arm64 GOWORK=off go build -mod=readonly  $(BUILD_FLAGS) -o $(BUILDDIR)/allora-chain_$(BUILD_VERSION)_darwin_arm64 github.com/allora-network/allora-chain/cmd/allorad
+	GOOS=windows GOARCH=amd64 GOWORK=off go build -mod=readonly  $(BUILD_FLAGS) -o $(BUILDDIR)/allora-chain_$(BUILD_VERSION)_windows_amd64 github.com/allora-network/allora-chain/cmd/allorad
+	GOOS=windows GOARCH=arm64 GOWORK=off go build -mod=readonly  $(BUILD_FLAGS) -o $(BUILDDIR)/allora-chain_$(BUILD_VERSION)_windows_arm64 github.com/allora-network/allora-chain/cmd/allorad
 
 lint:
 	@echo "--> Running linter"
@@ -117,5 +120,11 @@ maprange: build-maprange-linter
 duplicate-routes:
 	@echo "--> Running duplicate route linter"
 	@go run ./linter/duplicate_routes $(PROTO_LINT_PATHS)
+
+.PHONY: integration-test
+integration-test:
+	@echo "--> Running tests"
+	@bash test/local_testnet_l1.sh  <<< "y"
+	INTEGRATION=TRUE go test -timeout 30m ./test/integration/ -v
 
 .PHONY: all install build lint build-maprange-linter maprange duplicate-routes

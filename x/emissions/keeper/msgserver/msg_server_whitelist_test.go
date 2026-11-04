@@ -3,6 +3,9 @@ package msgserver_test
 import (
 	"context"
 
+	abci "github.com/cometbft/cometbft/abci/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
@@ -10,7 +13,6 @@ import (
 func (s *MsgServerTestSuite) TestWhitelistAdminOperations() {
 	ctx := s.Ctx()
 	msgServer := s.EmissionsMsgServer()
-	keeper := s.EmissionsKeeper()
 
 	adminAddr := s.AddrsStr(0)
 	targetAddr := s.AddrsStr(1)
@@ -58,7 +60,7 @@ func (s *MsgServerTestSuite) TestWhitelistAdminOperations() {
 				return err
 			},
 			verifyResult: func() {
-				isAdmin, err := keeper.IsWhitelistAdmin(ctx, nonAdminAddr)
+				isAdmin, err := s.WhitelistsKeeper().IsWhitelistAdmin(ctx, nonAdminAddr)
 				s.Require().NoError(err)
 				s.Require().True(isAdmin)
 			},
@@ -74,7 +76,7 @@ func (s *MsgServerTestSuite) TestWhitelistAdminOperations() {
 				return err
 			},
 			verifyResult: func() {
-				isAdmin, err := keeper.IsWhitelistAdmin(ctx, targetAddr)
+				isAdmin, err := s.WhitelistsKeeper().IsWhitelistAdmin(ctx, targetAddr)
 				s.Require().NoError(err)
 				s.Require().False(isAdmin)
 			},
@@ -101,7 +103,7 @@ func (s *MsgServerTestSuite) TestWhitelistAdminOperations() {
 func (s *MsgServerTestSuite) TestGlobalWhitelistOperations() {
 	ctx := s.Ctx()
 	msgServer := s.EmissionsMsgServer()
-	keeper := s.EmissionsKeeper()
+	keeper := s.WhitelistsKeeper()
 
 	adminAddr := s.AddrsStr(0)
 	targetAddr := s.AddrsStr(1)
@@ -360,7 +362,7 @@ func (s *MsgServerTestSuite) TestGlobalWhitelistOperations() {
 func (s *MsgServerTestSuite) TestBulkWhitelistOperations() {
 	ctx := s.Ctx()
 	msgServer := s.EmissionsMsgServer()
-	keeper := s.EmissionsKeeper()
+	keeper := s.WhitelistsKeeper()
 	adminAddr := s.AddrsStr(0)
 
 	addresses := []string{
@@ -370,10 +372,10 @@ func (s *MsgServerTestSuite) TestBulkWhitelistOperations() {
 	}
 
 	// Set max array length for testing
-	params, err := keeper.GetParams(ctx)
+	params, err := s.ParamsKeeper().GetParams(ctx)
 	s.Require().NoError(err)
 	params.MaxWhitelistInputArrayLength = 3
-	err = keeper.SetParams(ctx, params)
+	err = s.ParamsKeeper().SetParams(ctx, params)
 	s.Require().NoError(err)
 
 	tooManyAddresses := make([]string, params.MaxWhitelistInputArrayLength+1)
@@ -522,7 +524,7 @@ func (s *MsgServerTestSuite) TestBulkWhitelistOperations() {
 func (s *MsgServerTestSuite) TestTopicWhitelistOperations() {
 	ctx := s.Ctx()
 	msgServer := s.EmissionsMsgServer()
-	keeper := s.EmissionsKeeper()
+	keeper := s.WhitelistsKeeper()
 
 	adminAddr := s.AddrsStr(0)
 	targetAddr := s.AddrsStr(1)
@@ -784,7 +786,7 @@ func (s *MsgServerTestSuite) TestTopicWhitelistOperations() {
 func (s *MsgServerTestSuite) TestBulkTopicWhitelistOperations() {
 	ctx := s.Ctx()
 	msgServer := s.EmissionsMsgServer()
-	keeper := s.EmissionsKeeper()
+	keeper := s.WhitelistsKeeper()
 	adminAddr := s.AddrsStr(0)
 	topicId := s.CreateTopic()
 
@@ -795,10 +797,10 @@ func (s *MsgServerTestSuite) TestBulkTopicWhitelistOperations() {
 	}
 
 	// Set max array length for testing
-	params, err := keeper.GetParams(ctx)
+	params, err := s.ParamsKeeper().GetParams(ctx)
 	s.Require().NoError(err)
 	params.MaxWhitelistInputArrayLength = 3
-	err = keeper.SetParams(ctx, params)
+	err = s.ParamsKeeper().SetParams(ctx, params)
 	s.Require().NoError(err)
 
 	tooManyAddresses := make([]string, params.MaxWhitelistInputArrayLength+1)
@@ -998,4 +1000,101 @@ func (s *MsgServerTestSuite) TestBulkTopicWhitelistOperations() {
 			}
 		})
 	}
+}
+
+// TestTopicGateHandlersEmitSingleEvent pins that the enable/disable message
+// handlers rely on the keeper for gate event emission: exactly one event per
+// actual transition, none for a repeated no-op call.
+func (s *MsgServerTestSuite) TestTopicGateHandlersEmitSingleEvent() {
+	msgServer := s.EmissionsMsgServer()
+	admin := s.AddrsStr(0)
+
+	testCases := []struct {
+		name    string
+		enable  func(sdk.Context, uint64) error
+		disable func(sdk.Context, uint64) error
+		count   func(sdk.Context) (enabled, disabled int)
+	}{
+		{
+			name: "worker gate",
+			enable: func(ctx sdk.Context, topicId uint64) error {
+				_, err := msgServer.EnableTopicWorkerWhitelist(ctx, &types.EnableTopicWorkerWhitelistRequest{Sender: admin, TopicId: topicId})
+				return err
+			},
+			disable: func(ctx sdk.Context, topicId uint64) error {
+				_, err := msgServer.DisableTopicWorkerWhitelist(ctx, &types.DisableTopicWorkerWhitelistRequest{Sender: admin, TopicId: topicId})
+				return err
+			},
+			count: countWorkerGateEvents,
+		},
+		{
+			name: "reputer gate",
+			enable: func(ctx sdk.Context, topicId uint64) error {
+				_, err := msgServer.EnableTopicReputerWhitelist(ctx, &types.EnableTopicReputerWhitelistRequest{Sender: admin, TopicId: topicId})
+				return err
+			},
+			disable: func(ctx sdk.Context, topicId uint64) error {
+				_, err := msgServer.DisableTopicReputerWhitelist(ctx, &types.DisableTopicReputerWhitelistRequest{Sender: admin, TopicId: topicId})
+				return err
+			},
+			count: countReputerGateEvents,
+		},
+	}
+
+	for _, tc := range testCases {
+		s.Run(tc.name, func() {
+			createMsg := s.MockTopicMsg()
+			createMsg.EnableWorkerWhitelist = false
+			createMsg.EnableReputerWhitelist = false
+			res, err := msgServer.CreateNewTopic(s.Ctx(), createMsg)
+			s.Require().NoError(err)
+			topicId := res.TopicId
+
+			ctx := s.Ctx().WithEventManager(sdk.NewEventManager())
+
+			s.Require().NoError(tc.enable(ctx, topicId))
+			s.Require().NoError(tc.enable(ctx, topicId))
+			enabled, disabled := tc.count(ctx)
+			s.Require().Equal(1, enabled, "repeated enable must emit exactly one event")
+			s.Require().Zero(disabled)
+
+			s.Require().NoError(tc.disable(ctx, topicId))
+			s.Require().NoError(tc.disable(ctx, topicId))
+			enabled, disabled = tc.count(ctx)
+			s.Require().Equal(1, enabled)
+			s.Require().Equal(1, disabled, "repeated disable must emit exactly one event")
+		})
+	}
+}
+
+func countWorkerGateEvents(ctx sdk.Context) (enabled, disabled int) {
+	for _, ev := range ctx.EventManager().Events() {
+		parsed, err := sdk.ParseTypedEvent(abci.Event(ev))
+		if err != nil {
+			continue
+		}
+		switch parsed.(type) {
+		case *types.EventTopicWorkerWhitelistEnabled:
+			enabled++
+		case *types.EventTopicWorkerWhitelistDisabled:
+			disabled++
+		}
+	}
+	return enabled, disabled
+}
+
+func countReputerGateEvents(ctx sdk.Context) (enabled, disabled int) {
+	for _, ev := range ctx.EventManager().Events() {
+		parsed, err := sdk.ParseTypedEvent(abci.Event(ev))
+		if err != nil {
+			continue
+		}
+		switch parsed.(type) {
+		case *types.EventTopicReputerWhitelistEnabled:
+			enabled++
+		case *types.EventTopicReputerWhitelistDisabled:
+			disabled++
+		}
+	}
+	return enabled, disabled
 }

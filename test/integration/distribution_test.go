@@ -7,13 +7,14 @@ import (
 	"os"
 	"strings"
 
-	"github.com/allora-network/allora-chain/app/params"
-	testCommon "github.com/allora-network/allora-chain/test/common"
-	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	distributiontypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
 	"github.com/stretchr/testify/require"
+
+	"github.com/allora-network/allora-chain/app/params"
+	testCommon "github.com/allora-network/allora-chain/test/common"
+	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 )
 
 // Get the validator address that is stored in the genesis file
@@ -106,9 +107,37 @@ func CheckValidatorBalancesIncreaseOnNewBlock(m testCommon.TestConfig) {
 	)
 }
 
-// the mint module pays the ecosystem module account
-// as new blocks are produced.
+// requireNoActiveTopics fails the test if any topic is active. EmitRewards only pays out
+// topics listed at the block being processed, and a listed topic is always active.
+func requireNoActiveTopics(m testCommon.TestConfig) {
+	ctx := context.Background()
+	nextTopicId, err := m.Client.QueryEmissions().GetNextTopicId(
+		ctx,
+		&emissionstypes.GetNextTopicIdRequest{},
+	)
+	require.NoError(m.T, err)
+
+	// topic id 0 is reserved at genesis
+	for topicId := uint64(1); topicId < nextTopicId.NextTopicId; topicId++ {
+		topicIsActive, err := m.Client.QueryEmissions().IsTopicActive(
+			ctx,
+			&emissionstypes.IsTopicActiveRequest{TopicId: topicId},
+		)
+		require.NoError(m.T, err)
+		require.False(
+			m.T,
+			topicIsActive.IsActive,
+			"Precondition failed: topic %d is active, so reward payouts can lower the Allora Rewards module account balance",
+			topicId,
+		)
+	}
+}
+
+// CheckAlloraRewardsBalanceGoesUpOnNewBlock checks that the mint module pays the Allora Rewards
+// module account as new blocks are produced. It requires a chain with no active topics.
 func CheckAlloraRewardsBalanceGoesUpOnNewBlock(m testCommon.TestConfig) {
+	requireNoActiveTopics(m)
+
 	ctx := context.Background()
 	alloraRewardsModuleAccResponse, err := m.Client.QueryAuth().ModuleAccountByName(
 		ctx,
@@ -159,18 +188,14 @@ func CheckAlloraRewardsBalanceGoesUpOnNewBlock(m testCommon.TestConfig) {
 		arba.GT(arbb),
 		"Allora Rewards module account balance did not increase after a block %d: %s | %d: %s",
 		blockHeight,
-		arba.String(),
-		blockHeight2,
 		arbb.String(),
+		blockHeight2,
+		arba.String(),
 	)
 }
 
-// this file tests that the distribution of funds to validators
-// and rewards accounts is working as expected
-// basically testing the forked mint module that we use
+// DistributionChecks tests that the forked mint module distributes funds to validators.
 func DistributionChecks(m testCommon.TestConfig) {
 	m.T.Log("--- Check Validator Balance Goes Up When New Blocks Are Mined  ---")
 	CheckValidatorBalancesIncreaseOnNewBlock(m)
-	m.T.Log("--- Check Allora Rewards Module Account Balance Goes Up When New Blocks Are Mined  ---")
-	CheckAlloraRewardsBalanceGoesUpOnNewBlock(m)
 }

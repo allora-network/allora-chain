@@ -49,7 +49,7 @@ func registerWorker(
 		return false
 	}
 
-	registerWorkerResponse := &emissionstypes.RegisterResponse{} // nolint:exhaustruct // the fields are populated by decode
+	registerWorkerResponse := &emissionstypes.RegisterResponse{} //nolint:exhaustruct // the fields are populated by decode
 	err = txResp.Decode(registerWorkerResponse)
 	failIfOnErr(m.T, data.failOnErr, err)
 	if err != nil {
@@ -99,7 +99,7 @@ func unregisterWorker(
 		return false
 	}
 
-	removeRegistrationResponse := &emissionstypes.RemoveRegistrationResponse{} // nolint:exhaustruct // the fields are populated by decode
+	removeRegistrationResponse := &emissionstypes.RemoveRegistrationResponse{} //nolint:exhaustruct // the fields are populated by decode
 	err = txResp.Decode(removeRegistrationResponse)
 	failIfOnErr(m.T, data.failOnErr, err)
 	if err != nil {
@@ -153,7 +153,7 @@ func registerReputer(
 		return false
 	}
 
-	registerWorkerResponse := &emissionstypes.RegisterResponse{} // nolint:exhaustruct // the fields are populated by decode
+	registerWorkerResponse := &emissionstypes.RegisterResponse{} //nolint:exhaustruct // the fields are populated by decode
 	err = txResp.Decode(registerWorkerResponse)
 	failIfOnErr(m.T, data.failOnErr, err)
 	if err != nil {
@@ -206,7 +206,7 @@ func unregisterReputer(
 		return false
 	}
 
-	removeRegistrationResponseMsg := &emissionstypes.RemoveRegistrationResponse{} // nolint:exhaustruct // the fields are populated by decode
+	removeRegistrationResponseMsg := &emissionstypes.RemoveRegistrationResponse{} //nolint:exhaustruct // the fields are populated by decode
 	err = txResp.Decode(removeRegistrationResponseMsg)
 	failIfOnErr(m.T, data.failOnErr, err)
 	if err != nil {

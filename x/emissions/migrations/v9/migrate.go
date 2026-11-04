@@ -39,7 +39,7 @@ func MigrateStore(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 // Migrate params for this new version
 // The changes are the addition of GlobalWhitelistEnabled, TopicCreatorWhitelistEnabled
 func MigrateParams(ctx sdk.Context, store storetypes.KVStore, cdc codec.BinaryCodec) error {
-	oldParams := oldV8Types.Params{} //nolint: exhaustruct
+	oldParams := oldV8Types.Params{} //nolint:exhaustruct
 	oldParamsBytes := store.Get(emissionstypes.ParamsKey)
 	if oldParamsBytes == nil {
 		return errorsmod.Wrapf(emissionstypes.ErrNotFound, "old parameters not found")
@@ -50,7 +50,7 @@ func MigrateParams(ctx sdk.Context, store storetypes.KVStore, cdc codec.BinaryCo
 	}
 
 	// DIFFERENCE BETWEEN OLD PARAMS AND NEW PARAMS:
-	newParams := v8Types.Params{ //nolint: exhaustruct
+	newParams := v8Types.Params{ //nolint:exhaustruct
 		Version:                             oldParams.Version,
 		MaxSerializedMsgLength:              oldParams.MaxSerializedMsgLength,
 		MinTopicWeight:                      oldParams.MinTopicWeight,
