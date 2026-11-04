@@ -7,6 +7,7 @@ on:
       - 'app/upgrades.go'
       - 'app/upgrades/**'
       - 'x/*/module/module.go'
+      - 'x/*/module.go'
       - 'x/*/migrations/**'
       - 'Dockerfile.upgrade'
       - 'test/local_testnet_l1.sh'
