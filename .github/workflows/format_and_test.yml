@@ -19,7 +19,7 @@ jobs:
 
   test:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
     steps:
     - uses: actions/checkout@v4
 
@@ -37,7 +37,7 @@ jobs:
 
   integration-test:
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 50
 
     steps:
     - uses: actions/checkout@v4
@@ -78,4 +78,68 @@ jobs:
 
     - name: IntegrationTest
       run: INTEGRATION=TRUE RPC_MODE="RoundRobin" RPC_URLS="http://localhost:26657,http://localhost:26658,http://localhost:26659" /usr/bin/go test -timeout 30m -run '^(TestExternalTestSuite|TestExternalMultiTestSuite)$' github.com/allora-network/allora-chain/test/integration -v
+
+    # The diagnostic steps below never affect the job result.
+    - name: Report validator state
+      if: failure() || cancelled()
+      continue-on-error: true
+      timeout-minutes: 1
+      shell: bash
+      run: |
+        set +e
+        # Prints "unreachable" when the node gives no JSON and "absent" when the
+        # field is missing, which is how an RPC error response looks.
+        rpc_field() {
+          local value
+          value=$(curl -fsS --connect-timeout 2 --max-time 5 "http://localhost:$1/$2" | jq -r "$3 // \"absent\"")
+          echo "${value:-unreachable}"
+        }
+        for i in 0 1 2; do
+          port=$((26657 + i))
+          echo "validator$i port=$port" \
+            "status.latest_block_height=$(rpc_field "$port" status .result.sync_info.latest_block_height)" \
+            "abci_info.last_block_height=$(rpc_field "$port" abci_info .result.response.last_block_height)"
+        done
+        docker ps -a
+        exit 0
+
+    # Logs are written outside the workspace so the upload cannot reach test/localnet,
+    # which holds keyrings.
+    - name: Capture validator logs
+      if: failure() || cancelled()
+      continue-on-error: true
+      timeout-minutes: 2
+      shell: bash
+      run: |
+        set +e
+        log_dir="$RUNNER_TEMP/validator-logs"
+        mkdir -p "$log_dir"
+        for node in validator0 validator1 validator2; do
+          echo "=== $node ==="
+          if ! docker inspect "$node" > /dev/null; then
+            echo "no logs captured"
+            continue
+          fi
+          log_file="$log_dir/$node.log"
+          docker logs -t "$node" > "$log_file" 2>&1 || echo "docker logs failed, $log_file may be partial"
+          # -a keeps grep printing matched lines when a log contains binary bytes.
+          grep -aE 'Invariants broken|panic|CONSENSUS FAILURE' "$log_file"
+          case $? in
+            0) ;;
+            1) echo "no lines match Invariants broken, panic, or CONSENSUS FAILURE" ;;
+            *) echo "could not scan $log_file" ;;
+          esac
+        done
+        exit 0
+
+    - name: Upload validator logs
+      if: failure() || cancelled()
+      continue-on-error: true
+      timeout-minutes: 2
+      uses: actions/upload-artifact@v7
+      with:
+        name: validator-logs-${{ github.run_id }}-${{ github.run_attempt }}
+        path: ${{ runner.temp }}/validator-logs/*.log
+        if-no-files-found: warn
+        retention-days: 14
 
