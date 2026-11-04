@@ -207,7 +207,10 @@ func NewKeeper(
 			collections.Uint64Key,
 			types.NonceValue,
 		),
-		epochCloseHandlers: &epochCloseHandlers{},
+		epochCloseHandlers: &epochCloseHandlers{
+			closeWorker:  nil,
+			closeReputer: nil,
+		},
 	}
 
 	schema, err := sb.Build()

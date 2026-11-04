@@ -238,18 +238,15 @@ func (k *Keeper) cancelTopicEpochs(ctx context.Context, topicID TopicId) error {
 	if err != nil {
 		return err
 	}
+	defer iter.Close()
 
 	var nonces []types.NonceV2
 	for ; iter.Valid(); iter.Next() {
 		key, err := iter.Key()
 		if err != nil {
-			_ = iter.Close()
 			return err
 		}
 		nonces = append(nonces, key.K2())
-	}
-	if err := iter.Close(); err != nil {
-		return err
 	}
 
 	for _, nonce := range nonces {

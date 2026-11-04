@@ -25,7 +25,10 @@ type epochCloseHandlers struct {
 // FSM transition side effects. Must be called after NewKeeper (module/testutil).
 func (k *Keeper) SetEpochCloseHandlers(closeWorker, closeReputer CloseNonceFn) {
 	if k.epochCloseHandlers == nil {
-		k.epochCloseHandlers = &epochCloseHandlers{}
+		k.epochCloseHandlers = &epochCloseHandlers{
+			closeWorker:  nil,
+			closeReputer: nil,
+		}
 	}
 	k.epochCloseHandlers.closeWorker = closeWorker
 	k.epochCloseHandlers.closeReputer = closeReputer
