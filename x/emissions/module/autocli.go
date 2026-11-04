@@ -1457,9 +1457,9 @@ while a worker submission window is open.`,
 					},
 				},
 				{
-					RpcMethod: "EnableTopicReputerWhitelist",
-					Use:       "enable-topic-reputer-whitelist [sender] [topic_id]",
-					Short:     "Enable reputer whitelist for a topic",
+					RpcMethod: "DisableTopicReputerWhitelist",
+					Use:       "disable-topic-reputer-whitelist [sender] [topic_id]",
+					Short:     "Disable reputer whitelist for a topic",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "sender"},
 						{ProtoField: "topic_id"},
