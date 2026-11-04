@@ -69,12 +69,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 * [#968](https://github.com/allora-network/allora-chain/pull/968) Per-topic `max_top_inferers_to_reward`, required within the global range, with migration v16
 * [#969](https://github.com/allora-network/allora-chain/pull/969) New global `min_top_inferers_to_reward` as the floor for the per-topic inferer cap (default `5`)
-* [#1025](https://github.com/allora-network/allora-chain/pull/1025) Split the worker whitelist into sibling inferer (existing worker lists) and forecaster whitelists: global/topic lists, enable/disable msgs, queries, events, `create-topic` flag `enable_forecaster_whitelist`, param `global_forecaster_whitelist_enabled` (default `true`), with v16 migration copying worker state into the forecaster lists.
+* [#1025](https://github.com/allora-network/allora-chain/pull/1025) Split the worker whitelist into sibling inferer (existing worker lists) and forecaster whitelists: global/topic lists, enable/disable msgs, queries, events, `create-topic` flag `enable_forecaster_whitelist`, param `global_forecaster_whitelist_enabled` (default `true`).
 
 ### Changed
 
 * [#968](https://github.com/allora-network/allora-chain/pull/968) The global `max_top_inferers_to_reward` now rejects zero and serves as the live ceiling for the per-topic cap; score-history retention still uses the global value.
-* [#1025](https://github.com/allora-network/allora-chain/pull/1025) `InsertWorkerPayload` now gates inferences via the worker (inferer) whitelist and forecasts via the forecaster whitelist; a bundle that carries both is rejected unless the actor holds both permissions. `enable_forecaster_whitelist` is an independent opt-in on `CreateNewTopic` (default `false`, like `enable_worker_whitelist`/`enable_reputer_whitelist`), so new topics created without the flag have ungated forecasts even when `enable_worker_whitelist` is set; the v16 migration copies worker gate state and entries to the forecaster lists for existing topics, preserving pre-upgrade behavior. The `create-topic` CLI gains a new required positional arg for the flag.
+* [#1025](https://github.com/allora-network/allora-chain/pull/1025) `InsertWorkerPayload` now gates inferences via the worker (inferer) whitelist and forecasts via the forecaster whitelist; a bundle that carries both is rejected unless the actor holds both permissions. `enable_forecaster_whitelist` is an independent opt-in on `CreateNewTopic` (default `false`, like `enable_worker_whitelist`/`enable_reputer_whitelist`), so new topics created without the flag have ungated forecasts even when `enable_worker_whitelist` is set. The `create-topic` CLI gains a new required positional arg for the flag.
 
 ### Deprecated
 
