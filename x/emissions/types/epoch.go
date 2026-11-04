@@ -71,6 +71,8 @@ func NewEpoch(nonce NonceV2, topic Topic, startAt time.Time) Epoch {
 			OpenAt:  reputerOpenAt,
 			CloseAt: reputerOpenAt.Add(time.Duration(extraLag+topic.EpochLength) * time.Second),
 		},
+		// The keeper assigns the block height before the epoch is stored.
+		StartBlockHeight:            0,
 		Epsilon:                     topic.Epsilon,
 		TopicWorkerSubmissionWindow: topic.WorkerSubmissionWindow,
 		TopicGroundTruthLag:         topic.GroundTruthLag,

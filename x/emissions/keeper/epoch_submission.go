@@ -34,7 +34,7 @@ func (k *Keeper) GetEpochByLegacyNonce(
 			return epoch, true, nil
 		}
 	}
-	return types.Epoch{}, false, nil
+	return types.Epoch{}, false, nil //nolint:exhaustruct // found is false, so the epoch value is unused
 }
 
 // TimeWithinWindow reports whether now is inside [OpenAt, CloseAt] inclusive.

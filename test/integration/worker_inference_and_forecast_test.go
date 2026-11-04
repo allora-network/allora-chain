@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/cosmos/cosmos-sdk/types/tx/signing"
@@ -35,7 +36,6 @@ func InsertSingleWorkerPayload(m testCommon.TestConfig, topic *types.Topic, bloc
 		return errors.New("values can not be empty")
 	}
 	ctx := context.Background()
-	// Nonce: calculate from EpochLastRan + EpochLength
 	topicId := topic.Id
 	nonce := types.Nonce{BlockHeight: blockHeight}
 	// Define inferer address as Bob's address
@@ -105,33 +105,127 @@ func InsertSingleWorkerPayload(m testCommon.TestConfig, topic *types.Topic, bloc
 	return nil
 }
 
-// Worker Bob inserts inference and forecast
-func InsertWorkerBundle(m testCommon.TestConfig, topic *types.Topic) (int64, error) {
+// latestUnfulfilledWorkerNonce returns the newest worker nonce the scheduler has opened
+// and not yet closed. Zero means none is open.
+func latestUnfulfilledWorkerNonce(m testCommon.TestConfig, topicID uint64) (int64, error) {
 	ctx := context.Background()
-	currentBlock, err := m.Client.BlockHeight(ctx)
+	resp, err := m.Client.QueryEmissions().GetUnfulfilledWorkerNonces(ctx, &types.GetUnfulfilledWorkerNoncesRequest{
+		TopicId: topicID,
+	})
 	if err != nil {
 		return 0, err
 	}
-	topicResponse, err := m.Client.QueryEmissions().GetTopic(ctx, &types.GetTopicRequest{TopicId: topic.Id})
-	if err != nil {
-		return 0, err
+	if resp.Nonces == nil {
+		return 0, nil
 	}
-	freshTopic := topicResponse.Topic
+	var latest int64
+	for _, nonce := range resp.Nonces.Nonces {
+		if nonce != nil && nonce.BlockHeight > latest {
+			latest = nonce.BlockHeight
+		}
+	}
+	return latest, nil
+}
 
-	// Insert and fulfill nonces for the last two epochs
-	blockHeightEval := freshTopic.EpochLastEnded
-	m.T.Log(time.Now(), "Inserting worker bundle for blockHeightEval: ", blockHeightEval, "; Current block: ", currentBlock)
-	err = InsertSingleWorkerPayload(m, freshTopic, blockHeightEval)
-	if err != nil {
-		return 0, err
+// submitWorkerOnOpenNonce keeps trying the newest open worker nonce until one is accepted.
+// The nonce is the epoch start height. EpochLastEnded is the churn height and is not opened.
+func submitWorkerOnOpenNonce(m testCommon.TestConfig, topic *types.Topic) (int64, error) {
+	deadline := time.Now().Add(90 * time.Second)
+	var lastErr error
+	for time.Now().Before(deadline) {
+		nonce, err := latestUnfulfilledWorkerNonce(m, topic.Id)
+		if err != nil {
+			return 0, err
+		}
+		if nonce == 0 {
+			time.Sleep(time.Second)
+			continue
+		}
+		m.T.Log(time.Now(), "Inserting worker bundle for nonce", nonce)
+		err = InsertSingleWorkerPayload(m, topic, nonce)
+		if err == nil {
+			return nonce, nil
+		}
+		if !retryableSubmissionErr(err) {
+			return 0, err
+		}
+		lastErr = err
+		m.T.Log(time.Now(), "Worker payload not accepted yet:", err)
+		time.Sleep(time.Second)
 	}
-	return blockHeightEval, nil
+	if lastErr == nil {
+		lastErr = errors.New("no unfulfilled worker nonce")
+	}
+	return 0, fmt.Errorf("worker window did not accept a payload: %w", lastErr)
+}
+
+// submitReputerOnOpenWindow submits losses for the worker nonce once its reputer window is open.
+func submitReputerOnOpenWindow(m testCommon.TestConfig, topic *types.Topic, nonce int64) error {
+	deadline := time.Now().Add(90 * time.Second)
+	var lastErr error
+	for time.Now().Before(deadline) {
+		err := InsertReputerBundle(m, topic, nonce)
+		if err == nil {
+			return nil
+		}
+		if !retryableSubmissionErr(err) {
+			return err
+		}
+		lastErr = err
+		m.T.Log(time.Now(), "Reputer payload not accepted yet:", err)
+		time.Sleep(time.Second)
+	}
+	if lastErr == nil {
+		lastErr = errors.New("reputer window did not open")
+	}
+	return fmt.Errorf("reputer window did not accept a payload: %w", lastErr)
+}
+
+func waitForNetworkLossBundle(m testCommon.TestConfig, topicID uint64, nonce int64) error {
+	ctx := context.Background()
+	deadline := time.Now().Add(90 * time.Second)
+	var lastErr error
+	for time.Now().Before(deadline) {
+		result, err := m.Client.QueryEmissions().GetNetworkLossBundleAtBlock(ctx, &types.GetNetworkLossBundleAtBlockRequest{
+			TopicId:     topicID,
+			BlockHeight: nonce,
+		})
+		if err == nil && result != nil && result.LossBundle != nil {
+			return nil
+		}
+		lastErr = err
+		time.Sleep(time.Second)
+	}
+	if lastErr == nil {
+		lastErr = errors.New("loss bundle missing")
+	}
+	return fmt.Errorf("network loss bundle was not stored for nonce %d: %w", nonce, lastErr)
+}
+
+// retryableSubmissionErr reports errors that mean the epoch window is not ready yet.
+func retryableSubmissionErr(err error) bool {
+	if err == nil {
+		return false
+	}
+	msg := err.Error()
+	for _, fragment := range []string{
+		"unfulfilled nonce not found",
+		"nonce still unfulfilled",
+		"window not available",
+		"window not open",
+		"not in worker submission",
+		"not in reputer submission",
+	} {
+		if strings.Contains(msg, fragment) {
+			return true
+		}
+	}
+	return false
 }
 
 // register alice as a reputer in topic 1, then check success
 func InsertReputerBundle(m testCommon.TestConfig, topic *types.Topic, BlockHeightCurrent int64) error {
 	ctx := context.Background()
-	// Nonce: calculate from EpochLastRan + EpochLength
 	topicId := topic.Id
 	// Define inferer address as Bob's address, reputer as Alice's
 	workerAddr := m.BobAddr
@@ -256,71 +350,33 @@ func addGlobalActor(m testCommon.TestConfig, address string) {
 func WorkerInferenceAndForecastChecks(m testCommon.TestConfig) {
 	ctx := context.Background()
 	m.T.Log(time.Now(), "--- START  Worker Inference, Forecast and Reputation test ---")
-	// Nonce: calculate from EpochLastRan + EpochLength
 	addGlobalActor(m, m.BobAddr)
 	addGlobalActor(m, m.AliceAddr)
 
-	topic, err := waitForNextChurningBlock(m, m.TopicID)
-	if err != nil {
-		require.NoError(m.T, err)
-	}
+	topicResponse, err := m.Client.QueryEmissions().GetTopic(ctx, &types.GetTopicRequest{TopicId: m.TopicID})
+	require.NoError(m.T, err)
+	topic := topicResponse.Topic
+
 	m.T.Log(time.Now(), "--- Insert Worker Bundle ---")
-	// Waiting for ground truth lag to pass
-	m.T.Log(time.Now(), "--- Waiting to Insert Worker Bundle ---")
-	blockHeightNonce, err := RunWithRetry(m, 3, 2*time.Second, func() (int64, error) {
-		topicResponse, err := m.Client.QueryEmissions().GetTopic(ctx, &types.GetTopicRequest{TopicId: topic.Id})
-		if err != nil {
-			return 0, err
-		}
-		topic := topicResponse.Topic
-		_, err = InsertWorkerBundle(m, topic) // Assuming InsertReputerBundle returns (int, error)
-		if err != nil {
-			return 0, err
-		}
-		return topic.EpochLastEnded, err
-	})
+	nonce, err := submitWorkerOnOpenNonce(m, topic)
 	if err != nil {
 		m.T.Log(time.Now(), "--- Failed inserting worker payload ---")
 		require.NoError(m.T, err)
 	}
-	m.T.Log(time.Now(), fmt.Sprintf("--- Waiting for block %d ---", blockHeightNonce+topic.GroundTruthLag))
-	err = m.Client.WaitForBlockHeight(ctx, blockHeightNonce+topic.GroundTruthLag)
-	if err != nil {
-		m.T.Log(time.Now(), "--- Failed waiting for ground truth lag ---")
-		require.NoError(m.T, err)
-	}
 
 	m.T.Log(time.Now(), "--- Insert Reputer Bundle ---")
-	err = InsertReputerBundle(m, topic, blockHeightNonce)
+	err = submitReputerOnOpenWindow(m, topic, nonce)
 	if err != nil {
 		m.T.Log(time.Now(), "--- Failed inserting reputer payload ---")
 		require.NoError(m.T, err)
 	}
 
-	m.T.Log(time.Now(), fmt.Sprintf("--- Waiting for block %d ---", blockHeightNonce+topic.GroundTruthLag+topic.EpochLength))
-	err = m.Client.WaitForBlockHeight(ctx, blockHeightNonce+topic.GroundTruthLag+topic.EpochLength)
+	m.T.Log(time.Now(), "--- Wait for network loss bundle ---")
+	err = waitForNetworkLossBundle(m, topic.Id, nonce)
 	if err != nil {
-		m.T.Log(time.Now(), "--- Failed waiting for epoch length ---")
+		m.T.Log(time.Now(), "--- Failed waiting for network loss bundle ---")
 		require.NoError(m.T, err)
 	}
-
-	ValidateGetNetworkLossBundle(m, topic.Id, blockHeightNonce)
+	ValidateGetNetworkLossBundle(m, topic.Id, nonce)
 	m.T.Log(time.Now(), "--- END  Worker Inference, Forecast and Reputation test ---")
-}
-
-// RunWithRetry retries a function that returns an error, n times
-func RunWithRetry(m testCommon.TestConfig, retryCount int, sleep time.Duration, operation func() (int64, error)) (int64, error) {
-	var (
-		err error
-		val int64
-	)
-	for i := 0; i < retryCount; i++ {
-		val, err = operation()
-		if err == nil {
-			return val, nil // Success, no need to retry
-		}
-		m.T.Log(time.Now(), fmt.Sprintf("Attempt %d/%d failed, error: %s\n", i+1, retryCount, err))
-		time.Sleep(sleep) // Optional: wait before retrying
-	}
-	return 0, fmt.Errorf("after %d attempts, last error: %s", retryCount, err)
 }

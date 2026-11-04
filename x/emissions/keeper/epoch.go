@@ -5,9 +5,12 @@ import (
 	"errors"
 
 	"cosmossdk.io/collections"
+	errorsmod "cosmossdk.io/errors"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+
 	"github.com/allora-network/allora-chain/fsm"
 	"github.com/allora-network/allora-chain/x/emissions/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 type EpochFSMSymbol int
@@ -123,6 +126,24 @@ func (k *Keeper) StartNewEpoch(ctx context.Context, topicID TopicId) error {
 	if err != nil {
 		return err
 	}
+	// The epoch start height is stored as the worker nonce, and a nonce of 0 is rejected.
+	if sdkCtx.BlockHeight() < 1 {
+		return errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "cannot start an epoch at block height %d", sdkCtx.BlockHeight())
+	}
+	// Worker nonces are keyed by block height. A second epoch opened in the same block
+	// would schedule another close against the nonce the first close already fulfilled.
+	clash, err := k.topicHasEpochAtStartHeight(ctx, topicID, sdkCtx.BlockHeight())
+	if err != nil {
+		return err
+	}
+	if clash {
+		sdkCtx.Logger().Info(
+			"skipping StartNewEpoch because a live epoch already starts at this block",
+			"topicId", topicID,
+			"blockHeight", sdkCtx.BlockHeight(),
+		)
+		return nil
+	}
 
 	nonce, err := k.AllocateNextEpochNonce(ctx, topicID)
 	if err != nil {
@@ -165,6 +186,27 @@ func (k *Keeper) GetEpoch(ctx context.Context, topicID TopicId, nonce types.Nonc
 	return k.epochs.Get(ctx, collections.Join(topicID, nonce))
 }
 
+// topicHasEpochAtStartHeight reports whether a still-stored epoch for the topic
+// already uses this block as its start height.
+func (k *Keeper) topicHasEpochAtStartHeight(ctx context.Context, topicID TopicId, height int64) (bool, error) {
+	rng := collections.NewPrefixedPairRange[TopicId, types.NonceV2](topicID)
+	iter, err := k.epochs.Iterate(ctx, rng)
+	if err != nil {
+		return false, err
+	}
+	defer iter.Close()
+	for ; iter.Valid(); iter.Next() {
+		epoch, err := iter.Value()
+		if err != nil {
+			return false, err
+		}
+		if epoch.StartBlockHeight == height {
+			return true, nil
+		}
+	}
+	return false, nil
+}
+
 // OnTopicActivated starts the first epoch and registers the periodic new-epoch task for the topic.
 func (k *Keeper) OnTopicActivated(ctx context.Context, topicID TopicId) error {
 	if k.schedulerKeeper == nil {
@@ -188,34 +230,40 @@ func (k *Keeper) OnTopicInactivated(ctx context.Context, topicID TopicId) error 
 	return k.unschedulePeriodicNewEpoch(ctx, topicID)
 }
 
-// cancelTopicEpochs cancels every live epoch for the topic. Keys are collected first so
-// CancelEpoch can remove entries without mutating the store during iteration.
+// cancelTopicEpochs cancels every live epoch for the topic. The iterator is closed
+// before CancelEpoch removes those entries.
 func (k *Keeper) cancelTopicEpochs(ctx context.Context, topicID TopicId) error {
-	rng := collections.NewPrefixedPairRange[TopicId, types.NonceV2](topicID)
-	iter, err := k.epochs.Iterate(ctx, rng)
+	nonces, err := k.liveTopicEpochNonces(ctx, topicID)
 	if err != nil {
 		return err
 	}
-
-	var nonces []types.NonceV2
-	for ; iter.Valid(); iter.Next() {
-		key, err := iter.Key()
-		if err != nil {
-			_ = iter.Close()
-			return err
-		}
-		nonces = append(nonces, key.K2())
-	}
-	if err := iter.Close(); err != nil {
-		return err
-	}
-
 	for _, nonce := range nonces {
 		if err := k.CancelEpoch(ctx, topicID, nonce); err != nil {
 			return err
 		}
 	}
 	return nil
+}
+
+// liveTopicEpochNonces returns the nonces of epochs still stored for the topic.
+// The iterator is closed before the caller mutates that store.
+func (k *Keeper) liveTopicEpochNonces(ctx context.Context, topicID TopicId) ([]types.NonceV2, error) {
+	rng := collections.NewPrefixedPairRange[TopicId, types.NonceV2](topicID)
+	iter, err := k.epochs.Iterate(ctx, rng)
+	if err != nil {
+		return nil, err
+	}
+	defer iter.Close()
+
+	var nonces []types.NonceV2
+	for ; iter.Valid(); iter.Next() {
+		key, err := iter.Key()
+		if err != nil {
+			return nil, err
+		}
+		nonces = append(nonces, key.K2())
+	}
+	return nonces, nil
 }
 
 func (k *Keeper) applyEpochTransition(ctx context.Context, topicID TopicId, nonce types.NonceV2, symbol EpochFSMSymbol) error {

@@ -90,7 +90,13 @@ func (q Querier) ScheduledTasks(ctx context.Context, req *types.QueryScheduledTa
 	pagination := req.Pagination
 	if req.From != nil {
 		if pagination == nil {
-			pagination = &query.PageRequest{}
+			pagination = &query.PageRequest{
+				Key:        nil,
+				Offset:     0,
+				Limit:      0,
+				CountTotal: false,
+				Reverse:    false,
+			}
 		} else {
 			copied := *pagination
 			pagination = &copied

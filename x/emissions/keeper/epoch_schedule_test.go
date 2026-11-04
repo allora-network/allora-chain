@@ -90,7 +90,8 @@ func (s *KeeperTestSuite) TestActivateTopicStartsEpochAndPeriodicTask() {
 	s.Require().Equal(ctx.BlockTime().Add(60*time.Second), *periodic.ScheduledFor)
 
 	// Advance past ScheduledFor (due check uses BlockTime.After, so equality is not enough).
-	ctx = ctx.WithBlockTime(ctx.BlockTime().Add(60*time.Second + time.Nanosecond))
+	// Height moves with time so the new epoch does not reuse the live epoch's start block.
+	ctx = ctx.WithBlockHeight(ctx.BlockHeight() + 1).WithBlockTime(ctx.BlockTime().Add(60*time.Second + time.Nanosecond))
 	s.Require().NoError(s.SchedulerKeeper().BeginBlock(ctx))
 
 	nextNonce, found, err := s.EmissionsKeeper().GetTopicLastEpochNonce(ctx, topicId)
