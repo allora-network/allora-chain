@@ -591,6 +591,71 @@ func (s *KeeperTestSuite) TestEpochFSMCancelFromPendingCompletion() {
 	s.Require().ErrorIs(err, collections.ErrNotFound)
 }
 
+func (s *KeeperTestSuite) TestCompletePrunesRecordsOnlyWhenRewardNonceDiffers() {
+	for _, keep := range []bool{true, false} {
+		ctx := s.Ctx().WithBlockHeight(9_000)
+		topicId := s.CreateTopic(
+			testutil.WithEpochLength(100),
+			testutil.WithGroundTruthLag(100),
+			testutil.WithWorkerSubmissionWindow(10),
+		)
+		s.Require().NoError(s.EmissionsKeeper().StartNewEpoch(ctx, topicId))
+
+		lastNonce, found, err := s.EmissionsKeeper().GetTopicLastEpochNonce(ctx, topicId)
+		s.Require().NoError(err)
+		s.Require().True(found)
+		epoch, err := s.EmissionsKeeper().GetEpoch(ctx, topicId, lastNonce)
+		s.Require().NoError(err)
+		topic, err := s.TopicKeeper().GetTopic(ctx, topicId)
+		s.Require().NoError(err)
+
+		ctx = ctx.WithBlockTime(epoch.WorkerSubmissionWindow.CloseAt.Add(time.Nanosecond))
+		s.Require().NoError(s.SchedulerKeeper().BeginBlock(ctx))
+		ctx = ctx.WithBlockTime(epoch.ReputerSubmissionWindow.OpenAt.Add(time.Nanosecond))
+		s.Require().NoError(s.SchedulerKeeper().BeginBlock(ctx))
+
+		height := epoch.LegacyNonce().BlockHeight
+		s.Require().NoError(s.WorkerKeeper().InsertActiveInferences(ctx, topicId, height, types.Inferences{
+			Inferences: []*types.Inference{{
+				TopicId:     topicId,
+				BlockHeight: height,
+				Values:      []alloraMath.Dec{alloraMath.NewDecFromInt64(1)},
+				Inferer:     s.AddrsStr(0),
+			}},
+		}))
+		otherHeight := height + 1
+		s.Require().NoError(s.WorkerKeeper().InsertActiveInferences(ctx, topicId, otherHeight, types.Inferences{
+			Inferences: []*types.Inference{{
+				TopicId:     topicId,
+				BlockHeight: otherHeight,
+				Values:      []alloraMath.Dec{alloraMath.NewDecFromInt64(2)},
+				Inferer:     s.AddrsStr(1),
+			}},
+		}))
+		// An empty reputer close soft-fails and does not write TopicRewardNonce,
+		// so the value set here is what complete uses.
+		if keep {
+			s.Require().NoError(s.TopicKeeper().SetTopicRewardNonce(ctx, topicId, height))
+		}
+
+		ctx = ctx.WithBlockTime(epoch.ReputerSubmissionWindow.CloseAt.Add(time.Nanosecond))
+		s.Require().NoError(s.SchedulerKeeper().BeginBlock(ctx))
+		_, err = s.EmissionsKeeper().GetEpoch(ctx, topicId, lastNonce)
+		s.Require().ErrorIs(err, collections.ErrNotFound)
+
+		keptAtNonce, err := s.WorkerKeeper().GetInferencesAtBlock(ctx, topic, height, false)
+		s.Require().NoError(err)
+		keptOther, err := s.WorkerKeeper().GetInferencesAtBlock(ctx, topic, otherHeight, false)
+		s.Require().NoError(err)
+		s.Require().Len(keptOther.Inferences, 1)
+		if keep {
+			s.Require().Len(keptAtNonce.Inferences, 1, "complete must leave records while this height is the reward nonce")
+			continue
+		}
+		s.Require().Empty(keptAtNonce.Inferences, "complete must prune records when the reward nonce is a different height")
+	}
+}
+
 func countTypedEvents(ctx sdk.Context, match func(sdk.Msg) bool) int {
 	n := 0
 	for _, ev := range ctx.EventManager().Events() {
