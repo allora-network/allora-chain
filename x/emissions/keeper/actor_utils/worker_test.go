@@ -54,7 +54,7 @@ func (s *WorkerTestSuite) TestCloseWorkerNonce() {
 		},
 	}
 	for _, tt := range tests {
-		s.T().Run(tt.name, func(t *testing.T) {
+		s.Run(tt.name, func() {
 			// Create a MULTI topic
 			height := tt.args.blockHeight
 			s.WithBlockHeight(height)

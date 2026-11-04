@@ -120,6 +120,8 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topic types.Topic, nonc
 		return err
 	}
 
+	// closeActiveForecastsSet can drop a forecast left with fewer than two
+	// accepted inferers, so this list can be shorter than activeForecastAddresses.
 	finalActiveForecasterAddresses := make([]string, len(activeForecasts.Forecasts))
 	for i := range activeForecasts.Forecasts {
 		finalActiveForecasterAddresses[i] = activeForecasts.Forecasts[i].Forecaster

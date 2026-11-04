@@ -262,7 +262,13 @@ func (inputInference *InputInference) ValidateWithLimits(
 	return nil
 }
 
-func ValidateForecastContents(topicId uint64, forecaster string, blockHeight BlockHeight, elements []*ForecastElement) error {
+func ValidateForecastContents(
+	topicId uint64,
+	forecaster string,
+	blockHeight BlockHeight,
+	elements []*ForecastElement,
+	noDupes bool,
+) error {
 	if err := ValidateTopicId(topicId); err != nil {
 		return errors.Wrap(err, "forecast topic id is invalid")
 	}
@@ -273,13 +279,13 @@ func ValidateForecastContents(topicId uint64, forecaster string, blockHeight Blo
 		return errors.Wrap(err, "forecast block height is invalid")
 	}
 
-	if err := ValidateForecastElements(elements); err != nil {
+	if err := ValidateForecastElements(elements, noDupes); err != nil {
 		return errors.Wrap(err, "forecast elements are invalid")
 	}
 	return nil
 }
 
-func ValidateForecastElements(elements []*ForecastElement) error {
+func ValidateForecastElements(elements []*ForecastElement, noDupes bool) error {
 	if len(elements) == 0 {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "at least one forecast element must be provided")
 	}
@@ -287,6 +293,9 @@ func ValidateForecastElements(elements []*ForecastElement) error {
 	for _, el := range elements {
 		if err := el.Validate(); err != nil {
 			return errors.Wrap(err, "forecast element is invalid")
+		}
+		if !noDupes {
+			continue
 		}
 		if _, ok := seenInferers[el.Inferer]; ok {
 			return errors.Wrap(sdkerrors.ErrInvalidRequest, "duplicate inferer in forecast")
@@ -296,7 +305,7 @@ func ValidateForecastElements(elements []*ForecastElement) error {
 	return nil
 }
 
-// validate that a forecast follows the expected format
+// Validate validates that a forecast follows the expected format, while allowing inferer duplicates
 func (forecast *Forecast) Validate() error {
 	if forecast == nil {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "forecast cannot be nil")
@@ -306,6 +315,7 @@ func (forecast *Forecast) Validate() error {
 		forecast.Forecaster,
 		forecast.BlockHeight,
 		forecast.ForecastElements,
+		false,
 	); err != nil {
 		return errors.Wrap(err, "forecast contents are invalid")
 	}
@@ -313,6 +323,7 @@ func (forecast *Forecast) Validate() error {
 	return nil
 }
 
+// Validate validates that a forecast follows the expected format, while disallowing inferer duplicates
 func (inputForecast *InputForecast) Validate() error {
 	if inputForecast == nil {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "forecast cannot be nil")
@@ -332,6 +343,7 @@ func (inputForecast *InputForecast) Validate() error {
 		inputForecast.Forecaster,
 		inputForecast.BlockHeight,
 		forecastElements,
+		true,
 	); err != nil {
 		return errors.Wrap(err, "forecast contents are invalid")
 	}
