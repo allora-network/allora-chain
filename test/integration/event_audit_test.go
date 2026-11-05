@@ -212,6 +212,7 @@ func (a *eventAudit) auditMonthlyResetBlock() {
 }
 
 func (a *eventAudit) run(fromHeight, toHeight int64) {
+	a.seedTopicStatus(fromHeight - 1)
 	for height := fromHeight; height <= toHeight; height++ {
 		block, err := readChainBlock(a.ctx, a.m, height, func(format string, args ...any) {
 			a.failf(height, format, args...)
@@ -239,6 +240,11 @@ func (a *eventAudit) auditBlock(block chainBlock) {
 			continue
 		}
 		a.auditEpochNonceFields(block.height, event.typed)
+		if created, ok := event.typed.(*emissionstypes.EventCreateNewTopic); ok && created.Topic != nil {
+			if _, tracked := a.topicStatus[created.Topic.Id]; !tracked {
+				a.topicStatus[created.Topic.Id] = false
+			}
+		}
 		if status, ok := event.typed.(*emissionstypes.EventTopicStatusChanged); ok {
 			a.auditTopicStatus(block.height, facts, event.phase, status, topicTouchedAfter(block, i, status.TopicId))
 			a.topicStatus[status.TopicId] = status.IsActive
@@ -808,9 +814,23 @@ func (a *eventAudit) requireFreeSlotThreshold(height int64, event *emissionstype
 	}
 }
 
-// auditFinalTopicStatus replays the audited status events and compares the
-// resulting status of each topic with the queried one, so a status change with
-// no event fails.
+// seedTopicStatus records every topic's status before the audited range, so the
+// final comparison covers topics that emit no status event.
+func (a *eventAudit) seedTopicStatus(height int64) {
+	next, err := a.m.Client.QueryEmissions().GetNextTopicId(atHeight(a.ctx, height), &emissionstypes.GetNextTopicIdRequest{})
+	if err != nil {
+		a.failf(height, "GetNextTopicId: %v", err)
+		return
+	}
+	// Topic id 0 is reserved at genesis.
+	for topicId := uint64(1); topicId < next.NextTopicId; topicId++ {
+		a.topicStatus[topicId] = a.isTopicActive(height, topicId)
+	}
+}
+
+// auditFinalTopicStatus replays the audited status events over the seeded status
+// of every topic, created topics starting inactive, and compares the result with
+// the queried status, so a status change with no event fails.
 func (a *eventAudit) auditFinalTopicStatus(toHeight int64) {
 	for topicId, active := range a.topicStatus { //nolint:maprange // every entry is checked and the order does not matter
 		if queried := a.isTopicActive(toHeight, topicId); queried != active {
