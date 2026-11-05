@@ -44,7 +44,7 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topic types.Topic, nonc
 			)
 		}
 
-		_, fulfillErr := k.GetNonceKeeper().FulfillWorkerNonce(ctx, topic.Id, &nonce)
+		removed, fulfillErr := k.GetNonceKeeper().FulfillWorkerNonce(ctx, topic.Id, &nonce)
 		if fulfillErr != nil {
 			ctx.Logger().Error(
 				"Error fulfilling worker nonce during deferred cleanup",
@@ -52,6 +52,9 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topic types.Topic, nonc
 				"nonce", nonce,
 				"error", fulfillErr,
 			)
+		}
+		if err != nil && removed {
+			types.EmitNewNonceExpiredEvent(ctx, topic.Id, nonce.BlockHeight, types.ActorType_ACTOR_TYPE_INFERER_UNSPECIFIED, types.NonceExpiredReason_NONCE_EXPIRED_REASON_CLOSE_FAILED)
 		}
 
 		resetActiveErr := k.GetWorkerKeeper().ResetActiveWorkersForTopic(ctx, topic.Id)
@@ -249,7 +252,7 @@ func buildSortedAddressWeights(weightsByAddress map[string]alloraMath.Dec) ([]st
 //
 // Returns (inferer address set, finalized inferences) and also emits
 // EventEpochLabelRegistryFrozen so offchain indexers can track the committed
-// registry size for this epoch.
+// registry for this epoch: its label names in compact-id order.
 func closeActiveInferencesSet(
 	ctx sdk.Context,
 	k *keeper.Keeper,
@@ -271,9 +274,11 @@ func closeActiveInferencesSet(
 		return nil, nil, errorsmod.Wrap(err, "error setting final epoch label registry")
 	}
 
-	//nolint:gosec // registry size is bounded by MaxLabelsPerSubmission (uint64), safe to cast
-	registrySize := uint64(len(registry.Labels))
-	types.EmitNewEpochLabelRegistryFrozenEvent(ctx, topic.Id, nonce.BlockHeight, registrySize)
+	labelNames, err := registry.LabelNamesByID()
+	if err != nil {
+		return nil, nil, errorsmod.Wrap(err, "error reading the final epoch label registry")
+	}
+	types.EmitNewEpochLabelRegistryFrozenEvent(ctx, topic.Id, nonce.BlockHeight, labelNames)
 
 	for _, inference := range inferences.Inferences {
 		activeInfererAddressesMap[inference.Inferer] = true

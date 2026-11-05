@@ -507,14 +507,14 @@ func (s *WorkerTestSuite) TestProcessAndStoreNetworkInferencesNoOutliers() {
 
 // countFrozenEvents returns the number of EventEpochLabelRegistryFrozen
 // events currently on the given SDK context's event manager, along with the
-// RegistrySize field from the last such event (so callers can assert on it).
+// last such event (so callers can assert on its fields).
 // It uses sdk.ParseTypedEvent to reconstruct the typed event from its ABCI
 // representation, which keeps the helper agnostic to the proto package
 // version (e.g. v10 -> v11 bumps require no test changes) and reads
 // registry_size as a typed uint64 rather than a stringified attribute.
-func countFrozenEvents(ctx sdk.Context) (int, uint64) {
+func countFrozenEvents(ctx sdk.Context) (int, *types.EventEpochLabelRegistryFrozen) {
 	count := 0
-	var lastSize uint64
+	var last *types.EventEpochLabelRegistryFrozen
 	for _, ev := range ctx.EventManager().Events() {
 		msg, err := sdk.ParseTypedEvent(abci.Event(ev))
 		if err != nil {
@@ -525,9 +525,9 @@ func countFrozenEvents(ctx sdk.Context) (int, uint64) {
 			continue
 		}
 		count++
-		lastSize = frozen.RegistrySize
+		last = frozen
 	}
-	return count, lastSize
+	return count, last
 }
 
 // TestCloseActiveInferencesSet_EmitsEpochLabelRegistryFrozenEventOnce pins
@@ -603,15 +603,22 @@ func (s *WorkerTestSuite) TestCloseActiveInferencesSet_EmitsEpochLabelRegistryFr
 
 	s.Require().NoError(actorutils.CloseWorkerNonce(s.EmissionsKeeper(), s.Ctx(), topic, nonce))
 
-	after, size := countFrozenEvents(s.Ctx())
+	after, frozen := countFrozenEvents(s.Ctx())
 	s.Require().Equal(before+1, after,
 		"CloseWorkerNonce must emit exactly one EventEpochLabelRegistryFrozen")
-	s.Require().Equal(uint64(3), size,
+	s.Require().Equal(uint64(3), frozen.RegistrySize,
 		"registry_size must match the final active registry {a,b,c}")
+	s.Require().Equal([]string{"a", "b", "c"}, frozen.Labels,
+		"labels must be the final active registry in compact-id order")
 
 	storedRegistry, err := s.TopicKeeper().GetEpochLabelRegistry(s.Ctx(), topicId, blockHeight)
 	s.Require().NoError(err)
 	s.Require().Len(storedRegistry.Labels, 3)
+	// The event alone reconstructs the stored registry: labels[i] has id i+1.
+	for i, name := range frozen.Labels {
+		//nolint:gosec // i indexes a three-label registry
+		s.Require().Equal(types.TopicLabel{Id: uint32(i + 1), Name: name}, *storedRegistry.Labels[i])
+	}
 	s.Require().Equal("a", storedRegistry.Labels[0].Name)
 	s.Require().Equal("b", storedRegistry.Labels[1].Name)
 	s.Require().Equal("c", storedRegistry.Labels[2].Name)
@@ -644,4 +651,104 @@ func (s *WorkerTestSuite) TestCloseActiveInferencesSet_NoEventWhenActiveSetEmpty
 	after, _ := countFrozenEvents(s.Ctx())
 	s.Require().Equal(before, after,
 		"EventEpochLabelRegistryFrozen must not be emitted when the active inferer set is empty")
+}
+
+// nonceExpiredEvents collects every EventNonceExpired the manager holds, in
+// emission order.
+func nonceExpiredEvents(em sdk.EventManagerI) []*types.EventNonceExpired {
+	out := make([]*types.EventNonceExpired, 0)
+	for _, ev := range em.Events() {
+		msg, err := sdk.ParseTypedEvent(abci.Event(ev))
+		if err != nil {
+			continue
+		}
+		if typed, ok := msg.(*types.EventNonceExpired); ok {
+			out = append(out, typed)
+		}
+	}
+	return out
+}
+
+// A worker nonce that fails to close for lack of qualified inferers leaves
+// state unfulfilled during cleanup, emitting one CLOSE_FAILED event; a
+// successful close emits none.
+func (s *WorkerTestSuite) TestCloseWorkerNonceFailedEmitsNonceExpired() {
+	s.Run("failed close emits CLOSE_FAILED", func() {
+		s.SetupTest()
+		blockHeight := int64(101)
+		s.WithBlockHeight(blockHeight)
+
+		topicId := s.CreateTopic(testutil.WithOutputArity(types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI))
+		topic, err := s.TopicKeeper().GetTopic(s.Ctx(), topicId)
+		s.Require().NoError(err)
+
+		nonce := types.Nonce{BlockHeight: blockHeight}
+		s.Require().NoError(s.NonceKeeper().AddWorkerNonce(s.Ctx(), topicId, &nonce))
+
+		s.WithBlockHeight(blockHeight + topic.WorkerSubmissionWindow)
+
+		before := len(nonceExpiredEvents(s.Ctx().EventManager()))
+		err = actorutils.CloseWorkerNonce(s.EmissionsKeeper(), s.Ctx(), topic, nonce)
+		s.Require().ErrorIs(err, types.ErrNoQualifiedInferers)
+
+		events := nonceExpiredEvents(s.Ctx().EventManager())
+		s.Require().Len(events, before+1)
+		event := events[len(events)-1]
+		s.Require().Equal(topicId, event.TopicId)
+		s.Require().Equal(blockHeight, event.Nonce)
+		s.Require().Equal(types.ActorType_ACTOR_TYPE_INFERER_UNSPECIFIED, event.ActorType)
+		s.Require().Equal(types.NonceExpiredReason_NONCE_EXPIRED_REASON_CLOSE_FAILED, event.Reason)
+
+		// The nonce left state unfulfilled.
+		isUnfulfilled, err := s.NonceKeeper().IsWorkerNonceUnfulfilled(s.Ctx(), topicId, &nonce)
+		s.Require().NoError(err)
+		s.Require().False(isUnfulfilled)
+	})
+
+	s.Run("successful close emits none", func() {
+		s.SetupTest()
+		blockHeight := int64(101)
+		s.WithBlockHeight(blockHeight)
+
+		topicId := s.CreateTopic(testutil.WithOutputArity(types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI))
+		topic, err := s.TopicKeeper().GetTopic(s.Ctx(), topicId)
+		s.Require().NoError(err)
+
+		worker0 := s.AddrsStr(0)
+		_, err = s.EmissionsMsgServer().Register(s.Ctx(), &types.RegisterRequest{
+			Sender:    worker0,
+			TopicId:   topicId,
+			IsReputer: false,
+			Owner:     s.AddrsStr(4),
+		})
+		s.Require().NoError(err)
+
+		nonce := types.Nonce{BlockHeight: blockHeight}
+		s.Require().NoError(s.NonceKeeper().AddWorkerNonce(s.Ctx(), topicId, &nonce))
+
+		mustBounded := func(x string) alloraMath.BoundedExp40Dec {
+			return alloraMath.MustNewBoundedExp40DecFromString(x)
+		}
+		input := types.InputInference{
+			TopicId:     topicId,
+			BlockHeight: blockHeight,
+			Inferer:     worker0,
+			Value:       mustBounded("0"),
+			Values: []*types.InputLabeledValue{
+				{Label: "a", Value: mustBounded("0.1")},
+			},
+			ExtraData: nil,
+			Proof:     "",
+		}
+		inf, err := s.WorkerKeeper().NormalizeInputInference(s.Ctx(), topic, blockHeight, &input)
+		s.Require().NoError(err)
+		s.Require().NoError(s.WorkerKeeper().InsertInference(s.Ctx(), topicId, *inf))
+		s.Require().NoError(s.WorkerKeeper().AddActiveInferer(s.Ctx(), topicId, worker0))
+
+		s.WithBlockHeight(blockHeight + topic.WorkerSubmissionWindow)
+
+		before := len(nonceExpiredEvents(s.Ctx().EventManager()))
+		s.Require().NoError(actorutils.CloseWorkerNonce(s.EmissionsKeeper(), s.Ctx(), topic, nonce))
+		s.Require().Len(nonceExpiredEvents(s.Ctx().EventManager()), before)
+	})
 }

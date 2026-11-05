@@ -1208,7 +1208,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicMeritSortitionBlockedWhenWorkerWindo
 	createResult, err := msgServer.CreateNewTopic(ctx, createTopicMsg)
 	require.NoError(err)
 	topicId := createResult.TopicId
-	require.NoError(s.TopicKeeper().ActivateTopic(ctx, topicId))
+	require.NoError(s.TopicKeeper().ActivateTopic(ctx, topicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec()))
 
 	// Add a nonce whose window covers the current block.
 	newerNonce := &types.Nonce{BlockHeight: 5}
@@ -1360,7 +1360,7 @@ func (s *MsgServerTestSuite) setupActiveTopicWithOpenWSW(sender string) (sdk.Con
 	require := s.Require()
 	s.WithBlockHeight(10)
 	topicId := s.createTopicForWSWTests(sender)
-	require.NoError(s.TopicKeeper().ActivateTopic(ctx, topicId))
+	require.NoError(s.TopicKeeper().ActivateTopic(ctx, topicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec()))
 	require.NoError(s.NonceKeeper().AddWorkerNonce(ctx, topicId, &types.Nonce{BlockHeight: 5}))
 	s.WithBlockHeight(6)
 	return s.Ctx(), topicId
@@ -1426,7 +1426,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicMaxLabelsBlockedWhenWorkerWindowOpen
 	sender := s.AddrsStr(0)
 	s.WithBlockHeight(10)
 	topicId := s.createTopicForWSWTests(sender)
-	require.NoError(s.TopicKeeper().ActivateTopic(ctx, topicId))
+	require.NoError(s.TopicKeeper().ActivateTopic(ctx, topicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec()))
 
 	require.NoError(s.NonceKeeper().AddWorkerNonce(ctx, topicId, &types.Nonce{BlockHeight: 5}))
 	s.WithBlockHeight(6)
@@ -1465,7 +1465,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicWhitelistBlockedWhenWorkerWindowOpen
 	sender := s.AddrsStr(0)
 	s.WithBlockHeight(10)
 	topicId := s.createTopicForWSWTests(sender)
-	require.NoError(s.TopicKeeper().ActivateTopic(ctx, topicId))
+	require.NoError(s.TopicKeeper().ActivateTopic(ctx, topicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec()))
 
 	require.NoError(s.NonceKeeper().AddWorkerNonce(ctx, topicId, &types.Nonce{BlockHeight: 5}))
 	s.WithBlockHeight(6)
@@ -1504,7 +1504,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicLabelDefaultBlockedWhenWorkerWindowO
 	sender := s.AddrsStr(0)
 	s.WithBlockHeight(10)
 	topicId := s.createTopicForWSWTests(sender)
-	require.NoError(s.TopicKeeper().ActivateTopic(ctx, topicId))
+	require.NoError(s.TopicKeeper().ActivateTopic(ctx, topicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec()))
 
 	require.NoError(s.NonceKeeper().AddWorkerNonce(ctx, topicId, &types.Nonce{BlockHeight: 5}))
 	s.WithBlockHeight(6)
@@ -1546,7 +1546,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicWhitelistAllowedAfterWSWClosed() {
 	sender := s.AddrsStr(0)
 	s.WithBlockHeight(10)
 	topicId := s.createTopicForWSWTests(sender)
-	require.NoError(s.TopicKeeper().ActivateTopic(ctx, topicId))
+	require.NoError(s.TopicKeeper().ActivateTopic(ctx, topicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec()))
 
 	require.NoError(s.NonceKeeper().AddWorkerNonce(ctx, topicId, &types.Nonce{BlockHeight: 5}))
 	// 5 + 10 = 15, so block 16 is strictly past the window.
@@ -1597,7 +1597,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicLabelDefaultBlockedAtExactWSWCloseBl
 	sender := s.AddrsStr(0)
 	s.WithBlockHeight(10)
 	topicId := s.createTopicForWSWTests(sender)
-	require.NoError(s.TopicKeeper().ActivateTopic(ctx, topicId))
+	require.NoError(s.TopicKeeper().ActivateTopic(ctx, topicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec()))
 
 	require.NoError(s.NonceKeeper().AddWorkerNonce(ctx, topicId, &types.Nonce{BlockHeight: 5}))
 	// 5 + 10 = 15: the last block still inside the window and the exact block the
@@ -1734,7 +1734,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicWSWLockBlocksWhenOlderNonceStillWith
 	sender := s.AddrsStr(0)
 	s.WithBlockHeight(10)
 	topicId := s.createTopicForWSWTests(sender)
-	require.NoError(s.TopicKeeper().ActivateTopic(ctx, topicId))
+	require.NoError(s.TopicKeeper().ActivateTopic(ctx, topicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec()))
 
 	require.NoError(s.NonceKeeper().AddWorkerNonce(ctx, topicId, &types.Nonce{BlockHeight: 5}))
 	require.NoError(s.NonceKeeper().AddWorkerNonce(ctx, topicId, &types.Nonce{BlockHeight: 200}))
