@@ -377,6 +377,14 @@ func (a *eventAudit) auditNetworkLoss(height int64, event *emissionstypes.EventN
 	stored := response.LossBundle
 	bundle := event.Bundle
 	prefix := fmt.Sprintf("EventNetworkLossSet topic %d nonce %d ", event.TopicId, event.Nonce)
+	if bundle == nil {
+		a.failf(height, "%shas no bundle", prefix)
+		return
+	}
+	if stored == nil {
+		a.failf(height, "%shas no stored loss bundle", prefix)
+		return
+	}
 	if !bytes.Equal(bundle.ExtraData, stored.ExtraData) {
 		a.failf(height, "%sextra_data %x, stored %x", prefix, bundle.ExtraData, stored.ExtraData)
 	}
