@@ -582,7 +582,7 @@ func (k *StakingKeeper) AddReputerStake(
 		return errorsmod.Wrapf(err, "Setting total stake failed -- rolling back reputer and topic stake")
 	}
 
-	types.EmitNewAddStakeEvent(ctx, topicId, reputer, reputer, stakeToAdd, reputerAuthorityNew, topicStakeNew)
+	types.EmitNewAddStakeEvent(ctx, topicId, reputer, reputer, stakeToAdd, reputerAuthorityNew)
 	return nil
 }
 
@@ -699,7 +699,7 @@ func (k *StakingKeeper) AddDelegateStake(
 		return errorsmod.Wrapf(err, "AddDelegateStake Setting stake from delegators upon reputer failed")
 	}
 
-	types.EmitNewAddStakeEvent(ctx, topicId, reputer, delegator, stakeToAdd, stakeReputerAuthorityNew, topicStakeNew)
+	types.EmitNewAddStakeEvent(ctx, topicId, reputer, delegator, stakeToAdd, stakeReputerAuthorityNew)
 	return nil
 }
 
@@ -783,7 +783,6 @@ func (k *StakingKeeper) RemoveReputerStake(
 		reputer,
 		stakeToRemove,
 		reputerStakeNew,
-		topicStakeNew,
 	)
 
 	return nil
@@ -949,7 +948,6 @@ func (k *StakingKeeper) RemoveDelegateStake(
 		delegator,
 		stakeToRemove,
 		stakeReputerAuthorityNew,
-		topicStakeNew,
 	)
 
 	return nil

@@ -9,7 +9,6 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
 	appParams "github.com/allora-network/allora-chain/app/params"
-	"github.com/allora-network/allora-chain/x/emissions/types"
 	minttypes "github.com/allora-network/allora-chain/x/mint/types"
 )
 
@@ -49,7 +48,7 @@ func activateTopicIfWeightAtLeastGlobalMin(
 		}
 
 		if newTopicWeight.Gte(params.MinTopicWeight) {
-			err = ms.tk.ActivateTopic(ctx, topicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_ACTIVATED_BY_FUNDING, newTopicWeight, params.MinTopicWeight)
+			err = ms.tk.ActivateTopic(ctx, topicId)
 			if err != nil {
 				return err
 			}

@@ -30,9 +30,7 @@ message EventTokenomicsSet {
 }
 
 message EventEcosystemTokenMintSet {
-  // The height of the block the event is emitted in. The block already records
-  // it, so the field only duplicates it; kept for compatibility.
-  uint64 block_height = 1 [deprecated = true];
+  uint64 block_height = 1;
   string token_amount = 2 [
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
@@ -42,9 +40,7 @@ message EventEcosystemTokenMintSet {
 }
 
 message EventRewardCurrentBlockEmission {
-  // The height of the block the event is emitted in. The block already records
-  // it, so the field only duplicates it; kept for compatibility.
-  uint64 block_height = 1 [deprecated = true];
+  uint64 block_height = 1;
   string token_amount = 2 [
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
