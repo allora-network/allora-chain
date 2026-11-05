@@ -253,27 +253,32 @@ func (s *RewardsTestSuite) TestEmitRewardsEmitsForfeitureForTopicsWithoutRewardN
 	noNonceEvents := typedEvents[*types.EventTopicRewardForfeitedNoRewardNonce](em)
 	s.Require().NotEmpty(noNonceEvents)
 
-	forfeitByTopic := make(map[uint64]*types.EventTopicRewardForfeitedNoRewardNonce)
+	// Every topic forfeits once at each churn block where it has no reward nonce, and
+	// never at a block where it settles. Both topics churn every 3 blocks. Topic 1
+	// settles at 9, the reward for the nonce its first pass closed; topic 2 settles
+	// at 18 and 27, after each of its two passes.
+	forfeitEpochs := make(map[uint64][]int64)
 	for _, event := range noNonceEvents {
-		forfeitByTopic[event.TopicId] = event
 		s.Require().False(event.Amount.IsZero())
+		forfeitEpochs[event.TopicId] = append(forfeitEpochs[event.TopicId], event.Epoch)
 	}
-	forfeitedTopic1, ok := forfeitByTopic[topic1Id]
-	s.Require().True(ok, "topic 1 must have forfeited at least one reward")
+	s.Require().Equal([]int64{3, 6, 12, 15, 18, 21, 24, 27}, forfeitEpochs[topic1Id])
+	s.Require().Equal([]int64{12, 15, 21, 24}, forfeitEpochs[topic2Id])
+	s.Require().Len(forfeitEpochs, 2, "only the two topics forfeit")
+
+	settledAt := make(map[uint64][]int64)
+	for _, settled := range typedEvents[*types.EventRewardsSettled](em) {
+		if settled.ActorType == types.ActorType_ACTOR_TYPE_REPUTER {
+			settledAt[settled.TopicId] = append(settledAt[settled.TopicId], settled.BlockHeightTx)
+		}
+	}
+	s.Require().Equal([]int64{9}, settledAt[topic1Id])
+	s.Require().Equal([]int64{18, 27}, settledAt[topic2Id])
 
 	topic1After, err := s.TopicKeeper().GetTopic(s.Ctx(), topic1Id)
 	s.Require().NoError(err)
-	s.Require().Equal(topic1After.EpochLastEnded, forfeitedTopic1.Epoch,
+	s.Require().Equal(topic1After.EpochLastEnded, forfeitEpochs[topic1Id][len(forfeitEpochs[topic1Id])-1],
 		"the emitted epoch is the topic's last-ended epoch")
-
-	// Topic 2 forfeits only before its first nonce settles: its final forfeit
-	// predates the epoch its second pass settles at.
-	topic2After, err := s.TopicKeeper().GetTopic(s.Ctx(), topic2Id)
-	s.Require().NoError(err)
-	if topic2LastForfeit, ok := forfeitByTopic[topic2Id]; ok {
-		s.Require().Less(topic2LastForfeit.Epoch, topic2After.EpochLastEnded,
-			"the settling topic's last forfeit predates its last-ended epoch")
-	}
 
 	// No distribution ever fails in this scenario.
 	s.Require().Empty(typedEvents[*types.EventTopicRewardForfeitedDistributionFailed](em))
