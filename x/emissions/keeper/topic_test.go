@@ -713,16 +713,47 @@ func (s *KeeperTestSuite) TestUpdateTopicWeightAfterStakeChangeEmitsStakeChangeE
 	k := s.TopicKeeper()
 	topicId := uint64(1)
 
-	err := k.SetPreviousTopicWeight(ctx, topicId, alloraMath.NewDecFromInt64(10))
+	previousWeight := alloraMath.NewDecFromInt64(10)
+	topicStake := cosmosMath.NewInt(1000)
+	addedRevenue := cosmosMath.NewInt(100)
+	topic := s.MockTopic()
+	err := k.SetPreviousTopicWeight(ctx, topicId, previousWeight)
 	s.Require().NoError(err)
-	err = k.SetTopic(ctx, topicId, s.MockTopic())
+	err = k.SetTopic(ctx, topicId, topic)
 	s.Require().NoError(err)
+	s.Require().NoError(s.StakingKeeper().SetTopicStake(ctx, topicId, topicStake))
+	revenueBefore, err := k.GetTopicFeeRevenue(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().NoError(k.AddTopicFeeRevenue(ctx, topicId, addedRevenue))
+	feeRevenue := revenueBefore.Add(addedRevenue)
+
+	// Expected weight from the setup: EMA of S^μ·R^ν against the previous weight,
+	// with the topic's epoch-smoothed alpha.
+	params, err := s.ParamsKeeper().GetParams(ctx)
+	s.Require().NoError(err)
+	stakeDec, err := alloraMath.NewDecFromSdkInt(topicStake)
+	s.Require().NoError(err)
+	revenueDec, err := alloraMath.NewDecFromSdkInt(feeRevenue)
+	s.Require().NoError(err)
+	stakeTerm, err := alloraMath.Pow(stakeDec, params.TopicRewardStakeImportance)
+	s.Require().NoError(err)
+	revenueTerm, err := alloraMath.Pow(revenueDec, params.TopicRewardFeeRevenueImportance)
+	s.Require().NoError(err)
+	target, err := stakeTerm.Mul(revenueTerm)
+	s.Require().NoError(err)
+	blocksPerWeek, err := alloraMath.CalculateBlocksPerWeek(params.BlocksPerMonth)
+	s.Require().NoError(err)
+	alpha, err := alloraMath.GetSmoothedAlpha(topic.EpochLength, blocksPerWeek, params.TopicRewardAlpha)
+	s.Require().NoError(err)
+	expectedWeight, err := alloraMath.CalcEma(alpha, target, previousWeight, false)
+	s.Require().NoError(err)
+	s.Require().False(expectedWeight.Equal(previousWeight), "the setup must change the weight")
 
 	em := sdk.NewEventManager()
 	err = k.UpdateTopicWeightAfterStakeChange(ctx.WithEventManager(em), topicId)
 	s.Require().NoError(err)
 
-	stakeChangeEvents := 0
+	var stakeChange *types.EventTopicWeightUpdatedAfterStakeChange
 	epochPathEvents := 0
 	for _, ev := range em.Events() {
 		msg, err := sdk.ParseTypedEvent(abci.Event(ev))
@@ -731,14 +762,22 @@ func (s *KeeperTestSuite) TestUpdateTopicWeightAfterStakeChangeEmitsStakeChangeE
 		}
 		switch e := msg.(type) {
 		case *types.EventTopicWeightUpdatedAfterStakeChange:
-			stakeChangeEvents++
-			s.Require().Equal(topicId, e.TopicId)
+			s.Require().Nil(stakeChange, "exactly one stake-change weight event")
+			stakeChange = e
 		case *types.EventTopicWeightUpdated:
 			epochPathEvents++
 		}
 	}
-	s.Require().Equal(1, stakeChangeEvents)
 	s.Require().Equal(0, epochPathEvents)
+	s.Require().NotNil(stakeChange)
+	s.Require().Equal(topicId, stakeChange.TopicId)
+	s.Require().True(expectedWeight.Equal(stakeChange.NewWeight), "expected weight %s, got %s", expectedWeight, stakeChange.NewWeight)
+	s.Require().True(topicStake.Equal(stakeChange.TopicStake), "expected stake %s, got %s", topicStake, stakeChange.TopicStake)
+	s.Require().True(feeRevenue.Equal(stakeChange.TopicFeeRevenue), "expected revenue %s, got %s", feeRevenue, stakeChange.TopicFeeRevenue)
+
+	stored, _, err := k.GetPreviousTopicWeight(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().True(stored.Equal(stakeChange.NewWeight), "the emitted weight is the stored weight")
 }
 
 // TestUpdateTopicWeightAfterStakeChangeOnInactiveTopic verifies that removing stake from an
