@@ -167,6 +167,58 @@ func (s *KeeperTestSuite) TestEvictedTopicEmitsEvictedByHigherWeight() {
 	s.Require().False(storedLowest.Weight.Equal(highWeight), "the weights must differ for the assertions to tell them apart")
 }
 
+// A challenger with the same weight as the lowest topic in a full active set is
+// admitted, and the displaced topic's event says the eviction was a tie.
+func (s *KeeperTestSuite) TestEvictedTopicEmitsEvictedByEqualWeightOnTie() {
+	ctx := s.Ctx()
+	k := s.TopicKeeper()
+
+	params := types.DefaultParams()
+	params.MaxActiveTopicsPerBlock = 1
+	params.MinTopicWeight = alloraMath.MustNewDecFromString("0.0001")
+	s.Require().NoError(s.ParamsKeeper().SetParams(ctx, params))
+
+	epochLength := int64(100)
+	incumbentId := s.CreateTopic(testutil.WithEpochLength(epochLength), testutil.WithWorkerSubmissionWindow(epochLength))
+	challengerId := s.CreateTopic(testutil.WithEpochLength(epochLength), testutil.WithWorkerSubmissionWindow(epochLength))
+
+	s.Require().NoError(s.StakingKeeper().SetTopicStake(ctx, incumbentId, cosmosMath.NewInt(100)))
+	s.Require().NoError(k.ActivateTopic(ctx, incumbentId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec()))
+	s.Require().NoError(s.StakingKeeper().SetTopicStake(ctx, challengerId, cosmosMath.NewInt(100)))
+
+	challengerWeight, err := k.GetTopicWeightFromTopicId(ctx, challengerId)
+	s.Require().NoError(err)
+	topic, err := k.GetTopic(ctx, incumbentId)
+	s.Require().NoError(err)
+	storedLowest, noPrior, err := k.GetLowestActiveTopicWeightAtBlock(ctx, ctx.BlockHeight()+topic.EpochLength)
+	s.Require().NoError(err)
+	s.Require().False(noPrior)
+	s.Require().Equal(incumbentId, storedLowest.TopicId)
+	s.Require().True(storedLowest.Weight.Equal(challengerWeight), "the setup must tie: %s vs %s", storedLowest.Weight, challengerWeight)
+
+	em := sdk.NewEventManager()
+	s.Require().NoError(k.ActivateTopic(ctx.WithEventManager(em), challengerId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_ACTIVATED_BY_FUNDING, challengerWeight, params.MinTopicWeight))
+
+	var evicted *types.EventTopicStatusChanged
+	for _, ev := range em.Events() {
+		msg, err := sdk.ParseTypedEvent(abci.Event(ev))
+		if err != nil {
+			continue
+		}
+		if event, ok := msg.(*types.EventTopicStatusChanged); ok && event.TopicId == incumbentId {
+			evicted = event
+		}
+	}
+	s.Require().NotNil(evicted)
+	s.Require().False(evicted.IsActive)
+	s.Require().Equal(types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_EVICTED_BY_EQUAL_WEIGHT, evicted.Reason)
+	s.Require().True(evicted.Weight.Equal(evicted.ThresholdWeight), "a tie reports equal weight and threshold")
+
+	active, err := k.IsTopicActive(ctx, challengerId)
+	s.Require().NoError(err)
+	s.Require().True(active, "a tie still admits the challenger")
+}
+
 // TestInactivateTopicWithoutMinWeightReset_TopicNotFoundInBlockRemovesAllTopics
 // Tests that when a topic is not found in the block's active topics list, an error is returned.
 func (s *KeeperTestSuite) TestInactivateTopicWithoutMinWeightReset_TopicNotFoundInBlockRemovesAllTopics() {

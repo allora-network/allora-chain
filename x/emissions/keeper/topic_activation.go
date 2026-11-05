@@ -286,7 +286,12 @@ func (k *TopicKeeper) addTopicToActiveSetRespectingLimitsWithoutMinWeightReset(
 			sdkCtx.Logger().Warn("Topic cannot be activated due to less than lowest weight at block", "topicId", topicId, "block", block)
 			return &topicRefusedError{comparedWeight: weightAtLimit, lowestWeight: lowestWeight.Weight}
 		}
-		err = k.inactivateTopicWithoutMinWeightReset(ctx, lowestWeight.TopicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_EVICTED_BY_HIGHER_WEIGHT, lowestWeight.Weight, params.MinTopicWeight, weightAtLimit)
+		// A tie admits the challenger, so the reason says whether it was heavier.
+		evictionReason := types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_EVICTED_BY_HIGHER_WEIGHT
+		if weightAtLimit.Equal(lowestWeight.Weight) {
+			evictionReason = types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_EVICTED_BY_EQUAL_WEIGHT
+		}
+		err = k.inactivateTopicWithoutMinWeightReset(ctx, lowestWeight.TopicId, evictionReason, lowestWeight.Weight, params.MinTopicWeight, weightAtLimit)
 		if err != nil {
 			return err
 		}
