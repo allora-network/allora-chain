@@ -409,6 +409,97 @@ func (s *RewardsTestSuite) TestCloseReputerNonceTest_DeferExecWhenError() {
 	}
 }
 
+// A reputer nonce that fails to close (no usable losses) leaves state
+// unfulfilled during cleanup, emitting one EventNonceExpired with the
+// CLOSE_FAILED reason.
+func (s *RewardsTestSuite) TestCloseReputerNonceFailedEmitsNonceExpired() {
+	currentBlockHeight := int64(10)
+	s.WithBlockHeight(currentBlockHeight)
+
+	reputerIndexes := testutil.ReturnIndexes(0, 5)
+	workerIndexes := testutil.ReturnIndexes(5, 5)
+
+	topic := s.FullTopicSetup(workerIndexes, reputerIndexes)
+	s.Require().NoError(s.NonceKeeper().AddWorkerNonce(s.Ctx(), topic.Id, &types.Nonce{BlockHeight: currentBlockHeight}))
+	s.Require().NoError(s.NonceKeeper().AddReputerNonce(s.Ctx(), topic.Id, &types.Nonce{BlockHeight: currentBlockHeight}))
+
+	workerValues := testutil.GetWorkerValuesFromIndexes(workerIndexes, "100")
+	workerNonce := s.SetupInferences(topic.Id, currentBlockHeight, workerIndexes, workerValues...)
+
+	s.WithBlockHeight(currentBlockHeight + topic.WorkerSubmissionWindow)
+	s.Require().NoError(actorutils.CloseWorkerNonce(s.EmissionsKeeper(), s.Ctx(), topic, workerNonce))
+
+	s.WithBlockHeight(currentBlockHeight + topic.GroundTruthLag)
+
+	// Corrupt the reputers' losses by pointing them at unregistered workers,
+	// so the reputer close finds no usable loss and fails.
+	workerIndexes = testutil.ReturnIndexes(10, 5)
+	reputerValues := s.GetReputerValuesFromIndexes(reputerIndexes, workerIndexes, "0.1")
+	reputerNonce := types.Nonce{BlockHeight: currentBlockHeight}
+	s.Require().NoError(s.InsertReputerLossBundle(
+		topic.Id,
+		currentBlockHeight,
+		reputerIndexes,
+		testutil.WithReputerValues(reputerValues),
+		testutil.WithSkipNetworkInferences(),
+	))
+
+	before := len(typedEvents[*types.EventNonceExpired](s.Ctx().EventManager()))
+	err := actorutils.CloseReputerNonce(s.EmissionsKeeper(), s.Ctx(), topic, reputerNonce)
+	s.Require().Error(err)
+
+	events := typedEvents[*types.EventNonceExpired](s.Ctx().EventManager())
+	s.Require().Len(events, before+1)
+	event := events[len(events)-1]
+	s.Require().Equal(topic.Id, event.TopicId)
+	s.Require().Equal(currentBlockHeight, event.Nonce)
+	s.Require().Equal(types.ActorType_ACTOR_TYPE_REPUTER, event.ActorType)
+	s.Require().Equal(types.NonceExpiredReason_NONCE_EXPIRED_REASON_CLOSE_FAILED, event.Reason)
+
+	unfulfilled, err := s.NonceKeeper().IsReputerNonceUnfulfilled(s.Ctx(), topic.Id, &reputerNonce)
+	s.Require().NoError(err)
+	s.Require().False(unfulfilled)
+}
+
+// A reputer nonce that closes successfully is fulfilled, not expired, so it
+// emits no EventNonceExpired.
+func (s *RewardsTestSuite) TestCloseReputerNonceSucceededEmitsNoNonceExpired() {
+	currentBlockHeight := int64(10)
+	s.WithBlockHeight(currentBlockHeight)
+
+	reputerIndexes := testutil.ReturnIndexes(0, 5)
+	workerIndexes := testutil.ReturnIndexes(5, 5)
+
+	topic := s.FullTopicSetup(workerIndexes, reputerIndexes)
+	s.Require().NoError(s.NonceKeeper().AddWorkerNonce(s.Ctx(), topic.Id, &types.Nonce{BlockHeight: currentBlockHeight}))
+	s.Require().NoError(s.NonceKeeper().AddReputerNonce(s.Ctx(), topic.Id, &types.Nonce{BlockHeight: currentBlockHeight}))
+
+	workerValues := testutil.GetWorkerValuesFromIndexes(workerIndexes, "100")
+	workerNonce := s.SetupInferences(topic.Id, currentBlockHeight, workerIndexes, workerValues...)
+
+	s.WithBlockHeight(currentBlockHeight + topic.WorkerSubmissionWindow)
+	s.Require().NoError(actorutils.CloseWorkerNonce(s.EmissionsKeeper(), s.Ctx(), topic, workerNonce))
+
+	s.WithBlockHeight(currentBlockHeight + topic.GroundTruthLag)
+
+	reputerValues := s.GetReputerValuesFromIndexes(reputerIndexes, workerIndexes, "0.1")
+	reputerNonce := types.Nonce{BlockHeight: currentBlockHeight}
+	s.Require().NoError(s.InsertReputerLossBundle(
+		topic.Id,
+		currentBlockHeight,
+		reputerIndexes,
+		testutil.WithReputerValues(reputerValues),
+	))
+
+	before := len(typedEvents[*types.EventNonceExpired](s.Ctx().EventManager()))
+	s.Require().NoError(actorutils.CloseReputerNonce(s.EmissionsKeeper(), s.Ctx(), topic, reputerNonce))
+	s.Require().Len(typedEvents[*types.EventNonceExpired](s.Ctx().EventManager()), before)
+
+	unfulfilled, err := s.NonceKeeper().IsReputerNonceUnfulfilled(s.Ctx(), topic.Id, &reputerNonce)
+	s.Require().NoError(err)
+	s.Require().False(unfulfilled)
+}
+
 // Test defer execution of CloseWorkerNonce
 func (s *RewardsTestSuite) TestCloseWorkerNonce_DeferExecWhenError() {
 	currentBlockHeight := int64(20)
