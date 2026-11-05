@@ -234,6 +234,10 @@ func (a *eventAudit) auditBlock(block chainBlock) {
 			continue
 		}
 		a.coverage[proto.MessageName(event.typed)]++
+		if mismatch := parallelLengthMismatch(event.typed); mismatch != "" {
+			a.failf(block.height, "%s %s", proto.MessageName(event.typed), mismatch)
+			continue
+		}
 		a.auditEpochNonceFields(block.height, event.typed)
 		if status, ok := event.typed.(*emissionstypes.EventTopicStatusChanged); ok {
 			a.auditTopicStatus(block.height, facts, event.phase, status, topicTouchedAfter(block, i, status.TopicId))
@@ -242,6 +246,51 @@ func (a *eventAudit) auditBlock(block chainBlock) {
 		}
 		a.auditEvent(block.height, facts, event)
 	}
+}
+
+// parallelLengthMismatch describes an event whose parallel lists differ in length,
+// or returns "". Rules index these lists together, so a malformed payload is
+// reported here instead of crashing the audit.
+func parallelLengthMismatch(typed proto.Message) string {
+	check := func(pairs ...[2]int) string {
+		for _, pair := range pairs {
+			if pair[0] != pair[1] {
+				return fmt.Sprintf("has parallel lists of lengths %d and %d", pair[0], pair[1])
+			}
+		}
+		return ""
+	}
+	switch e := typed.(type) {
+	case *emissionstypes.EventScoresSet:
+		return check([2]int{len(e.Addresses), len(e.Scores)})
+	case *emissionstypes.EventEMAScoresSet:
+		return check([2]int{len(e.Addresses), len(e.Scores)}, [2]int{len(e.Addresses), len(e.IsActive)})
+	case *emissionstypes.EventRewardsSettled:
+		return check([2]int{len(e.Addresses), len(e.Rewards)})
+	case *emissionstypes.EventTopicRewardsSet:
+		return check([2]int{len(e.TopicIds), len(e.Rewards)})
+	case *emissionstypes.EventListeningCoefficientsSet:
+		return check([2]int{len(e.Addresses), len(e.Coefficients)})
+	case *emissionstypes.EventInfererNetworkRegretSet:
+		return check([2]int{len(e.Addresses), len(e.Regrets)})
+	case *emissionstypes.EventForecasterNetworkRegretSet:
+		return check([2]int{len(e.Addresses), len(e.Regrets)})
+	case *emissionstypes.EventNaiveInfererNetworkRegretSet:
+		return check([2]int{len(e.Addresses), len(e.Regrets)})
+	case *emissionstypes.EventInfererWeightsSet:
+		return check([2]int{len(e.Addresses), len(e.Weights)})
+	case *emissionstypes.EventForecasterWeightsSet:
+		return check([2]int{len(e.Addresses), len(e.Weights)})
+	case *emissionstypes.EventNetworkInferenceInfererWeightsSet:
+		return check([2]int{len(e.Addresses), len(e.Weights)})
+	case *emissionstypes.EventNetworkInferenceForecasterWeightsSet:
+		return check([2]int{len(e.Addresses), len(e.Weights)})
+	case *emissionstypes.EventNetworkInferenceInfererRegretsUsedSet:
+		return check([2]int{len(e.Addresses), len(e.Regrets)})
+	case *emissionstypes.EventNetworkInferenceForecasterRegretsUsedSet:
+		return check([2]int{len(e.Addresses), len(e.Regrets)})
+	}
+	return ""
 }
 
 // topicTouchedAfter reports whether anything after the event at position changed
