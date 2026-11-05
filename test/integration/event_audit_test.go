@@ -788,8 +788,13 @@ func (a *eventAudit) auditTopicStatus(height int64, facts blockContext, phase ev
 		}
 	case emissionstypes.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_EVICTED_BY_HIGHER_WEIGHT:
 		requireActive(false)
-		if event.ThresholdWeight.Lt(event.Weight) {
-			a.failf(height, "%s topic %d challenger weight %s below the evicted weight %s", event.Reason, event.TopicId, event.ThresholdWeight, event.Weight)
+		if !event.ThresholdWeight.Gt(event.Weight) {
+			a.failf(height, "%s topic %d challenger weight %s is not above the evicted weight %s", event.Reason, event.TopicId, event.ThresholdWeight, event.Weight)
+		}
+	case emissionstypes.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_EVICTED_BY_EQUAL_WEIGHT:
+		requireActive(false)
+		if !event.ThresholdWeight.Equal(event.Weight) {
+			a.failf(height, "%s topic %d challenger weight %s differs from the evicted weight %s", event.Reason, event.TopicId, event.ThresholdWeight, event.Weight)
 		}
 	case emissionstypes.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_REACTIVATION_ERROR:
 		requireActive(false)
