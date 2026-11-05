@@ -79,6 +79,12 @@ func TestSplitBlockEventsUsesModeAttribute(t *testing.T) {
 	require.Equal(t, []abci.Event{end}, gotEnd)
 }
 
+func TestEventFingerprintIsUnambiguous(t *testing.T) {
+	joined := abci.Event{Type: "t", Attributes: []abci.EventAttribute{{Key: "a", Value: "b|c=d", Index: false}}}
+	split := abci.Event{Type: "t", Attributes: []abci.EventAttribute{{Key: "a", Value: "b", Index: false}, {Key: "c", Value: "d", Index: false}}}
+	require.NotEqual(t, eventFingerprint([]abci.Event{joined}), eventFingerprint([]abci.Event{split}))
+}
+
 func TestFirstFingerprintDifference(t *testing.T) {
 	require.Empty(t, firstFingerprintDifference([]string{"a"}, []string{"a"}))
 	require.Contains(t, firstFingerprintDifference([]string{"a"}, []string{"b"}), "event 0 differs")

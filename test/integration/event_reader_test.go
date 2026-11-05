@@ -78,15 +78,16 @@ func decodeTypedEvent(event abci.Event) (proto.Message, error) {
 	return sdk.ParseTypedEvent(payload)
 }
 
-// eventFingerprint renders events for comparison between nodes. The index flag
+// eventFingerprint renders events for comparison between nodes. Every part is
+// length-prefixed, so two different events never render the same. The index flag
 // is left out because it depends on node configuration, not on chain execution.
 func eventFingerprint(events []abci.Event) []string {
 	rendered := make([]string, len(events))
 	for i, event := range events {
 		var b strings.Builder
-		b.WriteString(event.Type)
+		fmt.Fprintf(&b, "%d:%s|%d", len(event.Type), event.Type, len(event.Attributes))
 		for _, attribute := range event.Attributes {
-			fmt.Fprintf(&b, "|%s=%s", attribute.Key, attribute.Value)
+			fmt.Fprintf(&b, "|%d:%s|%d:%s", len(attribute.Key), attribute.Key, len(attribute.Value), attribute.Value)
 		}
 		rendered[i] = b.String()
 	}
