@@ -656,7 +656,6 @@ type TestWorkerValue struct {
 // When neither tv.Values nor tv.Value is set, a scalar is drawn from the
 // suite's seeded value source.
 func (s *TestSuite) generateWorkerDataBundles(
-	s *TestSuite,
 	nonce int64,
 	topicId uint64,
 	workerIndexes []int,
