@@ -500,6 +500,7 @@ func TestForecast_ValidateAllowsDuplicateInferer(t *testing.T) {
 		Forecaster:       addr,
 		BlockHeight:      100,
 		ForecastElements: []*ForecastElement{element, element},
+		ExtraData:        nil,
 	}
 	require.NoError(t, duplicate.Validate())
 
@@ -508,6 +509,7 @@ func TestForecast_ValidateAllowsDuplicateInferer(t *testing.T) {
 		Forecaster:       addr,
 		BlockHeight:      100,
 		ForecastElements: []*ForecastElement{},
+		ExtraData:        nil,
 	}
 	require.Error(t, empty.Validate())
 
@@ -515,6 +517,7 @@ func TestForecast_ValidateAllowsDuplicateInferer(t *testing.T) {
 		TopicId:     1,
 		Forecaster:  addr,
 		BlockHeight: 100,
+		ExtraData:   nil,
 		ForecastElements: []*ForecastElement{{
 			Inferer: "invalid",
 			Value:   alloraMath.MustNewDecFromString("1"),

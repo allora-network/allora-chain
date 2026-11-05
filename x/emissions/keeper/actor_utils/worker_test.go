@@ -39,10 +39,11 @@ func (s *WorkerTestSuite) TestCloseWorkerNonce() {
 		{
 			name: "Success",
 			args: args{
-				blockHeight:   alloraMath.DataLimitExponent,
-				workerIndexes: []int{0, 1},
+				blockHeight:             alloraMath.DataLimitExponent,
+				workerIndexes:           []int{0, 1},
+				limitForecasterElements: 0,
 			},
-			expectForecasts: 1,
+			expectForecasts: 2,
 		}, {
 			name: "Not enough inferers",
 			args: args{
@@ -120,7 +121,7 @@ func (s *WorkerTestSuite) TestCloseWorkerNonce() {
 			s.Require().NotNil(networkInferences, "Network inferences should exist")
 
 			// Verify the expected number of forecasts have made it through
-			s.Require().Equal(tt.expectForecasts, len(networkInferences.ForecasterValues))
+			s.Require().Len(networkInferences.ForecasterValues, tt.expectForecasts)
 
 			// Verify outlier resistant network inferences were created
 			outlierResistantInferences, err := s.EmissionsKeeper().GetOutlierResistantNetworkInferences(s.Ctx(), topic, height)

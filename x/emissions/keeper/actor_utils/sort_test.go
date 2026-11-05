@@ -5,9 +5,7 @@ import (
 	"strconv"
 	"testing"
 
-	storetypes "cosmossdk.io/store/types"
 	"github.com/cometbft/cometbft/crypto/secp256k1"
-	"github.com/cosmos/cosmos-sdk/testutil"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
 
@@ -19,7 +17,6 @@ import (
 
 // test helper function reduce code duplication
 func setUpSomeWorkers(t *testing.T) (
-	testCtx sdk.Context,
 	worker1Addr sdk.AccAddress,
 	worker2Addr sdk.AccAddress,
 	worker3Addr sdk.AccAddress,
@@ -39,16 +36,12 @@ func setUpSomeWorkers(t *testing.T) (
 	worker4Addr = sdk.AccAddress(worker4PrivateKey.PubKey().Address())
 	worker5Addr = sdk.AccAddress(worker5PrivateKey.PubKey().Address())
 
-	key := storetypes.NewKVStoreKey("test")
-	testCtx = testutil.DefaultContextWithDB(t, key, storetypes.NewTransientStoreKey("transient_test")).Ctx
-
-	return testCtx, worker1Addr, worker2Addr, worker3Addr, worker4Addr, worker5Addr
+	return worker1Addr, worker2Addr, worker3Addr, worker4Addr, worker5Addr
 }
 
 func TestFindTopNByScoreDesc(t *testing.T) {
 	topicId := uint64(0)
-	_,
-		worker1Addr,
+	worker1Addr,
 		worker2Addr,
 		worker3Addr,
 		worker4Addr,
@@ -131,7 +124,7 @@ func TestFindTopNByScoreDescCsv(t *testing.T) {
 // and just file empty scores at the end of the list
 func TestFindTopNByScoreDescWithNils(t *testing.T) {
 	topicId := uint64(0)
-	_, _, _, worker3Addr, _, worker5Addr := setUpSomeWorkers(t)
+	_, _, worker3Addr, _, worker5Addr := setUpSomeWorkers(t)
 
 	reputerScoreEmas := []emissionstypes.Score{
 		{TopicId: topicId, BlockHeight: 1, Address: worker3Addr.String(), Score: alloraMath.NewDecFromInt64(80)},

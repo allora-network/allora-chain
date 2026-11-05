@@ -702,7 +702,6 @@ func (s *TestSuite) generateWorkerDataBundles(
 	}
 
 	var bundles []*types.InputWorkerDataBundle
-	totalAddresses := len(s.accounts)
 
 	for i, workerIdx := range workerIndexes {
 		var tv TestWorkerValue
@@ -717,40 +716,24 @@ func (s *TestSuite) generateWorkerDataBundles(
 		}
 		forecastValueStr := getForecastValueStr(tv)
 
-		forecastTargets := []int{
-			(workerIdx + 0) % totalAddresses,
-			(workerIdx + 1) % totalAddresses,
-			(workerIdx + 2) % totalAddresses,
+		// Name inferers from this batch. Close drops a forecast left with
+		// fewer than two of them, and a repeated inferer is rejected on insert.
+		nWorkers := len(workerIndexes)
+		elementCount := nWorkers
+		if elementCount > 3 {
+			elementCount = 3
+		}
+		if limitForecastElements > 0 && limitForecastElements < elementCount {
+			elementCount = limitForecastElements
 		}
 
-		forecastElements := []*types.InputForecastElement{
-			{
-				Inferer: s.accounts[forecastTargets[0]].addrStr,
+		forecastElementsFinal := make([]*types.InputForecastElement, 0, elementCount)
+		for j := 0; j < elementCount; j++ {
+			target := workerIndexes[(i+j)%nWorkers]
+			forecastElementsFinal = append(forecastElementsFinal, &types.InputForecastElement{
+				Inferer: s.accounts[target].addrStr,
 				Value:   alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString(forecastValueStr)),
-			},
-			{
-				Inferer: s.accounts[forecastTargets[1]].addrStr,
-				Value:   alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString(forecastValueStr)),
-			},
-			{
-				Inferer: s.accounts[forecastTargets[2]].addrStr,
-				Value:   alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString(forecastValueStr)),
-			},
-		}
-
-		lnf := len(forecastElements)
-		limit := lnf
-
-		if limitForecastElements > 0 {
-			limit = limitForecastElements
-		}
-
-		forecastElementsFinal := make([]*types.InputForecastElement, 0, lnf)
-
-		for j := 0; j < lnf; j++ {
-			if j+1 <= limit {
-				forecastElementsFinal = append(forecastElementsFinal, forecastElements[j])
-			}
+			})
 		}
 
 		inferenceForecastBundle := &types.InputInferenceForecastBundle{

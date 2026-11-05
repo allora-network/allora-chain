@@ -36,20 +36,20 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.InsertWo
 		return nil, errorsmod.Wrapf(types.ErrNotPermittedToSubmitWorkerPayload, "Worker is not permitted to submit payload")
 	}
 
-	if err := msg.WorkerDataBundle.Validate(); err != nil {
-		return nil, errorsmod.Wrapf(err, "Error validating worker data bundle")
-	}
-
 	moduleParams, err := ms.pk.GetParams(ctx)
 	if err != nil {
 		return nil, errorsmod.Wrapf(err, "Error getting params")
 	}
-	blockHeight := sdkCtx.BlockHeight()
-
+	// Reject an oversized payload before walking its forecast elements.
 	err = checkInputLength(moduleParams.MaxSerializedMsgLength, msg)
 	if err != nil {
 		return nil, err
 	}
+
+	if err := msg.WorkerDataBundle.Validate(); err != nil {
+		return nil, errorsmod.Wrapf(err, "Error validating worker data bundle")
+	}
+	blockHeight := sdkCtx.BlockHeight()
 
 	nonce := msg.WorkerDataBundle.Nonce
 	topicId := msg.WorkerDataBundle.TopicId
