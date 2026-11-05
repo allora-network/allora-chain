@@ -666,10 +666,21 @@ func (a *eventAudit) getTopic(height int64, topicId uint64) (*emissionstypes.Get
 	return response, true
 }
 
+// isTopicActive reports the topic's status at height. A topic that does not exist
+// yet is inactive; any other query failure is a violation.
 func (a *eventAudit) isTopicActive(height int64, topicId uint64) bool {
-	response, err := a.m.Client.QueryEmissions().IsTopicActive(atHeight(a.ctx, height), &emissionstypes.IsTopicActiveRequest{TopicId: topicId})
+	queryCtx := atHeight(a.ctx, height)
+	exists, err := a.m.Client.QueryEmissions().TopicExists(queryCtx, &emissionstypes.TopicExistsRequest{TopicId: topicId})
 	if err != nil {
-		// A topic created during the audited range does not exist before its creation.
+		a.failf(height, "TopicExists %d: %v", topicId, err)
+		return false
+	}
+	if !exists.Exists {
+		return false
+	}
+	response, err := a.m.Client.QueryEmissions().IsTopicActive(queryCtx, &emissionstypes.IsTopicActiveRequest{TopicId: topicId})
+	if err != nil {
+		a.failf(height, "IsTopicActive %d: %v", topicId, err)
 		return false
 	}
 	return response.IsActive
