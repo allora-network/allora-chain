@@ -424,7 +424,7 @@ func (s *RewardsTestSuite) TestCloseReputerNonceFailedEmitsNonceExpired() {
 	s.Require().NoError(s.NonceKeeper().AddReputerNonce(s.Ctx(), topic.Id, &types.Nonce{BlockHeight: currentBlockHeight}))
 
 	workerValues := testutil.GetWorkerValuesFromIndexes(workerIndexes, "100")
-	workerNonce := s.SetupInferences(topic.Id, currentBlockHeight, workerIndexes, workerValues...)
+	workerNonce := s.SetupInferences(topic.Id, currentBlockHeight, workerIndexes, testutil.WithWorkerValues(workerValues))
 
 	s.WithBlockHeight(currentBlockHeight + topic.WorkerSubmissionWindow)
 	s.Require().NoError(actorutils.CloseWorkerNonce(s.EmissionsKeeper(), s.Ctx(), topic, workerNonce))
@@ -475,7 +475,7 @@ func (s *RewardsTestSuite) TestCloseReputerNonceSucceededEmitsNoNonceExpired() {
 	s.Require().NoError(s.NonceKeeper().AddReputerNonce(s.Ctx(), topic.Id, &types.Nonce{BlockHeight: currentBlockHeight}))
 
 	workerValues := testutil.GetWorkerValuesFromIndexes(workerIndexes, "100")
-	workerNonce := s.SetupInferences(topic.Id, currentBlockHeight, workerIndexes, workerValues...)
+	workerNonce := s.SetupInferences(topic.Id, currentBlockHeight, workerIndexes, testutil.WithWorkerValues(workerValues))
 
 	s.WithBlockHeight(currentBlockHeight + topic.WorkerSubmissionWindow)
 	s.Require().NoError(actorutils.CloseWorkerNonce(s.EmissionsKeeper(), s.Ctx(), topic, workerNonce))
