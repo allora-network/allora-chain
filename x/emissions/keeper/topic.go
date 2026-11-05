@@ -683,7 +683,7 @@ func (k *TopicKeeper) UpdateTopicWeightAfterStakeChange(
 	}
 
 	// Emit topic weight updated event
-	types.EmitNewTopicWeightUpdatedAfterStakeChangeEvent(ctx, topicId, newWeight, topicStake, topicFeeRevenue)
+	types.EmitNewTopicWeightUpdatedEvent(ctx, topicId, newWeight, topicStake, topicFeeRevenue)
 
 	sdkCtx.Logger().Debug("Updated topic weight after stake change", "topicId", topicId, "newWeight", newWeight.String())
 

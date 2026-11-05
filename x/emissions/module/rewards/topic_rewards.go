@@ -191,7 +191,7 @@ func GetAndUpdateActiveTopicWeights(
 
 		// If the topic is inactive, inactivate it
 		if weight.Lt(moduleParams.MinTopicWeight) {
-			err := k.GetTopicKeeper().InactivateTopic(ctx, topic.Id, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_WEIGHT_BELOW_MINIMUM, weight, moduleParams.MinTopicWeight, moduleParams.MinTopicWeight)
+			err := k.GetTopicKeeper().InactivateTopic(ctx, topic.Id)
 			if err != nil {
 				return nil, alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to inactivate topic")
 			}
@@ -200,10 +200,10 @@ func GetAndUpdateActiveTopicWeights(
 		}
 
 		// Update topic active status
-		err = k.GetTopicKeeper().AttemptTopicReactivation(ctx, topicId, weight, moduleParams.MinTopicWeight)
+		err = k.GetTopicKeeper().AttemptTopicReactivation(ctx, topicId)
 		if err != nil {
 			ctx.Logger().Error("Error on attempt topic reactivation, explicitly inactivating topic")
-			err := k.GetTopicKeeper().InactivateTopic(ctx, topic.Id, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_REACTIVATION_ERROR, weight, moduleParams.MinTopicWeight, alloraMath.ZeroDec())
+			err := k.GetTopicKeeper().InactivateTopic(ctx, topic.Id)
 			if err != nil {
 				return nil, alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to inactivate topic")
 			}

@@ -71,7 +71,7 @@ func CloseReputerNonce(
 			)
 		}
 
-		removed, fulfillErr := k.GetNonceKeeper().FulfillReputerNonce(ctx, topic.Id, &nonce)
+		_, fulfillErr := k.GetNonceKeeper().FulfillReputerNonce(ctx, topic.Id, &nonce)
 		if fulfillErr != nil {
 			ctx.Logger().Error(
 				"Error fulfilling reputer nonce during deferred cleanup",
@@ -79,9 +79,6 @@ func CloseReputerNonce(
 				"nonce", nonce,
 				"error", fulfillErr,
 			)
-		}
-		if err != nil && removed {
-			types.EmitNewNonceExpiredEvent(ctx, topic.Id, nonce.BlockHeight, types.ActorType_ACTOR_TYPE_REPUTER, types.NonceExpiredReason_NONCE_EXPIRED_REASON_CLOSE_FAILED)
 		}
 
 		// Retire only the submissions stored for the nonce being closed;
