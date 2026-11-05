@@ -168,11 +168,13 @@ func readChainBlock(ctx context.Context, m testCommon.TestConfig, height int64, 
 		}
 	}
 
-	if len(reference.TxsResults) > 0 {
-		committed, err := m.Client.Clients[0].RPC.Block(ctx, &height)
-		if err != nil {
-			return block, fmt.Errorf("node 0 /block at %d: %w", height, err)
-		}
+	committed, err := m.Client.Clients[0].RPC.Block(ctx, &height)
+	if err != nil {
+		return block, fmt.Errorf("node 0 /block at %d: %w", height, err)
+	}
+	if len(committed.Block.Txs) != len(referenceTxs) {
+		fail("/block has %d txs, /block_results has %d tx results", len(committed.Block.Txs), len(referenceTxs))
+	} else {
 		for i, rawTx := range committed.Block.Txs {
 			hash := rawTx.Hash()
 			for node := range m.Client.Clients {
