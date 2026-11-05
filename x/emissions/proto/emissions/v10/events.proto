@@ -59,8 +59,8 @@ enum TopicStatusChangeReason {
   // The topic lost a comparison for a full active set: its weight was below
   // the lowest weight at the block it needed a slot in.
   TOPIC_STATUS_CHANGE_REASON_REACTIVATION_FAILED = 2;
-  // The topic had the lowest weight in a full active set and a higher-weight
-  // topic took its place.
+  // The topic had the lowest weight in a full active set and a topic with a
+  // strictly higher weight took its place.
   TOPIC_STATUS_CHANGE_REASON_EVICTED_BY_HIGHER_WEIGHT = 3;
   // Funding (fees or stake) raised the topic's weight to the minimum for
   // active topics.
@@ -70,6 +70,9 @@ enum TopicStatusChangeReason {
   // Attempting to re-add the topic to the active set returned an error, so the
   // topic was inactivated without a weight comparison deciding it.
   TOPIC_STATUS_CHANGE_REASON_REACTIVATION_ERROR = 6;
+  // The topic had the lowest weight in a full active set and a topic with the
+  // same weight took its place: a tie admits the challenger.
+  TOPIC_STATUS_CHANGE_REASON_EVICTED_BY_EQUAL_WEIGHT = 7;
 }
 
 message EventScoresSet {
@@ -728,7 +731,8 @@ message EventTopicStatusChanged {
   // The weight this decision was measured against: MinTopicWeight for
   // WEIGHT_BELOW_MINIMUM and for an activation into a free slot; the block's
   // lowest weight for REACTIVATION_FAILED and for an activation that took a
-  // full block's slot; the challenger's weight for EVICTED_BY_HIGHER_WEIGHT.
+  // full block's slot; the challenger's weight for EVICTED_BY_HIGHER_WEIGHT
+  // and EVICTED_BY_EQUAL_WEIGHT.
   // Zero for REACTIVATION_ERROR: no comparison happened.
   string threshold_weight = 6 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
@@ -920,8 +924,10 @@ message EventTopicRewardForfeitedNoRewardNonce {
   // The coins moved to the ecosystem account, zero when the reward was under
   // one unit and nothing moved.
   string amount = 3 [
+    (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
-    (gogoproto.nullable) = false
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
   ];
 }
 
@@ -937,8 +943,10 @@ message EventTopicRewardForfeitedDistributionFailed {
   // The coins moved to the ecosystem account, zero when the reward was under
   // one unit and nothing moved.
   string amount = 4 [
+    (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
-    (gogoproto.nullable) = false
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
   ];
 }
 

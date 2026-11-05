@@ -2225,3 +2225,26 @@ func TestEpochEventsEmitNonce(t *testing.T) {
 		})
 	}
 }
+
+// A forfeit that moved nothing still reports its amount: zero is emitted as "0",
+// not dropped from the event's attributes.
+func TestTopicRewardForfeitEventsEmitZeroAmount(t *testing.T) {
+	tests := []struct {
+		name  string
+		event proto.Message
+	}{
+		{"no reward nonce", types.NewTopicRewardForfeitedNoRewardNonceEventBase(1, 940, cosmosMath.ZeroInt())},
+		{"distribution failed", types.NewTopicRewardForfeitedDistributionFailedEventBase(1, 940, 930, cosmosMath.ZeroInt())},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := sdk.Context{}.WithEventManager(sdk.NewEventManager())
+			require.NoError(t, ctx.EventManager().EmitTypedEvent(tt.event))
+			events := ctx.EventManager().Events()
+			require.Len(t, events, 1)
+			amount, ok := events[0].GetAttribute("amount")
+			require.True(t, ok, "amount is emitted")
+			require.Equal(t, `"0"`, amount.GetValue())
+		})
+	}
+}
