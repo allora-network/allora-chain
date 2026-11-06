@@ -1510,7 +1510,7 @@ func TestInputOneOutInfererForecasterValues_ValidateRejectsDuplicateInferers(t *
 	require.ErrorIs(t, row.Validate(), ErrDuplicateActorInValueBundle)
 }
 
-func TestValueBundle_ValidateRejectsDuplicateActors(t *testing.T) {
+func TestValueBundle_ValidateAllowsDuplicateActors(t *testing.T) {
 	addr := "allo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqas6usy"
 	dec := alloraMath.MustNewDecFromString("1")
 	bundle := &ValueBundle{ //nolint:exhaustruct // only the fields needed by the duplicate-actor test are set
@@ -1524,5 +1524,7 @@ func TestValueBundle_ValidateRejectsDuplicateActors(t *testing.T) {
 			{Worker: addr, Value: dec},
 		},
 	}
-	require.ErrorIs(t, bundle.Validate(), ErrDuplicateActorInValueBundle)
+	// Stored bundles (genesis import) may predate the input validation and are
+	// normalized to the first-seen row at scoring.
+	require.NoError(t, bundle.Validate())
 }
