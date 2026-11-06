@@ -72,6 +72,7 @@ func (s *MsgServerTestSuite) baseCapUpdateMsg(sender string, topicId uint64) *ty
 		MaxLabelsPerSubmission: types.DefaultMaxLabelsPerSubmission,
 		LabelWhitelist:         nil,
 		LabelDefaultValue:      alloraMath.ZeroDec(),
+		MaxTopInferersToReward: types.DefaultParams().MaxTopInferersToReward,
 	}
 }
 
@@ -92,21 +93,19 @@ func (s *MsgServerTestSuite) baseWSWUpdateMsg(sender string, topicId uint64) *ty
 		MaxLabelsPerSubmission: 4,
 		LabelWhitelist:         []string{"a", "b", "c"},
 		LabelDefaultValue:      alloraMath.ZeroDec(),
+		MaxTopInferersToReward: types.DefaultParams().MaxTopInferersToReward,
 	}
 }
 
-// request value 0 stores the global default.
-func (s *MsgServerTestSuite) TestCreateTopicMaxTopInferersDefaultsToGlobal() {
+// A request below the floor is rejected, 0 included.
+func (s *MsgServerTestSuite) TestCreateTopicMaxTopInferersZeroRejected() {
 	sender := s.AddrsStr(0)
-	topicId, err := s.createTopicWithCap(sender, 0)
-	s.Require().NoError(err)
-	got, err := s.TopicKeeper().GetTopic(s.Ctx(), topicId)
-	s.Require().NoError(err)
-	s.Require().Equal(types.DefaultParams().MaxTopInferersToReward, got.MaxTopInferersToReward)
+	_, err := s.createTopicWithCap(sender, 0)
+	s.Require().ErrorIs(err, types.ErrTopicMaxTopInferersToRewardTooSmall)
 }
 
-// request value 0 resolves against the live global, not a compile-time constant.
-func (s *MsgServerTestSuite) TestCreateTopicMaxTopInferersDefaultReadsLiveGlobal() {
+// The range is read from the live params, not from the module defaults.
+func (s *MsgServerTestSuite) TestCreateTopicMaxTopInferersRangeReadsLiveGlobal() {
 	ctx := s.Ctx()
 	params, err := s.EmissionsKeeper().GetParams(ctx)
 	s.Require().NoError(err)
@@ -114,7 +113,10 @@ func (s *MsgServerTestSuite) TestCreateTopicMaxTopInferersDefaultReadsLiveGlobal
 	s.Require().NoError(s.EmissionsKeeper().SetParams(ctx, params))
 
 	sender := s.AddrsStr(0)
-	topicId, err := s.createTopicWithCap(sender, 0)
+	_, err = s.createTopicWithCap(sender, 21)
+	s.Require().ErrorIs(err, types.ErrTopicMaxTopInferersToRewardTooBig)
+
+	topicId, err := s.createTopicWithCap(sender, 20)
 	s.Require().NoError(err)
 	got, err := s.TopicKeeper().GetTopic(ctx, topicId)
 	s.Require().NoError(err)
@@ -140,6 +142,31 @@ func (s *MsgServerTestSuite) TestCreateTopicMaxTopInferersExplicitValues() {
 	s.Require().Equal(global, gotMax.MaxTopInferersToReward)
 }
 
+// The stored cap is the requested value and does not move with the globals.
+func (s *MsgServerTestSuite) TestCreateTopicMaxTopInferersStoredVerbatimAndPinned() {
+	ctx := s.Ctx()
+	sender := s.AddrsStr(0)
+	requested := uint64(12) // strictly inside the default [5, 32] range
+
+	topicId, err := s.createTopicWithCap(sender, requested)
+	s.Require().NoError(err)
+	got, err := s.TopicKeeper().GetTopic(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().Equal(requested, got.MaxTopInferersToReward)
+
+	for _, ceiling := range []uint64{64, 20} {
+		params := types.DefaultParams()
+		params.MaxTopInferersToReward = ceiling
+		s.Require().NoError(s.ParamsKeeper().SetParams(ctx, params))
+
+		got, err = s.TopicKeeper().GetTopic(ctx, topicId)
+		s.Require().NoError(err)
+		s.Require().Equal(requested, got.MaxTopInferersToReward)
+		s.Require().Equal(requested, types.EffectiveMaxTopInferersToReward(
+			got.MaxTopInferersToReward, params.MinTopInferersToReward, ceiling))
+	}
+}
+
 // an explicit value above the global ceiling is rejected.
 func (s *MsgServerTestSuite) TestCreateTopicMaxTopInferersAboveGlobalRejected() {
 	sender := s.AddrsStr(0)
@@ -148,8 +175,7 @@ func (s *MsgServerTestSuite) TestCreateTopicMaxTopInferersAboveGlobalRejected() 
 	s.Require().ErrorIs(err, types.ErrTopicMaxTopInferersToRewardTooBig)
 }
 
-// an explicit value below the global floor is rejected; 0 still resolves to the
-// global ceiling because it means "use the default".
+// any value below the global floor is rejected, 0 included.
 func (s *MsgServerTestSuite) TestCreateTopicMaxTopInferersBelowGlobalMinRejected() {
 	sender := s.AddrsStr(0)
 	params := types.DefaultParams()
@@ -159,11 +185,8 @@ func (s *MsgServerTestSuite) TestCreateTopicMaxTopInferersBelowGlobalMinRejected
 	_, err := s.createTopicWithCap(sender, 9)
 	s.Require().ErrorIs(err, types.ErrTopicMaxTopInferersToRewardTooSmall)
 
-	id, err := s.createTopicWithCap(sender, 0)
-	s.Require().NoError(err)
-	got, err := s.TopicKeeper().GetTopic(s.Ctx(), id)
-	s.Require().NoError(err)
-	s.Require().Equal(params.MaxTopInferersToReward, got.MaxTopInferersToReward)
+	_, err = s.createTopicWithCap(sender, 0)
+	s.Require().ErrorIs(err, types.ErrTopicMaxTopInferersToRewardTooSmall)
 }
 
 // UpdateTopic applies the same floor as creation.
@@ -222,90 +245,76 @@ func (s *MsgServerTestSuite) TestUpdateTopicMaxTopInferersUnchangedDuringWindow(
 	s.Require().NoError(err)
 }
 
-// sending 0 during an open window resolves to the current global (== stored),
-// so it is a no-op and is allowed. This proves default-resolution runs before
-// change-detection.
-func (s *MsgServerTestSuite) TestUpdateTopicMaxTopInferersZeroResolvesBeforeChangeDetectionDuringWindow() {
-	sender := s.AddrsStr(0)
-	ctx, topicId := s.setupActiveTopicWithOpenWSW(sender)
-	msgServer := s.EmissionsMsgServer()
-	msg := s.baseWSWUpdateMsg(sender, topicId) // MaxTopInferersToReward left 0
-	_, err := msgServer.UpdateTopic(ctx, msg)
-	s.Require().NoError(err)
-	got, err := s.TopicKeeper().GetTopic(ctx, topicId)
-	s.Require().NoError(err)
-	s.Require().Equal(types.DefaultParams().MaxTopInferersToReward, got.MaxTopInferersToReward)
-}
-
-// with no open window, sending 0 resets the cap to the global default.
-func (s *MsgServerTestSuite) TestUpdateTopicMaxTopInferersZeroResetsToGlobalDefault() {
+// UpdateTopic applies the same floor as creation, 0 included.
+func (s *MsgServerTestSuite) TestUpdateTopicMaxTopInferersZeroRejected() {
 	sender := s.AddrsStr(0)
 	ctx, msgServer := s.Ctx(), s.EmissionsMsgServer()
-	topicId, err := s.createTopicWithCap(sender, 10) // inactive
+	topicId, err := s.createTopicWithCap(sender, 10) // inactive, no window
 	s.Require().NoError(err)
-	msg := s.baseCapUpdateMsg(sender, topicId) // MaxTopInferersToReward left 0 -> reset to default
+
+	msg := s.baseCapUpdateMsg(sender, topicId)
+	msg.MaxTopInferersToReward = 0
 	_, err = msgServer.UpdateTopic(ctx, msg)
-	s.Require().NoError(err)
+	s.Require().ErrorIs(err, types.ErrTopicMaxTopInferersToRewardTooSmall)
+
+	// The rejection wrote nothing.
 	got, err := s.TopicKeeper().GetTopic(ctx, topicId)
 	s.Require().NoError(err)
-	s.Require().Equal(types.DefaultParams().MaxTopInferersToReward, got.MaxTopInferersToReward)
+	s.Require().Equal(uint64(10), got.MaxTopInferersToReward)
 }
 
-// Sending 0 usually changes nothing, because it means "use the global" and the
-// topic is already holding that exact number. But if governance raised the
-// global in the meantime, the very same 0 now asks for a bigger number, so it
-// counts as a real change and the open-window guard turns it away.
-func (s *MsgServerTestSuite) TestUpdateTopicMaxTopInferersZeroBlockedWhenGlobalMovedDuringWindow() {
+// Resubmitting the stored cap is a no-op for the open-window guard, also after
+// the global ceiling has moved.
+func (s *MsgServerTestSuite) TestUpdateTopicMaxTopInferersResubmitSameCapDuringWindowAllowed() {
 	sender := s.AddrsStr(0)
 	// A live topic with a worker submission window currently open.
 	ctx, topicId := s.setupActiveTopicWithOpenWSW(sender)
 	msgServer := s.EmissionsMsgServer()
 
-	// The topic starts out holding exactly the global value.
 	stored, err := s.TopicKeeper().GetTopic(ctx, topicId)
 	s.Require().NoError(err)
 	s.Require().Equal(types.DefaultParams().MaxTopInferersToReward, stored.MaxTopInferersToReward)
 
-	// Governance raises the global; the topic still holds the old number.
+	// Governance raises the ceiling; the topic keeps its own value.
 	params := types.DefaultParams()
 	params.MaxTopInferersToReward = stored.MaxTopInferersToReward + 8
 	s.Require().NoError(s.ParamsKeeper().SetParams(ctx, params))
 
-	msg := s.baseWSWUpdateMsg(sender, topicId) // cap left 0 -> now the raised global
+	msg := s.baseWSWUpdateMsg(sender, topicId)
+	msg.MaxTopInferersToReward = stored.MaxTopInferersToReward
 	_, err = msgServer.UpdateTopic(ctx, msg)
-	// A different value than the stored one, so this reads as a change mid-window.
-	s.Require().ErrorIs(err, types.ErrWorkerNonceWindowNotAvailable)
-	s.Require().ErrorContains(err, "max_top_inferers_to_reward")
+	s.Require().NoError(err)
 
-	// The rejection wrote nothing.
 	got, err := s.TopicKeeper().GetTopic(ctx, topicId)
 	s.Require().NoError(err)
 	s.Require().Equal(stored.MaxTopInferersToReward, got.MaxTopInferersToReward)
 }
 
-// Sending 0 does not replay whatever the global was back when the topic was
-// created; it looks the global up again at update time. So a topic can be
-// re-synced to a global that has moved since, simply by sending 0 again -- with
-// no worker window open, the new value is written.
-func (s *MsgServerTestSuite) TestUpdateTopicMaxTopInferersZeroReresolvesToLiveGlobal() {
+// A cap above the old ceiling is accepted once the ceiling has been raised.
+func (s *MsgServerTestSuite) TestUpdateTopicMaxTopInferersCanRaiseCapAfterCeilingRaised() {
 	sender := s.AddrsStr(0)
 	ctx, msgServer := s.Ctx(), s.EmissionsMsgServer()
-	// Created with 0, so the topic stores today's global. Inactive: no window.
-	topicId, err := s.createTopicWithCap(sender, 0)
+	created := types.DefaultParams().MaxTopInferersToReward
+	topicId, err := s.createTopicWithCap(sender, created) // inactive: no window
 	s.Require().NoError(err)
 
-	// Governance moves the global out from under the topic.
-	raised := types.DefaultParams().MaxTopInferersToReward + 8
+	// Governance raises the ceiling out from under the topic.
+	raised := created + 8
 	params := types.DefaultParams()
 	params.MaxTopInferersToReward = raised
 	s.Require().NoError(s.ParamsKeeper().SetParams(ctx, params))
 
-	msg := s.baseCapUpdateMsg(sender, topicId) // cap left 0 a second time
+	// The stored cap did not move by itself.
+	got, err := s.TopicKeeper().GetTopic(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().Equal(created, got.MaxTopInferersToReward)
+
+	msg := s.baseCapUpdateMsg(sender, topicId)
+	msg.MaxTopInferersToReward = raised
 	_, err = msgServer.UpdateTopic(ctx, msg)
 	s.Require().NoError(err)
 
-	// The topic followed the global rather than keeping its creation-time value.
-	got, err := s.TopicKeeper().GetTopic(ctx, topicId)
+	got, err = s.TopicKeeper().GetTopic(ctx, topicId)
 	s.Require().NoError(err)
 	s.Require().Equal(raised, got.MaxTopInferersToReward)
 }

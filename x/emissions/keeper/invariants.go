@@ -19,6 +19,8 @@ func RegisterInvariants(ir sdk.InvariantRegistry, k *Keeper) {
 	ir.RegisterRoute(emissionstypes.ModuleName, "stake-removals-length-same", StakingInvariantLenStakeRemovalsSame(*k))
 	ir.RegisterRoute(emissionstypes.ModuleName, "stake-sum-delegated-stakes", StakingInvariantDelegatedStakes(*k))
 	ir.RegisterRoute(emissionstypes.ModuleName, "pending-reward-for-delegators-equal-reward-per-share-minus-reward-debt", StakingInvariantPendingRewardForDelegatorsGreaterThanRewardPerShareMinusRewardDebt(*k))
+	ir.RegisterRoute(emissionstypes.ModuleName, "total-sum-previous-topic-weights-equal-active-topics-sum", TopicInvariantTotalSumPreviousTopicWeightsEqualActiveTopicsSum(*k))
+	ir.RegisterRoute(emissionstypes.ModuleName, "active-topics-scheduled-at-churning-block", TopicInvariantActiveTopicsScheduledAtChurningBlock(*k))
 }
 
 // AllInvariants is a convience function to run all invariants in the emissions module.
@@ -39,7 +41,146 @@ func AllInvariants(k Keeper) sdk.Invariant {
 		if res, stop := StakingInvariantPendingRewardForDelegatorsGreaterThanRewardPerShareMinusRewardDebt(k)(ctx); stop {
 			return res, stop
 		}
+		if res, stop := TopicInvariantTotalSumPreviousTopicWeightsEqualActiveTopicsSum(k)(ctx); stop {
+			return res, stop
+		}
+		if res, stop := TopicInvariantActiveTopicsScheduledAtChurningBlock(k)(ctx); stop {
+			return res, stop
+		}
 		return "", false
+	}
+}
+
+// TopicInvariantTotalSumPreviousTopicWeightsEqualActiveTopicsSum checks that
+// totalSumPreviousTopicWeights equals the sum of the stored previous weights
+// of the scheduled topics (those with a next churning block). Topics without a
+// schedule keep their stored weight but must not be counted.
+func TopicInvariantTotalSumPreviousTopicWeightsEqualActiveTopicsSum(k Keeper) sdk.Invariant {
+	return func(ctx sdk.Context) (string, bool) {
+		scheduledTopicIds, err := k.topicKeeper.GetScheduledTopicIds(ctx)
+		if err != nil {
+			panic(fmt.Sprintf("failed to get scheduled topic ids: %v", err))
+		}
+
+		activeSum := alloraMath.ZeroDec()
+		for _, topicId := range scheduledTopicIds {
+			weight, noPrior, err := k.topicKeeper.GetPreviousTopicWeight(ctx, topicId)
+			if err != nil {
+				panic(fmt.Sprintf("failed to get previous topic weight for topic %d: %v", topicId, err))
+			}
+			if noPrior {
+				continue
+			}
+			activeSum, err = activeSum.Add(weight)
+			if err != nil {
+				panic(fmt.Sprintf("failed to add previous topic weight for topic %d: %v", topicId, err))
+			}
+		}
+
+		totalSum, err := k.topicKeeper.GetTotalSumPreviousTopicWeights(ctx)
+		if err != nil {
+			panic(fmt.Sprintf("failed to get total sum of previous topic weights: %v", err))
+		}
+		broken := !totalSum.Equal(activeSum)
+		return sdk.FormatInvariant(
+			emissionstypes.ModuleName,
+			"total sum of previous topic weights equal sum over scheduled topics",
+			fmt.Sprintf("TotalSumPreviousTopicWeights: %s | Sum of previous weights of scheduled topics: %s",
+				totalSum.String(),
+				activeSum.String(),
+			),
+		), broken
+	}
+}
+
+// TopicInvariantActiveTopicsScheduledAtChurningBlock checks that the three stores that
+// encode topic activity agree: every scheduled topic (one with a next churning block) is
+// listed in that block's active topics and in the active-topic set, and both stores hold
+// only scheduled topics at their churning block. A weight overcount after a later activation
+// is detected by TopicInvariantTotalSumPreviousTopicWeightsEqualActiveTopicsSum. The
+// churning block is not compared with the current height on purpose: tests and replays
+// legitimately evaluate EndBlock at heights far beyond the last processed epoch, so a
+// schedule and its bucket listing that agree in the past are not reported here.
+func TopicInvariantActiveTopicsScheduledAtChurningBlock(k Keeper) sdk.Invariant {
+	return func(ctx sdk.Context) (string, bool) {
+		scheduledTopicIds, err := k.topicKeeper.GetScheduledTopicIds(ctx)
+		if err != nil {
+			panic(fmt.Sprintf("failed to get scheduled topic ids: %v", err))
+		}
+		scheduled := make(map[TopicId]BlockHeight, len(scheduledTopicIds))
+		problems := make([]string, 0)
+		for _, topicId := range scheduledTopicIds {
+			churningBlock, err := k.topicKeeper.topicToNextPossibleChurningBlock.Get(ctx, topicId)
+			if err != nil {
+				panic(fmt.Sprintf("failed to get next possible churning block for topic %d: %v", topicId, err))
+			}
+			scheduled[topicId] = churningBlock
+		}
+
+		buckets, err := k.topicKeeper.GetActiveTopicIdsByBlock(ctx)
+		if err != nil {
+			panic(fmt.Sprintf("failed to get active topic block buckets: %v", err))
+		}
+		listedAtSchedule := make(map[TopicId]struct{}, len(scheduledTopicIds))
+		for _, bucket := range buckets {
+			if bucket.TopicIds == nil {
+				continue
+			}
+			for _, topicId := range bucket.TopicIds.TopicIds {
+				churningBlock, isScheduled := scheduled[topicId]
+				if !isScheduled {
+					problems = append(problems, fmt.Sprintf("topic %d: listed at block %d without a churning block", topicId, bucket.BlockHeight))
+					continue
+				}
+				if churningBlock != bucket.BlockHeight {
+					problems = append(problems, fmt.Sprintf("topic %d: listed at block %d instead of its churning block %d", topicId, bucket.BlockHeight, churningBlock))
+					continue
+				}
+				if _, duplicate := listedAtSchedule[topicId]; duplicate {
+					problems = append(problems, fmt.Sprintf("topic %d: listed more than once at its churning block %d", topicId, churningBlock))
+					continue
+				}
+				listedAtSchedule[topicId] = struct{}{}
+			}
+		}
+
+		for _, topicId := range scheduledTopicIds {
+			churningBlock := scheduled[topicId]
+			if _, listed := listedAtSchedule[topicId]; !listed {
+				problems = append(problems, fmt.Sprintf("topic %d: not listed at its churning block %d", topicId, churningBlock))
+			}
+			inSet, err := k.topicKeeper.activeTopics.Has(ctx, topicId)
+			if err != nil {
+				panic(fmt.Sprintf("failed to check active set membership of topic %d: %v", topicId, err))
+			}
+			if !inSet {
+				problems = append(problems, fmt.Sprintf("topic %d: scheduled but missing from the active set", topicId))
+			}
+		}
+
+		iter, err := k.topicKeeper.activeTopics.Iterate(ctx, nil)
+		if err != nil {
+			panic(fmt.Sprintf("failed to get active topics iterator: %v", err))
+		}
+		defer iter.Close()
+		activeSetSize := 0
+		for ; iter.Valid(); iter.Next() {
+			topicId, err := iter.Key()
+			if err != nil {
+				panic(fmt.Sprintf("failed to get active topic id: %v", err))
+			}
+			activeSetSize++
+			if _, ok := scheduled[topicId]; !ok {
+				problems = append(problems, fmt.Sprintf("topic %d: in the active set without a churning block", topicId))
+			}
+		}
+
+		broken := len(problems) > 0
+		return sdk.FormatInvariant(
+			emissionstypes.ModuleName,
+			"active topics scheduled at their churning block",
+			fmt.Sprintf("Scheduled: %d | ActiveSet: %d | Problems: %v", len(scheduledTopicIds), activeSetSize, problems),
+		), broken
 	}
 }
 

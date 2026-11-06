@@ -92,8 +92,16 @@ func (k *TopicKeeper) ResetLowestActiveTopicWeightAtBlock(ctx context.Context, b
 	return nil
 }
 
-// Set a topic to inactive if the topic exists and is active, else does nothing
-func (k *TopicKeeper) inactivateTopicWithoutMinWeightReset(ctx context.Context, topicId TopicId) error {
+// Set a topic to inactive if the topic exists and is active, else does nothing.
+// The event carries the weight, minimum and threshold the caller made the decision on.
+func (k *TopicKeeper) inactivateTopicWithoutMinWeightReset(
+	ctx context.Context,
+	topicId TopicId,
+	reason types.TopicStatusChangeReason,
+	weight alloraMath.Dec,
+	minWeight alloraMath.Dec,
+	thresholdWeight alloraMath.Dec,
+) error {
 	topicExists, err := k.topics.Has(ctx, topicId)
 	if err != nil {
 		return errorsmod.Wrap(err, "failed to check if topic exists")
@@ -154,8 +162,36 @@ func (k *TopicKeeper) inactivateTopicWithoutMinWeightReset(ctx context.Context, 
 	}
 
 	// Emit topic deactivation event
-	types.EmitNewTopicStatusChangedEvent(ctx, topicId, false)
+	types.EmitNewTopicStatusChangedEvent(ctx, topicId, false, reason, weight, minWeight, thresholdWeight)
 
+	return nil
+}
+
+// inactivateTopicWithPastSchedule removes the activity of a topic whose churning block has
+// already passed. InactivateTopic cannot do it: a past schedule is not considered active, so
+// it does nothing and the topic would keep its schedule, listing, set membership and weight.
+func (k *TopicKeeper) inactivateTopicWithPastSchedule(
+	ctx context.Context,
+	topicId TopicId,
+	churningBlock BlockHeight,
+	reason types.TopicStatusChangeReason,
+	weight alloraMath.Dec,
+	minWeight alloraMath.Dec,
+	thresholdWeight alloraMath.Dec,
+) error {
+	if err := k.removeTopicFromBlock(ctx, topicId, churningBlock); err != nil {
+		return errorsmod.Wrap(err, "failed to remove topic from its churning block")
+	}
+	if err := k.RemoveTopicSchedule(ctx, topicId); err != nil {
+		return errorsmod.Wrap(err, "failed to remove topic schedule")
+	}
+	if err := k.RemoveTopicFromActiveSet(ctx, topicId); err != nil {
+		return errorsmod.Wrap(err, "failed to remove topic from active set")
+	}
+	if err := k.RemoveTopicFromPreviousTopicWeights(ctx, topicId); err != nil {
+		return errorsmod.Wrap(err, "failed to remove topic from previous topic weights")
+	}
+	types.EmitNewTopicStatusChangedEvent(ctx, topicId, false, reason, weight, minWeight, thresholdWeight)
 	return nil
 }
 
@@ -187,10 +223,32 @@ func (k *TopicKeeper) RemoveTopicFromPreviousTopicWeights(ctx context.Context, t
 	return nil
 }
 
+// topicRefusedError reports that a topic lost the comparison for a slot in a full block,
+// carrying the two weights that comparison used.
+type topicRefusedError struct {
+	comparedWeight alloraMath.Dec
+	lowestWeight   alloraMath.Dec
+}
+
+func (e *topicRefusedError) Error() string {
+	return types.ErrTopicCannotBeActivated.Error()
+}
+
+func (e *topicRefusedError) Unwrap() error {
+	return types.ErrTopicCannotBeActivated
+}
+
+// Adds the topic to the block, evicting the block's lowest-weight topic when the block is
+// full. The activation event carries the caller's weight and minimum into a free slot, and
+// the compared weight and the block's lowest weight when the topic took a full block's slot.
+// A refusal returns a topicRefusedError.
 func (k *TopicKeeper) addTopicToActiveSetRespectingLimitsWithoutMinWeightReset(
 	ctx context.Context,
 	topicId TopicId,
 	block BlockHeight,
+	reason types.TopicStatusChangeReason,
+	weight alloraMath.Dec,
+	minWeight alloraMath.Dec,
 ) error {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	params, err := k.paramsKeeper.GetParams(ctx)
@@ -202,6 +260,7 @@ func (k *TopicKeeper) addTopicToActiveSetRespectingLimitsWithoutMinWeightReset(
 		return err
 	}
 	existingActiveTopics := topicIdsActiveAtBlock.TopicIds
+	eventWeight, eventThreshold := weight, minWeight
 
 	// If the topic is already active at the block, no op
 	for _, id := range existingActiveTopics {
@@ -218,19 +277,25 @@ func (k *TopicKeeper) addTopicToActiveSetRespectingLimitsWithoutMinWeightReset(
 			return err
 		}
 
-		weight, err := k.GetTopicWeightFromTopicId(ctx, topicId)
+		weightAtLimit, err := k.GetTopicWeightFromTopicId(ctx, topicId)
 		if err != nil {
 			return err
 		}
 
-		if weight.Lt(lowestWeight.Weight) {
+		if weightAtLimit.Lt(lowestWeight.Weight) {
 			sdkCtx.Logger().Warn("Topic cannot be activated due to less than lowest weight at block", "topicId", topicId, "block", block)
-			return types.ErrTopicCannotBeActivated
+			return &topicRefusedError{comparedWeight: weightAtLimit, lowestWeight: lowestWeight.Weight}
 		}
-		err = k.inactivateTopicWithoutMinWeightReset(ctx, lowestWeight.TopicId)
+		// A tie admits the challenger, so the reason says whether it was heavier.
+		evictionReason := types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_EVICTED_BY_HIGHER_WEIGHT
+		if weightAtLimit.Equal(lowestWeight.Weight) {
+			evictionReason = types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_EVICTED_BY_EQUAL_WEIGHT
+		}
+		err = k.inactivateTopicWithoutMinWeightReset(ctx, lowestWeight.TopicId, evictionReason, lowestWeight.Weight, params.MinTopicWeight, weightAtLimit)
 		if err != nil {
 			return err
 		}
+		eventWeight, eventThreshold = weightAtLimit, lowestWeight.Weight
 
 		// Remove the lowest weight topic from the active topics at the block
 		for i, id := range existingActiveTopics {
@@ -250,13 +315,23 @@ func (k *TopicKeeper) addTopicToActiveSetRespectingLimitsWithoutMinWeightReset(
 	}
 
 	// Emit topic activation event
-	types.EmitNewTopicStatusChangedEvent(ctx, topicId, true)
+	types.EmitNewTopicStatusChangedEvent(ctx, topicId, true, reason, eventWeight, minWeight, eventThreshold)
 
 	return nil
 }
 
-// Set a topic to active if the topic exists, else does nothing
-func (k *TopicKeeper) ActivateTopic(ctx context.Context, topicId TopicId) error {
+// Set a topic to active if the topic exists, else does nothing.
+// Schedules its next epoch end, contributes the stored weight to the total sum only if the
+// topic had no schedule, and aligns the active-topic set and churning-block buckets with it.
+// The caller's weight and minimum go on an activation into a free slot; a comparison for a
+// full block's slot reports the weights that comparison used.
+func (k *TopicKeeper) ActivateTopic(
+	ctx context.Context,
+	topicId TopicId,
+	reason types.TopicStatusChangeReason,
+	weight alloraMath.Dec,
+	minWeight alloraMath.Dec,
+) error {
 	topicExists, err := k.topics.Has(ctx, topicId)
 	if err != nil {
 		return errorsmod.Wrap(err, "failed to check if topic exists")
@@ -282,9 +357,57 @@ func (k *TopicKeeper) ActivateTopic(ctx context.Context, topicId TopicId) error 
 	currentBlock := sdkCtx.BlockHeight()
 	epochEndBlock := currentBlock + topic.EpochLength
 
-	err = k.activateTopicAndResetLowestWeightAtBlock(ctx, topicId, epochEndBlock)
-	if errorsmod.IsOf(err, types.ErrTopicAlreadyActive, types.ErrTopicCannotBeActivated) {
+	// A topic that already has a schedule has its weight counted in the total; only a topic
+	// that gets scheduled here contributes its stored weight. Read before scheduling it.
+	wasScheduled, err := k.IsTopicScheduled(ctx, topicId)
+	if err != nil {
+		return errorsmod.Wrap(err, "failed to check whether the topic is scheduled")
+	}
+	var previousChurningBlock BlockHeight
+	if wasScheduled {
+		previousChurningBlock, err = k.GetTopicSchedule(ctx, topicId)
+		if err != nil {
+			return errorsmod.Wrap(err, "failed to get previous churning block")
+		}
+	}
+
+	err = k.activateTopicAndResetLowestWeightAtBlock(ctx, topicId, epochEndBlock, reason, weight, minWeight)
+	var refused *topicRefusedError
+	if errors.As(err, &refused) {
+		sdkCtx.Logger().Info("Topic did not make the cut for its next epoch", "topicId", topicId, "epochEndBlock", epochEndBlock, "error", err)
+		// A topic left over from a block the chain already passed cannot be rescheduled;
+		// drop its stale schedule, listing, set membership and weight instead of leaving
+		// the ghost behind.
+		if wasScheduled {
+			err = k.inactivateTopicWithPastSchedule(ctx, topicId, previousChurningBlock, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_REACTIVATION_FAILED, refused.comparedWeight, minWeight, refused.lowestWeight)
+			if err != nil {
+				return errorsmod.Wrap(err, "failed to inactivate topic with a past schedule")
+			}
+		}
+		return nil
+	}
+	if errorsmod.IsOf(err, types.ErrTopicAlreadyActive) {
 		sdkCtx.Logger().Info("Failed to add topic at next epoch", "topicId", topicId, "epochEndBlock", epochEndBlock, "error", err)
+		// Already listed at the next block; a stale schedule only has to move forward and
+		// its old listing has to be dropped.
+		if wasScheduled {
+			err = k.SetTopicToNextPossibleChurningBlock(ctx, topicId, epochEndBlock)
+			if err != nil {
+				return errorsmod.Wrap(err, "failed to set topic to next possible churning block")
+			}
+			err = k.ResetLowestActiveTopicWeightAtBlock(ctx, epochEndBlock)
+			if err != nil {
+				return errorsmod.Wrap(err, "failed to reset lowest active topic weight at block")
+			}
+			err = k.SetActiveTopics(ctx, topicId)
+			if err != nil {
+				return errorsmod.Wrap(err, "failed to set active topics")
+			}
+			err = k.removeTopicFromBlock(ctx, topicId, previousChurningBlock)
+			if err != nil {
+				return errorsmod.Wrap(err, "failed to remove topic from its previous churning block")
+			}
+		}
 		return nil
 	}
 	if err != nil {
@@ -297,13 +420,23 @@ func (k *TopicKeeper) ActivateTopic(ctx context.Context, topicId TopicId) error 
 		return errorsmod.Wrap(err, "failed to set active topics")
 	}
 
+	// Scheduling the topic replaced its previous churning block. A topic left over from a
+	// block the chain already passed is still listed at that block, so drop the stale
+	// listing; otherwise it stays listed at two blocks and the activity invariant breaks.
+	if wasScheduled {
+		err = k.removeTopicFromBlock(ctx, topicId, previousChurningBlock)
+		if err != nil {
+			return errorsmod.Wrap(err, "failed to remove topic from its previous churning block")
+		}
+	}
+
 	sdkCtx.Logger().Info("Topic activated at block", "topicId", topicId, "block", currentBlock)
 	// This topic was activated, so we need to add its previous weight if any to the total sum of previous topic weights
 	topicWeight, noPrior, err := k.GetPreviousTopicWeight(ctx, topicId)
 	if err != nil {
 		return errorsmod.Wrap(err, "failed to get topic weight from topic id")
 	}
-	if !noPrior && !topicWeight.IsZero() {
+	if !wasScheduled && !noPrior && !topicWeight.IsZero() {
 		totalSumPreviousTopicWeights, err := k.GetTotalSumPreviousTopicWeights(ctx)
 		if err != nil {
 			return errorsmod.Wrap(err, "failed to get total sum of previous topic weights")
@@ -317,20 +450,65 @@ func (k *TopicKeeper) ActivateTopic(ctx context.Context, topicId TopicId) error 
 			return errorsmod.Wrap(err, "failed to set total sum of previous topic weights")
 		}
 	}
+	k.emitOpenReputerSubmissionWindowEvents(ctx, topic)
 	return nil
 }
 
-// Inactivate the topic
-func (k *TopicKeeper) InactivateTopic(ctx context.Context, topicId TopicId) error {
-	err := k.inactivateTopicWithoutMinWeightReset(ctx, topicId)
+func (k *TopicKeeper) emitOpenReputerSubmissionWindowEvents(ctx context.Context, topic types.Topic) {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	nonces, err := k.nonceKeeper.GetUnfulfilledReputerNonces(ctx, topic.Id)
+	if err != nil {
+		sdkCtx.Logger().Warn("Failed to get unfulfilled reputer nonces after topic activation", "topicId", topic.Id, "error", err)
+		return
+	}
+
+	block := sdkCtx.BlockHeight()
+	for _, nonce := range nonces.Nonces {
+		windowStart, windowEnd, err := ReputerSubmissionWindowBounds(topic, *nonce)
+		if err != nil {
+			sdkCtx.Logger().Warn("Failed to compute reputer submission window after topic activation", "topicId", topic.Id, "error", err)
+			continue
+		}
+		// Inclusive of windowEnd to match admission: submissions are accepted
+		// in the last window block too. The first post-activation churn block
+		// is at or past windowEnd, so the grid path cannot re-emit.
+		if block >= windowStart && block <= windowEnd {
+			types.EmitNewReputerSubmissionWindowOpenedEvent(ctx, topic.Id, nonce.ReputerNonce.BlockHeight, windowEnd)
+		}
+	}
+}
+
+// Inactivate the topic.
+// The deactivation event carries the weight, minimum and threshold the caller
+// made the decision on.
+func (k *TopicKeeper) InactivateTopic(
+	ctx context.Context,
+	topicId TopicId,
+	reason types.TopicStatusChangeReason,
+	weight alloraMath.Dec,
+	minWeight alloraMath.Dec,
+	thresholdWeight alloraMath.Dec,
+) error {
+	block, wasActive, err := k.GetNextPossibleChurningBlockByTopicId(ctx, topicId)
+	if err != nil {
+		return errorsmod.Wrap(err, "failed to get topic churning block")
+	}
+	err = k.inactivateTopicWithoutMinWeightReset(ctx, topicId, reason, weight, minWeight, thresholdWeight)
 	if err != nil {
 		return errorsmod.Wrap(err, "failed to inactivate topic without min weight reset")
+	}
+	if wasActive {
+		if err := k.ResetLowestActiveTopicWeightAtBlock(ctx, block); err != nil {
+			return errorsmod.Wrap(err, "failed to reset lowest active topic weight at block")
+		}
 	}
 	return nil
 }
 
-// If the topic weight is not less than lowest weight keep it as activated
-func (k *TopicKeeper) AttemptTopicReactivation(ctx context.Context, topicId TopicId) error {
+// If the topic weight is not less than lowest weight keep it as activated.
+// The caller's weight and minimum go on a reactivation into a free slot; a comparison for a
+// full block's slot reports the weights that comparison used.
+func (k *TopicKeeper) AttemptTopicReactivation(ctx context.Context, topicId TopicId, weight alloraMath.Dec, minWeight alloraMath.Dec) error {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	topic, err := k.GetTopic(ctx, topicId)
 	if err != nil {
@@ -339,26 +517,42 @@ func (k *TopicKeeper) AttemptTopicReactivation(ctx context.Context, topicId Topi
 	currentBlock := sdk.UnwrapSDKContext(ctx).BlockHeight()
 	epochEndBlock := currentBlock + topic.EpochLength
 
-	// Remove current active topic from block
-	err = k.removeCurrentTopicFromBlock(ctx, topicId, currentBlock)
+	// Schedule the next epoch before leaving the current block: a topic that does not make
+	// the cut is inactivated while it is still listed at its churning block, which is where
+	// inactivation expects to find it. Leaving it in the active set with no schedule would
+	// keep its weight in the total and let a later activation count that weight again.
+	err = k.activateTopicAndResetLowestWeightAtBlock(ctx, topicId, epochEndBlock, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_REACTIVATED, weight, minWeight)
+	var refused *topicRefusedError
+	if errors.As(err, &refused) {
+		sdkCtx.Logger().Info("Topic did not make the cut for its next epoch, inactivating", "topicId", topicId, "epochEndBlock", epochEndBlock)
+		err = k.InactivateTopic(ctx, topicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_REACTIVATION_FAILED, refused.comparedWeight, minWeight, refused.lowestWeight)
+		if err != nil {
+			return errorsmod.Wrap(err, "failed to inactivate topic that could not be rescheduled")
+		}
+		return nil
+	} else if errorsmod.IsOf(err, types.ErrTopicAlreadyActive) {
+		// Already listed at the next block; only the churning block has to move forward.
+		err = k.SetTopicToNextPossibleChurningBlock(ctx, topicId, epochEndBlock)
+		if err != nil {
+			return errorsmod.Wrap(err, "failed to set topic to next possible churning block")
+		}
+	} else if err != nil {
+		return errorsmod.Wrap(err, "failed to activate topic and reset lowest weight at block")
+	}
+
+	err = k.removeTopicFromBlock(ctx, topicId, currentBlock)
 	if err != nil {
 		sdkCtx.Logger().Warn("Failed to remove current active topic", "topicId", topicId, "block", currentBlock, "error", err)
 		return errorsmod.Wrap(err, "failed to remove current active topic from block")
-	}
-
-	err = k.activateTopicAndResetLowestWeightAtBlock(ctx, topicId, epochEndBlock)
-	if errorsmod.IsOf(err, types.ErrTopicAlreadyActive, types.ErrTopicCannotBeActivated) {
-		sdkCtx.Logger().Info("Failed to add topic at next epoch", "topicId", topicId, "epochEndBlock", epochEndBlock, "error", err)
-		return nil
-	} else if err != nil {
-		return errorsmod.Wrap(err, "failed to activate topic and reset lowest weight at block")
 	}
 
 	sdkCtx.Logger().Debug("Topic reactivated at next epoch", "topicId", topicId, "epochEndBlock", epochEndBlock)
 	return nil
 }
 
-func (k *TopicKeeper) removeCurrentTopicFromBlock(ctx context.Context, topicId TopicId, block BlockHeight) error {
+// removeTopicFromBlock drops the topic from the list of topics whose epoch ends at block.
+// The topic's churning block is left untouched: callers have already moved it forward.
+func (k *TopicKeeper) removeTopicFromBlock(ctx context.Context, topicId TopicId, block BlockHeight) error {
 	activeTopicIds, err := k.GetActiveTopicIdsAtBlock(ctx, block)
 	if err != nil {
 		return errorsmod.Wrap(err, "failed to get active topic ids at block")
@@ -376,17 +570,23 @@ func (k *TopicKeeper) removeCurrentTopicFromBlock(ctx context.Context, topicId T
 	if err != nil {
 		return errorsmod.Wrap(err, "failed to set block to active topics")
 	}
-	err = k.topicToNextPossibleChurningBlock.Remove(ctx, topicId)
-	if err != nil {
-		return errorsmod.Wrap(err, "failed to remove topic to next possible churning block")
+	if err := k.ResetLowestActiveTopicWeightAtBlock(ctx, block); err != nil {
+		return errorsmod.Wrap(err, "failed to reset lowest active topic weight at block")
 	}
 	return nil
 }
 
-func (k *TopicKeeper) activateTopicAndResetLowestWeightAtBlock(ctx context.Context, topicId TopicId, epochEndBlock BlockHeight) error {
+func (k *TopicKeeper) activateTopicAndResetLowestWeightAtBlock(
+	ctx context.Context,
+	topicId TopicId,
+	epochEndBlock BlockHeight,
+	reason types.TopicStatusChangeReason,
+	weight alloraMath.Dec,
+	minWeight alloraMath.Dec,
+) error {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	// Add to next epoch end block if greater than lowest weight
-	err := k.addTopicToActiveSetRespectingLimitsWithoutMinWeightReset(ctx, topicId, epochEndBlock)
+	err := k.addTopicToActiveSetRespectingLimitsWithoutMinWeightReset(ctx, topicId, epochEndBlock, reason, weight, minWeight)
 	if err != nil {
 		return errorsmod.Wrap(err, "failed to add topic to active set respecting limits without min weight reset")
 	}

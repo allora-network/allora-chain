@@ -67,18 +67,46 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-* [#968](https://github.com/allora-network/allora-chain/pull/968) Per-topic `max_top_inferers_to_reward` (additive field on `emissions.v10.Topic`): the cap on inferers admitted per topic is now topic-level, set at create/`UpdateTopic` (`0` uses the global default; guarded while a worker submission window is open). Stored caps are kept verbatim, and admission resolves them against the global bounds, so the globals stay live. The emissions v16 migration backfills existing topics, so behavior is unchanged across the `v0.18.0` upgrade.
-* [#969](https://github.com/allora-network/allora-chain/pull/969) New global `min_top_inferers_to_reward` (additive field on `emissions.v9.Params`): a floor for the per-topic inferer cap, so a topic cannot be configured to admit an unreasonably small active set. Create/`UpdateTopic` reject a cap outside `[min, max]`, and admission clamps the effective cap into that range with the ceiling applied last, so it can never exceed the global maximum. Params validation keeps the range well formed by rejecting a floor above the ceiling. It defaults to `5` and is therefore active from the start: a topic whose stored cap is below the floor has it raised at admission, and the v16 migration backfills the param. The floor never gates an epoch, which stays valid even when fewer inferers than the floor take part.
+* [#968](https://github.com/allora-network/allora-chain/pull/968) Per-topic `max_top_inferers_to_reward`, required within the global range, with migration v16
+* [#969](https://github.com/allora-network/allora-chain/pull/969) New global `min_top_inferers_to_reward` as the floor for the per-topic inferer cap (default `5`)
+* [#1005](https://github.com/allora-network/allora-chain/pull/1005) `nonce`, the epoch nonce, on every `emissions.v10` event that carries the epoch under `block_height` or `nonce_block_height` (listed under Deprecated), and on the `Get{Worker,Reputer}SubmissionWindowStatus` responses
+* [#1009](https://github.com/allora-network/allora-chain/pull/1009) `nonce`, the epoch nonce the reward distribution belongs to, on `EventDelegateRewardShareUpdated` and `EventDelegateRewardDistributed`
+* [#1009](https://github.com/allora-network/allora-chain/pull/1009) `EventTopicWeightUpdatedAfterStakeChange`, with the same payload as `EventTopicWeightUpdated`, emitted when a stake change recomputes the topic weight; `EventTopicWeightUpdated` now only comes from the epoch path
+* [#1009](https://github.com/allora-network/allora-chain/pull/1009) `topic_stake`, the topic's total stake after the change, on `EventAddStake` and `EventRemoveStake`
+* [#1009](https://github.com/allora-network/allora-chain/pull/1009) `reason` (why the status changed), `weight` (the topic's weight in the decision) and `min_weight` (the global `MinTopicWeight` param in force) on `EventTopicStatusChanged`
+* [#1015](https://github.com/allora-network/allora-chain/pull/1015) `threshold_weight` on `EventTopicStatusChanged`, the weight the decision was measured against: `MinTopicWeight`, the block's lowest weight, the challenger's weight on an eviction, or zero when no comparison happened; when a full block's slot was at stake `weight` is the value that comparison used
+* [#1015](https://github.com/allora-network/allora-chain/pull/1015) `REACTIVATION_ERROR` on `TopicStatusChangeReason`, for a topic inactivated because its reactivation attempt returned an error; `REACTIVATION_FAILED` now only means the topic lost the comparison for a full block's slot
+* [#1030](https://github.com/allora-network/allora-chain/pull/1030) `EVICTED_BY_EQUAL_WEIGHT` on `TopicStatusChangeReason`, for a topic evicted from a full active set by a challenger with the same weight; `EVICTED_BY_HIGHER_WEIGHT` now only means the challenger's weight was strictly higher
+* [#1009](https://github.com/allora-network/allora-chain/pull/1009) `EventRewardPayoutFailed`, emitted per actor when paying a topic participant's reward fails, carrying `topic_id`, the reward `nonce`, `address`, `actor_type`, `amount` and the failure `reason`
+* [#1009](https://github.com/allora-network/allora-chain/pull/1009) `WORKER_INFO_LOOKUP`, `ACCOUNT_SEND` and `NEGATIVE_REWARD` on `RewardPayoutFailureReason`; `EventRewardPayoutFailed` is now emitted for every payout failure where the actor is not paid
+* [#1009](https://github.com/allora-network/allora-chain/pull/1009) `EventTopicRewardForfeitedNoRewardNonce` and `EventTopicRewardForfeitedDistributionFailed`, emitted when a topic's reward goes back to the ecosystem account, carrying `topic_id`, the just-ended `epoch` and `amount`, the integer coins moved to the ecosystem account (zero when the reward was under one unit and nothing moved); the latter also carries the `reward_nonce` whose settlement failed
+* [#1009](https://github.com/allora-network/allora-chain/pull/1009) `EventNonceExpired`, emitted per unfulfilled nonce that leaves state without being fulfilled, carrying `topic_id`, the expired `nonce`, `actor_type` and the `reason` (`EVICTED_BY_CAP` when a new nonce pushes the list past the unfulfilled-request cap, `PRUNED_BY_AGE` when it ages past the retention threshold, `CLOSE_FAILED` when settlement of the nonce fails and the nonce is cleared in the close path)
+* [#1007](https://github.com/allora-network/allora-chain/pull/1007) `labels` on `EventEpochLabelRegistryFrozen`: the frozen registry's label names in compact-id order (`labels[i]` has id `i+1`)
+* [#1026](https://github.com/allora-network/allora-chain/pull/1026) `discarded_addresses` on `EventActiveForecastersSet`: the epoch's active forecasters whose forecasts the worker nonce close discarded
 
 ### Changed
 
-* [#968](https://github.com/allora-network/allora-chain/pull/968) The global `max_top_inferers_to_reward` now rejects zero and serves as the default and live ceiling for the per-topic cap; score-history retention still uses the global value.
+* [#968](https://github.com/allora-network/allora-chain/pull/968) The global `max_top_inferers_to_reward` now rejects zero and serves as the live ceiling for the per-topic cap; score-history retention still uses the global value.
+* [#1004](https://github.com/allora-network/allora-chain/pull/1004) `EmitNewActorScoresSetEvent` no longer takes a height: `EventScoresSet` always carried the epoch nonce from the scores, and two callers passed the current block height, which was ignored.
+* [#1026](https://github.com/allora-network/allora-chain/pull/1026) `addresses` on `EventActiveForecastersSet` lists only the forecasters whose forecasts were stored for the epoch; it used to list every active forecaster, including those whose forecasts the close discarded.
 
 ### Deprecated
 
+* [#1005](https://github.com/allora-network/allora-chain/pull/1005) Epoch-nonce fields superseded by `nonce`, still emitted with the same value: `block_height` on `EventScoresSet`, `EventRewardsSettled`, `EventListeningCoefficientsSet`, `Event{Inferer,Forecaster,NaiveInferer}NetworkRegretSet`, `EventTopicInitialRegretSet`, `EventTopicInitialEmaScoreSet`, `EventRegretStdNormSet` and `Event{Inferer,Forecaster}WeightsSet`, where the name collides with the inclusion height other events report; `nonce_block_height` on `EventForecastTaskScoreSet`, `EventActive{Reputers,Inferers,Forecasters}Set`, `EventNetworkInference{Inferer,Forecaster}{Weights,RegretsUsed}Set`, `Event{Worker,Reputer}SubmissionWindow{Opened,Closed}` and `EventEpochLabelRegistryFrozen`; `current_nonce_block_height` on the `Get{Worker,Reputer}SubmissionWindowStatus` responses
+* [#1005](https://github.com/allora-network/allora-chain/pull/1005) `block_height` on `EventWorkerLastCommitSet`, `EventReputerLastCommitSet`, `EventEcosystemTokenMintSet` and `EventRewardCurrentBlockEmission`, which only repeats the height of the block the event is emitted in; still emitted
+* [#1009](https://github.com/allora-network/allora-chain/pull/1009) `block_height` on `EventPreviousPercentageRewardToStakedReputersSet`, which only repeats the height of the block the event is emitted in; still emitted
+
 ### Removed
 
+* [#1009](https://github.com/allora-network/allora-chain/pull/1009) `DeleteUnfulfilledWorkerNonces` and `DeleteUnfulfilledReputerNonces`, which no production path called.
+
 ### Fixed
+
+* [#1008](https://github.com/allora-network/allora-chain/pull/1008) Fix `Simulate` under-reporting gas by ~31% on the feemarket fee path (fee handling no-ops in simulation), which caused out-of-gas on standard txs; compensation is simulate-only, deliver gas unchanged.
+* [#1000](https://github.com/allora-network/allora-chain/pull/1000) Fix bug on accumulated topic weight sum which could drift when unstaking from an inactive topic.
+* [#1002](https://github.com/allora-network/allora-chain/pull/1002) Fix epoch-end topic reactivation bookkeeping: a refused reschedule now fully inactivates the topic instead of leaving it in the active set without a schedule, so its weight is not double-counted on a later activation. Migration fixes potential misalignment.
+* [#993](https://github.com/allora-network/allora-chain/pull/993) Open the reputer submission window at the end of the reveal epoch, and retire only the closing nonce's reputer submissions when closing it, fixing a permanent loss of network losses and rewards on fractional-lag topics.
+* [#1003](https://github.com/allora-network/allora-chain/pull/1003) Topic creation now emits its events in order — create, whitelist gates, fee — with the creation fee reported as `EventFundTopic` (creator as funder). Gate enable/disable emits once per state transition, and zero-fee payments skip no-op bank writes but still attempt activation.
 
 ### Security
 
@@ -90,7 +118,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 #### Added
 
+* [#1015](https://github.com/allora-network/allora-chain/pull/1015) `types.EmitNewTopicRewardForfeitedNoRewardNonceEvent`, `types.EmitNewTopicRewardForfeitedDistributionFailedEvent` and their `types.New...EventBase` constructors, whose `amount` is a `cosmos.Int`.
+
 #### Changed
+
+* [#1004](https://github.com/allora-network/allora-chain/pull/1004) `types.EmitNewActorScoresSetEvent` drops its unused `blockHeight` parameter; callers passing a height no longer compile.
+* [#1015](https://github.com/allora-network/allora-chain/pull/1015) `types.EmitNewTopicStatusChangedEvent` and `types.NewTopicStatusChangedEventBase` take `reason`, `weight`, `minWeight` and `thresholdWeight`.
+* [#1009](https://github.com/allora-network/allora-chain/pull/1009) `types.EmitNewAddStakeEvent`, `types.EmitNewRemoveStakeEvent`, `types.NewAddStakeEventBase` and `types.NewRemoveStakeEventBase` take `topicStake`.
+* [#1009](https://github.com/allora-network/allora-chain/pull/1009) `types.EmitNewDelegateRewardShareUpdatedEvent`, `types.EmitNewDelegateRewardDistributedEvent`, `types.NewDelegateRewardShareUpdatedEventBase` and `types.NewDelegateRewardDistributedEventBase` take `nonce`.
+* [#1007](https://github.com/allora-network/allora-chain/pull/1007) `types.EmitNewEpochLabelRegistryFrozenEvent` and `types.NewEpochLabelRegistryFrozenEventBase` take `labels` in place of `registrySize`, which is derived from `labels`.
+* [#1026](https://github.com/allora-network/allora-chain/pull/1026) `types.EmitNewActiveForecastersSetEvent` and `types.NewActiveForecastersSetEventBase` take `discardedAddresses`.
+* [#1015](https://github.com/allora-network/allora-chain/pull/1015) `TopicKeeper.InactivateTopic` takes `reason`, `weight`, `minWeight` and `thresholdWeight`; `TopicKeeper.ActivateTopic` takes `reason`, `weight` and `minWeight`; `TopicKeeper.AttemptTopicReactivation` takes `weight` and `minWeight`.
+* [#1015](https://github.com/allora-network/allora-chain/pull/1015) `BankingKeeper.MoveCoinsFromAlloraRewardsToEcosystem` returns the `cosmos.Int` amount it moved along with its error.
 
 # [Released]
 

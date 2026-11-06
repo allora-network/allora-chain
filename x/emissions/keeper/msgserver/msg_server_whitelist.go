@@ -682,7 +682,6 @@ func (ms msgServer) EnableTopicWorkerWhitelist(ctx context.Context, msg *types.E
 		return nil, errorsmod.Wrap(err, "unable to enable topic worker whitelist")
 	}
 
-	types.EmitNewTopicWorkerWhitelistEnabledEvent(ctx, msg.TopicId)
 	return &types.EnableTopicWorkerWhitelistResponse{}, nil
 }
 
@@ -706,7 +705,6 @@ func (ms msgServer) DisableTopicWorkerWhitelist(ctx context.Context, msg *types.
 		return nil, errorsmod.Wrap(err, "unable to disable topic worker whitelist")
 	}
 
-	types.EmitNewTopicWorkerWhitelistDisabledEvent(ctx, msg.TopicId)
 	return &types.DisableTopicWorkerWhitelistResponse{}, nil
 }
 
@@ -730,7 +728,6 @@ func (ms msgServer) EnableTopicReputerWhitelist(ctx context.Context, msg *types.
 		return nil, errorsmod.Wrap(err, "unable to enable topic reputer whitelist")
 	}
 
-	types.EmitNewTopicReputerWhitelistEnabledEvent(ctx, msg.TopicId)
 	return &types.EnableTopicReputerWhitelistResponse{}, nil
 }
 
@@ -754,7 +751,6 @@ func (ms msgServer) DisableTopicReputerWhitelist(ctx context.Context, msg *types
 		return nil, errorsmod.Wrap(err, "unable to disable topic reputer whitelist")
 	}
 
-	types.EmitNewTopicReputerWhitelistDisabledEvent(ctx, msg.TopicId)
 	return &types.DisableTopicReputerWhitelistResponse{}, nil
 }
 

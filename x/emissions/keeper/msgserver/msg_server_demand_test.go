@@ -2,6 +2,7 @@ package msgserver_test
 
 import (
 	cosmosMath "cosmossdk.io/math"
+	abci "github.com/cometbft/cometbft/abci/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/allora-network/allora-chain/app/params"
@@ -16,7 +17,7 @@ func (s *MsgServerTestSuite) TestFundTopicSimple() {
 	// put some stake in the topic
 	err := s.StakingKeeper().AddReputerStake(s.Ctx(), topic, s.AddrsStr(1), cosmosMath.NewInt(500000))
 	s.Require().NoError(err)
-	err = s.TopicKeeper().InactivateTopic(s.Ctx(), topic)
+	err = s.TopicKeeper().InactivateTopic(s.Ctx(), topic, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec(), alloraMath.ZeroDec())
 	s.Require().NoError(err)
 	var initialStake int64 = 1000
 	initialStakeCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(initialStake)))
@@ -67,11 +68,11 @@ func (s *MsgServerTestSuite) TestHighWeightForHighFundedTopic() {
 	// put some stake in the topic
 	err := s.StakingKeeper().AddReputerStake(s.Ctx(), topic1, reputer, cosmosMath.NewInt(500000))
 	s.Require().NoError(err)
-	err = s.TopicKeeper().InactivateTopic(s.Ctx(), topic1)
+	err = s.TopicKeeper().InactivateTopic(s.Ctx(), topic1, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec(), alloraMath.ZeroDec())
 	s.Require().NoError(err)
 	err = s.StakingKeeper().AddReputerStake(s.Ctx(), topic2, reputer, cosmosMath.NewInt(500000))
 	s.Require().NoError(err)
-	err = s.TopicKeeper().InactivateTopic(s.Ctx(), topic2)
+	err = s.TopicKeeper().InactivateTopic(s.Ctx(), topic2, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec(), alloraMath.ZeroDec())
 	s.Require().NoError(err)
 	var initialStake int64 = 1000
 	var initialStake2 int64 = 10000
@@ -131,12 +132,12 @@ func (s *MsgServerTestSuite) TestTopicWeightDoesNotChangeWithDifferentEpochLengt
 	// Put same stake in both topics
 	err := s.StakingKeeper().AddReputerStake(s.Ctx(), topic1, reputer, cosmosMath.NewInt(500000))
 	s.Require().NoError(err)
-	err = s.TopicKeeper().InactivateTopic(s.Ctx(), topic1)
+	err = s.TopicKeeper().InactivateTopic(s.Ctx(), topic1, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec(), alloraMath.ZeroDec())
 	s.Require().NoError(err)
 
 	err = s.StakingKeeper().AddReputerStake(s.Ctx(), topic2, reputer, cosmosMath.NewInt(500000))
 	s.Require().NoError(err)
-	err = s.TopicKeeper().InactivateTopic(s.Ctx(), topic2)
+	err = s.TopicKeeper().InactivateTopic(s.Ctx(), topic2, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec(), alloraMath.ZeroDec())
 	s.Require().NoError(err)
 
 	// Set up funding amounts
@@ -221,4 +222,93 @@ func (s *MsgServerTestSuite) TestTopicWeightDoesNotChangeWithDifferentEpochLengt
 	// Topics should have equal weights because the target weight is not affected by the epoch length
 	s.Require().Equal(topicWeight1.Gt(topicWeight2), true, "Topic1 weight should > Topic2 weight because prev topic weights are smaller than current ones and Topic1 has a longer epoch length")
 
+}
+
+// TestFundTopicZeroAmountStillActivatesWeightSufficientTopic pins that a
+// zero-amount funding skips only the transfer and fee-revenue credit, which
+// would be no-ops, and still attempts activation: activation depends on the
+// topic's current weight, not on the amount.
+func (s *MsgServerTestSuite) TestFundTopicZeroAmountStillActivatesWeightSufficientTopic() {
+	ctx := s.Ctx()
+	topicId := uint64(1)
+
+	// Give the topic enough weight to clear the activation threshold, directly
+	// at the keeper so no activation trigger runs in setup. A topic with zero
+	// fee revenue has zero weight, so both stake and revenue are needed.
+	err := s.StakingKeeper().AddReputerStake(ctx, topicId, s.AddrsStr(1), cosmosMath.NewInt(500000))
+	s.Require().NoError(err)
+	err = s.TopicKeeper().AddTopicFeeRevenue(ctx, topicId, cosmosMath.NewInt(500000))
+	s.Require().NoError(err)
+
+	active, err := s.TopicKeeper().IsTopicActive(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().False(active, "topic must start inactive")
+
+	feeRevenueBefore, err := s.TopicKeeper().GetTopicFeeRevenue(ctx, topicId)
+	s.Require().NoError(err)
+	sender := s.Addrs(0)
+	balanceBefore := s.BankKeeper().GetBalance(ctx, sender, params.DefaultBondDenom)
+
+	_, err = s.EmissionsMsgServer().FundTopic(ctx, &types.FundTopicRequest{
+		Sender:  s.AddrsStr(0),
+		TopicId: topicId,
+		Amount:  cosmosMath.ZeroInt(),
+	})
+	s.Require().NoError(err)
+
+	// The zero amount must be a true no-op: no fee-revenue credit and no coin
+	// movement, in addition to the activation behavior asserted below.
+	feeRevenueAfter, err := s.TopicKeeper().GetTopicFeeRevenue(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().Equal(feeRevenueBefore, feeRevenueAfter, "zero-amount funding must not change fee revenue")
+	balanceAfter := s.BankKeeper().GetBalance(ctx, sender, params.DefaultBondDenom)
+	s.Require().True(balanceBefore.Equal(balanceAfter), "zero-amount funding must not move coins")
+
+	active, err = s.TopicKeeper().IsTopicActive(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().True(active, "zero-amount funding must still attempt activation")
+}
+
+// A funding that activates a topic into a free slot reports ACTIVATED_BY_FUNDING
+// with the topic's weight measured against the minimum.
+func (s *MsgServerTestSuite) TestFundTopicActivationEmitsActivatedByFunding() {
+	topicId := uint64(1)
+	funder := s.Addrs(0)
+	amount := cosmosMath.NewInt(1000)
+	s.Require().NoError(s.StakingKeeper().AddReputerStake(s.Ctx(), topicId, s.AddrsStr(1), cosmosMath.NewInt(500000)))
+	s.MintTokensToAddress(funder, amount)
+
+	em := sdk.NewEventManager()
+	_, err := s.EmissionsMsgServer().FundTopic(s.Ctx().WithEventManager(em), &types.FundTopicRequest{
+		Sender:  funder.String(),
+		TopicId: topicId,
+		Amount:  amount,
+	})
+	s.Require().NoError(err)
+
+	var events []*types.EventTopicStatusChanged
+	for _, ev := range em.Events() {
+		msg, parseErr := sdk.ParseTypedEvent(abci.Event(ev))
+		if parseErr != nil {
+			continue
+		}
+		if typed, ok := msg.(*types.EventTopicStatusChanged); ok {
+			events = append(events, typed)
+		}
+	}
+	s.Require().Len(events, 1)
+	event := events[0]
+
+	moduleParams, err := s.ParamsKeeper().GetParams(s.Ctx())
+	s.Require().NoError(err)
+	weight, err := s.TopicKeeper().GetTopicWeightFromTopicId(s.Ctx(), topicId)
+	s.Require().NoError(err)
+	s.Require().False(weight.Equal(moduleParams.MinTopicWeight), "the weights must differ for the assertions to tell them apart")
+
+	s.Require().Equal(topicId, event.TopicId)
+	s.Require().True(event.IsActive)
+	s.Require().Equal(types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_ACTIVATED_BY_FUNDING, event.Reason)
+	s.Require().True(weight.Equal(event.Weight), "expected weight %s, got %s", weight.String(), event.Weight.String())
+	s.Require().True(moduleParams.MinTopicWeight.Equal(event.MinWeight), "expected min %s, got %s", moduleParams.MinTopicWeight.String(), event.MinWeight.String())
+	s.Require().True(moduleParams.MinTopicWeight.Equal(event.ThresholdWeight), "expected threshold %s, got %s", moduleParams.MinTopicWeight.String(), event.ThresholdWeight.String())
 }

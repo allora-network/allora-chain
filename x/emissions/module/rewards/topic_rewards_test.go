@@ -2,6 +2,8 @@ package rewards_test
 
 import (
 	cosmosMath "cosmossdk.io/math"
+	abci "github.com/cometbft/cometbft/abci/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
@@ -50,7 +52,7 @@ func (s *RewardsTestSuite) TestGetAndUpdateActiveTopicWeights() {
 	setTopicWeight(topic1.Id, 10, 10)
 	err = s.TopicKeeper().SetTopic(s.Ctx(), topic1.Id, topic1)
 	s.Require().NoError(err)
-	err = s.TopicKeeper().ActivateTopic(s.Ctx(), topic1.Id)
+	err = s.TopicKeeper().ActivateTopic(s.Ctx(), topic1.Id, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec())
 	s.Require().NoError(err, "Activating topic should not fail")
 
 	totalSumPreviousTopicWeights, err = s.TopicKeeper().GetTotalSumPreviousTopicWeights(s.Ctx())
@@ -60,7 +62,7 @@ func (s *RewardsTestSuite) TestGetAndUpdateActiveTopicWeights() {
 	setTopicWeight(topic2.Id, 30, 10)
 	err = s.TopicKeeper().SetTopic(s.Ctx(), topic2.Id, topic2)
 	s.Require().NoError(err)
-	err = s.TopicKeeper().ActivateTopic(s.Ctx(), topic2.Id)
+	err = s.TopicKeeper().ActivateTopic(s.Ctx(), topic2.Id, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec())
 	s.Require().NoError(err, "Activating topic should not fail")
 
 	block := 10
@@ -99,6 +101,331 @@ func (s *RewardsTestSuite) TestGetAndUpdateActiveTopicWeights() {
 	activeTopics, err = s.TopicKeeper().GetActiveTopicIdsAtBlock(s.Ctx(), 46)
 	s.Require().NoError(err, "Fetching active topics should not produce an error")
 	s.Require().Equal(1, len(activeTopics.TopicIds), "Should retrieve exactly one active topics")
+}
+
+// At epoch end the topic status events say why the status changed: a topic
+// whose weight fell under the minimum is deactivated with
+// WEIGHT_BELOW_MINIMUM, and a topic that keeps its slot is reactivated.
+func (s *RewardsTestSuite) TestGetAndUpdateActiveTopicWeightsEmitsStatusReasons() {
+	maxActiveTopicsNum := uint64(3)
+	params := types.DefaultParams()
+	params.BlocksPerMonth = 864000
+	params.MaxActiveTopicsPerBlock = maxActiveTopicsNum
+	params.MaxPageLimit = uint64(100)
+	params.MinTopicWeight = alloraMath.MustNewDecFromString("100")
+	params.TopicRewardAlpha = alloraMath.MustNewDecFromString("0.5")
+	params.TopicRewardStakeImportance = alloraMath.OneDec()
+	params.TopicRewardFeeRevenueImportance = alloraMath.OneDec()
+	err := s.ParamsKeeper().SetParams(s.Ctx(), params)
+	s.Require().NoError(err)
+
+	setTopicWeight := func(topicId uint64, revenue, stake int64) {
+		err = s.TopicKeeper().AddTopicFeeRevenue(s.Ctx(), topicId, cosmosMath.NewInt(revenue))
+		s.Require().NoError(err)
+		err = s.StakingKeeper().SetTopicStake(s.Ctx(), topicId, cosmosMath.NewInt(stake))
+		s.Require().NoError(err)
+	}
+
+	s.WithBlockHeight(1)
+	topic1 := s.MockTopic()
+	topic1.Id = 2
+	topic1.EpochLength = 15
+	topic1.GroundTruthLag = topic1.EpochLength
+	topic1.WorkerSubmissionWindow = topic1.EpochLength
+	topic2 := s.MockTopic()
+	topic2.Id = 3
+	topic2.EpochLength = 15
+	topic2.GroundTruthLag = topic2.EpochLength
+	topic2.WorkerSubmissionWindow = topic2.EpochLength
+
+	setTopicWeight(topic1.Id, 10, 10)
+	s.Require().NoError(s.TopicKeeper().SetTopic(s.Ctx(), topic1.Id, topic1))
+	s.Require().NoError(s.TopicKeeper().ActivateTopic(s.Ctx(), topic1.Id, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec()))
+
+	setTopicWeight(topic2.Id, 30, 10)
+	s.Require().NoError(s.TopicKeeper().SetTopic(s.Ctx(), topic2.Id, topic2))
+	s.Require().NoError(s.TopicKeeper().ActivateTopic(s.Ctx(), topic2.Id, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec()))
+
+	// First epoch: both topics keep their slots.
+	em := sdk.NewEventManager()
+	s.WithBlockHeight(16)
+	_, _, _, err = rewards.GetAndUpdateActiveTopicWeights(s.Ctx().WithEventManager(em), *s.EmissionsKeeper(), int64(16))
+	s.Require().NoError(err)
+
+	reactivated := 0
+	for _, ev := range em.Events() {
+		msg, err := sdk.ParseTypedEvent(abci.Event(ev))
+		if err != nil {
+			continue
+		}
+		event, ok := msg.(*types.EventTopicStatusChanged)
+		if !ok {
+			continue
+		}
+		s.Require().True(event.IsActive)
+		s.Require().Equal(types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_REACTIVATED, event.Reason)
+		s.Require().Equal(params.MinTopicWeight, event.MinWeight)
+		s.Require().True(params.MinTopicWeight.Equal(event.ThresholdWeight), "a free slot is measured against the minimum, got %s", event.ThresholdWeight.String())
+		s.Require().False(event.Weight.IsZero())
+		reactivated++
+	}
+	s.Require().Equal(2, reactivated)
+
+	// Zero topic1's stake so its weight falls under the minimum while topic2
+	// keeps its slot.
+	s.Require().NoError(s.StakingKeeper().SetTopicStake(s.Ctx(), topic1.Id, cosmosMath.ZeroInt()))
+
+	em = sdk.NewEventManager()
+	s.WithBlockHeight(31)
+	_, _, _, err = rewards.GetAndUpdateActiveTopicWeights(s.Ctx().WithEventManager(em), *s.EmissionsKeeper(), int64(31))
+	s.Require().NoError(err)
+
+	var deactivated, kept *types.EventTopicStatusChanged
+	for _, ev := range em.Events() {
+		msg, err := sdk.ParseTypedEvent(abci.Event(ev))
+		if err != nil {
+			continue
+		}
+		event, ok := msg.(*types.EventTopicStatusChanged)
+		if !ok {
+			continue
+		}
+		switch event.TopicId {
+		case topic1.Id:
+			deactivated = event
+		case topic2.Id:
+			kept = event
+		}
+	}
+	s.Require().NotNil(deactivated)
+	s.Require().False(deactivated.IsActive)
+	s.Require().Equal(types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_WEIGHT_BELOW_MINIMUM, deactivated.Reason)
+	s.Require().Equal(params.MinTopicWeight, deactivated.MinWeight)
+	s.Require().True(params.MinTopicWeight.Equal(deactivated.ThresholdWeight), "expected threshold %s, got %s", params.MinTopicWeight.String(), deactivated.ThresholdWeight.String())
+	s.Require().True(deactivated.Weight.Lt(params.MinTopicWeight), "deactivated weight %s should be under the minimum", deactivated.Weight.String())
+	s.Require().NotNil(kept)
+	s.Require().True(kept.IsActive)
+	s.Require().Equal(types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_REACTIVATED, kept.Reason)
+}
+
+// A topic refused at epoch-end reactivation is inactivated by AttemptTopicReactivation and
+// must not be rewarded for the epoch, matching the below-minimum-weight branch. Its event
+// reports the comparison that refused it.
+func (s *RewardsTestSuite) TestGetAndUpdateActiveTopicWeightsSkipsRefusedReactivation() {
+	params := types.DefaultParams()
+	params.BlocksPerMonth = 864000
+	params.MaxActiveTopicsPerBlock = 1
+	params.MaxPageLimit = uint64(100)
+	params.MinEpochLength = 1
+	params.MinTopicWeight = alloraMath.MustNewDecFromString("0.0001")
+	params.TopicRewardAlpha = alloraMath.MustNewDecFromString("0.5")
+	params.TopicRewardStakeImportance = alloraMath.OneDec()
+	params.TopicRewardFeeRevenueImportance = alloraMath.OneDec()
+	s.Require().NoError(s.ParamsKeeper().SetParams(s.Ctx(), params))
+
+	setTopicWeight := func(topicId uint64, revenue, stake int64) {
+		s.Require().NoError(s.TopicKeeper().AddTopicFeeRevenue(s.Ctx(), topicId, cosmosMath.NewInt(revenue)))
+		s.Require().NoError(s.StakingKeeper().SetTopicStake(s.Ctx(), topicId, cosmosMath.NewInt(stake)))
+	}
+
+	// The heavy topic holds block 20; the light topic's epoch also targets block 20.
+	heavyTopic := s.MockTopic()
+	heavyTopic.Id = 2
+	heavyTopic.EpochLength = 20
+	heavyTopic.GroundTruthLag = heavyTopic.EpochLength
+	heavyTopic.WorkerSubmissionWindow = heavyTopic.EpochLength
+	lightTopic := s.MockTopic()
+	lightTopic.Id = 3
+	lightTopic.EpochLength = 8
+	lightTopic.GroundTruthLag = lightTopic.EpochLength
+	lightTopic.WorkerSubmissionWindow = lightTopic.EpochLength
+
+	s.WithBlockHeight(0)
+	setTopicWeight(heavyTopic.Id, 1_000_000, 1_000_000)
+	s.Require().NoError(s.TopicKeeper().SetTopic(s.Ctx(), heavyTopic.Id, heavyTopic))
+	s.Require().NoError(s.TopicKeeper().ActivateTopic(s.Ctx(), heavyTopic.Id, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec()))
+
+	s.WithBlockHeight(4)
+	setTopicWeight(lightTopic.Id, 10, 10)
+	s.Require().NoError(s.TopicKeeper().SetTopic(s.Ctx(), lightTopic.Id, lightTopic))
+	s.Require().NoError(s.TopicKeeper().ActivateTopic(s.Ctx(), lightTopic.Id, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec()))
+
+	// Store both weights so the lowest-weight comparison at block 20 is deterministic.
+	heavyWeight, err := s.TopicKeeper().GetTopicWeightFromTopicId(s.Ctx(), heavyTopic.Id)
+	s.Require().NoError(err)
+	s.Require().NoError(s.TopicKeeper().SetPreviousTopicWeight(s.Ctx(), heavyTopic.Id, heavyWeight))
+	lightWeight, err := s.TopicKeeper().GetTopicWeightFromTopicId(s.Ctx(), lightTopic.Id)
+	s.Require().NoError(err)
+	s.Require().NoError(s.TopicKeeper().SetPreviousTopicWeight(s.Ctx(), lightTopic.Id, lightWeight))
+	s.Require().True(lightWeight.Lt(heavyWeight))
+
+	// Block 12: the light topic's epoch ends and its next block (20) is held by the heavier topic.
+	block := int64(12)
+	s.WithBlockHeight(block)
+	lowestAtNextBlock, noPrior, err := s.TopicKeeper().GetLowestActiveTopicWeightAtBlock(s.Ctx(), 20)
+	s.Require().NoError(err)
+	s.Require().False(noPrior, "the full block must have a stored lowest weight")
+	em := sdk.NewEventManager()
+	weights, _, _, err := rewards.GetAndUpdateActiveTopicWeights(s.Ctx().WithEventManager(em), *s.EmissionsKeeper(), block)
+	s.Require().NoError(err)
+
+	statusEvents := typedEvents[*types.EventTopicStatusChanged](em)
+	s.Require().Len(statusEvents, 1)
+	refused := statusEvents[0]
+	weightEvents := typedEvents[*types.EventTopicWeightUpdated](em)
+	s.Require().Len(weightEvents, 1)
+	// The compared weight is recomputed from the state the epoch path just wrote.
+	compared, err := s.TopicKeeper().GetTopicWeightFromTopicId(s.Ctx(), lightTopic.Id)
+	s.Require().NoError(err)
+	s.Require().False(compared.Equal(weightEvents[0].NewWeight), "the compared weight must differ from the caller's for this pin to tell them apart")
+	s.Require().True(compared.Lt(lowestAtNextBlock.Weight))
+
+	s.Require().Equal(lightTopic.Id, refused.TopicId)
+	s.Require().False(refused.IsActive)
+	s.Require().Equal(types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_REACTIVATION_FAILED, refused.Reason)
+	s.Require().True(compared.Equal(refused.Weight), "expected weight %s, got %s", compared.String(), refused.Weight.String())
+	s.Require().True(params.MinTopicWeight.Equal(refused.MinWeight), "expected min %s, got %s", params.MinTopicWeight.String(), refused.MinWeight.String())
+	s.Require().True(lowestAtNextBlock.Weight.Equal(refused.ThresholdWeight), "expected threshold %s, got %s", lowestAtNextBlock.Weight.String(), refused.ThresholdWeight.String())
+
+	_, rewarded := weights[lightTopic.Id]
+	s.Require().False(rewarded, "a topic refused at reactivation must not be rewarded")
+	_, rewardedHeavy := weights[heavyTopic.Id]
+	s.Require().False(rewardedHeavy, "only topics whose epoch ends at this block are processed")
+	scheduled, err := s.TopicKeeper().IsTopicScheduled(s.Ctx(), lightTopic.Id)
+	s.Require().NoError(err)
+	s.Require().False(scheduled, "a refused topic must be inactivated")
+
+	total, err := s.TopicKeeper().GetTotalSumPreviousTopicWeights(s.Ctx())
+	s.Require().NoError(err)
+	s.Require().Equal(heavyWeight.String(), total.String(), "only the scheduled topic stays counted")
+}
+
+// A topic that takes a full block's slot at epoch-end reactivation reports the compared
+// weight against the block's lowest weight, and the topic it evicts reports the reverse.
+func (s *RewardsTestSuite) TestGetAndUpdateActiveTopicWeightsReportsEpochEviction() {
+	params := types.DefaultParams()
+	params.BlocksPerMonth = 864000
+	params.MaxActiveTopicsPerBlock = 1
+	params.MaxPageLimit = uint64(100)
+	params.MinEpochLength = 1
+	params.MinTopicWeight = alloraMath.MustNewDecFromString("0.0001")
+	params.TopicRewardAlpha = alloraMath.MustNewDecFromString("0.5")
+	params.TopicRewardStakeImportance = alloraMath.OneDec()
+	params.TopicRewardFeeRevenueImportance = alloraMath.OneDec()
+	s.Require().NoError(s.ParamsKeeper().SetParams(s.Ctx(), params))
+
+	setTopicWeight := func(topicId uint64, revenue, stake int64) {
+		s.Require().NoError(s.TopicKeeper().AddTopicFeeRevenue(s.Ctx(), topicId, cosmosMath.NewInt(revenue)))
+		s.Require().NoError(s.StakingKeeper().SetTopicStake(s.Ctx(), topicId, cosmosMath.NewInt(stake)))
+	}
+
+	// The light topic holds block 20; the heavy topic's epoch also targets block 20.
+	lightTopic := s.MockTopic()
+	lightTopic.Id = 2
+	lightTopic.EpochLength = 20
+	lightTopic.GroundTruthLag = lightTopic.EpochLength
+	lightTopic.WorkerSubmissionWindow = lightTopic.EpochLength
+	heavyTopic := s.MockTopic()
+	heavyTopic.Id = 3
+	heavyTopic.EpochLength = 8
+	heavyTopic.GroundTruthLag = heavyTopic.EpochLength
+	heavyTopic.WorkerSubmissionWindow = heavyTopic.EpochLength
+
+	s.WithBlockHeight(0)
+	setTopicWeight(lightTopic.Id, 10, 10)
+	s.Require().NoError(s.TopicKeeper().SetTopic(s.Ctx(), lightTopic.Id, lightTopic))
+	s.Require().NoError(s.TopicKeeper().ActivateTopic(s.Ctx(), lightTopic.Id, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec()))
+
+	s.WithBlockHeight(4)
+	setTopicWeight(heavyTopic.Id, 1_000_000, 1_000_000)
+	s.Require().NoError(s.TopicKeeper().SetTopic(s.Ctx(), heavyTopic.Id, heavyTopic))
+	s.Require().NoError(s.TopicKeeper().ActivateTopic(s.Ctx(), heavyTopic.Id, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec()))
+
+	// Block 12: the heavy topic's epoch ends and its next block (20) is held by the lighter topic.
+	block := int64(12)
+	s.WithBlockHeight(block)
+	lowest, noPrior, err := s.TopicKeeper().GetLowestActiveTopicWeightAtBlock(s.Ctx(), 20)
+	s.Require().NoError(err)
+	s.Require().False(noPrior, "the full block must have a stored lowest weight")
+	s.Require().Equal(lightTopic.Id, lowest.TopicId)
+	em := sdk.NewEventManager()
+	_, _, _, err = rewards.GetAndUpdateActiveTopicWeights(s.Ctx().WithEventManager(em), *s.EmissionsKeeper(), block)
+	s.Require().NoError(err)
+
+	weightEvents := typedEvents[*types.EventTopicWeightUpdated](em)
+	s.Require().Len(weightEvents, 1)
+	compared, err := s.TopicKeeper().GetTopicWeightFromTopicId(s.Ctx(), heavyTopic.Id)
+	s.Require().NoError(err)
+	s.Require().False(compared.Equal(weightEvents[0].NewWeight), "the compared weight must differ from the caller's for this pin to tell them apart")
+
+	statusEvents := typedEvents[*types.EventTopicStatusChanged](em)
+	s.Require().Len(statusEvents, 2)
+	evicted, took := statusEvents[0], statusEvents[1]
+
+	s.Require().Equal(lightTopic.Id, evicted.TopicId)
+	s.Require().False(evicted.IsActive)
+	s.Require().Equal(types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_EVICTED_BY_HIGHER_WEIGHT, evicted.Reason)
+	s.Require().True(lowest.Weight.Equal(evicted.Weight), "expected weight %s, got %s", lowest.Weight.String(), evicted.Weight.String())
+	s.Require().True(params.MinTopicWeight.Equal(evicted.MinWeight), "expected min %s, got %s", params.MinTopicWeight.String(), evicted.MinWeight.String())
+	s.Require().True(compared.Equal(evicted.ThresholdWeight), "expected threshold %s, got %s", compared.String(), evicted.ThresholdWeight.String())
+
+	s.Require().Equal(heavyTopic.Id, took.TopicId)
+	s.Require().True(took.IsActive)
+	s.Require().Equal(types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_REACTIVATED, took.Reason)
+	s.Require().True(compared.Equal(took.Weight), "expected weight %s, got %s", compared.String(), took.Weight.String())
+	s.Require().True(params.MinTopicWeight.Equal(took.MinWeight), "expected min %s, got %s", params.MinTopicWeight.String(), took.MinWeight.String())
+	s.Require().True(lowest.Weight.Equal(took.ThresholdWeight), "expected threshold %s, got %s", lowest.Weight.String(), took.ThresholdWeight.String())
+}
+
+// A reactivation attempt that errors inactivates the topic with no comparison to report:
+// with MaxActiveTopicsPerBlock at zero, an empty next block counts as full, has no lowest
+// topic to evict, and evicting the placeholder topic id fails.
+func (s *RewardsTestSuite) TestGetAndUpdateActiveTopicWeightsReportsReactivationError() {
+	topic := s.MockTopic()
+	topic.Id = 2
+	topic.EpochLength = 10
+	topic.GroundTruthLag = topic.EpochLength
+	topic.WorkerSubmissionWindow = topic.EpochLength
+
+	params := types.DefaultParams()
+	params.BlocksPerMonth = 864000
+	params.MaxActiveTopicsPerBlock = 1
+	params.MaxPageLimit = uint64(100)
+	params.MinEpochLength = 1
+	params.MinTopicWeight = alloraMath.MustNewDecFromString("0.0001")
+	params.TopicRewardAlpha = alloraMath.MustNewDecFromString("0.5")
+	params.TopicRewardStakeImportance = alloraMath.OneDec()
+	params.TopicRewardFeeRevenueImportance = alloraMath.OneDec()
+	s.Require().NoError(s.ParamsKeeper().SetParams(s.Ctx(), params))
+
+	s.WithBlockHeight(0)
+	s.Require().NoError(s.TopicKeeper().AddTopicFeeRevenue(s.Ctx(), topic.Id, cosmosMath.NewInt(1000)))
+	s.Require().NoError(s.StakingKeeper().SetTopicStake(s.Ctx(), topic.Id, cosmosMath.NewInt(1000)))
+	s.Require().NoError(s.TopicKeeper().SetTopic(s.Ctx(), topic.Id, topic))
+	s.Require().NoError(s.TopicKeeper().ActivateTopic(s.Ctx(), topic.Id, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec()))
+
+	params.MaxActiveTopicsPerBlock = 0
+	s.Require().NoError(params.Validate(), "zero must be a valid param for this path to be reachable")
+	s.Require().NoError(s.ParamsKeeper().SetParams(s.Ctx(), params))
+
+	block := int64(10)
+	s.WithBlockHeight(block)
+	em := sdk.NewEventManager()
+	weights, _, _, err := rewards.GetAndUpdateActiveTopicWeights(s.Ctx().WithEventManager(em), *s.EmissionsKeeper(), block)
+	s.Require().NoError(err)
+	s.Require().Empty(weights)
+
+	weightEvents := typedEvents[*types.EventTopicWeightUpdated](em)
+	s.Require().Len(weightEvents, 1)
+	statusEvents := typedEvents[*types.EventTopicStatusChanged](em)
+	s.Require().Len(statusEvents, 1)
+	event := statusEvents[0]
+	s.Require().Equal(topic.Id, event.TopicId)
+	s.Require().False(event.IsActive)
+	s.Require().Equal(types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_REACTIVATION_ERROR, event.Reason)
+	s.Require().True(weightEvents[0].NewWeight.Equal(event.Weight), "expected weight %s, got %s", weightEvents[0].NewWeight.String(), event.Weight.String())
+	s.Require().True(params.MinTopicWeight.Equal(event.MinWeight), "expected min %s, got %s", params.MinTopicWeight.String(), event.MinWeight.String())
+	s.Require().True(event.ThresholdWeight.IsZero(), "no comparison happened, got %s", event.ThresholdWeight.String())
 }
 
 func (s *RewardsTestSuite) TestGetRewardAndRemovedRewardableTopics() {
@@ -282,7 +609,7 @@ func (s *RewardsTestSuite) TestPreviousTopicWeightsAfterInactivation() {
 	s.Require().True(previousTopicWeight.Equal(totalSumPreviousTopicWeights), "Total sum of previous topic weights should not be zero after endBlocker")
 
 	// Inactivate the topic
-	err = s.TopicKeeper().InactivateTopic(s.Ctx(), topicId)
+	err = s.TopicKeeper().InactivateTopic(s.Ctx(), topicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec(), alloraMath.ZeroDec())
 	s.Require().NoError(err)
 
 	// Check previousTopicWeights and totalPreviousTopicWeights after inactivation
@@ -296,7 +623,7 @@ func (s *RewardsTestSuite) TestPreviousTopicWeightsAfterInactivation() {
 	s.Require().True(alloraMath.ZeroDec().Equal(inactiveTotalSumPreviousTopicWeights), "Total sum of previous topic weights should be zero after inactivation")
 
 	// Reactivate the topic
-	err = s.TopicKeeper().ActivateTopic(s.Ctx(), topicId)
+	err = s.TopicKeeper().ActivateTopic(s.Ctx(), topicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec())
 	s.Require().NoError(err)
 
 	// Check previousTopicWeights and totalPreviousTopicWeights after reactivation

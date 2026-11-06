@@ -3,6 +3,8 @@ package keeper_test
 import (
 	errorsmod "cosmossdk.io/errors"
 	cosmosMath "cosmossdk.io/math"
+	abci "github.com/cometbft/cometbft/abci/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
@@ -82,7 +84,7 @@ func (s *KeeperTestSuite) TestInactivateAndActivateTopic() {
 	s.Require().NoError(err, "Setting topic should not fail")
 
 	// Activate the topic
-	err = k.ActivateTopic(ctx, topicId)
+	err = k.ActivateTopic(ctx, topicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec())
 	s.Require().NoError(err, "Reactivating topic should not fail")
 
 	// Check if topic is active
@@ -91,7 +93,7 @@ func (s *KeeperTestSuite) TestInactivateAndActivateTopic() {
 	s.Require().True(topicActive, "Topic should be active again")
 
 	// Inactivate the topic
-	err = k.InactivateTopic(ctx, topicId)
+	err = k.InactivateTopic(ctx, topicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec(), alloraMath.ZeroDec())
 	s.Require().NoError(err, "Inactivating topic should not fail")
 
 	// Check if topic is inactive
@@ -100,7 +102,7 @@ func (s *KeeperTestSuite) TestInactivateAndActivateTopic() {
 	s.Require().False(topicActive, "Topic should be inactive")
 
 	// Activate the topic
-	err = k.ActivateTopic(ctx, topicId)
+	err = k.ActivateTopic(ctx, topicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec())
 	s.Require().NoError(err, "Reactivating topic should not fail")
 
 	// Check if topic is active again
@@ -135,9 +137,9 @@ func (s *KeeperTestSuite) TestGetActiveTopicIdsAtBlock() {
 		testutil.WithWorkerSubmissionWindow(15),
 	)
 
-	err = k.ActivateTopic(ctx, topic1Id)
+	err = k.ActivateTopic(ctx, topic1Id, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec())
 	s.Require().NoError(err, "Activating topic should not fail")
-	err = k.ActivateTopic(ctx, topic3Id)
+	err = k.ActivateTopic(ctx, topic3Id, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec())
 	s.Require().NoError(err, "Activating topic should not fail")
 
 	// Fetch only active topics
@@ -193,11 +195,11 @@ func (s *KeeperTestSuite) TestTopicGoesInactivateOnEpochEndBlockIfLowWeight() {
 	}
 
 	setTopicWeight(topic1Id, 10, 10)
-	err = k.ActivateTopic(s.Ctx(), topic1Id)
+	err = k.ActivateTopic(s.Ctx(), topic1Id, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec())
 	s.Require().NoError(err, "Activating topic should not fail")
 
 	setTopicWeight(topic2Id, 20, 10)
-	err = k.ActivateTopic(s.Ctx(), topic2Id)
+	err = k.ActivateTopic(s.Ctx(), topic2Id, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec())
 	s.Require().NoError(err, "Activating topic should not fail")
 
 	// Fetch next page -- should only return topic 5
@@ -206,14 +208,21 @@ func (s *KeeperTestSuite) TestTopicGoesInactivateOnEpochEndBlockIfLowWeight() {
 	s.Require().Len(activeTopics.TopicIds, 2, "Should retrieve exactly two active topics")
 
 	s.WithBlockHeight(15)
-	err = k.AttemptTopicReactivation(s.Ctx(), topic1Id)
+	err = k.AttemptTopicReactivation(s.Ctx(), topic1Id, alloraMath.ZeroDec(), alloraMath.ZeroDec())
 	s.Require().NoError(err, "Attempting to reactivate topic should not fail")
-	err = k.AttemptTopicReactivation(s.Ctx(), topic2Id)
+	err = k.AttemptTopicReactivation(s.Ctx(), topic2Id, alloraMath.ZeroDec(), alloraMath.ZeroDec())
 	s.Require().NoError(err, "Attempting to reactivate topic should not fail")
+
+	activeTopics, err = k.GetActiveTopicIdsAtBlock(s.Ctx(), 15)
+	s.Require().NoError(err)
+	s.Require().Empty(activeTopics.TopicIds)
+	_, noPriorLowestWeight, err := k.GetLowestActiveTopicWeightAtBlock(s.Ctx(), 15)
+	s.Require().NoError(err)
+	s.Require().True(noPriorLowestWeight, "processed epoch-end bucket metadata must be pruned")
 
 	s.WithBlockHeight(25)
 	setTopicWeight(topic3Id, 50, 10)
-	err = k.ActivateTopic(s.Ctx(), topic3Id)
+	err = k.ActivateTopic(s.Ctx(), topic3Id, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec())
 	s.Require().NoError(err, "Activating topic should not fail")
 
 	activeTopics, err = k.GetActiveTopicIdsAtBlock(s.Ctx(), 30)
@@ -520,7 +529,7 @@ func (s *KeeperTestSuite) TestDripTopicFeeRevenue() {
 	err = k.SetTopic(ctx, topic.Id, topic)
 	require.NoError(err, "Setting a new topic should not fail")
 
-	err = k.ActivateTopic(ctx, topic.Id)
+	err = k.ActivateTopic(ctx, topic.Id, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec())
 	require.NoError(err, "Activating the topic should not fail")
 
 	// Set up initial topic fee revenue
@@ -586,7 +595,7 @@ func (s *KeeperTestSuite) TestDripTopicFeeRevenueWithTwoTopicsDifferentEpochLeng
 		err = k.SetTopic(ctx, t.id, topic)
 		require.NoError(err, "Setting a new topic should not fail")
 
-		err = k.ActivateTopic(ctx, topic.Id)
+		err = k.ActivateTopic(ctx, topic.Id, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec())
 		require.NoError(err, "Activating the topic should not fail")
 
 		err = k.AddTopicFeeRevenue(ctx, topic.Id, initialRevenue)
@@ -642,7 +651,7 @@ func (s *KeeperTestSuite) TestRemoveTopicFromPreviousTopicWeights() {
 		testutil.WithEpochLength(epochLength),
 		testutil.WithWorkerSubmissionWindow(workerSubmissionWindow),
 	)
-	err = k.ActivateTopic(ctx, topicId)
+	err = k.ActivateTopic(ctx, topicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec())
 	s.Require().NoError(err)
 
 	// Add stake and fee revenue
@@ -694,6 +703,282 @@ func (s *KeeperTestSuite) TestRemoveTopicFromPreviousTopicWeights() {
 	finalTotalSum, err := k.GetTotalSumPreviousTopicWeights(ctx)
 	s.Require().NoError(err)
 	s.Require().True(finalTotalSum.Equal(newTotalSum), "Total sum should remain unchanged after removing non-existent topic")
+}
+
+// Stake-driven weight recomputes emit EventTopicWeightUpdatedAfterStakeChange,
+// not the epoch-path EventTopicWeightUpdated, so consumers can tell the two
+// sources of weight updates apart.
+func (s *KeeperTestSuite) TestUpdateTopicWeightAfterStakeChangeEmitsStakeChangeEvent() {
+	ctx := s.Ctx()
+	k := s.TopicKeeper()
+	topicId := uint64(1)
+
+	previousWeight := alloraMath.NewDecFromInt64(10)
+	topicStake := cosmosMath.NewInt(1000)
+	addedRevenue := cosmosMath.NewInt(100)
+	topic := s.MockTopic()
+	err := k.SetPreviousTopicWeight(ctx, topicId, previousWeight)
+	s.Require().NoError(err)
+	err = k.SetTopic(ctx, topicId, topic)
+	s.Require().NoError(err)
+	s.Require().NoError(s.StakingKeeper().SetTopicStake(ctx, topicId, topicStake))
+	revenueBefore, err := k.GetTopicFeeRevenue(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().NoError(k.AddTopicFeeRevenue(ctx, topicId, addedRevenue))
+	feeRevenue := revenueBefore.Add(addedRevenue)
+
+	// Expected weight from the setup: EMA of S^μ·R^ν against the previous weight,
+	// with the topic's epoch-smoothed alpha.
+	params, err := s.ParamsKeeper().GetParams(ctx)
+	s.Require().NoError(err)
+	stakeDec, err := alloraMath.NewDecFromSdkInt(topicStake)
+	s.Require().NoError(err)
+	revenueDec, err := alloraMath.NewDecFromSdkInt(feeRevenue)
+	s.Require().NoError(err)
+	stakeTerm, err := alloraMath.Pow(stakeDec, params.TopicRewardStakeImportance)
+	s.Require().NoError(err)
+	revenueTerm, err := alloraMath.Pow(revenueDec, params.TopicRewardFeeRevenueImportance)
+	s.Require().NoError(err)
+	target, err := stakeTerm.Mul(revenueTerm)
+	s.Require().NoError(err)
+	blocksPerWeek, err := alloraMath.CalculateBlocksPerWeek(params.BlocksPerMonth)
+	s.Require().NoError(err)
+	alpha, err := alloraMath.GetSmoothedAlpha(topic.EpochLength, blocksPerWeek, params.TopicRewardAlpha)
+	s.Require().NoError(err)
+	expectedWeight, err := alloraMath.CalcEma(alpha, target, previousWeight, false)
+	s.Require().NoError(err)
+	s.Require().False(expectedWeight.Equal(previousWeight), "the setup must change the weight")
+
+	em := sdk.NewEventManager()
+	err = k.UpdateTopicWeightAfterStakeChange(ctx.WithEventManager(em), topicId)
+	s.Require().NoError(err)
+
+	var stakeChange *types.EventTopicWeightUpdatedAfterStakeChange
+	epochPathEvents := 0
+	for _, ev := range em.Events() {
+		msg, err := sdk.ParseTypedEvent(abci.Event(ev))
+		if err != nil {
+			continue
+		}
+		switch e := msg.(type) {
+		case *types.EventTopicWeightUpdatedAfterStakeChange:
+			s.Require().Nil(stakeChange, "exactly one stake-change weight event")
+			stakeChange = e
+		case *types.EventTopicWeightUpdated:
+			epochPathEvents++
+		}
+	}
+	s.Require().Equal(0, epochPathEvents)
+	s.Require().NotNil(stakeChange)
+	s.Require().Equal(topicId, stakeChange.TopicId)
+	s.Require().True(expectedWeight.Equal(stakeChange.NewWeight), "expected weight %s, got %s", expectedWeight, stakeChange.NewWeight)
+	s.Require().True(topicStake.Equal(stakeChange.TopicStake), "expected stake %s, got %s", topicStake, stakeChange.TopicStake)
+	s.Require().True(feeRevenue.Equal(stakeChange.TopicFeeRevenue), "expected revenue %s, got %s", feeRevenue, stakeChange.TopicFeeRevenue)
+
+	stored, _, err := k.GetPreviousTopicWeight(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().True(stored.Equal(stakeChange.NewWeight), "the emitted weight is the stored weight")
+}
+
+// TestUpdateTopicWeightAfterStakeChangeOnInactiveTopic verifies that removing stake from an
+// inactive topic refreshes its stored weight but does not touch totalSumPreviousTopicWeights.
+// Inactivation already removed the topic's weight from the sum while keeping the stored value
+// for reactivation, so a stake removal must not subtract it a second time.
+func (s *KeeperTestSuite) TestUpdateTopicWeightAfterStakeChangeOnInactiveTopic() {
+	stakeAmount := cosmosMath.NewInt(1000)
+	feeRevenue := cosmosMath.NewInt(100)
+	epochLength := int64(100)
+
+	testCases := []struct {
+		name        string
+		addStake    func(topicId uint64)
+		removeStake func(topicId uint64)
+	}{
+		{
+			name: "reputer stake removal",
+			addStake: func(topicId uint64) {
+				err := s.StakingKeeper().AddReputerStake(s.Ctx(), topicId, s.AddrsStr(0), stakeAmount)
+				s.Require().NoError(err)
+			},
+			removeStake: func(topicId uint64) {
+				ctx := s.Ctx()
+				moduleParams, err := s.ParamsKeeper().GetParams(ctx)
+				s.Require().NoError(err)
+				endBlock := ctx.BlockHeight() + moduleParams.RemoveStakeDelayWindow
+				err = s.StakingKeeper().SetStakeRemoval(ctx, types.StakeRemovalInfo{
+					TopicId:               topicId,
+					Reputer:               s.AddrsStr(0),
+					Amount:                stakeAmount,
+					BlockRemovalStarted:   ctx.BlockHeight(),
+					BlockRemovalCompleted: endBlock,
+				})
+				s.Require().NoError(err)
+				err = s.StakingKeeper().RemoveReputerStake(ctx, endBlock, topicId, s.AddrsStr(0), stakeAmount)
+				s.Require().NoError(err)
+			},
+		},
+		{
+			name: "delegate stake removal",
+			addStake: func(topicId uint64) {
+				err := s.StakingKeeper().AddDelegateStake(s.Ctx(), topicId, s.AddrsStr(1), s.AddrsStr(0), stakeAmount)
+				s.Require().NoError(err)
+			},
+			removeStake: func(topicId uint64) {
+				ctx := s.Ctx()
+				moduleParams, err := s.ParamsKeeper().GetParams(ctx)
+				s.Require().NoError(err)
+				endBlock := ctx.BlockHeight() + moduleParams.RemoveStakeDelayWindow
+				err = s.StakingKeeper().SetDelegateStakeRemoval(ctx, types.DelegateStakeRemovalInfo{
+					BlockRemovalStarted:   ctx.BlockHeight(),
+					BlockRemovalCompleted: endBlock,
+					TopicId:               topicId,
+					Delegator:             s.AddrsStr(1),
+					Reputer:               s.AddrsStr(0),
+					Amount:                stakeAmount,
+				})
+				s.Require().NoError(err)
+				err = s.StakingKeeper().RemoveDelegateStake(ctx, endBlock, topicId, s.AddrsStr(1), s.AddrsStr(0), stakeAmount)
+				s.Require().NoError(err)
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		s.Run(tc.name, func() {
+			s.SetupTest()
+			ctx := s.Ctx()
+			k := s.TopicKeeper()
+
+			params := types.DefaultParams()
+			params.TopicRewardAlpha = alloraMath.MustNewDecFromString("0.5")
+			params.TopicRewardStakeImportance = alloraMath.OneDec()
+			params.TopicRewardFeeRevenueImportance = alloraMath.OneDec()
+			// Both topics must fit in the active set, otherwise activating the second churns the first.
+			params.MaxActiveTopicsPerBlock = 2
+			err := s.ParamsKeeper().SetParams(ctx, params)
+			s.Require().NoError(err)
+
+			// Two active topics so the sum is non-trivial: one stays active, one gets inactivated.
+			stayingTopicId := s.CreateTopic(testutil.WithEpochLength(epochLength), testutil.WithWorkerSubmissionWindow(epochLength))
+			churnedTopicId := s.CreateTopic(testutil.WithEpochLength(epochLength), testutil.WithWorkerSubmissionWindow(epochLength))
+			for _, topicId := range []uint64{stayingTopicId, churnedTopicId} {
+				err = k.ActivateTopic(ctx, topicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec())
+				s.Require().NoError(err)
+				tc.addStake(topicId)
+				err = k.AddTopicFeeRevenue(ctx, topicId, feeRevenue)
+				s.Require().NoError(err)
+				weight, _, _, err := k.GetCurrentTopicWeight(
+					ctx, topicId, epochLength,
+					params.TopicRewardAlpha, params.TopicRewardStakeImportance, params.TopicRewardFeeRevenueImportance, params.BlocksPerMonth,
+				)
+				s.Require().NoError(err)
+				err = k.SetPreviousTopicWeight(ctx, topicId, weight)
+				s.Require().NoError(err)
+			}
+
+			churnedWeight, noPrior, err := k.GetPreviousTopicWeight(ctx, churnedTopicId)
+			s.Require().NoError(err)
+			s.Require().False(noPrior)
+			s.Require().False(churnedWeight.IsZero())
+
+			sumWhileBothActive, err := k.GetTotalSumPreviousTopicWeights(ctx)
+			s.Require().NoError(err)
+
+			err = k.InactivateTopic(ctx, churnedTopicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec(), alloraMath.ZeroDec())
+			s.Require().NoError(err)
+			sumAfterInactivation, err := k.GetTotalSumPreviousTopicWeights(ctx)
+			s.Require().NoError(err)
+			expectedAfterInactivation, err := sumWhileBothActive.Sub(churnedWeight)
+			s.Require().NoError(err)
+			s.Require().Equal(expectedAfterInactivation.String(), sumAfterInactivation.String(),
+				"inactivation must remove the topic weight from the sum exactly once")
+
+			tc.removeStake(churnedTopicId)
+
+			sumAfterRemoval, err := k.GetTotalSumPreviousTopicWeights(ctx)
+			s.Require().NoError(err)
+			s.Require().Equal(sumAfterInactivation.String(), sumAfterRemoval.String(),
+				"stake removal on an inactive topic must not change the sum")
+
+			refreshedWeight, noPrior, err := k.GetPreviousTopicWeight(ctx, churnedTopicId)
+			s.Require().NoError(err)
+			s.Require().False(noPrior, "stored weight must be kept for reactivation")
+			s.Require().NotEqual(churnedWeight.String(), refreshedWeight.String(),
+				"stored weight must reflect the reduced stake")
+
+			// Reactivation re-adds exactly the refreshed stored weight.
+			err = k.ActivateTopic(ctx, churnedTopicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec())
+			s.Require().NoError(err)
+			sumAfterReactivation, err := k.GetTotalSumPreviousTopicWeights(ctx)
+			s.Require().NoError(err)
+			expectedAfterReactivation, err := sumAfterInactivation.Add(refreshedWeight)
+			s.Require().NoError(err)
+			s.Require().Equal(expectedAfterReactivation.String(), sumAfterReactivation.String())
+		})
+	}
+}
+
+// TestRemoveStakeFromInactiveTopicWhenSumIsSmaller covers the case where the stale stored
+// weight exceeds the current sum. A second subtraction would drive the sum negative and make
+// the stake removal fail permanently, so the removal must succeed and leave the sum untouched.
+func (s *KeeperTestSuite) TestRemoveStakeFromInactiveTopicWhenSumIsSmaller() {
+	ctx := s.Ctx()
+	k := s.TopicKeeper()
+	reputerAddr := s.AddrsStr(0)
+	stakeAmount := cosmosMath.NewInt(1000)
+	epochLength := int64(100)
+
+	params := types.DefaultParams()
+	params.TopicRewardAlpha = alloraMath.MustNewDecFromString("0.5")
+	params.TopicRewardStakeImportance = alloraMath.OneDec()
+	params.TopicRewardFeeRevenueImportance = alloraMath.OneDec()
+	params.MaxActiveTopicsPerBlock = 2
+	err := s.ParamsKeeper().SetParams(ctx, params)
+	s.Require().NoError(err)
+
+	// Single topic: after inactivation the sum is zero while the stored weight is not.
+	topicId := s.CreateTopic(testutil.WithEpochLength(epochLength), testutil.WithWorkerSubmissionWindow(epochLength))
+	err = k.ActivateTopic(ctx, topicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec())
+	s.Require().NoError(err)
+	err = s.StakingKeeper().AddReputerStake(ctx, topicId, reputerAddr, stakeAmount)
+	s.Require().NoError(err)
+	err = k.AddTopicFeeRevenue(ctx, topicId, cosmosMath.NewInt(100))
+	s.Require().NoError(err)
+	weight, _, _, err := k.GetCurrentTopicWeight(
+		ctx, topicId, epochLength,
+		params.TopicRewardAlpha, params.TopicRewardStakeImportance, params.TopicRewardFeeRevenueImportance, params.BlocksPerMonth,
+	)
+	s.Require().NoError(err)
+	err = k.SetPreviousTopicWeight(ctx, topicId, weight)
+	s.Require().NoError(err)
+
+	err = k.InactivateTopic(ctx, topicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec(), alloraMath.ZeroDec())
+	s.Require().NoError(err)
+	sum, err := k.GetTotalSumPreviousTopicWeights(ctx)
+	s.Require().NoError(err)
+	s.Require().True(sum.IsZero())
+
+	moduleParams, err := s.ParamsKeeper().GetParams(ctx)
+	s.Require().NoError(err)
+	endBlock := ctx.BlockHeight() + moduleParams.RemoveStakeDelayWindow
+	err = s.StakingKeeper().SetStakeRemoval(ctx, types.StakeRemovalInfo{
+		TopicId:               topicId,
+		Reputer:               reputerAddr,
+		Amount:                stakeAmount,
+		BlockRemovalStarted:   ctx.BlockHeight(),
+		BlockRemovalCompleted: endBlock,
+	})
+	s.Require().NoError(err)
+
+	err = s.StakingKeeper().RemoveReputerStake(ctx, endBlock, topicId, reputerAddr, stakeAmount)
+	s.Require().NoError(err, "stake removal must not fail because of the topic weight bookkeeping")
+
+	remaining, err := s.StakingKeeper().GetStakeReputerAuthority(ctx, topicId, reputerAddr)
+	s.Require().NoError(err)
+	s.Require().True(remaining.IsZero())
+	sum, err = k.GetTotalSumPreviousTopicWeights(ctx)
+	s.Require().NoError(err)
+	s.Require().True(sum.IsZero(), "an inactive topic must not contribute to the sum")
 }
 
 // TestUpdateTopic_RejectsLabelCaseSensitiveChange pins the keeper-level guard
@@ -872,4 +1157,446 @@ func (s *KeeperTestSuite) TestSetTopic_CanonicalizesLabelWhitelist() {
 			s.Require().Equal(tc.caseSensitive, stored.LabelCaseSensitive)
 		})
 	}
+}
+
+// TestFailedEpochEndReactivationLeavesTopicCoherent covers the epoch-end path where a topic
+// cannot be re-added to its next block because that block is already held by a heavier topic.
+// The topic must end up fully inactive (out of the active set, weight removed from the total),
+// so that a later activation counts its stored weight exactly once instead of twice.
+func (s *KeeperTestSuite) TestFailedEpochEndReactivationLeavesTopicCoherent() {
+	ctx := s.Ctx()
+	k := s.TopicKeeper()
+	invariant := keeper.TopicInvariantActiveTopicsScheduledAtChurningBlock(*s.EmissionsKeeper())
+
+	params := types.DefaultParams()
+	params.MaxActiveTopicsPerBlock = 1
+	params.MinEpochLength = 1
+	params.TopicRewardAlpha = alloraMath.MustNewDecFromString("0.5")
+	params.TopicRewardStakeImportance = alloraMath.OneDec()
+	params.TopicRewardFeeRevenueImportance = alloraMath.OneDec()
+	s.Require().NoError(s.ParamsKeeper().SetParams(ctx, params))
+
+	heavyTopicId := s.CreateTopic(testutil.WithEpochLength(20), testutil.WithWorkerSubmissionWindow(20))
+	lightTopicId := s.CreateTopic(testutil.WithEpochLength(10), testutil.WithWorkerSubmissionWindow(10))
+	setTopicWeight := func(topicId uint64, revenue, stake int64) {
+		s.Require().NoError(k.AddTopicFeeRevenue(ctx, topicId, cosmosMath.NewInt(revenue)))
+		s.Require().NoError(s.StakingKeeper().SetTopicStake(ctx, topicId, cosmosMath.NewInt(stake)))
+	}
+	setTopicWeight(heavyTopicId, 1_000_000, 1_000_000)
+	setTopicWeight(lightTopicId, 10, 10)
+
+	// Block 0: the topics land in different epoch-end blocks (20 and 10), so both activate.
+	s.Require().NoError(k.ActivateTopic(ctx, heavyTopicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec()))
+	s.Require().NoError(k.ActivateTopic(ctx, lightTopicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec()))
+	storeWeight := func(topicId uint64) alloraMath.Dec {
+		weight, err := k.GetTopicWeightFromTopicId(ctx, topicId)
+		s.Require().NoError(err)
+		s.Require().NoError(k.SetPreviousTopicWeight(ctx, topicId, weight))
+		return weight
+	}
+	heavyWeight := storeWeight(heavyTopicId)
+	lightWeight := storeWeight(lightTopicId)
+	s.Require().True(lightWeight.Lt(heavyWeight))
+	_, broken := invariant(ctx)
+	s.Require().False(broken)
+
+	// Block 10: the light topic's epoch ends and its next block (20) is held by the heavier topic.
+	s.WithBlockHeight(10)
+	ctx = s.Ctx()
+	s.Require().NoError(k.AttemptTopicReactivation(ctx, lightTopicId, alloraMath.ZeroDec(), alloraMath.ZeroDec()))
+
+	scheduled, err := k.IsTopicScheduled(ctx, lightTopicId)
+	s.Require().NoError(err)
+	s.Require().False(scheduled, "a topic that could not be re-added must lose its schedule")
+	isActive, err := k.IsTopicActive(ctx, lightTopicId)
+	s.Require().NoError(err)
+	s.Require().False(isActive)
+	previousBlockTopics, err := k.GetActiveTopicIdsAtBlock(ctx, 10)
+	s.Require().NoError(err)
+	s.Require().Empty(previousBlockTopics.TopicIds)
+	_, noPriorLowestWeight, err := k.GetLowestActiveTopicWeightAtBlock(ctx, 10)
+	s.Require().NoError(err)
+	s.Require().True(noPriorLowestWeight, "refused topic's old bucket metadata must be pruned")
+	sumAfterFailedReactivation, err := k.GetTotalSumPreviousTopicWeights(ctx)
+	s.Require().NoError(err)
+	s.Require().Equal(heavyWeight.String(), sumAfterFailedReactivation.String(),
+		"the total must only count the topic that stayed active")
+	msg, broken := invariant(ctx)
+	s.Require().False(broken, msg)
+
+	// Block 11: funding or staking activates the topic again into a free block; its weight counts once.
+	s.WithBlockHeight(11)
+	ctx = s.Ctx()
+	s.Require().NoError(k.ActivateTopic(ctx, lightTopicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec()))
+	expected, err := heavyWeight.Add(lightWeight)
+	s.Require().NoError(err)
+	sumAfterReactivation, err := k.GetTotalSumPreviousTopicWeights(ctx)
+	s.Require().NoError(err)
+	s.Require().Equal(expected.String(), sumAfterReactivation.String(),
+		"reactivation must add the stored weight exactly once")
+	msg, broken = invariant(ctx)
+	s.Require().False(broken, msg)
+}
+
+// TestActivateTopicCountsStoredWeightOnceAfterActivityRepair covers the consistent state the
+// v16 migration leaves for a topic that was half-active: it is no longer in the active set,
+// has no schedule or block listing, and its weight is no longer counted in the total. Later
+// activation must add the stored weight exactly once.
+func (s *KeeperTestSuite) TestActivateTopicCountsStoredWeightOnceAfterActivityRepair() {
+	ctx := s.Ctx()
+	k := s.TopicKeeper()
+	topicId := s.CreateTopic(testutil.WithEpochLength(60), testutil.WithWorkerSubmissionWindow(60))
+	s.Require().NoError(k.ActivateTopic(ctx, topicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec()))
+
+	weight := alloraMath.NewDecFromInt64(100)
+	s.Require().NoError(k.SetPreviousTopicWeight(ctx, topicId, weight))
+	churningBlock, err := k.GetTopicSchedule(ctx, topicId)
+	s.Require().NoError(err)
+
+	// Emulate the migration reconciliation of a half-active topic: drop the schedule and
+	// block listing, remove set membership and recompute the total from valid schedules.
+	s.Require().NoError(k.SetBlockToActiveTopics(ctx, churningBlock, types.TopicIds{TopicIds: nil}))
+	s.Require().NoError(k.RemoveTopicSchedule(ctx, topicId))
+	s.Require().NoError(k.RemoveTopicFromActiveSet(ctx, topicId))
+	s.Require().NoError(k.SetTotalSumPreviousTopicWeights(ctx, alloraMath.ZeroDec()))
+
+	s.Require().NoError(k.ActivateTopic(ctx, topicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec()))
+	total, err := k.GetTotalSumPreviousTopicWeights(ctx)
+	s.Require().NoError(err)
+	s.Require().Equal(weight.String(), total.String())
+}
+
+// TestActivateTopicRemovesStaleListingFromPastChurningBlock covers a topic that was left
+// scheduled at a block the chain has already passed: it is still listed at that block while
+// its schedule points to the past, so `IsTopicActive` reports it as inactive and activation
+// schedules it again. The stale listing must be dropped so the activity invariant holds.
+func (s *KeeperTestSuite) TestActivateTopicRemovesStaleListingFromPastChurningBlock() {
+	ctx := s.Ctx()
+	k := s.TopicKeeper()
+	invariant := keeper.TopicInvariantActiveTopicsScheduledAtChurningBlock(*s.EmissionsKeeper())
+
+	topicId := s.CreateTopic(testutil.WithEpochLength(20), testutil.WithWorkerSubmissionWindow(20))
+	s.Require().NoError(k.ActivateTopic(ctx, topicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec()))
+	weight := alloraMath.NewDecFromInt64(100)
+	s.Require().NoError(k.SetPreviousTopicWeight(ctx, topicId, weight))
+
+	staleBlock, err := k.GetTopicSchedule(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().Equal(int64(20), staleBlock)
+
+	// A schedule and its block listing agree, so the invariant holds even though the block
+	// is in the past.
+	s.WithBlockHeight(30)
+	ctx = s.Ctx()
+	msg, broken := invariant(ctx)
+	s.Require().False(broken, msg)
+
+	s.Require().NoError(k.ActivateTopic(ctx, topicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec()))
+
+	newBlock, err := k.GetTopicSchedule(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().Equal(int64(50), newBlock)
+
+	staleTopics, err := k.GetActiveTopicIdsAtBlock(ctx, staleBlock)
+	s.Require().NoError(err)
+	s.Require().Empty(staleTopics.TopicIds, "the stale block listing must be removed")
+	_, noPriorLowestWeight, err := k.GetLowestActiveTopicWeightAtBlock(ctx, staleBlock)
+	s.Require().NoError(err)
+	s.Require().True(noPriorLowestWeight, "the stale block metadata must be pruned")
+	newTopics, err := k.GetActiveTopicIdsAtBlock(ctx, newBlock)
+	s.Require().NoError(err)
+	s.Require().Contains(newTopics.TopicIds, topicId, "the topic must be listed at its new churning block")
+
+	// The topic already had its weight counted while scheduled, so activation must not add it again.
+	total, err := k.GetTotalSumPreviousTopicWeights(ctx)
+	s.Require().NoError(err)
+	s.Require().Equal(weight.String(), total.String())
+
+	msg, broken = invariant(ctx)
+	s.Require().False(broken, msg)
+}
+
+// TestActivateTopicInactivatesStaleTopicRefusedAtNewBlock covers a topic left scheduled at a
+// block the chain already passed. Activating it again can be refused when its next epoch end
+// is held by a heavier topic; the stale topic must then lose its schedule, listing, set
+// membership and weight instead of staying as a ghost.
+func (s *KeeperTestSuite) TestActivateTopicInactivatesStaleTopicRefusedAtNewBlock() {
+	ctx := s.Ctx()
+	k := s.TopicKeeper()
+	invariant := keeper.TopicInvariantActiveTopicsScheduledAtChurningBlock(*s.EmissionsKeeper())
+	totalInvariant := keeper.TopicInvariantTotalSumPreviousTopicWeightsEqualActiveTopicsSum(*s.EmissionsKeeper())
+
+	params := types.DefaultParams()
+	params.MaxActiveTopicsPerBlock = 1
+	params.MinEpochLength = 1
+	params.TopicRewardAlpha = alloraMath.MustNewDecFromString("0.5")
+	params.TopicRewardStakeImportance = alloraMath.OneDec()
+	params.TopicRewardFeeRevenueImportance = alloraMath.OneDec()
+	s.Require().NoError(s.ParamsKeeper().SetParams(ctx, params))
+
+	setTopicWeight := func(topicId uint64, revenue, stake int64) {
+		s.Require().NoError(k.AddTopicFeeRevenue(ctx, topicId, cosmosMath.NewInt(revenue)))
+		s.Require().NoError(s.StakingKeeper().SetTopicStake(ctx, topicId, cosmosMath.NewInt(stake)))
+	}
+	storeWeight := func(topicId uint64) alloraMath.Dec {
+		weight, err := k.GetTopicWeightFromTopicId(ctx, topicId)
+		s.Require().NoError(err)
+		s.Require().NoError(k.SetPreviousTopicWeight(ctx, topicId, weight))
+		return weight
+	}
+
+	heavyTopicId := s.CreateTopic(testutil.WithEpochLength(20), testutil.WithWorkerSubmissionWindow(20))
+	lightTopicId := s.CreateTopic(testutil.WithEpochLength(10), testutil.WithWorkerSubmissionWindow(10))
+	setTopicWeight(heavyTopicId, 1_000_000, 1_000_000)
+	setTopicWeight(lightTopicId, 10, 10)
+
+	// Block 0: the light topic is scheduled at 10.
+	s.Require().NoError(k.ActivateTopic(ctx, lightTopicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec()))
+	lightWeight := storeWeight(lightTopicId)
+
+	// Block 20: the heavier topic takes its next epoch end, block 40.
+	s.WithBlockHeight(20)
+	ctx = s.Ctx()
+	s.Require().NoError(k.ActivateTopic(ctx, heavyTopicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec()))
+	heavyWeight := storeWeight(heavyTopicId)
+	s.Require().True(lightWeight.Lt(heavyWeight))
+
+	// Block 30: the light topic's schedule (10) is in the past and its next epoch end (40)
+	// is held by the heavier topic.
+	s.WithBlockHeight(30)
+	ctx = s.Ctx()
+	staleBlock := int64(10)
+	lightWeightNow, err := k.GetTopicWeightFromTopicId(ctx, lightTopicId)
+	s.Require().NoError(err)
+	s.Require().True(lightWeightNow.Lt(heavyWeight), "the refused topic must be the lighter one")
+	lowestAtNewBlock, noPrior, err := k.GetLowestActiveTopicWeightAtBlock(ctx, 40)
+	s.Require().NoError(err)
+	s.Require().False(noPrior, "the full block must have a stored lowest weight")
+	em := sdk.NewEventManager()
+	s.Require().NoError(k.ActivateTopic(ctx.WithEventManager(em), lightTopicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_ACTIVATED_BY_FUNDING, lightWeightNow, params.MinTopicWeight))
+
+	// The event reports the comparison that refused the topic.
+	event := lastTopicStatusChangedEvent(em)
+	s.Require().NotNil(event)
+	s.Require().Equal(lightTopicId, event.TopicId)
+	s.Require().False(event.IsActive)
+	s.Require().Equal(types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_REACTIVATION_FAILED, event.Reason)
+	s.Require().True(lightWeightNow.Equal(event.Weight), "expected weight %s, got %s", lightWeightNow.String(), event.Weight.String())
+	s.Require().True(params.MinTopicWeight.Equal(event.MinWeight), "expected min %s, got %s", params.MinTopicWeight.String(), event.MinWeight.String())
+	s.Require().True(lowestAtNewBlock.Weight.Equal(event.ThresholdWeight), "expected threshold %s, got %s", lowestAtNewBlock.Weight.String(), event.ThresholdWeight.String())
+
+	scheduled, err := k.IsTopicScheduled(ctx, lightTopicId)
+	s.Require().NoError(err)
+	s.Require().False(scheduled, "the refused stale topic must lose its schedule")
+	staleTopics, err := k.GetActiveTopicIdsAtBlock(ctx, staleBlock)
+	s.Require().NoError(err)
+	s.Require().Empty(staleTopics.TopicIds, "the stale listing must be removed")
+	_, noPriorLowestWeight, err := k.GetLowestActiveTopicWeightAtBlock(ctx, staleBlock)
+	s.Require().NoError(err)
+	s.Require().True(noPriorLowestWeight, "the stale block metadata must be pruned")
+	activeIds, err := k.GetActiveTopicIds(ctx)
+	s.Require().NoError(err)
+	s.Require().NotContains(activeIds, lightTopicId)
+	total, err := k.GetTotalSumPreviousTopicWeights(ctx)
+	s.Require().NoError(err)
+	s.Require().Equal(heavyWeight.String(), total.String(), "only the scheduled topic stays counted")
+	msg, broken := invariant(ctx)
+	s.Require().False(broken, msg)
+	msg, broken = totalInvariant(ctx)
+	s.Require().False(broken, msg)
+
+	// The repaired topic stays reachable: activating it later counts its stored weight once.
+	s.WithBlockHeight(50)
+	ctx = s.Ctx()
+	s.Require().NoError(k.ActivateTopic(ctx, lightTopicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec()))
+	scheduled, err = k.IsTopicScheduled(ctx, lightTopicId)
+	s.Require().NoError(err)
+	s.Require().True(scheduled, "the repaired topic must be activatable again")
+	total, err = k.GetTotalSumPreviousTopicWeights(ctx)
+	s.Require().NoError(err)
+	expected, err := heavyWeight.Add(lightWeight)
+	s.Require().NoError(err)
+	s.Require().Equal(expected.String(), total.String(), "the stored weight is counted exactly once")
+	msg, broken = invariant(ctx)
+	s.Require().False(broken, msg)
+	msg, broken = totalInvariant(ctx)
+	s.Require().False(broken, msg)
+}
+
+// TestActivateTopicAdvancesStaleScheduleAlreadyListedAtNewBlock covers the
+// ErrTopicAlreadyActive branch of ActivateTopic with a stale schedule: the topic is already
+// listed at its next epoch end, so activation only moves the schedule forward and drops the
+// old listing, leaving the counted weight untouched.
+func (s *KeeperTestSuite) TestActivateTopicAdvancesStaleScheduleAlreadyListedAtNewBlock() {
+	ctx := s.Ctx()
+	k := s.TopicKeeper()
+	invariant := keeper.TopicInvariantActiveTopicsScheduledAtChurningBlock(*s.EmissionsKeeper())
+	totalInvariant := keeper.TopicInvariantTotalSumPreviousTopicWeightsEqualActiveTopicsSum(*s.EmissionsKeeper())
+
+	params := types.DefaultParams()
+	params.MinEpochLength = 1
+	s.Require().NoError(s.ParamsKeeper().SetParams(ctx, params))
+
+	topicId := s.CreateTopic(testutil.WithEpochLength(10), testutil.WithWorkerSubmissionWindow(10))
+	s.Require().NoError(k.ActivateTopic(ctx, topicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec()))
+	weight := alloraMath.NewDecFromInt64(100)
+	s.Require().NoError(k.SetPreviousTopicWeight(ctx, topicId, weight))
+
+	// Pre-list the topic at its next epoch end (40): the state the branch repairs.
+	const nextBlock = int64(40)
+	staleBlock := int64(10)
+	s.Require().NoError(k.SetBlockToActiveTopics(ctx, nextBlock, types.TopicIds{TopicIds: []uint64{topicId}}))
+
+	s.WithBlockHeight(30)
+	ctx = s.Ctx()
+	s.Require().NoError(k.ActivateTopic(ctx, topicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec()))
+
+	schedule, err := k.GetTopicSchedule(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().Equal(nextBlock, schedule, "the stale schedule must move to the next epoch end")
+	staleTopics, err := k.GetActiveTopicIdsAtBlock(ctx, staleBlock)
+	s.Require().NoError(err)
+	s.Require().Empty(staleTopics.TopicIds, "the old listing must be removed")
+	_, noPriorLowestWeight, err := k.GetLowestActiveTopicWeightAtBlock(ctx, staleBlock)
+	s.Require().NoError(err)
+	s.Require().True(noPriorLowestWeight, "the old block metadata must be pruned")
+	newTopics, err := k.GetActiveTopicIdsAtBlock(ctx, nextBlock)
+	s.Require().NoError(err)
+	s.Require().Contains(newTopics.TopicIds, topicId, "the topic stays listed at its new churning block")
+	activeIds, err := k.GetActiveTopicIds(ctx)
+	s.Require().NoError(err)
+	s.Require().Contains(activeIds, topicId)
+	total, err := k.GetTotalSumPreviousTopicWeights(ctx)
+	s.Require().NoError(err)
+	s.Require().Equal(weight.String(), total.String(), "the stored weight stays counted once")
+	msg, broken := invariant(ctx)
+	s.Require().False(broken, msg)
+	msg, broken = totalInvariant(ctx)
+	s.Require().False(broken, msg)
+
+	// The repaired topic keeps living: at its epoch end (40) reactivation moves it to 50.
+	s.WithBlockHeight(nextBlock)
+	ctx = s.Ctx()
+	s.Require().NoError(k.AttemptTopicReactivation(ctx, topicId, alloraMath.ZeroDec(), alloraMath.ZeroDec()))
+	schedule, err = k.GetTopicSchedule(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().Equal(int64(50), schedule, "the topic must be rescheduled at its epoch end")
+	processedTopics, err := k.GetActiveTopicIdsAtBlock(ctx, nextBlock)
+	s.Require().NoError(err)
+	s.Require().Empty(processedTopics.TopicIds, "the processed block bucket must be pruned")
+	_, noPriorLowestWeight, err = k.GetLowestActiveTopicWeightAtBlock(ctx, nextBlock)
+	s.Require().NoError(err)
+	s.Require().True(noPriorLowestWeight, "the processed block metadata must be pruned")
+	total, err = k.GetTotalSumPreviousTopicWeights(ctx)
+	s.Require().NoError(err)
+	s.Require().Equal(weight.String(), total.String(), "the stored weight stays counted once")
+	msg, broken = invariant(ctx)
+	s.Require().False(broken, msg)
+	msg, broken = totalInvariant(ctx)
+	s.Require().False(broken, msg)
+}
+
+// TestActivateTopicLeavesUnscheduledTopicRefusedAtNewBlockAlone covers the refusal branch for
+// a topic that has no schedule: there is no stale activity to clean, so activation must not
+// touch the active set, the buckets or the total.
+func (s *KeeperTestSuite) TestActivateTopicLeavesUnscheduledTopicRefusedAtNewBlockAlone() {
+	ctx := s.Ctx()
+	k := s.TopicKeeper()
+
+	params := types.DefaultParams()
+	params.MaxActiveTopicsPerBlock = 1
+	params.MinEpochLength = 1
+	params.TopicRewardAlpha = alloraMath.MustNewDecFromString("0.5")
+	params.TopicRewardStakeImportance = alloraMath.OneDec()
+	params.TopicRewardFeeRevenueImportance = alloraMath.OneDec()
+	s.Require().NoError(s.ParamsKeeper().SetParams(ctx, params))
+
+	heavyTopicId := s.CreateTopic(testutil.WithEpochLength(20), testutil.WithWorkerSubmissionWindow(20))
+	lightTopicId := s.CreateTopic(testutil.WithEpochLength(10), testutil.WithWorkerSubmissionWindow(10))
+	s.Require().NoError(k.AddTopicFeeRevenue(ctx, heavyTopicId, cosmosMath.NewInt(1_000_000)))
+	s.Require().NoError(s.StakingKeeper().SetTopicStake(ctx, heavyTopicId, cosmosMath.NewInt(1_000_000)))
+	s.Require().NoError(k.AddTopicFeeRevenue(ctx, lightTopicId, cosmosMath.NewInt(10)))
+	s.Require().NoError(s.StakingKeeper().SetTopicStake(ctx, lightTopicId, cosmosMath.NewInt(10)))
+
+	s.Require().NoError(k.ActivateTopic(ctx, heavyTopicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec()))
+	heavyWeight, err := k.GetTopicWeightFromTopicId(ctx, heavyTopicId)
+	s.Require().NoError(err)
+	s.Require().NoError(k.SetPreviousTopicWeight(ctx, heavyTopicId, heavyWeight))
+
+	// Block 10: the light topic was never scheduled and its target block (20) is full.
+	s.WithBlockHeight(10)
+	ctx = s.Ctx()
+	s.Require().NoError(k.ActivateTopic(ctx, lightTopicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec()))
+
+	scheduled, err := k.IsTopicScheduled(ctx, lightTopicId)
+	s.Require().NoError(err)
+	s.Require().False(scheduled, "a topic that never scheduled stays unscheduled")
+	activeIds, err := k.GetActiveTopicIds(ctx)
+	s.Require().NoError(err)
+	s.Require().NotContains(activeIds, lightTopicId)
+	bucket, err := k.GetActiveTopicIdsAtBlock(ctx, 20)
+	s.Require().NoError(err)
+	s.Require().Len(bucket.TopicIds, 1)
+	s.Require().Contains(bucket.TopicIds, heavyTopicId)
+	total, err := k.GetTotalSumPreviousTopicWeights(ctx)
+	s.Require().NoError(err)
+	s.Require().Equal(heavyWeight.String(), total.String())
+}
+
+// TestAttemptTopicReactivationAlreadyListedAtNextBlock covers the ErrTopicAlreadyActive
+// branch: a topic whose next epoch-end block already lists it only has its churning block
+// moved forward. The weight stays counted and the total is untouched.
+func (s *KeeperTestSuite) TestAttemptTopicReactivationAlreadyListedAtNextBlock() {
+	ctx := s.Ctx()
+	k := s.TopicKeeper()
+	invariant := keeper.TopicInvariantActiveTopicsScheduledAtChurningBlock(*s.EmissionsKeeper())
+
+	epochLength := int64(20)
+	topicId := s.CreateTopic(testutil.WithEpochLength(epochLength), testutil.WithWorkerSubmissionWindow(epochLength))
+
+	// Activate at block 0: schedule at 20, listed in bucket 20, in the active set.
+	s.Require().NoError(k.ActivateTopic(ctx, topicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec()))
+
+	weight := alloraMath.NewDecFromInt64(100)
+	s.Require().NoError(k.SetPreviousTopicWeight(ctx, topicId, weight))
+	sumBefore, err := k.GetTotalSumPreviousTopicWeights(ctx)
+	s.Require().NoError(err)
+	s.Require().Equal(weight.String(), sumBefore.String())
+
+	// Pre-list the topic in its next epoch-end block (40): the state the
+	// ErrTopicAlreadyActive branch repairs by advancing only the schedule.
+	nextBlock := int64(40)
+	s.Require().NoError(k.SetBlockToActiveTopics(ctx, nextBlock, types.TopicIds{TopicIds: []uint64{topicId}}))
+
+	// The invariant reports the disagreement before reactivation repairs it.
+	_, broken := invariant(ctx)
+	s.Require().True(broken, "a topic listed at its next block with an older schedule must break the invariant")
+
+	// Block 20: the topic's epoch ends; reactivation finds it already listed at 40.
+	s.WithBlockHeight(epochLength)
+	ctx = s.Ctx()
+	s.Require().NoError(k.AttemptTopicReactivation(ctx, topicId, alloraMath.ZeroDec(), alloraMath.ZeroDec()))
+
+	// Only the schedule moved: from 20 to 40. The weight stays counted.
+	schedule, err := k.GetTopicSchedule(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().Equal(nextBlock, schedule, "the churning block must advance to the next epoch end")
+
+	// The total is untouched: no weight was added or subtracted.
+	sumAfter, err := k.GetTotalSumPreviousTopicWeights(ctx)
+	s.Require().NoError(err)
+	s.Require().Equal(sumBefore.String(), sumAfter.String(),
+		"reactivation of an already-listed topic must not touch the total")
+
+	// The old block's listing was removed; the topic remains listed at the new block.
+	oldBlockTopics, err := k.GetActiveTopicIdsAtBlock(ctx, epochLength)
+	s.Require().NoError(err)
+	s.Require().Empty(oldBlockTopics.TopicIds, "the old epoch-end listing must be removed")
+	newBlockTopics, err := k.GetActiveTopicIdsAtBlock(ctx, nextBlock)
+	s.Require().NoError(err)
+	s.Require().Contains(newBlockTopics.TopicIds, topicId, "the topic must remain listed at its churning block")
+
+	// The invariant holds after the repair.
+	msg, broken := invariant(ctx)
+	s.Require().False(broken, msg)
 }

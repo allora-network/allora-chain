@@ -9,6 +9,7 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
 	appParams "github.com/allora-network/allora-chain/app/params"
+	"github.com/allora-network/allora-chain/x/emissions/types"
 	minttypes "github.com/allora-network/allora-chain/x/mint/types"
 )
 
@@ -48,7 +49,7 @@ func activateTopicIfWeightAtLeastGlobalMin(
 		}
 
 		if newTopicWeight.Gte(params.MinTopicWeight) {
-			err = ms.tk.ActivateTopic(ctx, topicId)
+			err = ms.tk.ActivateTopic(ctx, topicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_ACTIVATED_BY_FUNDING, newTopicWeight, params.MinTopicWeight)
 			if err != nil {
 				return err
 			}
@@ -89,6 +90,9 @@ func checkBalanceAndSendFee(
 // 2. Sends coins from sender to mint module Ecosystem bucket
 // 3. Adds the amount to the topic's effective revenue
 // 4. Activates the topic if the weight is at least the global minimum for active topics
+// A zero amount skips steps 1-3: there is nothing to transfer or credit, and the
+// bank and fee-revenue writes would be no-ops. Activation is still attempted
+// because it depends on the topic's current weight, not on the amount.
 // insufficientBalanceErrorMsg is appended to error message if sender has insufficient balance
 // Assumes the topic already exists
 func sendEffectiveRevenueActivateTopicIfWeightSufficient(
@@ -99,17 +103,19 @@ func sendEffectiveRevenueActivateTopicIfWeightSufficient(
 	amount Allo,
 ) error {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	err := checkBalanceAndSendFee(ctx, ms, sender, amount)
-	if err != nil {
-		return err
+	if !amount.IsZero() {
+		err := checkBalanceAndSendFee(ctx, ms, sender, amount)
+		if err != nil {
+			return err
+		}
+
+		err = ms.tk.AddTopicFeeRevenue(ctx, topicId, amount)
+		if err != nil {
+			return err
+		}
 	}
 
-	err = ms.tk.AddTopicFeeRevenue(ctx, topicId, amount)
-	if err != nil {
-		return err
-	}
-
-	err = activateTopicIfWeightAtLeastGlobalMin(ctx, ms, topicId)
+	err := activateTopicIfWeightAtLeastGlobalMin(ctx, ms, topicId)
 	if err != nil {
 		sdkCtx.Logger().Error("Failed to activate topic", err)
 		return err

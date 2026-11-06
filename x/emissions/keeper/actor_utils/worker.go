@@ -44,7 +44,7 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topic types.Topic, nonc
 			)
 		}
 
-		_, fulfillErr := k.GetNonceKeeper().FulfillWorkerNonce(ctx, topic.Id, &nonce)
+		removed, fulfillErr := k.GetNonceKeeper().FulfillWorkerNonce(ctx, topic.Id, &nonce)
 		if fulfillErr != nil {
 			ctx.Logger().Error(
 				"Error fulfilling worker nonce during deferred cleanup",
@@ -52,6 +52,9 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topic types.Topic, nonc
 				"nonce", nonce,
 				"error", fulfillErr,
 			)
+		}
+		if err != nil && removed {
+			types.EmitNewNonceExpiredEvent(ctx, topic.Id, nonce.BlockHeight, types.ActorType_ACTOR_TYPE_INFERER_UNSPECIFIED, types.NonceExpiredReason_NONCE_EXPIRED_REASON_CLOSE_FAILED)
 		}
 
 		resetActiveErr := k.GetWorkerKeeper().ResetActiveWorkersForTopic(ctx, topic.Id)
@@ -145,7 +148,8 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topic types.Topic, nonc
 	}
 
 	types.EmitNewActiveInferersSetEvent(ctx, topic.Id, nonce.BlockHeight, activeInfererAddresses)
-	types.EmitNewActiveForecastersSetEvent(ctx, topic.Id, nonce.BlockHeight, activeForecastAddresses)
+	storedForecasters, discardedForecasters := splitForecastersByStored(activeForecastAddresses, activeForecasts)
+	types.EmitNewActiveForecastersSetEvent(ctx, topic.Id, nonce.BlockHeight, storedForecasters, discardedForecasters)
 	types.EmitNewWorkerLastCommitSetEvent(ctx, topic.Id, blockHeight, &nonce)
 	return nil
 }
@@ -249,7 +253,7 @@ func buildSortedAddressWeights(weightsByAddress map[string]alloraMath.Dec) ([]st
 //
 // Returns (inferer address set, finalized inferences) and also emits
 // EventEpochLabelRegistryFrozen so offchain indexers can track the committed
-// registry size for this epoch.
+// registry for this epoch: its label names in compact-id order.
 func closeActiveInferencesSet(
 	ctx sdk.Context,
 	k *keeper.Keeper,
@@ -271,9 +275,11 @@ func closeActiveInferencesSet(
 		return nil, nil, errorsmod.Wrap(err, "error setting final epoch label registry")
 	}
 
-	//nolint:gosec // registry size is bounded by MaxLabelsPerSubmission (uint64), safe to cast
-	registrySize := uint64(len(registry.Labels))
-	types.EmitNewEpochLabelRegistryFrozenEvent(ctx, topic.Id, nonce.BlockHeight, registrySize)
+	labelNames, err := registry.LabelNamesByID()
+	if err != nil {
+		return nil, nil, errorsmod.Wrap(err, "error reading the final epoch label registry")
+	}
+	types.EmitNewEpochLabelRegistryFrozenEvent(ctx, topic.Id, nonce.BlockHeight, labelNames)
 
 	for _, inference := range inferences.Inferences {
 		activeInfererAddressesMap[inference.Inferer] = true
@@ -285,6 +291,27 @@ func closeActiveInferencesSet(
 	}
 
 	return activeInfererAddressesMap, inferences, nil
+}
+
+// splitForecastersByStored separates the epoch's active forecasters into those
+// whose forecasts closeActiveForecastsSet stored, in stored order, and those it
+// discarded, in active-set order.
+func splitForecastersByStored(activeForecastAddresses []string, stored *types.Forecasts) (storedForecasters, discardedForecasters []string) {
+	storedForecasters = make([]string, 0, len(stored.Forecasts))
+	isStored := make(map[string]bool, len(stored.Forecasts))
+	for _, forecast := range stored.Forecasts {
+		storedForecasters = append(storedForecasters, forecast.Forecaster)
+		isStored[forecast.Forecaster] = true
+	}
+	discardedForecasters = make([]string, 0)
+	isDiscarded := make(map[string]bool)
+	for _, address := range activeForecastAddresses {
+		if !isStored[address] && !isDiscarded[address] {
+			discardedForecasters = append(discardedForecasters, address)
+			isDiscarded[address] = true
+		}
+	}
+	return storedForecasters, discardedForecasters
 }
 
 // insert forecasts from top forecasters

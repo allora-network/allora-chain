@@ -203,7 +203,8 @@ func createWorkerDataBundle(
 	}
 	infererAddress := inferer.addr
 	infererValue := alloraMath.MustNewBoundedExp40Dec(alloraMath.NewDecFromInt64(int64(m.Client.Rand.Intn(300) + 3000)))
-	infererValues := []*emissionstypes.InputLabeledValue{{Value: infererValue}}
+	// Single-arity submissions must carry the canonical sentinel label.
+	infererValues := []*emissionstypes.InputLabeledValue{{Label: emissionstypes.SingleArityCanonicalLabel, Value: infererValue}}
 
 	workerDataBundle := &emissionstypes.InputWorkerDataBundle{
 		Worker: infererAddress,

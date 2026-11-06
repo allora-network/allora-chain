@@ -3,9 +3,12 @@ package msgserver_test
 import (
 	"strings"
 
+	cosmosMath "cosmossdk.io/math"
+	abci "github.com/cometbft/cometbft/abci/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
+	"github.com/allora-network/allora-chain/app/params"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
@@ -298,6 +301,145 @@ func (s *MsgServerTestSuite) TestCreateNewTopic() {
 	}
 }
 
+// TestCreateNewTopicEmitsGateAndFeeEvents pins the event contract of topic
+// creation: one Enabled event per requested whitelist gate, one funding event
+// for the creation fee credited to topic fee revenue, and the topic creation
+// event, in the order create, gates, fund.
+func (s *MsgServerTestSuite) TestCreateNewTopicEmitsGateAndFeeEvents() {
+	msgServer := s.EmissionsMsgServer()
+	creator := s.AddrsStr(0)
+
+	params, err := s.ParamsKeeper().GetParams(s.Ctx())
+	s.Require().NoError(err)
+
+	testCases := []struct {
+		name              string
+		enableWorker      bool
+		enableReputer     bool
+		wantWorkerEvents  int
+		wantReputerEvents int
+	}{
+		{name: "both gates", enableWorker: true, enableReputer: true, wantWorkerEvents: 1, wantReputerEvents: 1},
+		{name: "worker gate only", enableWorker: true, enableReputer: false, wantWorkerEvents: 1, wantReputerEvents: 0},
+		{name: "reputer gate only", enableWorker: false, enableReputer: true, wantWorkerEvents: 0, wantReputerEvents: 1},
+		{name: "no gates", enableWorker: false, enableReputer: false, wantWorkerEvents: 0, wantReputerEvents: 0},
+	}
+
+	for _, tc := range testCases {
+		s.Run(tc.name, func() {
+			// A fresh event manager isolates this call's events from the
+			// shared suite context.
+			ctx := s.Ctx().WithEventManager(sdk.NewEventManager())
+
+			msg := s.MockTopicMsg()
+			msg.EnableWorkerWhitelist = tc.enableWorker
+			msg.EnableReputerWhitelist = tc.enableReputer
+
+			res, err := msgServer.CreateNewTopic(ctx, msg)
+			s.Require().NoError(err)
+			s.Require().NotNil(res)
+			topicId := res.TopicId
+
+			var created, funded, workerEnabled, reputerEnabled, workerDisabled, reputerDisabled, seq int
+			var createdAt, fundedAt int
+			var gateEnabledAt []int
+			for _, ev := range ctx.EventManager().Events() {
+				parsed, err := sdk.ParseTypedEvent(abci.Event(ev))
+				if err != nil {
+					continue
+				}
+				seq++
+				switch e := parsed.(type) {
+				case *types.EventCreateNewTopic:
+					s.Require().Equal(topicId, e.Topic.Id)
+					created++
+					createdAt = seq
+				case *types.EventFundTopic:
+					s.Require().Equal(topicId, e.TopicId)
+					s.Require().Equal(creator, e.Funder)
+					s.Require().Equal(params.CreateTopicFee, e.Amount)
+					funded++
+					fundedAt = seq
+				case *types.EventTopicWorkerWhitelistEnabled:
+					s.Require().Equal(topicId, e.TopicId)
+					workerEnabled++
+					gateEnabledAt = append(gateEnabledAt, seq)
+				case *types.EventTopicReputerWhitelistEnabled:
+					s.Require().Equal(topicId, e.TopicId)
+					reputerEnabled++
+					gateEnabledAt = append(gateEnabledAt, seq)
+				case *types.EventTopicWorkerWhitelistDisabled:
+					workerDisabled++
+				case *types.EventTopicReputerWhitelistDisabled:
+					reputerDisabled++
+				}
+			}
+
+			s.Require().Equal(1, created, "exactly one topic creation event")
+			s.Require().Equal(1, funded, "exactly one creation fee funding event")
+			s.Require().Equal(tc.wantWorkerEvents, workerEnabled, "exact worker gate event count")
+			s.Require().Equal(tc.wantReputerEvents, reputerEnabled, "exact reputer gate event count")
+			s.Require().Zero(workerDisabled)
+			s.Require().Zero(reputerDisabled)
+			for _, at := range gateEnabledAt {
+				s.Require().Less(createdAt, at, "the creation event must precede the gate events")
+				s.Require().Less(at, fundedAt, "the gate events must precede the fee funding event")
+			}
+			s.Require().Less(createdAt, fundedAt, "the creation event must precede the fee funding event")
+		})
+	}
+}
+
+// TestCreateNewTopicZeroFeeEmitsNoFundEvent pins that a zero create-topic fee
+// performs no payment, credits no fee revenue, and emits no funding event.
+func (s *MsgServerTestSuite) TestCreateNewTopicZeroFeeEmitsNoFundEvent() {
+	msgServer := s.EmissionsMsgServer()
+
+	// A zero create-topic fee is a valid configuration: validateCreateTopicFee
+	// only rejects negative values.
+	newParams := &types.OptionalParams{ //nolint:exhaustruct
+		CreateTopicFee: []cosmosMath.Int{cosmosMath.ZeroInt()},
+	}
+	_, err := msgServer.UpdateParams(s.Ctx(), &types.UpdateParamsRequest{Sender: s.AddrsStr(0), Params: newParams})
+	s.Require().NoError(err)
+
+	ctx := s.Ctx().WithEventManager(sdk.NewEventManager())
+	msg := s.MockTopicMsg()
+	msg.EnableWorkerWhitelist = false
+	msg.EnableReputerWhitelist = false
+
+	creator, err := sdk.AccAddressFromBech32(msg.Creator)
+	s.Require().NoError(err)
+	balanceBefore := s.BankKeeper().GetBalance(ctx, creator, params.DefaultBondDenom)
+
+	res, err := msgServer.CreateNewTopic(ctx, msg)
+	s.Require().NoError(err)
+	s.Require().NotNil(res)
+
+	var created, funded int
+	for _, ev := range ctx.EventManager().Events() {
+		parsed, err := sdk.ParseTypedEvent(abci.Event(ev))
+		if err != nil {
+			continue
+		}
+		switch parsed.(type) {
+		case *types.EventCreateNewTopic:
+			created++
+		case *types.EventFundTopic:
+			funded++
+		}
+	}
+	s.Require().Equal(1, created)
+	s.Require().Zero(funded, "a zero create fee must not emit a funding event")
+
+	feeRevenue, err := s.TopicKeeper().GetTopicFeeRevenue(ctx, res.TopicId)
+	s.Require().NoError(err)
+	s.Require().True(feeRevenue.IsZero(), "a zero create fee must not credit fee revenue")
+
+	balanceAfter := s.BankKeeper().GetBalance(ctx, creator, params.DefaultBondDenom)
+	s.Require().True(balanceBefore.Equal(balanceAfter), "a zero create fee must not move coins")
+}
+
 func (s *MsgServerTestSuite) TestUpdateTopicEpochLastEnded() {
 	ctx := s.Ctx()
 	topicId := uint64(1)
@@ -322,7 +464,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicSuccess() {
 	// Create a topic first
 	s.MintTokensToAddress(senderAddr, types.DefaultParams().CreateTopicFee)
 	createTopicMsg := &types.CreateNewTopicRequest{
-		MaxTopInferersToReward:   0,
+		MaxTopInferersToReward:   types.DefaultParams().MaxTopInferersToReward,
 		Creator:                  sender,
 		Metadata:                 "Original metadata",
 		LossMethod:               "mse",
@@ -360,7 +502,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicSuccess() {
 
 	// Update topic with new values
 	updateTopicMsg := &types.UpdateTopicRequest{
-		MaxTopInferersToReward: 0,
+		MaxTopInferersToReward: types.DefaultParams().MaxTopInferersToReward,
 		Sender:                 sender,
 		TopicId:                topicId,
 		Metadata:               "Updated metadata",
@@ -423,7 +565,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicRejectsMaxLabelsPerSubmissionOutOfRa
 			require.NoError(err)
 
 			updateTopicMsg := &types.UpdateTopicRequest{
-				MaxTopInferersToReward: 0,
+				MaxTopInferersToReward: types.DefaultParams().MaxTopInferersToReward,
 				Sender:                 sender,
 				TopicId:                createResult.TopicId,
 				Metadata:               originalTopic.Metadata,
@@ -470,7 +612,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicRejectsLabelWhitelistAboveMax() {
 	}
 
 	updateTopicMsg := &types.UpdateTopicRequest{
-		MaxTopInferersToReward: 0,
+		MaxTopInferersToReward: types.DefaultParams().MaxTopInferersToReward,
 		Sender:                 sender,
 		TopicId:                createResult.TopicId,
 		Metadata:               originalTopic.Metadata,
@@ -513,7 +655,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicRejectsNonzeroLabelDefaultValueWhenR
 	require.NotNil(createResult)
 
 	updateTopicMsg := &types.UpdateTopicRequest{
-		MaxTopInferersToReward: 0,
+		MaxTopInferersToReward: types.DefaultParams().MaxTopInferersToReward,
 		Sender:                 sender,
 		TopicId:                createResult.TopicId,
 		Metadata:               "Updated metadata",
@@ -544,7 +686,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicNotTopicCreator() {
 	// Create a topic
 	s.MintTokensToAddress(senderAddr, types.DefaultParams().CreateTopicFee)
 	createTopicMsg := &types.CreateNewTopicRequest{
-		MaxTopInferersToReward:   0,
+		MaxTopInferersToReward:   types.DefaultParams().MaxTopInferersToReward,
 		Creator:                  sender,
 		Metadata:                 "Original metadata",
 		LossMethod:               "mse",
@@ -578,7 +720,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicNotTopicCreator() {
 
 	// Try to update topic with different user
 	updateTopicMsg := &types.UpdateTopicRequest{
-		MaxTopInferersToReward: 0,
+		MaxTopInferersToReward: types.DefaultParams().MaxTopInferersToReward,
 		Sender:                 otherUser,
 		TopicId:                topicId,
 		Metadata:               "Updated metadata",
@@ -605,7 +747,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicNonexistentTopic() {
 	nonexistentTopicId := uint64(999)
 
 	updateTopicMsg := &types.UpdateTopicRequest{
-		MaxTopInferersToReward: 0,
+		MaxTopInferersToReward: types.DefaultParams().MaxTopInferersToReward,
 		Sender:                 sender,
 		TopicId:                nonexistentTopicId,
 		Metadata:               "Updated metadata",
@@ -634,7 +776,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicValidationInvalidFields() {
 
 	// Test empty loss method
 	updateTopicMsg := &types.UpdateTopicRequest{
-		MaxTopInferersToReward: 0,
+		MaxTopInferersToReward: types.DefaultParams().MaxTopInferersToReward,
 		Sender:                 sender,
 		TopicId:                topicId,
 		Metadata:               "valid metadata",
@@ -654,7 +796,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicValidationInvalidFields() {
 
 	// Test too long loss method
 	updateTopicMsg = &types.UpdateTopicRequest{
-		MaxTopInferersToReward: 0,
+		MaxTopInferersToReward: types.DefaultParams().MaxTopInferersToReward,
 		Sender:                 sender,
 		TopicId:                topicId,
 		Metadata:               "valid metadata",
@@ -674,7 +816,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicValidationInvalidFields() {
 
 	// Test too long metadata
 	updateTopicMsg = &types.UpdateTopicRequest{
-		MaxTopInferersToReward: 0,
+		MaxTopInferersToReward: types.DefaultParams().MaxTopInferersToReward,
 		Sender:                 sender,
 		TopicId:                topicId,
 		Metadata:               strings.Repeat("a", 257),
@@ -706,7 +848,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicSuccessfulUpdate() {
 
 	// Create a topic first
 	createTopicMsg := &types.CreateNewTopicRequest{
-		MaxTopInferersToReward:   0,
+		MaxTopInferersToReward:   types.DefaultParams().MaxTopInferersToReward,
 		Creator:                  sender,
 		Metadata:                 "original metadata",
 		LossMethod:               "mse",
@@ -746,7 +888,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicSuccessfulUpdate() {
 
 	// Test successful update
 	updateTopicMsg := &types.UpdateTopicRequest{
-		MaxTopInferersToReward: 0,
+		MaxTopInferersToReward: types.DefaultParams().MaxTopInferersToReward,
 		Sender:                 sender,
 		TopicId:                topicId,
 		Metadata:               "updated metadata",
@@ -784,7 +926,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicNumericParams() {
 
 	s.MintTokensToAddress(senderAddr, types.DefaultParams().CreateTopicFee)
 	createTopicMsg := &types.CreateNewTopicRequest{
-		MaxTopInferersToReward:   0,
+		MaxTopInferersToReward:   types.DefaultParams().MaxTopInferersToReward,
 		Creator:                  sender,
 		Metadata:                 "Original metadata",
 		LossMethod:               "mse",
@@ -816,7 +958,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicNumericParams() {
 	topicId := createResult.TopicId
 
 	updateTopicMsg := &types.UpdateTopicRequest{
-		MaxTopInferersToReward: 0,
+		MaxTopInferersToReward: types.DefaultParams().MaxTopInferersToReward,
 		Sender:                 sender,
 		TopicId:                topicId,
 		Metadata:               "Original metadata",
@@ -841,7 +983,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicNumericParams() {
 
 	// Test updating CNorm with valid values
 	updateTopicMsg = &types.UpdateTopicRequest{
-		MaxTopInferersToReward: 0,
+		MaxTopInferersToReward: types.DefaultParams().MaxTopInferersToReward,
 		Sender:                 sender,
 		TopicId:                topicId,
 		Metadata:               "Original metadata",
@@ -863,7 +1005,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicNumericParams() {
 
 	// Test updating CNorm to boundary value -100
 	updateTopicMsg = &types.UpdateTopicRequest{
-		MaxTopInferersToReward: 0,
+		MaxTopInferersToReward: types.DefaultParams().MaxTopInferersToReward,
 		Sender:                 sender,
 		TopicId:                topicId,
 		Metadata:               "Original metadata",
@@ -885,7 +1027,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicNumericParams() {
 
 	// Test updating CNorm to boundary value 100
 	updateTopicMsg = &types.UpdateTopicRequest{
-		MaxTopInferersToReward: 0,
+		MaxTopInferersToReward: types.DefaultParams().MaxTopInferersToReward,
 		Sender:                 sender,
 		TopicId:                topicId,
 		Metadata:               "Original metadata",
@@ -911,7 +1053,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicNumericParams() {
 	s.WithBlockHeight(50)
 	ctx = s.Ctx()
 	updateTopicMsg = &types.UpdateTopicRequest{
-		MaxTopInferersToReward: 0,
+		MaxTopInferersToReward: types.DefaultParams().MaxTopInferersToReward,
 		Sender:                 sender,
 		TopicId:                topicId,
 		Metadata:               "Original metadata",
@@ -937,7 +1079,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicNumericParamsInvalid() {
 
 	// Invalid alpha_regret (<=0)
 	updateTopicMsg := &types.UpdateTopicRequest{
-		MaxTopInferersToReward: 0,
+		MaxTopInferersToReward: types.DefaultParams().MaxTopInferersToReward,
 		Sender:                 sender,
 		TopicId:                topicId,
 		Metadata:               "metadata",
@@ -955,7 +1097,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicNumericParamsInvalid() {
 
 	// Invalid merit_sortition_alpha (>1)
 	updateTopicMsg = &types.UpdateTopicRequest{
-		MaxTopInferersToReward: 0,
+		MaxTopInferersToReward: types.DefaultParams().MaxTopInferersToReward,
 		Sender:                 sender,
 		TopicId:                topicId,
 		Metadata:               "metadata",
@@ -973,7 +1115,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicNumericParamsInvalid() {
 
 	// Invalid p_norm (below range)
 	updateTopicMsg = &types.UpdateTopicRequest{
-		MaxTopInferersToReward: 0,
+		MaxTopInferersToReward: types.DefaultParams().MaxTopInferersToReward,
 		Sender:                 sender,
 		TopicId:                topicId,
 		Metadata:               "metadata",
@@ -991,7 +1133,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicNumericParamsInvalid() {
 
 	// Invalid c_norm (below -100)
 	updateTopicMsg = &types.UpdateTopicRequest{
-		MaxTopInferersToReward: 0,
+		MaxTopInferersToReward: types.DefaultParams().MaxTopInferersToReward,
 		Sender:                 sender,
 		TopicId:                topicId,
 		Metadata:               "metadata",
@@ -1009,7 +1151,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicNumericParamsInvalid() {
 
 	// Invalid c_norm (above 100)
 	updateTopicMsg = &types.UpdateTopicRequest{
-		MaxTopInferersToReward: 0,
+		MaxTopInferersToReward: types.DefaultParams().MaxTopInferersToReward,
 		Sender:                 sender,
 		TopicId:                topicId,
 		Metadata:               "metadata",
@@ -1036,7 +1178,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicMeritSortitionBlockedWhenWorkerWindo
 	s.WithBlockHeight(10)
 	s.MintTokensToAddress(senderAddr, types.DefaultParams().CreateTopicFee)
 	createTopicMsg := &types.CreateNewTopicRequest{
-		MaxTopInferersToReward:   0,
+		MaxTopInferersToReward:   types.DefaultParams().MaxTopInferersToReward,
 		Creator:                  sender,
 		Metadata:                 "Original metadata",
 		LossMethod:               "mse",
@@ -1066,7 +1208,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicMeritSortitionBlockedWhenWorkerWindo
 	createResult, err := msgServer.CreateNewTopic(ctx, createTopicMsg)
 	require.NoError(err)
 	topicId := createResult.TopicId
-	require.NoError(s.TopicKeeper().ActivateTopic(ctx, topicId))
+	require.NoError(s.TopicKeeper().ActivateTopic(ctx, topicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec()))
 
 	// Add a nonce whose window covers the current block.
 	newerNonce := &types.Nonce{BlockHeight: 5}
@@ -1077,7 +1219,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicMeritSortitionBlockedWhenWorkerWindo
 	ctx = s.Ctx()
 
 	updateTopicMsg := &types.UpdateTopicRequest{
-		MaxTopInferersToReward: 0,
+		MaxTopInferersToReward: types.DefaultParams().MaxTopInferersToReward,
 		Sender:                 sender,
 		TopicId:                topicId,
 		Metadata:               "Original metadata",
@@ -1109,7 +1251,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicMeritSortitionInactiveIgnoresWindow(
 	// Topic inactive by default
 	s.MintTokensToAddress(senderAddr, types.DefaultParams().CreateTopicFee)
 	createTopicMsg := &types.CreateNewTopicRequest{
-		MaxTopInferersToReward:   0,
+		MaxTopInferersToReward:   types.DefaultParams().MaxTopInferersToReward,
 		Creator:                  sender,
 		Metadata:                 "Original metadata",
 		LossMethod:               "mse",
@@ -1147,7 +1289,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicMeritSortitionInactiveIgnoresWindow(
 	ctx = s.Ctx()
 
 	updateTopicMsg := &types.UpdateTopicRequest{
-		MaxTopInferersToReward: 0,
+		MaxTopInferersToReward: types.DefaultParams().MaxTopInferersToReward,
 		Sender:                 sender,
 		TopicId:                topicId,
 		Metadata:               "Original metadata",
@@ -1204,6 +1346,7 @@ func (s *MsgServerTestSuite) createTopicForWSWTests(sender string) uint64 {
 		MaxLabelsPerSubmission:   4,
 		LabelWhitelist:           []string{"a", "b", "c"},
 		LabelDefaultValue:        alloraMath.ZeroDec(),
+		MaxTopInferersToReward:   types.DefaultParams().MaxTopInferersToReward,
 	}
 	resp, err := msgServer.CreateNewTopic(ctx, create)
 	require.NoError(err)
@@ -1217,7 +1360,7 @@ func (s *MsgServerTestSuite) setupActiveTopicWithOpenWSW(sender string) (sdk.Con
 	require := s.Require()
 	s.WithBlockHeight(10)
 	topicId := s.createTopicForWSWTests(sender)
-	require.NoError(s.TopicKeeper().ActivateTopic(ctx, topicId))
+	require.NoError(s.TopicKeeper().ActivateTopic(ctx, topicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec()))
 	require.NoError(s.NonceKeeper().AddWorkerNonce(ctx, topicId, &types.Nonce{BlockHeight: 5}))
 	s.WithBlockHeight(6)
 	return s.Ctx(), topicId
@@ -1256,8 +1399,9 @@ func (s *MsgServerTestSuite) TestSetTopicCanonicalizesLabelWhitelist() {
 		MaxLabelsPerSubmission:   types.DefaultMaxLabelsPerSubmission,
 		// Whitespace and case collapse under the default case-insensitive
 		// canonicalizer; a canonical duplicate should be rejected.
-		LabelWhitelist:    []string{"  Foo  ", "foo"},
-		LabelDefaultValue: alloraMath.ZeroDec(),
+		LabelWhitelist:         []string{"  Foo  ", "foo"},
+		LabelDefaultValue:      alloraMath.ZeroDec(),
+		MaxTopInferersToReward: types.DefaultParams().MaxTopInferersToReward,
 	}
 	_, err := msgServer.CreateNewTopic(ctx, create)
 	require.ErrorIs(err, types.ErrInvalidLabelName, "canonical duplicate must be rejected at SetTopic")
@@ -1282,7 +1426,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicMaxLabelsBlockedWhenWorkerWindowOpen
 	sender := s.AddrsStr(0)
 	s.WithBlockHeight(10)
 	topicId := s.createTopicForWSWTests(sender)
-	require.NoError(s.TopicKeeper().ActivateTopic(ctx, topicId))
+	require.NoError(s.TopicKeeper().ActivateTopic(ctx, topicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec()))
 
 	require.NoError(s.NonceKeeper().AddWorkerNonce(ctx, topicId, &types.Nonce{BlockHeight: 5}))
 	s.WithBlockHeight(6)
@@ -1300,6 +1444,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicMaxLabelsBlockedWhenWorkerWindowOpen
 		MaxLabelsPerSubmission: 8, // changed -> must be rejected
 		LabelWhitelist:         []string{"a", "b", "c"},
 		LabelDefaultValue:      alloraMath.ZeroDec(),
+		MaxTopInferersToReward: types.DefaultParams().MaxTopInferersToReward,
 	}
 	_, err := msgServer.UpdateTopic(ctx, msg)
 	require.ErrorIs(err, types.ErrWorkerNonceWindowNotAvailable)
@@ -1320,7 +1465,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicWhitelistBlockedWhenWorkerWindowOpen
 	sender := s.AddrsStr(0)
 	s.WithBlockHeight(10)
 	topicId := s.createTopicForWSWTests(sender)
-	require.NoError(s.TopicKeeper().ActivateTopic(ctx, topicId))
+	require.NoError(s.TopicKeeper().ActivateTopic(ctx, topicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec()))
 
 	require.NoError(s.NonceKeeper().AddWorkerNonce(ctx, topicId, &types.Nonce{BlockHeight: 5}))
 	s.WithBlockHeight(6)
@@ -1338,6 +1483,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicWhitelistBlockedWhenWorkerWindowOpen
 		MaxLabelsPerSubmission: 4,
 		LabelWhitelist:         []string{"a", "b"}, // changed: dropped "c"
 		LabelDefaultValue:      alloraMath.ZeroDec(),
+		MaxTopInferersToReward: types.DefaultParams().MaxTopInferersToReward,
 	}
 	_, err := msgServer.UpdateTopic(ctx, msg)
 	require.ErrorIs(err, types.ErrWorkerNonceWindowNotAvailable)
@@ -1358,7 +1504,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicLabelDefaultBlockedWhenWorkerWindowO
 	sender := s.AddrsStr(0)
 	s.WithBlockHeight(10)
 	topicId := s.createTopicForWSWTests(sender)
-	require.NoError(s.TopicKeeper().ActivateTopic(ctx, topicId))
+	require.NoError(s.TopicKeeper().ActivateTopic(ctx, topicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec()))
 
 	require.NoError(s.NonceKeeper().AddWorkerNonce(ctx, topicId, &types.Nonce{BlockHeight: 5}))
 	s.WithBlockHeight(6)
@@ -1376,6 +1522,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicLabelDefaultBlockedWhenWorkerWindowO
 		MaxLabelsPerSubmission: 4,
 		LabelWhitelist:         []string{"a", "b", "c"},
 		LabelDefaultValue:      alloraMath.OneDec(),
+		MaxTopInferersToReward: types.DefaultParams().MaxTopInferersToReward,
 	}
 	_, err := msgServer.UpdateTopic(ctx, msg)
 	require.ErrorIs(err, types.ErrWorkerNonceWindowNotAvailable)
@@ -1399,7 +1546,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicWhitelistAllowedAfterWSWClosed() {
 	sender := s.AddrsStr(0)
 	s.WithBlockHeight(10)
 	topicId := s.createTopicForWSWTests(sender)
-	require.NoError(s.TopicKeeper().ActivateTopic(ctx, topicId))
+	require.NoError(s.TopicKeeper().ActivateTopic(ctx, topicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec()))
 
 	require.NoError(s.NonceKeeper().AddWorkerNonce(ctx, topicId, &types.Nonce{BlockHeight: 5}))
 	// 5 + 10 = 15, so block 16 is strictly past the window.
@@ -1418,6 +1565,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicWhitelistAllowedAfterWSWClosed() {
 		MaxLabelsPerSubmission: 8,
 		LabelWhitelist:         []string{"  A  ", "b/c"},
 		LabelDefaultValue:      alloraMath.ZeroDec(),
+		MaxTopInferersToReward: types.DefaultParams().MaxTopInferersToReward,
 	}
 	_, err := msgServer.UpdateTopic(ctx, msg)
 	require.NoError(err)
@@ -1449,7 +1597,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicLabelDefaultBlockedAtExactWSWCloseBl
 	sender := s.AddrsStr(0)
 	s.WithBlockHeight(10)
 	topicId := s.createTopicForWSWTests(sender)
-	require.NoError(s.TopicKeeper().ActivateTopic(ctx, topicId))
+	require.NoError(s.TopicKeeper().ActivateTopic(ctx, topicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec()))
 
 	require.NoError(s.NonceKeeper().AddWorkerNonce(ctx, topicId, &types.Nonce{BlockHeight: 5}))
 	// 5 + 10 = 15: the last block still inside the window and the exact block the
@@ -1469,6 +1617,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicLabelDefaultBlockedAtExactWSWCloseBl
 		MaxLabelsPerSubmission: 4,
 		LabelWhitelist:         []string{"a", "b", "c"},
 		LabelDefaultValue:      alloraMath.OneDec(), // changed -> must be rejected
+		MaxTopInferersToReward: types.DefaultParams().MaxTopInferersToReward,
 	}
 	_, err := msgServer.UpdateTopic(ctx, msg)
 	require.ErrorIs(err, types.ErrWorkerNonceWindowNotAvailable,
@@ -1515,6 +1664,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicRejectsOutOfRangeMaxLabelsPerSubmiss
 				CNorm:                  alloraMath.MustNewDecFromString("0.75"),
 				MaxLabelsPerSubmission: tc.cap,
 				LabelWhitelist:         nil,
+				MaxTopInferersToReward: types.DefaultParams().MaxTopInferersToReward,
 			}
 			_, err := msgServer.UpdateTopic(ctx, msg)
 			require.ErrorIs(err, sdkerrors.ErrInvalidRequest)
@@ -1553,6 +1703,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicFullPayloadClearsLabelWhitelist() {
 		CNorm:                  alloraMath.MustNewDecFromString("0.75"),
 		MaxLabelsPerSubmission: 8,
 		LabelWhitelist:         nil,
+		MaxTopInferersToReward: types.DefaultParams().MaxTopInferersToReward,
 	}
 	_, err := msgServer.UpdateTopic(ctx, msg)
 	require.NoError(err)
@@ -1583,7 +1734,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicWSWLockBlocksWhenOlderNonceStillWith
 	sender := s.AddrsStr(0)
 	s.WithBlockHeight(10)
 	topicId := s.createTopicForWSWTests(sender)
-	require.NoError(s.TopicKeeper().ActivateTopic(ctx, topicId))
+	require.NoError(s.TopicKeeper().ActivateTopic(ctx, topicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec()))
 
 	require.NoError(s.NonceKeeper().AddWorkerNonce(ctx, topicId, &types.Nonce{BlockHeight: 5}))
 	require.NoError(s.NonceKeeper().AddWorkerNonce(ctx, topicId, &types.Nonce{BlockHeight: 200}))
@@ -1602,6 +1753,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicWSWLockBlocksWhenOlderNonceStillWith
 		MaxLabelsPerSubmission: 8, // changed -> must be rejected
 		LabelWhitelist:         []string{"a", "b", "c"},
 		LabelDefaultValue:      alloraMath.ZeroDec(),
+		MaxTopInferersToReward: types.DefaultParams().MaxTopInferersToReward,
 	}
 	_, err := msgServer.UpdateTopic(ctx, msg)
 	require.ErrorIs(err, types.ErrWorkerNonceWindowNotAvailable,
@@ -1635,6 +1787,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicAllowsNonGuardedFieldsDuringOpenWSW(
 		MaxLabelsPerSubmission: 4,
 		LabelWhitelist:         []string{"a", "b", "c"},
 		LabelDefaultValue:      alloraMath.ZeroDec(),
+		MaxTopInferersToReward: types.DefaultParams().MaxTopInferersToReward,
 	}
 	_, err := msgServer.UpdateTopic(ctx, msg)
 	require.NoError(err)
@@ -1672,6 +1825,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicWSWLockListsAllChangedGuardedFields(
 		MaxLabelsPerSubmission: 8,
 		LabelWhitelist:         []string{"a", "b"},
 		LabelDefaultValue:      alloraMath.ZeroDec(),
+		MaxTopInferersToReward: types.DefaultParams().MaxTopInferersToReward,
 	}
 	_, err := msgServer.UpdateTopic(ctx, msg)
 	require.ErrorIs(err, types.ErrWorkerNonceWindowNotAvailable)
@@ -1706,6 +1860,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicWSWLockListsAllFourGuardedFields() {
 		MaxLabelsPerSubmission: 8,
 		LabelWhitelist:         []string{"a", "b"},
 		LabelDefaultValue:      alloraMath.OneDec(),
+		MaxTopInferersToReward: types.DefaultParams().MaxTopInferersToReward,
 	}
 	_, err := msgServer.UpdateTopic(ctx, msg)
 	require.ErrorIs(err, types.ErrWorkerNonceWindowNotAvailable)
@@ -1743,6 +1898,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicWhitelistCosmeticChangeAllowedDuring
 		MaxLabelsPerSubmission: 4,
 		LabelWhitelist:         []string{"  a  ", "b", "c"},
 		LabelDefaultValue:      alloraMath.ZeroDec(),
+		MaxTopInferersToReward: types.DefaultParams().MaxTopInferersToReward,
 	}
 	_, err := msgServer.UpdateTopic(ctx, msg)
 	require.NoError(err)
