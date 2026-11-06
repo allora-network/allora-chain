@@ -12,6 +12,20 @@ permissions:
   # Optional: allow write access to checks to allow the action to annotate code in the PR.
   checks: write
 
+# Shai-Hulud defense: pin module integrity for every `go` invocation in this
+# workflow. Mirrors the GOPROXY / GOSUMDB / GOFLAGS env exported by the
+# reusable hardened-install workflow in go-hardened.yml. CGO_ENABLED=0 matches
+# the release path (.goreleaser.yaml sets CGO_ENABLED=0 per-build); linters
+# do not link C and no source in this repo does `import "C"`. go-hardened.yml
+# is now aligned to cgo_enabled='0'; revisit all four CGO_ENABLED values
+# together if a CGO-linking dep is reintroduced (ENGN-8441 tracks the broader
+# wasmvm question).
+env:
+  GOPROXY: "https://proxy.golang.org,direct"
+  GOSUMDB: "sum.golang.org"
+  GOFLAGS: "-mod=readonly"
+  CGO_ENABLED: "0"
+
 jobs:
   golangci:
     name: lint
