@@ -7,6 +7,8 @@ import (
 	"testing"
 
 	cosmosMath "cosmossdk.io/math"
+	abci "github.com/cometbft/cometbft/abci/types"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/stretchr/testify/suite"
 
 	"github.com/allora-network/allora-chain/app/params"
@@ -25,10 +27,261 @@ type RewardsTestSuite struct {
 	testutil.TestSuite
 }
 
+// typedEvents collects every typed event of type T the manager holds, in
+// emission order.
+func typedEvents[T any](em sdk.EventManagerI) []T {
+	out := make([]T, 0)
+	for _, ev := range em.Events() {
+		msg, err := sdk.ParseTypedEvent(abci.Event(ev))
+		if err != nil {
+			continue
+		}
+		if typed, ok := msg.(T); ok {
+			out = append(out, typed)
+		}
+	}
+	return out
+}
+
 func TestRewardsTestSuite(t *testing.T) {
 	suite.Run(t, &RewardsTestSuite{
 		testutil.NewTestSuite("rewards"),
 	})
+}
+
+// runDistributionFailedForfeit drives EmitRewards for a topic whose reward nonce has no reputer
+// loss bundles, so distribution fails and the reward goes back to the ecosystem account. The
+// reward is emission*3/7: a weight of 1 out of 7 over the topic's epoch length of 3. Returns the
+// event and the ecosystem balance delta.
+func (s *RewardsTestSuite) runDistributionFailedForfeit(emission int64) (*types.EventTopicRewardForfeitedDistributionFailed, cosmosMath.Int) {
+	s.SetParamsForTest()
+
+	reputerIndexes := testutil.ReturnIndexes(0, 5)
+	workerIndexes := testutil.ReturnIndexes(5, 5)
+
+	// Point the reward nonce at an open epoch, which has no reputer loss bundles yet.
+	topicId, _ := s.FullTopicPass(workerIndexes, reputerIndexes, testutil.WithEpochLength(3))
+	s.FullTopicPass(workerIndexes, reputerIndexes, testutil.WithTopicID(topicId), testutil.WithEpochLength(3))
+
+	openWorkerNonces, err := s.NonceKeeper().GetUnfulfilledWorkerNonces(s.Ctx(), topicId)
+	s.Require().NoError(err)
+	s.Require().NotEmpty(openWorkerNonces.Nonces)
+	rewardNonce := openWorkerNonces.Nonces[0].BlockHeight
+	s.Require().NoError(s.TopicKeeper().SetTopicRewardNonce(s.Ctx(), topicId, rewardNonce))
+
+	s.MintTokensToModule(types.AlloraRewardsAccountName, cosmosMath.NewInt(1000))
+	ecosystemAddr := authtypes.NewModuleAddress(minttypes.EcosystemModuleName)
+	ecosystemBefore := s.BankKeeper().GetBalance(s.Ctx(), ecosystemAddr, params.DefaultBondDenom)
+
+	// Drive EmitRewards directly with the topic as the only rewardable one.
+	moduleParams, err := s.ParamsKeeper().GetParams(s.Ctx())
+	s.Require().NoError(err)
+	topic, err := s.TopicKeeper().GetTopic(s.Ctx(), topicId)
+	s.Require().NoError(err)
+	weight := alloraMath.NewDecFromInt64(1)
+	s.Require().NoError(s.TopicKeeper().SetTotalSumPreviousTopicWeights(s.Ctx(), alloraMath.NewDecFromInt64(7)))
+	s.Require().NoError(s.EmissionsKeeper().SetRewardCurrentBlockEmission(s.Ctx(), cosmosMath.NewInt(emission)))
+	em := sdk.NewEventManager()
+	err = rewards.EmitRewards(rewards.EmitRewardsArgs{
+		Ctx:          s.Ctx().WithEventManager(em),
+		K:            *s.EmissionsKeeper(),
+		ModuleParams: moduleParams,
+		BlockHeight:  topic.EpochLastEnded,
+		Weights:      map[uint64]*alloraMath.Dec{topicId: &weight},
+		SumWeight:    weight,
+		TotalRevenue: cosmosMath.NewInt(1000),
+	})
+	s.Require().NoError(err)
+
+	distEvents := typedEvents[*types.EventTopicRewardForfeitedDistributionFailed](em)
+	s.Require().Len(distEvents, 1)
+	event := distEvents[0]
+	s.Require().Equal(topicId, event.TopicId)
+	s.Require().Equal(topic.EpochLastEnded, event.Epoch)
+	s.Require().Equal(rewardNonce, event.RewardNonce)
+
+	ecosystemAfter := s.BankKeeper().GetBalance(s.Ctx(), ecosystemAddr, params.DefaultBondDenom)
+	return event, ecosystemAfter.Amount.Sub(ecosystemBefore.Amount)
+}
+
+// A failed distribution of a fractional reward reports exactly the coins that moved.
+func (s *RewardsTestSuite) TestEmitRewardsDistributionFailedForfeitReportsCoinsMoved() {
+	event, delta := s.runDistributionFailedForfeit(100)
+	s.Require().Equal("42", event.Amount.String())
+	s.Require().Equal(event.Amount.String(), delta.String())
+}
+
+// A failed distribution of a reward under one unit moves nothing and still reports the forfeit.
+func (s *RewardsTestSuite) TestEmitRewardsDistributionFailedForfeitUnderOneUnitReportsZero() {
+	event, delta := s.runDistributionFailedForfeit(1)
+	s.Require().True(event.Amount.IsZero(), "got %s", event.Amount.String())
+	s.Require().True(delta.IsZero(), "got %s", delta.String())
+}
+
+// runNoRewardNonceForfeit drives EmitRewards for a topic with no reward nonce. The reward is
+// emission/3: a weight of 1 out of 3 over an epoch length of 1. Returns the event and the
+// ecosystem balance delta.
+func (s *RewardsTestSuite) runNoRewardNonceForfeit(emission int64) (*types.EventTopicRewardForfeitedNoRewardNonce, cosmosMath.Int) {
+	s.SetParamsForTest()
+
+	topic := s.MockTopic()
+	topic.Id = 2
+	topic.EpochLength = 1
+	topic.GroundTruthLag = topic.EpochLength
+	topic.WorkerSubmissionWindow = topic.EpochLength
+	topic.EpochLastEnded = 50
+	s.Require().NoError(s.TopicKeeper().SetTopic(s.Ctx(), topic.Id, topic))
+	s.Require().NoError(s.TopicKeeper().SetTotalSumPreviousTopicWeights(s.Ctx(), alloraMath.NewDecFromInt64(3)))
+	s.Require().NoError(s.EmissionsKeeper().SetRewardCurrentBlockEmission(s.Ctx(), cosmosMath.NewInt(emission)))
+	s.MintTokensToModule(types.AlloraRewardsAccountName, cosmosMath.NewInt(1000))
+
+	ecosystemAddr := authtypes.NewModuleAddress(minttypes.EcosystemModuleName)
+	ecosystemBefore := s.BankKeeper().GetBalance(s.Ctx(), ecosystemAddr, params.DefaultBondDenom)
+
+	moduleParams, err := s.ParamsKeeper().GetParams(s.Ctx())
+	s.Require().NoError(err)
+	weight := alloraMath.NewDecFromInt64(1)
+	em := sdk.NewEventManager()
+	err = rewards.EmitRewards(rewards.EmitRewardsArgs{
+		Ctx:          s.Ctx().WithEventManager(em),
+		K:            *s.EmissionsKeeper(),
+		ModuleParams: moduleParams,
+		BlockHeight:  topic.EpochLastEnded,
+		Weights:      map[uint64]*alloraMath.Dec{topic.Id: &weight},
+		SumWeight:    weight,
+		TotalRevenue: cosmosMath.NewInt(1000),
+	})
+	s.Require().NoError(err)
+
+	noNonceEvents := typedEvents[*types.EventTopicRewardForfeitedNoRewardNonce](em)
+	s.Require().Len(noNonceEvents, 1)
+	event := noNonceEvents[0]
+	s.Require().Equal(topic.Id, event.TopicId)
+	s.Require().Equal(topic.EpochLastEnded, event.Epoch)
+
+	ecosystemAfter := s.BankKeeper().GetBalance(s.Ctx(), ecosystemAddr, params.DefaultBondDenom)
+	return event, ecosystemAfter.Amount.Sub(ecosystemBefore.Amount)
+}
+
+// A forfeit of a fractional reward with no reward nonce reports exactly the coins that moved.
+func (s *RewardsTestSuite) TestEmitRewardsNoRewardNonceForfeitReportsCoinsMoved() {
+	event, delta := s.runNoRewardNonceForfeit(100)
+	s.Require().Equal("33", event.Amount.String())
+	s.Require().Equal(event.Amount.String(), delta.String())
+}
+
+// A forfeit of a reward under one unit moves nothing and still reports the forfeited epoch.
+func (s *RewardsTestSuite) TestEmitRewardsNoRewardNonceForfeitUnderOneUnitReportsZero() {
+	event, delta := s.runNoRewardNonceForfeit(1)
+	s.Require().True(event.Amount.IsZero(), "got %s", event.Amount.String())
+	s.Require().True(delta.IsZero(), "got %s", delta.String())
+}
+
+// Forfeits from several topics in one EmitRewards add up to exactly the coins the ecosystem
+// account received.
+func (s *RewardsTestSuite) TestEmitRewardsMultipleForfeitsSumToCoinsMoved() {
+	s.SetParamsForTest()
+
+	weights := make(map[uint64]*alloraMath.Dec)
+	sumWeight := alloraMath.ZeroDec()
+	for _, topicId := range []uint64{2, 3} {
+		topic := s.MockTopic()
+		topic.Id = topicId
+		topic.EpochLength = 1
+		topic.GroundTruthLag = topic.EpochLength
+		topic.WorkerSubmissionWindow = topic.EpochLength
+		topic.EpochLastEnded = 50
+		s.Require().NoError(s.TopicKeeper().SetTopic(s.Ctx(), topic.Id, topic))
+		weight := alloraMath.NewDecFromInt64(1)
+		weights[topicId] = &weight
+		var err error
+		sumWeight, err = sumWeight.Add(weight)
+		s.Require().NoError(err)
+	}
+	s.Require().NoError(s.TopicKeeper().SetTotalSumPreviousTopicWeights(s.Ctx(), alloraMath.NewDecFromInt64(3)))
+	s.Require().NoError(s.EmissionsKeeper().SetRewardCurrentBlockEmission(s.Ctx(), cosmosMath.NewInt(100)))
+	s.MintTokensToModule(types.AlloraRewardsAccountName, cosmosMath.NewInt(1000))
+
+	ecosystemAddr := authtypes.NewModuleAddress(minttypes.EcosystemModuleName)
+	ecosystemBefore := s.BankKeeper().GetBalance(s.Ctx(), ecosystemAddr, params.DefaultBondDenom)
+
+	moduleParams, err := s.ParamsKeeper().GetParams(s.Ctx())
+	s.Require().NoError(err)
+	em := sdk.NewEventManager()
+	s.Require().NoError(rewards.EmitRewards(rewards.EmitRewardsArgs{
+		Ctx:          s.Ctx().WithEventManager(em),
+		K:            *s.EmissionsKeeper(),
+		ModuleParams: moduleParams,
+		BlockHeight:  50,
+		Weights:      weights,
+		SumWeight:    sumWeight,
+		TotalRevenue: cosmosMath.NewInt(1000),
+	}))
+
+	events := typedEvents[*types.EventTopicRewardForfeitedNoRewardNonce](em)
+	s.Require().Len(events, 2)
+	total := cosmosMath.ZeroInt()
+	for _, event := range events {
+		s.Require().True(event.Amount.IsPositive(), "got %s", event.Amount.String())
+		total = total.Add(event.Amount)
+	}
+
+	ecosystemAfter := s.BankKeeper().GetBalance(s.Ctx(), ecosystemAddr, params.DefaultBondDenom)
+	s.Require().Equal(total.String(), ecosystemAfter.Amount.Sub(ecosystemBefore.Amount).String())
+}
+
+// EmitRewards emits one EventTopicRewardForfeitedNoRewardNonce per topic
+// whose reward goes back to the ecosystem account for lack of a reward nonce,
+// and no distribution-failure forfeiture while another topic settles.
+func (s *RewardsTestSuite) TestEmitRewardsEmitsForfeitureForTopicsWithoutRewardNonce() {
+	s.SetParamsForTest()
+
+	reputerIndexes := testutil.ReturnIndexes(0, 5)
+	workerIndexes := testutil.ReturnIndexes(5, 5)
+	reputerIndexes2 := testutil.ReturnIndexes(10, 5)
+	workerIndexes2 := testutil.ReturnIndexes(15, 5)
+
+	// The events EndBlock emits accumulate on the suite context's event
+	// manager across each EndBlock in the passes below.
+	// Topic 1's first pass has no losses to close a nonce with, so its reward
+	// is forfeited. Topic 2's second pass settles the nonce the first closed.
+	topic1Id, _ := s.FullTopicPass(workerIndexes, reputerIndexes, testutil.WithEpochLength(3))
+	topic2Id, _ := s.FullTopicPass(workerIndexes2, reputerIndexes2, testutil.WithEpochLength(3))
+	s.FullTopicPass(workerIndexes2, reputerIndexes2, testutil.WithTopicID(topic2Id), testutil.WithEpochLength(3))
+
+	em := s.Ctx().EventManager()
+	noNonceEvents := typedEvents[*types.EventTopicRewardForfeitedNoRewardNonce](em)
+	s.Require().NotEmpty(noNonceEvents)
+
+	// Every topic forfeits once at each churn block where it has no reward nonce, and
+	// never at a block where it settles. Both topics churn every 3 blocks. Topic 1
+	// settles at 9, the reward for the nonce its first pass closed; topic 2 settles
+	// at 18 and 27, after each of its two passes.
+	forfeitEpochs := make(map[uint64][]int64)
+	for _, event := range noNonceEvents {
+		s.Require().False(event.Amount.IsZero())
+		forfeitEpochs[event.TopicId] = append(forfeitEpochs[event.TopicId], event.Epoch)
+	}
+	s.Require().Equal([]int64{3, 6, 12, 15, 18, 21, 24, 27}, forfeitEpochs[topic1Id])
+	s.Require().Equal([]int64{12, 15, 21, 24}, forfeitEpochs[topic2Id])
+	s.Require().Len(forfeitEpochs, 2, "only the two topics forfeit")
+
+	settledAt := make(map[uint64][]int64)
+	for _, settled := range typedEvents[*types.EventRewardsSettled](em) {
+		if settled.ActorType == types.ActorType_ACTOR_TYPE_REPUTER {
+			settledAt[settled.TopicId] = append(settledAt[settled.TopicId], settled.BlockHeightTx)
+		}
+	}
+	s.Require().Equal([]int64{9}, settledAt[topic1Id])
+	s.Require().Equal([]int64{18, 27}, settledAt[topic2Id])
+
+	topic1After, err := s.TopicKeeper().GetTopic(s.Ctx(), topic1Id)
+	s.Require().NoError(err)
+	s.Require().Equal(topic1After.EpochLastEnded, forfeitEpochs[topic1Id][len(forfeitEpochs[topic1Id])-1],
+		"the emitted epoch is the topic's last-ended epoch")
+
+	// No distribution ever fails in this scenario.
+	s.Require().Empty(typedEvents[*types.EventTopicRewardForfeitedDistributionFailed](em))
 }
 
 func (s *RewardsTestSuite) GenerateRewards(topicId uint64, block int64) ([]types.TaskReward, alloraMath.Dec) {
