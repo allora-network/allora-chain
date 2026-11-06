@@ -282,7 +282,31 @@ func TestPayoutRewardsInclusionCountFailureEmitsNoFailureEvent(t *testing.T) {
 	rewards := []types.TaskReward{
 		{TopicId: topicId, Address: worker, Reward: alloraMath.NewDecFromInt64(10), Type: types.WorkerInferenceRewardType},
 	}
+	ownerAddr, err := sdk.AccAddressFromBech32(owner)
+	require.NoError(t, err)
+	ownerBefore := f.bankKeeper.GetBalance(ctx, ownerAddr, params.DefaultBondDenom).Amount
+
 	errs := payoutRewards(ctx, f.keeper, rewards, nonce)
 	require.Len(t, errs, 1, "the inclusion-count failure is still returned")
 	require.Empty(t, allRewardPayoutFailedEvents(t, em), "no payout failure event: the actor was paid")
+
+	ownerAfter := f.bankKeeper.GetBalance(ctx, ownerAddr, params.DefaultBondDenom).Amount
+	require.Equal(t, "10", ownerAfter.Sub(ownerBefore).String(), "the worker's owner received the reward")
+
+	var settled *types.EventRewardsSettled
+	for _, ev := range em.Events() {
+		msg, err := sdk.ParseTypedEvent(abci.Event(ev))
+		if err != nil {
+			continue
+		}
+		if event, ok := msg.(*types.EventRewardsSettled); ok && event.ActorType == types.ActorType_ACTOR_TYPE_INFERER_UNSPECIFIED {
+			require.Nil(t, settled, "one inferer settlement event")
+			settled = event
+		}
+	}
+	require.NotNil(t, settled, "the inferer settlement event is emitted")
+	require.Equal(t, nonce, settled.Nonce)
+	require.Equal(t, []string{worker}, settled.Addresses)
+	require.Len(t, settled.Rewards, 1)
+	require.True(t, alloraMath.NewDecFromInt64(10).Equal(settled.Rewards[0]), "settled reward %s", settled.Rewards[0])
 }
