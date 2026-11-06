@@ -509,10 +509,12 @@ func EmitNewActiveInferersSetEvent(ctx context.Context, topicId TopicId, nonceBl
 	}
 }
 
-func EmitNewActiveForecastersSetEvent(ctx context.Context, topicId TopicId, nonceBlockHeight BlockHeight, addresses []string) {
+// EmitNewActiveForecastersSetEvent emits the forecasters whose forecasts were
+// stored for the epoch and those the close discarded.
+func EmitNewActiveForecastersSetEvent(ctx context.Context, topicId TopicId, nonceBlockHeight BlockHeight, addresses, discardedAddresses []string) {
 	metrics.IncrProducerEventCount(metrics.ACTIVE_FORECASTERS_SET_EVENT)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	err := sdkCtx.EventManager().EmitTypedEvent(NewActiveForecastersSetEventBase(topicId, nonceBlockHeight, addresses))
+	err := sdkCtx.EventManager().EmitTypedEvent(NewActiveForecastersSetEventBase(topicId, nonceBlockHeight, addresses, discardedAddresses))
 	if err != nil {
 		sdkCtx.Logger().Warn("Error emitting ActiveForecastersSetEvent", "error", err)
 	}

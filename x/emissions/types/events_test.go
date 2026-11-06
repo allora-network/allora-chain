@@ -2198,7 +2198,7 @@ func TestEpochEventsEmitNonce(t *testing.T) {
 		{"forecast task score", types.NewForecastTaskScoreSetEventBase(1, one, 940), AttributeKeyNonceBlockHeight},
 		{"active reputers", types.NewActiveReputersSetEventBase(1, 940, addrs), AttributeKeyNonceBlockHeight},
 		{"active inferers", types.NewActiveInferersSetEventBase(1, 940, addrs), AttributeKeyNonceBlockHeight},
-		{"active forecasters", types.NewActiveForecastersSetEventBase(1, 940, addrs), AttributeKeyNonceBlockHeight},
+		{"active forecasters", types.NewActiveForecastersSetEventBase(1, 940, addrs, nil), AttributeKeyNonceBlockHeight},
 		{"network inference inferer weights", types.NewNetworkInferenceInfererWeightsSetEventBase(1, 940, addrs, decs), AttributeKeyNonceBlockHeight},
 		{"network inference forecaster weights", types.NewNetworkInferenceForecasterWeightsSetEventBase(1, 940, addrs, decs), AttributeKeyNonceBlockHeight},
 		{"network inference inferer regrets used", types.NewNetworkInferenceInfererRegretsUsedSetEventBase(1, 940, addrs, decs), AttributeKeyNonceBlockHeight},
@@ -2222,6 +2222,29 @@ func TestEpochEventsEmitNonce(t *testing.T) {
 			old, ok := events[0].GetAttribute(tt.deprecated)
 			require.True(t, ok, "%s is emitted", tt.deprecated)
 			require.Equal(t, nonce.GetValue(), old.GetValue())
+		})
+	}
+}
+
+// A forfeit that moved nothing still reports its amount: zero is emitted as "0",
+// not dropped from the event's attributes.
+func TestTopicRewardForfeitEventsEmitZeroAmount(t *testing.T) {
+	tests := []struct {
+		name  string
+		event proto.Message
+	}{
+		{"no reward nonce", types.NewTopicRewardForfeitedNoRewardNonceEventBase(1, 940, cosmosMath.ZeroInt())},
+		{"distribution failed", types.NewTopicRewardForfeitedDistributionFailedEventBase(1, 940, 930, cosmosMath.ZeroInt())},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := sdk.Context{}.WithEventManager(sdk.NewEventManager())
+			require.NoError(t, ctx.EventManager().EmitTypedEvent(tt.event))
+			events := ctx.EventManager().Events()
+			require.Len(t, events, 1)
+			amount, ok := events[0].GetAttribute("amount")
+			require.True(t, ok, "amount is emitted")
+			require.Equal(t, `"0"`, amount.GetValue())
 		})
 	}
 }

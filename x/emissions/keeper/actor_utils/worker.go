@@ -155,7 +155,8 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topic types.Topic, nonc
 	}
 
 	types.EmitNewActiveInferersSetEvent(ctx, topic.Id, nonce.BlockHeight, activeInfererAddresses)
-	types.EmitNewActiveForecastersSetEvent(ctx, topic.Id, nonce.BlockHeight, finalActiveForecasterAddresses)
+	storedForecasters, discardedForecasters := splitForecastersByStored(activeForecastAddresses, activeForecasts)
+	types.EmitNewActiveForecastersSetEvent(ctx, topic.Id, nonce.BlockHeight, storedForecasters, discardedForecasters, finalActiveForecasterAddresses)
 	types.EmitNewWorkerLastCommitSetEvent(ctx, topic.Id, blockHeight, &nonce)
 	return nil
 }
@@ -297,6 +298,27 @@ func closeActiveInferencesSet(
 	}
 
 	return activeInfererAddressesMap, inferences, nil
+}
+
+// splitForecastersByStored separates the epoch's active forecasters into those
+// whose forecasts closeActiveForecastsSet stored, in stored order, and those it
+// discarded, in active-set order.
+func splitForecastersByStored(activeForecastAddresses []string, stored *types.Forecasts) (storedForecasters, discardedForecasters []string) {
+	storedForecasters = make([]string, 0, len(stored.Forecasts))
+	isStored := make(map[string]bool, len(stored.Forecasts))
+	for _, forecast := range stored.Forecasts {
+		storedForecasters = append(storedForecasters, forecast.Forecaster)
+		isStored[forecast.Forecaster] = true
+	}
+	discardedForecasters = make([]string, 0)
+	isDiscarded := make(map[string]bool)
+	for _, address := range activeForecastAddresses {
+		if !isStored[address] && !isDiscarded[address] {
+			discardedForecasters = append(discardedForecasters, address)
+			isDiscarded[address] = true
+		}
+	}
+	return storedForecasters, discardedForecasters
 }
 
 const (
