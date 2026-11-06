@@ -905,3 +905,64 @@ func (s *RewardsTestSuite) TestReputerQuantileStoredFromEmaScores() {
 	s.Require().NoError(err)
 	s.Require().True(storedQuantile.Equal(expectedEmaQuantile))
 }
+
+func (s *RewardsTestSuite) TestDuplicateForecasterRowsProduceDeterministicScores() {
+	s.SetParamsForTest()
+	params, err := s.ParamsKeeper().GetParams(s.Ctx())
+	s.Require().NoError(err)
+
+	forecaster := s.AddrsStr(20)
+	worker := s.AddrsStr(21)
+	dec := alloraMath.MustNewDecFromString
+
+	// Rows for the same forecaster, each naming the same withheld inferer.
+	lossBundle := func(rows [][]int64) *types.LossBundle {
+		forecasterRows := make([]*types.OneOutInfererForecasterValues, 0, len(rows))
+		for _, values := range rows {
+			row := &types.OneOutInfererForecasterValues{
+				Forecaster:          forecaster,
+				OneOutInfererValues: make([]*types.WithheldWorkerAttributedValue, 0, len(values)),
+			}
+			for _, value := range values {
+				row.OneOutInfererValues = append(row.OneOutInfererValues, &types.WithheldWorkerAttributedValue{
+					Worker: worker,
+					Value:  alloraMath.NewDecFromInt64(value),
+				})
+			}
+			forecasterRows = append(forecasterRows, row)
+		}
+		return &types.LossBundle{ //nolint:exhaustruct // only the one-out-inferer forecaster rows are used
+			OneOutInfererForecasterValues: forecasterRows,
+		}
+	}
+
+	run := func(reputerOneRows [][]int64) ([]alloraMath.Dec, []alloraMath.Dec) {
+		bundles := types.LossBundles{
+			lossBundle(reputerOneRows),
+			lossBundle([][]int64{{300}}),
+		}
+		updated := rewards.EnsureWorkerPresence(bundles)
+		s.Require().Len(updated[0].OneOutInfererForecasterValues, 1)
+
+		losses := make([][]alloraMath.Dec, len(updated))
+		for i, bundle := range updated {
+			losses[i] = rewards.ExtractValues(bundle)
+		}
+		stakes := []alloraMath.Dec{alloraMath.NewDecFromInt64(1), alloraMath.NewDecFromInt64(1)}
+		coefficients := []alloraMath.Dec{dec("0.5"), dec("0.5")}
+		scores, newCoefficients, err := rewards.GetAllReputersOutput(losses, stakes, coefficients, int64(len(stakes)), params)
+		s.Require().NoError(err)
+		return scores, newCoefficients
+	}
+
+	canonicalScores, canonicalCoefficients := run([][]int64{{100}})
+	duplicateScores, duplicateCoefficients := run([][]int64{{100}, {100}})
+	misleadingDuplicateScores, misleadingDuplicateCoefficients := run([][]int64{{100}, {999}})
+
+	for i := range canonicalScores {
+		s.Require().True(canonicalScores[i].Equal(duplicateScores[i]))
+		s.Require().True(canonicalScores[i].Equal(misleadingDuplicateScores[i]))
+		s.Require().True(canonicalCoefficients[i].Equal(duplicateCoefficients[i]))
+		s.Require().True(canonicalCoefficients[i].Equal(misleadingDuplicateCoefficients[i]))
+	}
+}
