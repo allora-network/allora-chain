@@ -21,48 +21,58 @@ const (
 
 // full list of all possible transitions
 type TransitionWeights struct {
-	CreateTopic                          uint8 `json:"createTopic"`
-	FundTopic                            uint8 `json:"fundTopic"`
-	RegisterWorker                       uint8 `json:"registerWorker"`
-	RegisterReputer                      uint8 `json:"registerReputer"`
-	StakeAsReputer                       uint8 `json:"stakeAsReputer"`
-	DelegateStake                        uint8 `json:"delegateStake"`
-	CollectDelegatorRewards              uint8 `json:"collectDelegatorRewards"`
-	DoInferenceAndReputation             uint8 `json:"doInferenceAndReputation"`
-	UnregisterWorker                     uint8 `json:"unregisterWorker"`
-	UnregisterReputer                    uint8 `json:"unregisterReputer"`
-	UnstakeAsReputer                     uint8 `json:"unstakeAsReputer"`
-	UndelegateStake                      uint8 `json:"undelegateStake"`
-	CancelStakeRemoval                   uint8 `json:"cancelStakeRemoval"`
-	CancelDelegateStakeRemoval           uint8 `json:"cancelDelegateStakeRemoval"`
-	AddToAdminWhitelist                  uint8 `json:"addToAdminWhitelist"`
-	RemoveFromAdminWhitelist             uint8 `json:"removeFromAdminWhitelist"`
-	AddToGlobalWhitelist                 uint8 `json:"addToGlobalWhitelist"`
-	RemoveFromGlobalWhitelist            uint8 `json:"removeFromGlobalWhitelist"`
-	AddToTopicCreatorWhitelist           uint8 `json:"addToTopicCreatorWhitelist"`
-	RemoveFromTopicCreatorWhitelist      uint8 `json:"removeFromTopicCreatorWhitelist"`
-	EnableTopicWorkerWhitelist           uint8 `json:"enableTopicWorkerWhitelist"`
-	DisableTopicWorkerWhitelist          uint8 `json:"disableTopicWorkerWhitelist"`
-	EnableTopicReputerWhitelist          uint8 `json:"enableTopicReputerWhitelist"`
-	DisableTopicReputerWhitelist         uint8 `json:"disableTopicReputerWhitelist"`
-	AddToTopicWorkerWhitelist            uint8 `json:"addToTopicWorkerWhitelist"`
-	RemoveFromTopicWorkerWhitelist       uint8 `json:"removeFromTopicWorkerWhitelist"`
-	AddToTopicReputerWhitelist           uint8 `json:"addToTopicReputerWhitelist"`
-	RemoveFromTopicReputerWhitelist      uint8 `json:"removeFromTopicReputerWhitelist"`
-	AddToGlobalWorkerWhitelist           uint8 `json:"addToGlobalWorkerWhitelist"`
-	RemoveFromGlobalWorkerWhitelist      uint8 `json:"removeFromGlobalWorkerWhitelist"`
-	AddToGlobalReputerWhitelist          uint8 `json:"addToGlobalReputerWhitelist"`
-	RemoveFromGlobalReputerWhitelist     uint8 `json:"removeFromGlobalReputerWhitelist"`
-	AddToGlobalAdminWhitelist            uint8 `json:"addToGlobalAdminWhitelist"`
-	RemoveFromGlobalAdminWhitelist       uint8 `json:"removeFromGlobalAdminWhitelist"`
-	BulkAddToGlobalWorkerWhitelist       uint8 `json:"bulkAddToGlobalWorkerWhitelist"`
-	BulkRemoveFromGlobalWorkerWhitelist  uint8 `json:"bulkRemoveFromGlobalWorkerWhitelist"`
-	BulkAddToGlobalReputerWhitelist      uint8 `json:"bulkAddToGlobalReputerWhitelist"`
-	BulkRemoveFromGlobalReputerWhitelist uint8 `json:"bulkRemoveFromGlobalReputerWhitelist"`
-	BulkAddToTopicWorkerWhitelist        uint8 `json:"bulkAddToTopicWorkerWhitelist"`
-	BulkRemoveFromTopicWorkerWhitelist   uint8 `json:"bulkRemoveFromTopicWorkerWhitelist"`
-	BulkAddToTopicReputerWhitelist       uint8 `json:"bulkAddToTopicReputerWhitelist"`
-	BulkRemoveFromTopicReputerWhitelist  uint8 `json:"bulkRemoveFromTopicReputerWhitelist"`
+	CreateTopic                             uint8 `json:"createTopic"`
+	FundTopic                               uint8 `json:"fundTopic"`
+	RegisterWorker                          uint8 `json:"registerWorker"`
+	RegisterReputer                         uint8 `json:"registerReputer"`
+	StakeAsReputer                          uint8 `json:"stakeAsReputer"`
+	DelegateStake                           uint8 `json:"delegateStake"`
+	CollectDelegatorRewards                 uint8 `json:"collectDelegatorRewards"`
+	DoInferenceAndReputation                uint8 `json:"doInferenceAndReputation"`
+	UnregisterWorker                        uint8 `json:"unregisterWorker"`
+	UnregisterReputer                       uint8 `json:"unregisterReputer"`
+	UnstakeAsReputer                        uint8 `json:"unstakeAsReputer"`
+	UndelegateStake                         uint8 `json:"undelegateStake"`
+	CancelStakeRemoval                      uint8 `json:"cancelStakeRemoval"`
+	CancelDelegateStakeRemoval              uint8 `json:"cancelDelegateStakeRemoval"`
+	AddToAdminWhitelist                     uint8 `json:"addToAdminWhitelist"`
+	RemoveFromAdminWhitelist                uint8 `json:"removeFromAdminWhitelist"`
+	AddToGlobalWhitelist                    uint8 `json:"addToGlobalWhitelist"`
+	RemoveFromGlobalWhitelist               uint8 `json:"removeFromGlobalWhitelist"`
+	AddToTopicCreatorWhitelist              uint8 `json:"addToTopicCreatorWhitelist"`
+	RemoveFromTopicCreatorWhitelist         uint8 `json:"removeFromTopicCreatorWhitelist"`
+	EnableTopicWorkerWhitelist              uint8 `json:"enableTopicWorkerWhitelist"`
+	DisableTopicWorkerWhitelist             uint8 `json:"disableTopicWorkerWhitelist"`
+	EnableTopicReputerWhitelist             uint8 `json:"enableTopicReputerWhitelist"`
+	DisableTopicReputerWhitelist            uint8 `json:"disableTopicReputerWhitelist"`
+	AddToTopicWorkerWhitelist               uint8 `json:"addToTopicWorkerWhitelist"`
+	RemoveFromTopicWorkerWhitelist          uint8 `json:"removeFromTopicWorkerWhitelist"`
+	AddToTopicReputerWhitelist              uint8 `json:"addToTopicReputerWhitelist"`
+	RemoveFromTopicReputerWhitelist         uint8 `json:"removeFromTopicReputerWhitelist"`
+	AddToGlobalWorkerWhitelist              uint8 `json:"addToGlobalWorkerWhitelist"`
+	RemoveFromGlobalWorkerWhitelist         uint8 `json:"removeFromGlobalWorkerWhitelist"`
+	AddToGlobalReputerWhitelist             uint8 `json:"addToGlobalReputerWhitelist"`
+	RemoveFromGlobalReputerWhitelist        uint8 `json:"removeFromGlobalReputerWhitelist"`
+	AddToGlobalAdminWhitelist               uint8 `json:"addToGlobalAdminWhitelist"`
+	RemoveFromGlobalAdminWhitelist          uint8 `json:"removeFromGlobalAdminWhitelist"`
+	BulkAddToGlobalWorkerWhitelist          uint8 `json:"bulkAddToGlobalWorkerWhitelist"`
+	BulkRemoveFromGlobalWorkerWhitelist     uint8 `json:"bulkRemoveFromGlobalWorkerWhitelist"`
+	BulkAddToGlobalReputerWhitelist         uint8 `json:"bulkAddToGlobalReputerWhitelist"`
+	BulkRemoveFromGlobalReputerWhitelist    uint8 `json:"bulkRemoveFromGlobalReputerWhitelist"`
+	BulkAddToTopicWorkerWhitelist           uint8 `json:"bulkAddToTopicWorkerWhitelist"`
+	BulkRemoveFromTopicWorkerWhitelist      uint8 `json:"bulkRemoveFromTopicWorkerWhitelist"`
+	BulkAddToTopicReputerWhitelist          uint8 `json:"bulkAddToTopicReputerWhitelist"`
+	BulkRemoveFromTopicReputerWhitelist     uint8 `json:"bulkRemoveFromTopicReputerWhitelist"`
+	EnableTopicForecasterWhitelist          uint8 `json:"enableTopicForecasterWhitelist"`
+	DisableTopicForecasterWhitelist         uint8 `json:"disableTopicForecasterWhitelist"`
+	AddToTopicForecasterWhitelist           uint8 `json:"addToTopicForecasterWhitelist"`
+	RemoveFromTopicForecasterWhitelist      uint8 `json:"removeFromTopicForecasterWhitelist"`
+	AddToGlobalForecasterWhitelist          uint8 `json:"addToGlobalForecasterWhitelist"`
+	RemoveFromGlobalForecasterWhitelist     uint8 `json:"removeFromGlobalForecasterWhitelist"`
+	BulkAddToGlobalForecasterWhitelist      uint8 `json:"bulkAddToGlobalForecasterWhitelist"`
+	BulkRemoveFromGlobalForecasterWhitelist uint8 `json:"bulkRemoveFromGlobalForecasterWhitelist"`
+	BulkAddToTopicForecasterWhitelist       uint8 `json:"bulkAddToTopicForecasterWhitelist"`
+	BulkRemoveFromTopicForecasterWhitelist  uint8 `json:"bulkRemoveFromTopicForecasterWhitelist"`
 }
 
 // InitialSetup holds configuration elements for the initial setup
@@ -128,48 +138,58 @@ func lookupEnvSimulationMode() (SimulationMode, bool) {
 // i.e. below, the probability of picking createTopic is 2%
 func GetHardCodedTransitionWeights() TransitionWeights {
 	return TransitionWeights{
-		CreateTopic:                          2,
-		FundTopic:                            7,
-		RegisterWorker:                       5,
-		RegisterReputer:                      5,
-		StakeAsReputer:                       5,
-		DelegateStake:                        5,
-		CollectDelegatorRewards:              5,
-		DoInferenceAndReputation:             20,
-		UnregisterWorker:                     4,
-		UnregisterReputer:                    4,
-		UnstakeAsReputer:                     5,
-		UndelegateStake:                      5,
-		CancelStakeRemoval:                   0,
-		CancelDelegateStakeRemoval:           0,
-		AddToAdminWhitelist:                  1,
-		RemoveFromAdminWhitelist:             1,
-		AddToGlobalWhitelist:                 1,
-		RemoveFromGlobalWhitelist:            1,
-		AddToTopicCreatorWhitelist:           1,
-		RemoveFromTopicCreatorWhitelist:      1,
-		EnableTopicWorkerWhitelist:           1,
-		DisableTopicWorkerWhitelist:          1,
-		EnableTopicReputerWhitelist:          1,
-		DisableTopicReputerWhitelist:         1,
-		AddToTopicWorkerWhitelist:            1,
-		RemoveFromTopicWorkerWhitelist:       1,
-		AddToTopicReputerWhitelist:           1,
-		RemoveFromTopicReputerWhitelist:      1,
-		AddToGlobalWorkerWhitelist:           1,
-		RemoveFromGlobalWorkerWhitelist:      1,
-		AddToGlobalReputerWhitelist:          1,
-		RemoveFromGlobalReputerWhitelist:     1,
-		AddToGlobalAdminWhitelist:            1,
-		RemoveFromGlobalAdminWhitelist:       1,
-		BulkAddToGlobalWorkerWhitelist:       1,
-		BulkRemoveFromGlobalWorkerWhitelist:  1,
-		BulkAddToGlobalReputerWhitelist:      1,
-		BulkRemoveFromGlobalReputerWhitelist: 1,
-		BulkAddToTopicWorkerWhitelist:        1,
-		BulkRemoveFromTopicWorkerWhitelist:   1,
-		BulkAddToTopicReputerWhitelist:       1,
-		BulkRemoveFromTopicReputerWhitelist:  1,
+		CreateTopic:                             2,
+		FundTopic:                               7,
+		RegisterWorker:                          5,
+		RegisterReputer:                         5,
+		StakeAsReputer:                          5,
+		DelegateStake:                           5,
+		CollectDelegatorRewards:                 5,
+		DoInferenceAndReputation:                10,
+		UnregisterWorker:                        4,
+		UnregisterReputer:                       4,
+		UnstakeAsReputer:                        5,
+		UndelegateStake:                         5,
+		CancelStakeRemoval:                      0,
+		CancelDelegateStakeRemoval:              0,
+		AddToAdminWhitelist:                     1,
+		RemoveFromAdminWhitelist:                1,
+		AddToGlobalWhitelist:                    1,
+		RemoveFromGlobalWhitelist:               1,
+		AddToTopicCreatorWhitelist:              1,
+		RemoveFromTopicCreatorWhitelist:         1,
+		EnableTopicWorkerWhitelist:              1,
+		DisableTopicWorkerWhitelist:             1,
+		EnableTopicReputerWhitelist:             1,
+		DisableTopicReputerWhitelist:            1,
+		AddToTopicWorkerWhitelist:               1,
+		RemoveFromTopicWorkerWhitelist:          1,
+		AddToTopicReputerWhitelist:              1,
+		RemoveFromTopicReputerWhitelist:         1,
+		AddToGlobalWorkerWhitelist:              1,
+		RemoveFromGlobalWorkerWhitelist:         1,
+		AddToGlobalReputerWhitelist:             1,
+		RemoveFromGlobalReputerWhitelist:        1,
+		AddToGlobalAdminWhitelist:               1,
+		RemoveFromGlobalAdminWhitelist:          1,
+		BulkAddToGlobalWorkerWhitelist:          1,
+		BulkRemoveFromGlobalWorkerWhitelist:     1,
+		BulkAddToGlobalReputerWhitelist:         1,
+		BulkRemoveFromGlobalReputerWhitelist:    1,
+		BulkAddToTopicWorkerWhitelist:           1,
+		BulkRemoveFromTopicWorkerWhitelist:      1,
+		BulkAddToTopicReputerWhitelist:          1,
+		BulkRemoveFromTopicReputerWhitelist:     1,
+		EnableTopicForecasterWhitelist:          1,
+		DisableTopicForecasterWhitelist:         1,
+		AddToTopicForecasterWhitelist:           1,
+		RemoveFromTopicForecasterWhitelist:      1,
+		AddToGlobalForecasterWhitelist:          1,
+		RemoveFromGlobalForecasterWhitelist:     1,
+		BulkAddToGlobalForecasterWhitelist:      1,
+		BulkRemoveFromGlobalForecasterWhitelist: 1,
+		BulkAddToTopicForecasterWhitelist:       1,
+		BulkRemoveFromTopicForecasterWhitelist:  1,
 	}
 }
 

@@ -493,3 +493,130 @@ func (s *QueryServerTestSuite) TestCanSubmitReputerPayload() {
 	s.Require().NotNil(response)
 	s.Require().True(response.CanSubmitReputerPayload)
 }
+
+func (s *QueryServerTestSuite) TestIsWhitelistedGlobalForecaster() {
+	ctx := s.Ctx()
+	queryServer := s.EmissionsQueryServer()
+
+	testAddress := "allo10es2a97cr7u2m3aa08tcu7yd0d300thdct45ve"
+	antitestAddress := "allo1snm6pxg7p9jetmkhz0jz9ku3vdzmszegy9q5lh"
+
+	err := s.WhitelistsKeeper().AddToGlobalForecasterWhitelist(ctx, testAddress)
+	s.Require().NoError(err)
+
+	req := &types.IsWhitelistedGlobalForecasterRequest{Address: testAddress}
+	response, err := queryServer.IsWhitelistedGlobalForecaster(ctx, req)
+	s.Require().NoError(err)
+	s.Require().NotNil(response)
+	s.Require().True(response.IsWhitelistedGlobalForecaster)
+
+	req = &types.IsWhitelistedGlobalForecasterRequest{Address: antitestAddress}
+	response, err = queryServer.IsWhitelistedGlobalForecaster(ctx, req)
+	s.Require().NoError(err)
+	s.Require().NotNil(response)
+	s.Require().False(response.IsWhitelistedGlobalForecaster)
+}
+
+func (s *QueryServerTestSuite) TestIsWhitelistedTopicForecaster() {
+	ctx := s.Ctx()
+	queryServer := s.EmissionsQueryServer()
+
+	testAddress := "allo10es2a97cr7u2m3aa08tcu7yd0d300thdct45ve"
+	antitestAddress := "allo1snm6pxg7p9jetmkhz0jz9ku3vdzmszegy9q5lh"
+	topicId := uint64(1)
+
+	err := s.WhitelistsKeeper().AddToTopicForecasterWhitelist(ctx, topicId, testAddress)
+	s.Require().NoError(err)
+
+	req := &types.IsWhitelistedTopicForecasterRequest{TopicId: topicId, Address: testAddress}
+	response, err := queryServer.IsWhitelistedTopicForecaster(ctx, req)
+	s.Require().NoError(err)
+	s.Require().NotNil(response)
+	s.Require().True(response.IsWhitelistedTopicForecaster)
+
+	req = &types.IsWhitelistedTopicForecasterRequest{TopicId: topicId, Address: antitestAddress}
+	response, err = queryServer.IsWhitelistedTopicForecaster(ctx, req)
+	s.Require().NoError(err)
+	s.Require().NotNil(response)
+	s.Require().False(response.IsWhitelistedTopicForecaster)
+}
+
+func (s *QueryServerTestSuite) TestIsTopicForecasterWhitelistEnabled() {
+	ctx := s.Ctx()
+	queryServer := s.EmissionsQueryServer()
+	topicId := uint64(1)
+
+	err := s.WhitelistsKeeper().DisableTopicForecasterWhitelist(ctx, topicId)
+	s.Require().NoError(err)
+
+	req := &types.IsTopicForecasterWhitelistEnabledRequest{TopicId: topicId}
+	response, err := queryServer.IsTopicForecasterWhitelistEnabled(ctx, req)
+	s.Require().NoError(err)
+	s.Require().NotNil(response)
+	s.Require().False(response.IsTopicForecasterWhitelistEnabled)
+
+	err = s.WhitelistsKeeper().EnableTopicForecasterWhitelist(ctx, topicId)
+	s.Require().NoError(err)
+
+	response, err = queryServer.IsTopicForecasterWhitelistEnabled(ctx, req)
+	s.Require().NoError(err)
+	s.Require().NotNil(response)
+	s.Require().True(response.IsTopicForecasterWhitelistEnabled)
+}
+
+func (s *QueryServerTestSuite) TestCanUpdateGlobalForecasterWhitelist() {
+	ctx := s.Ctx()
+	queryServer := s.EmissionsQueryServer()
+
+	adminAddr := s.AddrsStr(0)
+	nonAdminAddr := "allo1snm6pxg7p9jetmkhz0jz9ku3vdzmszegy9q5lh"
+
+	req := &types.CanUpdateGlobalForecasterWhitelistRequest{Address: adminAddr}
+	response, err := queryServer.CanUpdateGlobalForecasterWhitelist(ctx, req)
+	s.Require().NoError(err)
+	s.Require().NotNil(response)
+	s.Require().True(response.CanUpdateGlobalForecasterWhitelist)
+
+	req = &types.CanUpdateGlobalForecasterWhitelistRequest{Address: nonAdminAddr}
+	response, err = queryServer.CanUpdateGlobalForecasterWhitelist(ctx, req)
+	s.Require().NoError(err)
+	s.Require().NotNil(response)
+	s.Require().False(response.CanUpdateGlobalForecasterWhitelist)
+}
+
+func (s *QueryServerTestSuite) TestCanSubmitForecasterPayload() {
+	ctx := s.Ctx()
+	queryServer := s.EmissionsQueryServer()
+
+	testAddr := "allo1snm6pxg7p9jetmkhz0jz9ku3vdzmszegy9q5lh"
+	topicId := uint64(1)
+
+	req := &types.CanSubmitForecasterPayloadRequest{
+		TopicId: topicId,
+		Address: testAddr,
+	}
+
+	err := s.WhitelistsKeeper().DisableTopicForecasterWhitelist(ctx, topicId)
+	s.Require().NoError(err)
+
+	response, err := queryServer.CanSubmitForecasterPayload(ctx, req)
+	s.Require().NoError(err)
+	s.Require().NotNil(response)
+	s.Require().True(response.CanSubmitForecasterPayload)
+
+	err = s.WhitelistsKeeper().EnableTopicForecasterWhitelist(ctx, topicId)
+	s.Require().NoError(err)
+
+	response, err = queryServer.CanSubmitForecasterPayload(ctx, req)
+	s.Require().NoError(err)
+	s.Require().NotNil(response)
+	s.Require().False(response.CanSubmitForecasterPayload)
+
+	err = s.WhitelistsKeeper().AddToTopicForecasterWhitelist(ctx, topicId, testAddr)
+	s.Require().NoError(err)
+
+	response, err = queryServer.CanSubmitForecasterPayload(ctx, req)
+	s.Require().NoError(err)
+	s.Require().NotNil(response)
+	s.Require().True(response.CanSubmitForecasterPayload)
+}

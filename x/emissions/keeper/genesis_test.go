@@ -448,6 +448,8 @@ func (s *KeeperTestSuite) TestGenesisSubKeeperWhitelistsRoundTrip() {
 	s.Require().NoError(err)
 	err = s.WhitelistsKeeper().AddToGlobalReputerWhitelist(ctx, addr1)
 	s.Require().NoError(err)
+	err = s.WhitelistsKeeper().AddToGlobalForecasterWhitelist(ctx, addr0)
+	s.Require().NoError(err)
 	err = s.WhitelistsKeeper().AddToGlobalAdminWhitelist(ctx, addr0)
 	s.Require().NoError(err)
 	err = s.WhitelistsKeeper().AddToTopicCreatorWhitelist(ctx, addr1)
@@ -456,9 +458,13 @@ func (s *KeeperTestSuite) TestGenesisSubKeeperWhitelistsRoundTrip() {
 	s.Require().NoError(err)
 	err = s.WhitelistsKeeper().AddToTopicReputerWhitelist(ctx, 1, addr1)
 	s.Require().NoError(err)
+	err = s.WhitelistsKeeper().AddToTopicForecasterWhitelist(ctx, 1, addr0)
+	s.Require().NoError(err)
 	err = s.WhitelistsKeeper().EnableTopicWorkerWhitelist(ctx, 1)
 	s.Require().NoError(err)
 	err = s.WhitelistsKeeper().EnableTopicReputerWhitelist(ctx, 1)
+	s.Require().NoError(err)
+	err = s.WhitelistsKeeper().EnableTopicForecasterWhitelist(ctx, 1)
 	s.Require().NoError(err)
 
 	genesisState, err := s.EmissionsKeeper().ExportGenesis(ctx)
@@ -468,12 +474,15 @@ func (s *KeeperTestSuite) TestGenesisSubKeeperWhitelistsRoundTrip() {
 	s.Require().NotEmpty(genesisState.GlobalWhitelist)
 	s.Require().NotEmpty(genesisState.GlobalWorkerWhitelist)
 	s.Require().NotEmpty(genesisState.GlobalReputerWhitelist)
+	s.Require().NotEmpty(genesisState.GlobalForecasterWhitelist)
 	s.Require().NotEmpty(genesisState.GlobalAdminWhitelist)
 	s.Require().NotEmpty(genesisState.TopicCreatorWhitelist)
 	s.Require().NotEmpty(genesisState.TopicWorkerWhitelist)
 	s.Require().NotEmpty(genesisState.TopicReputerWhitelist)
+	s.Require().NotEmpty(genesisState.TopicForecasterWhitelist)
 	s.Require().NotEmpty(genesisState.TopicWorkerWhitelistEnabled)
 	s.Require().NotEmpty(genesisState.TopicReputerWhitelistEnabled)
+	s.Require().NotEmpty(genesisState.TopicForecasterWhitelistEnabled)
 
 	fresh := s.newFreshGenesisSuite()
 
@@ -487,6 +496,18 @@ func (s *KeeperTestSuite) TestGenesisSubKeeperWhitelistsRoundTrip() {
 	isGlobal, err := fresh.WhitelistsKeeper().IsWhitelistedGlobalActor(fresh.Ctx(), addr1)
 	s.Require().NoError(err)
 	s.Require().True(isGlobal)
+
+	isForecaster, err := fresh.WhitelistsKeeper().IsWhitelistedGlobalForecaster(fresh.Ctx(), addr0)
+	s.Require().NoError(err)
+	s.Require().True(isForecaster)
+
+	isTopicForecaster, err := fresh.WhitelistsKeeper().IsWhitelistedTopicForecaster(fresh.Ctx(), 1, addr0)
+	s.Require().NoError(err)
+	s.Require().True(isTopicForecaster)
+
+	forecasterEnabled, err := fresh.WhitelistsKeeper().IsTopicForecasterWhitelistEnabled(fresh.Ctx(), 1)
+	s.Require().NoError(err)
+	s.Require().True(forecasterEnabled)
 }
 
 func (s *KeeperTestSuite) TestGenesisSubKeeperWeightsRoundTrip() {

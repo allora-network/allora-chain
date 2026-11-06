@@ -67,6 +67,21 @@ func (s *KeeperTestSuite) TestWhitelistOperations() {
 			needsTopicId:         true,
 			expectedErrMsg:       "error validating actor address",
 		},
+		{
+			name:            "Global forecaster whitelist operations",
+			setupWhitelist:  k.AddToGlobalForecasterWhitelist,
+			checkWhitelist:  k.IsWhitelistedGlobalForecaster,
+			removeWhitelist: k.RemoveFromGlobalForecasterWhitelist,
+			expectedErrMsg:  "error validating actor address",
+		},
+		{
+			name:                 "Topic forecaster whitelist operations",
+			setupTopicWhitelist:  k.AddToTopicForecasterWhitelist,
+			checkTopicWhitelist:  k.IsWhitelistedTopicForecaster,
+			removeTopicWhitelist: k.RemoveFromTopicForecasterWhitelist,
+			needsTopicId:         true,
+			expectedErrMsg:       "error validating actor address",
+		},
 	}
 
 	for _, tc := range testCases {
@@ -158,6 +173,12 @@ func (s *KeeperTestSuite) TestWhitelistEnableDisableOperations() {
 			check:   k.IsTopicReputerWhitelistEnabled,
 			disable: k.DisableTopicReputerWhitelist,
 		},
+		{
+			name:    "Topic forecaster whitelist enable/disable",
+			enable:  k.EnableTopicForecasterWhitelist,
+			check:   k.IsTopicForecasterWhitelistEnabled,
+			disable: k.DisableTopicForecasterWhitelist,
+		},
 	}
 	for _, tc := range testCases {
 		s.Run(tc.name, func() {
@@ -215,6 +236,11 @@ func (s *KeeperTestSuite) TestTopicWhitelistGateEventsAreTransitionGuarded() {
 			enable:  k.EnableTopicReputerWhitelist,
 			disable: k.DisableTopicReputerWhitelist,
 		},
+		{
+			name:    "forecaster gate",
+			enable:  k.EnableTopicForecasterWhitelist,
+			disable: k.DisableTopicForecasterWhitelist,
+		},
 	}
 
 	for _, tc := range testCases {
@@ -251,9 +277,9 @@ func countTopicGateEvents(ctx sdk.Context) (enabled, disabled int) {
 			continue
 		}
 		switch parsed.(type) {
-		case *types.EventTopicWorkerWhitelistEnabled, *types.EventTopicReputerWhitelistEnabled:
+		case *types.EventTopicWorkerWhitelistEnabled, *types.EventTopicReputerWhitelistEnabled, *types.EventTopicForecasterWhitelistEnabled:
 			enabled++
-		case *types.EventTopicWorkerWhitelistDisabled, *types.EventTopicReputerWhitelistDisabled:
+		case *types.EventTopicWorkerWhitelistDisabled, *types.EventTopicReputerWhitelistDisabled, *types.EventTopicForecasterWhitelistDisabled:
 			disabled++
 		}
 	}
@@ -282,6 +308,12 @@ func (s *KeeperTestSuite) TestWhitelistEnabledOperations() {
 			setupAddr:    k.AddToTopicCreatorWhitelist,
 			checkEnabled: k.IsEnabledWhitelistedTopicCreator,
 			cleanupAddr:  k.RemoveFromTopicCreatorWhitelist,
+		},
+		{
+			name:         "IsEnabledGlobalForecaster",
+			setupAddr:    k.AddToGlobalForecasterWhitelist,
+			checkEnabled: k.IsEnabledGlobalForecaster,
+			cleanupAddr:  k.RemoveFromGlobalForecasterWhitelist,
 		},
 	}
 
@@ -337,6 +369,14 @@ func (s *KeeperTestSuite) TestTopicWhitelistEnabledOperations() {
 			addToList:      k.AddToTopicReputerWhitelist,
 			removeFromList: k.RemoveFromTopicReputerWhitelist,
 			checkEnabled:   k.IsEnabledTopicReputer,
+		},
+		{
+			name:           "IsEnabledTopicForecaster",
+			enableList:     k.EnableTopicForecasterWhitelist,
+			disableList:    k.DisableTopicForecasterWhitelist,
+			addToList:      k.AddToTopicForecasterWhitelist,
+			removeFromList: k.RemoveFromTopicForecasterWhitelist,
+			checkEnabled:   k.IsEnabledTopicForecaster,
 		},
 	}
 
@@ -405,6 +445,12 @@ func (s *KeeperTestSuite) TestPermissionOperations() {
 			checkPerm:    k.CanUpdateTopicCreatorWhitelist,
 			cleanupAdmin: k.RemoveWhitelistAdmin,
 		},
+		{
+			name:         "CanUpdateGlobalForecasterWhitelist",
+			setupAdmin:   k.AddWhitelistAdmin,
+			checkPerm:    k.CanUpdateGlobalForecasterWhitelist,
+			cleanupAdmin: k.RemoveWhitelistAdmin,
+		},
 	}
 
 	for _, tc := range testCases {
@@ -470,7 +516,8 @@ func (s *KeeperTestSuite) TestWhitelistBasedPermissions() {
 	topicCreator := s.AddrsStr(0)
 	topicWorker := s.AddrsStr(1)
 	topicReputer := s.AddrsStr(2)
-	globalActor := s.AddrsStr(3)
+	topicForecaster := s.AddrsStr(3)
+	globalActor := s.AddrsStr(4)
 	nonWhitelistedAddr := "allo1b6uwgrv77szudkve7g84uazuhyw6j4q9hdqely"
 	topicId := uint64(2)
 
@@ -511,6 +558,15 @@ func (s *KeeperTestSuite) TestWhitelistBasedPermissions() {
 			hasEnableDisable: true,
 		},
 		{
+			name:             "CanSubmitForecasterPayload",
+			setupWhitelist1:  k.AddToTopicForecasterWhitelist,
+			enableWhitelist:  k.EnableTopicForecasterWhitelist,
+			disableWhitelist: k.DisableTopicForecasterWhitelist,
+			checkPermission:  k.CanSubmitForecasterPayload,
+			whitelistedAddr:  topicForecaster,
+			hasEnableDisable: true,
+		},
+		{
 			name:             "CanAddReputerStake",
 			setupWhitelist1:  k.AddToTopicReputerWhitelist,
 			enableWhitelist:  k.EnableTopicReputerWhitelist,
@@ -543,6 +599,10 @@ func (s *KeeperTestSuite) TestWhitelistBasedPermissions() {
 				// Enable whitelist
 				err = tc.enableWhitelist(ctx, topicId)
 				s.Require().NoError(err)
+				// Also enable the topic forecaster gate so the combined
+				// worker-payload check requires both gates to fail.
+				err = k.EnableTopicForecasterWhitelist(ctx, topicId)
+				s.Require().NoError(err)
 
 				// Non-whitelisted should not have permission
 				can, err = tc.checkPermission(ctx, topicId, nonWhitelistedAddr)
@@ -561,6 +621,8 @@ func (s *KeeperTestSuite) TestWhitelistBasedPermissions() {
 
 				// Disable whitelist
 				err = tc.disableWhitelist(ctx, topicId)
+				s.Require().NoError(err)
+				err = k.DisableTopicForecasterWhitelist(ctx, topicId)
 				s.Require().NoError(err)
 
 				// All should have permission again
@@ -616,6 +678,14 @@ func (s *KeeperTestSuite) TestWhitelistInvalidAddressErrorMessages() {
 	s.Require().Contains(err.Error(), "error validating actor address")
 
 	err = k.AddToTopicReputerWhitelist(ctx, uint64(1), invalidAddr)
+	s.Require().Error(err)
+	s.Require().Contains(err.Error(), "error validating actor address")
+
+	err = k.AddToGlobalForecasterWhitelist(ctx, invalidAddr)
+	s.Require().Error(err)
+	s.Require().Contains(err.Error(), "error validating actor address")
+
+	err = k.AddToTopicForecasterWhitelist(ctx, uint64(1), invalidAddr)
 	s.Require().Error(err)
 	s.Require().Contains(err.Error(), "error validating actor address")
 }

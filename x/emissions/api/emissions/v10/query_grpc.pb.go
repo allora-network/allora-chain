@@ -126,6 +126,11 @@ const (
 	QueryService_GetLatestForecasterWeight_FullMethodName                   = "/emissions.v10.QueryService/GetLatestForecasterWeight"
 	QueryService_GetWorkerSubmissionWindowStatus_FullMethodName             = "/emissions.v10.QueryService/GetWorkerSubmissionWindowStatus"
 	QueryService_GetReputerSubmissionWindowStatus_FullMethodName            = "/emissions.v10.QueryService/GetReputerSubmissionWindowStatus"
+	QueryService_IsWhitelistedGlobalForecaster_FullMethodName               = "/emissions.v10.QueryService/IsWhitelistedGlobalForecaster"
+	QueryService_IsWhitelistedTopicForecaster_FullMethodName                = "/emissions.v10.QueryService/IsWhitelistedTopicForecaster"
+	QueryService_IsTopicForecasterWhitelistEnabled_FullMethodName           = "/emissions.v10.QueryService/IsTopicForecasterWhitelistEnabled"
+	QueryService_CanUpdateGlobalForecasterWhitelist_FullMethodName          = "/emissions.v10.QueryService/CanUpdateGlobalForecasterWhitelist"
+	QueryService_CanSubmitForecasterPayload_FullMethodName                  = "/emissions.v10.QueryService/CanSubmitForecasterPayload"
 )
 
 // QueryServiceClient is the client API for QueryService service.
@@ -250,6 +255,11 @@ type QueryServiceClient interface {
 	GetWorkerSubmissionWindowStatus(ctx context.Context, in *GetWorkerSubmissionWindowStatusRequest, opts ...grpc.CallOption) (*GetWorkerSubmissionWindowStatusResponse, error)
 	// Get reputer submission window status and timing
 	GetReputerSubmissionWindowStatus(ctx context.Context, in *GetReputerSubmissionWindowStatusRequest, opts ...grpc.CallOption) (*GetReputerSubmissionWindowStatusResponse, error)
+	IsWhitelistedGlobalForecaster(ctx context.Context, in *IsWhitelistedGlobalForecasterRequest, opts ...grpc.CallOption) (*IsWhitelistedGlobalForecasterResponse, error)
+	IsWhitelistedTopicForecaster(ctx context.Context, in *IsWhitelistedTopicForecasterRequest, opts ...grpc.CallOption) (*IsWhitelistedTopicForecasterResponse, error)
+	IsTopicForecasterWhitelistEnabled(ctx context.Context, in *IsTopicForecasterWhitelistEnabledRequest, opts ...grpc.CallOption) (*IsTopicForecasterWhitelistEnabledResponse, error)
+	CanUpdateGlobalForecasterWhitelist(ctx context.Context, in *CanUpdateGlobalForecasterWhitelistRequest, opts ...grpc.CallOption) (*CanUpdateGlobalForecasterWhitelistResponse, error)
+	CanSubmitForecasterPayload(ctx context.Context, in *CanSubmitForecasterPayloadRequest, opts ...grpc.CallOption) (*CanSubmitForecasterPayloadResponse, error)
 }
 
 type queryServiceClient struct {
@@ -1330,6 +1340,56 @@ func (c *queryServiceClient) GetReputerSubmissionWindowStatus(ctx context.Contex
 	return out, nil
 }
 
+func (c *queryServiceClient) IsWhitelistedGlobalForecaster(ctx context.Context, in *IsWhitelistedGlobalForecasterRequest, opts ...grpc.CallOption) (*IsWhitelistedGlobalForecasterResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(IsWhitelistedGlobalForecasterResponse)
+	err := c.cc.Invoke(ctx, QueryService_IsWhitelistedGlobalForecaster_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryServiceClient) IsWhitelistedTopicForecaster(ctx context.Context, in *IsWhitelistedTopicForecasterRequest, opts ...grpc.CallOption) (*IsWhitelistedTopicForecasterResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(IsWhitelistedTopicForecasterResponse)
+	err := c.cc.Invoke(ctx, QueryService_IsWhitelistedTopicForecaster_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryServiceClient) IsTopicForecasterWhitelistEnabled(ctx context.Context, in *IsTopicForecasterWhitelistEnabledRequest, opts ...grpc.CallOption) (*IsTopicForecasterWhitelistEnabledResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(IsTopicForecasterWhitelistEnabledResponse)
+	err := c.cc.Invoke(ctx, QueryService_IsTopicForecasterWhitelistEnabled_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryServiceClient) CanUpdateGlobalForecasterWhitelist(ctx context.Context, in *CanUpdateGlobalForecasterWhitelistRequest, opts ...grpc.CallOption) (*CanUpdateGlobalForecasterWhitelistResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CanUpdateGlobalForecasterWhitelistResponse)
+	err := c.cc.Invoke(ctx, QueryService_CanUpdateGlobalForecasterWhitelist_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryServiceClient) CanSubmitForecasterPayload(ctx context.Context, in *CanSubmitForecasterPayloadRequest, opts ...grpc.CallOption) (*CanSubmitForecasterPayloadResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CanSubmitForecasterPayloadResponse)
+	err := c.cc.Invoke(ctx, QueryService_CanSubmitForecasterPayload_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // QueryServiceServer is the server API for QueryService service.
 // All implementations must embed UnimplementedQueryServiceServer
 // for forward compatibility.
@@ -1452,6 +1512,11 @@ type QueryServiceServer interface {
 	GetWorkerSubmissionWindowStatus(context.Context, *GetWorkerSubmissionWindowStatusRequest) (*GetWorkerSubmissionWindowStatusResponse, error)
 	// Get reputer submission window status and timing
 	GetReputerSubmissionWindowStatus(context.Context, *GetReputerSubmissionWindowStatusRequest) (*GetReputerSubmissionWindowStatusResponse, error)
+	IsWhitelistedGlobalForecaster(context.Context, *IsWhitelistedGlobalForecasterRequest) (*IsWhitelistedGlobalForecasterResponse, error)
+	IsWhitelistedTopicForecaster(context.Context, *IsWhitelistedTopicForecasterRequest) (*IsWhitelistedTopicForecasterResponse, error)
+	IsTopicForecasterWhitelistEnabled(context.Context, *IsTopicForecasterWhitelistEnabledRequest) (*IsTopicForecasterWhitelistEnabledResponse, error)
+	CanUpdateGlobalForecasterWhitelist(context.Context, *CanUpdateGlobalForecasterWhitelistRequest) (*CanUpdateGlobalForecasterWhitelistResponse, error)
+	CanSubmitForecasterPayload(context.Context, *CanSubmitForecasterPayloadRequest) (*CanSubmitForecasterPayloadResponse, error)
 	mustEmbedUnimplementedQueryServiceServer()
 }
 
@@ -1782,6 +1847,21 @@ func (UnimplementedQueryServiceServer) GetWorkerSubmissionWindowStatus(context.C
 }
 func (UnimplementedQueryServiceServer) GetReputerSubmissionWindowStatus(context.Context, *GetReputerSubmissionWindowStatusRequest) (*GetReputerSubmissionWindowStatusResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetReputerSubmissionWindowStatus not implemented")
+}
+func (UnimplementedQueryServiceServer) IsWhitelistedGlobalForecaster(context.Context, *IsWhitelistedGlobalForecasterRequest) (*IsWhitelistedGlobalForecasterResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method IsWhitelistedGlobalForecaster not implemented")
+}
+func (UnimplementedQueryServiceServer) IsWhitelistedTopicForecaster(context.Context, *IsWhitelistedTopicForecasterRequest) (*IsWhitelistedTopicForecasterResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method IsWhitelistedTopicForecaster not implemented")
+}
+func (UnimplementedQueryServiceServer) IsTopicForecasterWhitelistEnabled(context.Context, *IsTopicForecasterWhitelistEnabledRequest) (*IsTopicForecasterWhitelistEnabledResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method IsTopicForecasterWhitelistEnabled not implemented")
+}
+func (UnimplementedQueryServiceServer) CanUpdateGlobalForecasterWhitelist(context.Context, *CanUpdateGlobalForecasterWhitelistRequest) (*CanUpdateGlobalForecasterWhitelistResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CanUpdateGlobalForecasterWhitelist not implemented")
+}
+func (UnimplementedQueryServiceServer) CanSubmitForecasterPayload(context.Context, *CanSubmitForecasterPayloadRequest) (*CanSubmitForecasterPayloadResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CanSubmitForecasterPayload not implemented")
 }
 func (UnimplementedQueryServiceServer) mustEmbedUnimplementedQueryServiceServer() {}
 func (UnimplementedQueryServiceServer) testEmbeddedByValue()                      {}
@@ -3730,6 +3810,96 @@ func _QueryService_GetReputerSubmissionWindowStatus_Handler(srv interface{}, ctx
 	return interceptor(ctx, in, info, handler)
 }
 
+func _QueryService_IsWhitelistedGlobalForecaster_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(IsWhitelistedGlobalForecasterRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServiceServer).IsWhitelistedGlobalForecaster(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: QueryService_IsWhitelistedGlobalForecaster_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServiceServer).IsWhitelistedGlobalForecaster(ctx, req.(*IsWhitelistedGlobalForecasterRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _QueryService_IsWhitelistedTopicForecaster_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(IsWhitelistedTopicForecasterRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServiceServer).IsWhitelistedTopicForecaster(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: QueryService_IsWhitelistedTopicForecaster_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServiceServer).IsWhitelistedTopicForecaster(ctx, req.(*IsWhitelistedTopicForecasterRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _QueryService_IsTopicForecasterWhitelistEnabled_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(IsTopicForecasterWhitelistEnabledRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServiceServer).IsTopicForecasterWhitelistEnabled(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: QueryService_IsTopicForecasterWhitelistEnabled_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServiceServer).IsTopicForecasterWhitelistEnabled(ctx, req.(*IsTopicForecasterWhitelistEnabledRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _QueryService_CanUpdateGlobalForecasterWhitelist_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CanUpdateGlobalForecasterWhitelistRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServiceServer).CanUpdateGlobalForecasterWhitelist(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: QueryService_CanUpdateGlobalForecasterWhitelist_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServiceServer).CanUpdateGlobalForecasterWhitelist(ctx, req.(*CanUpdateGlobalForecasterWhitelistRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _QueryService_CanSubmitForecasterPayload_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CanSubmitForecasterPayloadRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServiceServer).CanSubmitForecasterPayload(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: QueryService_CanSubmitForecasterPayload_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServiceServer).CanSubmitForecasterPayload(ctx, req.(*CanSubmitForecasterPayloadRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // QueryService_ServiceDesc is the grpc.ServiceDesc for QueryService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -4164,6 +4334,26 @@ var QueryService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetReputerSubmissionWindowStatus",
 			Handler:    _QueryService_GetReputerSubmissionWindowStatus_Handler,
+		},
+		{
+			MethodName: "IsWhitelistedGlobalForecaster",
+			Handler:    _QueryService_IsWhitelistedGlobalForecaster_Handler,
+		},
+		{
+			MethodName: "IsWhitelistedTopicForecaster",
+			Handler:    _QueryService_IsWhitelistedTopicForecaster_Handler,
+		},
+		{
+			MethodName: "IsTopicForecasterWhitelistEnabled",
+			Handler:    _QueryService_IsTopicForecasterWhitelistEnabled_Handler,
+		},
+		{
+			MethodName: "CanUpdateGlobalForecasterWhitelist",
+			Handler:    _QueryService_CanUpdateGlobalForecasterWhitelist_Handler,
+		},
+		{
+			MethodName: "CanSubmitForecasterPayload",
+			Handler:    _QueryService_CanSubmitForecasterPayload_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

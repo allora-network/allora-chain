@@ -1323,6 +1323,7 @@ func mockUninitializedParams() types.Params {
 		LambdaInitialScore:                  alloraMath.MustNewDecFromString("2"),
 		GlobalWorkerWhitelistEnabled:        true,
 		GlobalReputerWhitelistEnabled:       true,
+		GlobalForecasterWhitelistEnabled:    true,
 		GlobalAdminWhitelistAppended:        true,
 		MaxWhitelistInputArrayLength:        uint64(10),
 		MinWeightThresholdForStdnorm:        alloraMath.MustNewDecFromString("0.000001"),

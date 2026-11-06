@@ -292,6 +292,63 @@ func (s *MsgServerTestSuite) TestGlobalWhitelistOperations() {
 			verify: keeper.IsWhitelistedGlobalReputer,
 		},
 
+		// Global Forecaster Whitelist
+		{
+			name:          "Add to global forecaster whitelist - success",
+			whitelistType: "forecaster",
+			operation:     "add",
+			setupMsg: func() any {
+				return &types.AddToGlobalForecasterWhitelistRequest{
+					Sender:  adminAddr,
+					Address: targetAddr,
+				}
+			},
+			execute: func(msg any) error {
+				_, err := msgServer.AddToGlobalForecasterWhitelist(ctx, msg.(*types.AddToGlobalForecasterWhitelistRequest))
+				return err
+			},
+			verify: keeper.IsWhitelistedGlobalForecaster,
+		},
+		{
+			name:          "Add to global forecaster whitelist - unauthorized",
+			whitelistType: "forecaster",
+			operation:     "add",
+			setupMsg: func() any {
+				return &types.AddToGlobalForecasterWhitelistRequest{
+					Sender:  nonAdminAddr,
+					Address: targetAddr,
+				}
+			},
+			execute: func(msg any) error {
+				_, err := msgServer.AddToGlobalForecasterWhitelist(ctx, msg.(*types.AddToGlobalForecasterWhitelistRequest))
+				return err
+			},
+			expectedError: types.ErrNotPermittedToUpdateGlobalWhitelist,
+		},
+		{
+			name:          "Remove from global forecaster whitelist - success",
+			whitelistType: "forecaster",
+			operation:     "remove",
+			setupMsg: func() any {
+				addMsg := &types.AddToGlobalForecasterWhitelistRequest{
+					Sender:  adminAddr,
+					Address: targetAddr,
+				}
+				_, err := msgServer.AddToGlobalForecasterWhitelist(ctx, addMsg)
+				s.Require().NoError(err)
+
+				return &types.RemoveFromGlobalForecasterWhitelistRequest{
+					Sender:  adminAddr,
+					Address: targetAddr,
+				}
+			},
+			execute: func(msg any) error {
+				_, err := msgServer.RemoveFromGlobalForecasterWhitelist(ctx, msg.(*types.RemoveFromGlobalForecasterWhitelistRequest))
+				return err
+			},
+			verify: keeper.IsWhitelistedGlobalForecaster,
+		},
+
 		// Global Admin Whitelist
 		{
 			name:          "Add to global admin whitelist - success",
@@ -493,6 +550,63 @@ func (s *MsgServerTestSuite) TestBulkWhitelistOperations() {
 				return err
 			},
 			verify: keeper.IsWhitelistedGlobalReputer,
+		},
+
+		// Global Forecaster Bulk Operations
+		{
+			name:          "Bulk add to global forecaster whitelist - success",
+			whitelistType: "forecaster",
+			isGlobal:      true,
+			operation:     "add",
+			addresses:     addresses,
+			execute: func() error {
+				msg := &types.BulkAddToGlobalForecasterWhitelistRequest{
+					Sender:    adminAddr,
+					Addresses: addresses,
+				}
+				_, err := msgServer.BulkAddToGlobalForecasterWhitelist(ctx, msg)
+				return err
+			},
+			verify: keeper.IsWhitelistedGlobalForecaster,
+		},
+		{
+			name:          "Bulk add to global forecaster whitelist - too many addresses",
+			whitelistType: "forecaster",
+			isGlobal:      true,
+			operation:     "add",
+			addresses:     tooManyAddresses,
+			execute: func() error {
+				msg := &types.BulkAddToGlobalForecasterWhitelistRequest{
+					Sender:    adminAddr,
+					Addresses: tooManyAddresses,
+				}
+				_, err := msgServer.BulkAddToGlobalForecasterWhitelist(ctx, msg)
+				return err
+			},
+			expectedError: types.ErrMaxWhitelistInputArrayLengthExceeded,
+		},
+		{
+			name:          "Bulk remove from global forecaster whitelist - success",
+			whitelistType: "forecaster",
+			isGlobal:      true,
+			operation:     "remove",
+			addresses:     addresses,
+			execute: func() error {
+				addMsg := &types.BulkAddToGlobalForecasterWhitelistRequest{
+					Sender:    adminAddr,
+					Addresses: addresses,
+				}
+				_, err = msgServer.BulkAddToGlobalForecasterWhitelist(ctx, addMsg)
+				s.Require().NoError(err)
+
+				msg := &types.BulkRemoveFromGlobalForecasterWhitelistRequest{
+					Sender:    adminAddr,
+					Addresses: addresses,
+				}
+				_, err = msgServer.BulkRemoveFromGlobalForecasterWhitelist(ctx, msg)
+				return err
+			},
+			verify: keeper.IsWhitelistedGlobalForecaster,
 		},
 	}
 
@@ -756,6 +870,103 @@ func (s *MsgServerTestSuite) TestTopicWhitelistOperations() {
 				_, err := msgServer.RemoveFromTopicReputerWhitelist(ctx, msg.(*types.RemoveFromTopicReputerWhitelistRequest))
 				return err
 			},
+		},
+		{
+			name:          "Enable topic forecaster whitelist - success",
+			whitelistType: "forecaster",
+			operation:     "enable",
+			topicId:       topicId,
+			setupMsg: func() any {
+				return &types.EnableTopicForecasterWhitelistRequest{
+					Sender:  adminAddr,
+					TopicId: topicId,
+				}
+			},
+			execute: func(msg any) error {
+				_, err := msgServer.EnableTopicForecasterWhitelist(ctx, msg.(*types.EnableTopicForecasterWhitelistRequest))
+				return err
+			},
+			verify: func() (bool, error) {
+				return keeper.IsTopicForecasterWhitelistEnabled(ctx, topicId)
+			},
+		},
+		{
+			name:          "Disable topic forecaster whitelist - success",
+			whitelistType: "forecaster",
+			operation:     "disable",
+			topicId:       topicId,
+			setupMsg: func() any {
+				enableMsg := &types.EnableTopicForecasterWhitelistRequest{
+					Sender:  adminAddr,
+					TopicId: topicId,
+				}
+				_, err := msgServer.EnableTopicForecasterWhitelist(ctx, enableMsg)
+				s.Require().NoError(err)
+
+				return &types.DisableTopicForecasterWhitelistRequest{
+					Sender:  adminAddr,
+					TopicId: topicId,
+				}
+			},
+			execute: func(msg any) error {
+				_, err := msgServer.DisableTopicForecasterWhitelist(ctx, msg.(*types.DisableTopicForecasterWhitelistRequest))
+				return err
+			},
+			verify: func() (bool, error) {
+				return keeper.IsTopicForecasterWhitelistEnabled(ctx, topicId)
+			},
+		},
+		{
+			name:          "Add to topic forecaster whitelist - success",
+			whitelistType: "forecaster",
+			operation:     "add",
+			topicId:       topicId,
+			setupMsg: func() any {
+				return &types.AddToTopicForecasterWhitelistRequest{
+					Sender:  adminAddr,
+					TopicId: topicId,
+					Address: targetAddr,
+				}
+			},
+			execute: func(msg any) error {
+				_, err := msgServer.AddToTopicForecasterWhitelist(ctx, msg.(*types.AddToTopicForecasterWhitelistRequest))
+				return err
+			},
+		},
+		{
+			name:          "Remove from topic forecaster whitelist - success",
+			whitelistType: "forecaster",
+			operation:     "remove",
+			topicId:       topicId,
+			setupMsg: func() any {
+				return &types.RemoveFromTopicForecasterWhitelistRequest{
+					Sender:  adminAddr,
+					TopicId: topicId,
+					Address: targetAddr,
+				}
+			},
+			execute: func(msg any) error {
+				_, err := msgServer.RemoveFromTopicForecasterWhitelist(ctx, msg.(*types.RemoveFromTopicForecasterWhitelistRequest))
+				return err
+			},
+		},
+		{
+			name:          "Add to topic forecaster whitelist - unauthorized",
+			whitelistType: "forecaster",
+			operation:     "add",
+			topicId:       topicId,
+			setupMsg: func() any {
+				return &types.AddToTopicForecasterWhitelistRequest{
+					Sender:  nonAdminAddr,
+					TopicId: topicId,
+					Address: targetAddr,
+				}
+			},
+			execute: func(msg any) error {
+				_, err := msgServer.AddToTopicForecasterWhitelist(ctx, msg.(*types.AddToTopicForecasterWhitelistRequest))
+				return err
+			},
+			expectedError: types.ErrNotPermittedToUpdateTopicForecasterWhitelist,
 		},
 	}
 
@@ -1039,6 +1250,18 @@ func (s *MsgServerTestSuite) TestTopicGateHandlersEmitSingleEvent() {
 			},
 			count: countReputerGateEvents,
 		},
+		{
+			name: "forecaster gate",
+			enable: func(ctx sdk.Context, topicId uint64) error {
+				_, err := msgServer.EnableTopicForecasterWhitelist(ctx, &types.EnableTopicForecasterWhitelistRequest{Sender: admin, TopicId: topicId})
+				return err
+			},
+			disable: func(ctx sdk.Context, topicId uint64) error {
+				_, err := msgServer.DisableTopicForecasterWhitelist(ctx, &types.DisableTopicForecasterWhitelistRequest{Sender: admin, TopicId: topicId})
+				return err
+			},
+			count: countForecasterGateEvents,
+		},
 	}
 
 	for _, tc := range testCases {
@@ -1046,6 +1269,7 @@ func (s *MsgServerTestSuite) TestTopicGateHandlersEmitSingleEvent() {
 			createMsg := s.MockTopicMsg()
 			createMsg.EnableWorkerWhitelist = false
 			createMsg.EnableReputerWhitelist = false
+			createMsg.EnableForecasterWhitelist = false
 			res, err := msgServer.CreateNewTopic(s.Ctx(), createMsg)
 			s.Require().NoError(err)
 			topicId := res.TopicId
@@ -1093,6 +1317,22 @@ func countReputerGateEvents(ctx sdk.Context) (enabled, disabled int) {
 		case *types.EventTopicReputerWhitelistEnabled:
 			enabled++
 		case *types.EventTopicReputerWhitelistDisabled:
+			disabled++
+		}
+	}
+	return enabled, disabled
+}
+
+func countForecasterGateEvents(ctx sdk.Context) (enabled, disabled int) {
+	for _, ev := range ctx.EventManager().Events() {
+		parsed, err := sdk.ParseTypedEvent(abci.Event(ev))
+		if err != nil {
+			continue
+		}
+		switch parsed.(type) {
+		case *types.EventTopicForecasterWhitelistEnabled:
+			enabled++
+		case *types.EventTopicForecasterWhitelistDisabled:
 			disabled++
 		}
 	}

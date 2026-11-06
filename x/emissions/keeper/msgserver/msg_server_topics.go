@@ -138,6 +138,12 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.CreateNewTopi
 			return nil, err
 		}
 	}
+	if msg.EnableForecasterWhitelist {
+		err = ms.wlk.EnableTopicForecasterWhitelist(ctx, topicId)
+		if err != nil {
+			return nil, err
+		}
+	}
 
 	if chargeFee {
 		err = ms.tk.AddTopicFeeRevenue(ctx, topicId, params.CreateTopicFee)
