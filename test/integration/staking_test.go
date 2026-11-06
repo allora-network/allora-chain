@@ -11,6 +11,30 @@ import (
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 )
 
+// requireTxCodeZero waits until the tx is in a block and rejects a non-zero code.
+func requireTxCodeZero(m testCommon.TestConfig, ctx context.Context, hash string) {
+	m.T.Helper()
+	res, err := m.Client.WaitForTx(ctx, hash)
+	require.NoError(m.T, err)
+	require.NotNil(m.T, res)
+	require.Zerof(m.T, res.TxResult.Code, "tx %s failed: %s", hash, res.TxResult.Log)
+}
+
+// requireState retries a check across a few blocks. Queries rotate across
+// validators, so the first read can land on one that has not applied the tx.
+func requireState(m testCommon.TestConfig, ctx context.Context, check func() error) {
+	m.T.Helper()
+	var last error
+	for range 8 {
+		last = check()
+		if last == nil {
+			return
+		}
+		require.NoError(m.T, m.Client.WaitForNextBlock(ctx))
+	}
+	require.NoError(m.T, last)
+}
+
 func addTopicReputer(m testCommon.TestConfig, address string) {
 	ctx := context.Background()
 	addTopicReputerRequest := &emissionstypes.AddToTopicReputerWhitelistRequest{
@@ -20,8 +44,7 @@ func addTopicReputer(m testCommon.TestConfig, address string) {
 	}
 	txResp, err := m.Client.BroadcastTx(ctx, m.AliceAcc, addTopicReputerRequest)
 	require.NoError(m.T, err)
-	_, err = m.Client.WaitForTx(ctx, txResp.TxHash)
-	require.NoError(m.T, err)
+	requireTxCodeZero(m, ctx, txResp.TxHash)
 	addTopicReputerResponse := &emissionstypes.AddToTopicReputerWhitelistResponse{}
 	err = txResp.Decode(addTopicReputerResponse)
 	require.NoError(m.T, err)
@@ -53,19 +76,25 @@ func StakeAliceAsReputer(m testCommon.TestConfig) {
 	}
 	txResp, err := m.Client.BroadcastTx(ctx, m.AliceAcc, addStake)
 	require.NoError(m.T, err)
-	_, err = m.Client.WaitForTx(ctx, txResp.TxHash)
-	require.NoError(m.T, err)
+	requireTxCodeZero(m, ctx, txResp.TxHash)
 
-	// Check Alice has stake on the topic
-	aliceStakedAfter, err := m.Client.QueryEmissions().GetReputerStakeInTopic(
-		ctx,
-		&emissionstypes.GetReputerStakeInTopicRequest{
-			TopicId: m.TopicID,
-			Address: m.AliceAddr,
-		},
-	)
-	require.NoError(m.T, err)
-	require.Equal(m.T, fmt.Sprint(stakeToAdd), aliceStakedAfter.Amount.Sub(aliceStakedBefore.Amount).String())
+	requireState(m, ctx, func() error {
+		aliceStakedAfter, err := m.Client.QueryEmissions().GetReputerStakeInTopic(
+			ctx,
+			&emissionstypes.GetReputerStakeInTopicRequest{
+				TopicId: m.TopicID,
+				Address: m.AliceAddr,
+			},
+		)
+		if err != nil {
+			return err
+		}
+		got := aliceStakedAfter.Amount.Sub(aliceStakedBefore.Amount).String()
+		if got != fmt.Sprint(stakeToAdd) {
+			return fmt.Errorf("alice stake delta %s, want %d", got, stakeToAdd)
+		}
+		return nil
+	})
 }
 
 // integration tests the ability of bob to stake on alice as a reputer
@@ -93,20 +122,26 @@ func StakeBobOnAliceAsReputer(m testCommon.TestConfig) {
 	}
 	txResp, err := m.Client.BroadcastTx(ctx, m.BobAcc, addDelegateStake)
 	require.NoError(m.T, err)
-	_, err = m.Client.WaitForTx(ctx, txResp.TxHash)
-	require.NoError(m.T, err)
+	requireTxCodeZero(m, ctx, txResp.TxHash)
 
-	// Check Alice has stake on the topic
-	bobStakedAfter, err := m.Client.QueryEmissions().GetStakeFromDelegatorInTopicInReputer(
-		ctx,
-		&emissionstypes.GetStakeFromDelegatorInTopicInReputerRequest{
-			TopicId:          m.TopicID,
-			DelegatorAddress: m.BobAddr,
-			ReputerAddress:   m.AliceAddr,
-		},
-	)
-	require.NoError(m.T, err)
-	require.Equal(m.T, fmt.Sprint(stakeToAdd), bobStakedAfter.Amount.Sub(bobStakedBefore.Amount).String())
+	requireState(m, ctx, func() error {
+		bobStakedAfter, err := m.Client.QueryEmissions().GetStakeFromDelegatorInTopicInReputer(
+			ctx,
+			&emissionstypes.GetStakeFromDelegatorInTopicInReputerRequest{
+				TopicId:          m.TopicID,
+				DelegatorAddress: m.BobAddr,
+				ReputerAddress:   m.AliceAddr,
+			},
+		)
+		if err != nil {
+			return err
+		}
+		got := bobStakedAfter.Amount.Sub(bobStakedBefore.Amount).String()
+		if got != fmt.Sprint(stakeToAdd) {
+			return fmt.Errorf("bob stake delta %s, want %d", got, stakeToAdd)
+		}
+		return nil
+	})
 }
 
 // Register two actors and check their registrations went through
@@ -156,20 +191,25 @@ func UnstakeAliceAsReputer(m testCommon.TestConfig) {
 
 	txResp, err := m.Client.BroadcastTx(ctx, m.AliceAcc, unstake)
 	require.NoError(m.T, err)
-	_, err = m.Client.WaitForTx(ctx, txResp.TxHash)
-	require.NoError(m.T, err)
+	requireTxCodeZero(m, ctx, txResp.TxHash)
 
-	// check the unstake removal is queued
-	stakeRemoval, err := m.Client.QueryEmissions().GetStakeRemovalInfo(
-		ctx,
-		&emissionstypes.GetStakeRemovalInfoRequest{
-			TopicId: m.TopicID,
-			Reputer: m.AliceAddr,
-		},
-	)
-	require.NoError(m.T, err)
-	require.NotNil(m.T, stakeRemoval)
-	require.NotZero(m.T, stakeRemoval.Removal.BlockRemovalCompleted)
+	var stakeRemoval *emissionstypes.GetStakeRemovalInfoResponse
+	requireState(m, ctx, func() error {
+		stakeRemoval, err = m.Client.QueryEmissions().GetStakeRemovalInfo(
+			ctx,
+			&emissionstypes.GetStakeRemovalInfoRequest{
+				TopicId: m.TopicID,
+				Reputer: m.AliceAddr,
+			},
+		)
+		if err != nil {
+			return err
+		}
+		if stakeRemoval == nil || stakeRemoval.Removal == nil || stakeRemoval.Removal.BlockRemovalCompleted == 0 {
+			return fmt.Errorf("alice stake removal is not queued")
+		}
+		return nil
+	})
 	m.T.Log("--- Unstake removal is queued, waiting for block ", stakeRemoval.Removal.BlockRemovalCompleted, " ---")
 	err = m.Client.WaitForBlockHeight(ctx, stakeRemoval.Removal.BlockRemovalCompleted+1)
 	require.NoError(m.T, err)
@@ -226,21 +266,26 @@ func UnstakeBobAsDelegatorOnAlice(m testCommon.TestConfig) {
 
 	txResp, err := m.Client.BroadcastTx(ctx, m.BobAcc, unstake)
 	require.NoError(m.T, err)
-	_, err = m.Client.WaitForTx(ctx, txResp.TxHash)
-	require.NoError(m.T, err)
+	requireTxCodeZero(m, ctx, txResp.TxHash)
 
-	// check the unstake removal is queued
-	stakeRemoval, err := m.Client.QueryEmissions().GetDelegateStakeRemovalInfo(
-		ctx,
-		&emissionstypes.GetDelegateStakeRemovalInfoRequest{
-			TopicId:   m.TopicID,
-			Delegator: m.BobAddr,
-			Reputer:   m.AliceAddr,
-		},
-	)
-	require.NoError(m.T, err)
-	require.NotNil(m.T, stakeRemoval)
-	require.NotZero(m.T, stakeRemoval.Removal.BlockRemovalCompleted)
+	var stakeRemoval *emissionstypes.GetDelegateStakeRemovalInfoResponse
+	requireState(m, ctx, func() error {
+		stakeRemoval, err = m.Client.QueryEmissions().GetDelegateStakeRemovalInfo(
+			ctx,
+			&emissionstypes.GetDelegateStakeRemovalInfoRequest{
+				TopicId:   m.TopicID,
+				Delegator: m.BobAddr,
+				Reputer:   m.AliceAddr,
+			},
+		)
+		if err != nil {
+			return err
+		}
+		if stakeRemoval == nil || stakeRemoval.Removal == nil || stakeRemoval.Removal.BlockRemovalCompleted == 0 {
+			return fmt.Errorf("bob delegate stake removal is not queued")
+		}
+		return nil
+	})
 	m.T.Log("--- Unstake removal is queued, waiting for block ", stakeRemoval.Removal.BlockRemovalCompleted, " ---")
 	err = m.Client.WaitForBlockHeight(ctx, stakeRemoval.Removal.BlockRemovalCompleted+1)
 	require.NoError(m.T, err)

@@ -36,20 +36,20 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.InsertWo
 		return nil, errorsmod.Wrapf(types.ErrNotPermittedToSubmitWorkerPayload, "Worker is not permitted to submit payload")
 	}
 
-	if err := msg.WorkerDataBundle.Validate(); err != nil {
-		return nil, errorsmod.Wrapf(err, "Error validating worker data bundle")
-	}
-
 	moduleParams, err := ms.pk.GetParams(ctx)
 	if err != nil {
 		return nil, errorsmod.Wrapf(err, "Error getting params")
 	}
-	blockHeight := sdkCtx.BlockHeight()
-
+	// Reject an oversized payload before walking its forecast elements.
 	err = checkInputLength(moduleParams.MaxSerializedMsgLength, msg)
 	if err != nil {
 		return nil, err
 	}
+
+	if err := msg.WorkerDataBundle.Validate(); err != nil {
+		return nil, errorsmod.Wrapf(err, "Error validating worker data bundle")
+	}
+	blockHeight := sdkCtx.BlockHeight()
 
 	nonce := msg.WorkerDataBundle.Nonce
 	topicId := msg.WorkerDataBundle.TopicId
@@ -240,21 +240,15 @@ func (ms msgServer) processWorkerForecastPayload(
 	}
 
 	_, _, topNInferer := actorutils.FindTopNByScoreDesc(
-		sdkCtx,
 		moduleParams.MaxElementsPerForecast,
 		latestScoresForForecastedInferers,
 		forecast.BlockHeight,
 	)
 
-	// Remove duplicate forecast elements.
 	acceptedForecastElements := make([]*types.ForecastElement, 0)
-	seenInferers := make(map[string]bool)
 	for _, el := range forecast.ForecastElements {
-		notAlreadySeen := !seenInferers[el.Inferer]
-		_, isTopInferer := topNInferer[el.Inferer]
-		if notAlreadySeen && isTopInferer {
+		if _, isTopInferer := topNInferer[el.Inferer]; isTopInferer {
 			acceptedForecastElements = append(acceptedForecastElements, el)
-			seenInferers[el.Inferer] = true
 		}
 	}
 
