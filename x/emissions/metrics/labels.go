@@ -27,6 +27,8 @@ const (
 	NETWORK_INFERENCE_INFERER_REGRET_USED_EVENT             = "network_inference_inferer_regret_used_event"
 	NETWORK_INFERENCE_FORECASTER_REGRET_USED_EVENT          = "network_inference_forecaster_regret_used_event"
 	TOPIC_WEIGHT_UPDATED_EVENT                              = "topic_weight_updated_event"
+	TOPIC_WEIGHT_UPDATED_AFTER_STAKE_CHANGE_EVENT           = "topic_weight_updated_after_stake_change_event"
+	REWARD_PAYOUT_FAILED_EVENT                              = "reward_payout_failed_event"
 	TOPIC_FEE_REVENUE_DRIPPED_EVENT                         = "topic_fee_revenue_dripped_event"
 	WORKER_SUBMISSION_WINDOW_OPENED_EVENT                   = "worker_submission_window_opened_event"
 	WORKER_SUBMISSION_WINDOW_CLOSED_EVENT                   = "worker_submission_window_closed_event"
@@ -80,4 +82,7 @@ const (
 	FORECASTER_WEIGHTS_EVENT                                = "forecaster_weights_event"
 	PREVIOUS_PERCENTAGE_REWARD_TO_STAKED_REPUTERS_SET_EVENT = "previous_percentage_reward_to_staked_reputers_set_event"
 	PRUNE_RECORDS_EVENT                                     = "prune_records_event"
+	TOPIC_REWARD_FORFEITED_NO_REWARD_NONCE_EVENT            = "topic_reward_forfeited_no_reward_nonce_event"
+	TOPIC_REWARD_FORFEITED_DISTRIBUTION_FAILED_EVENT        = "topic_reward_forfeited_distribution_failed_event"
+	NONCE_EXPIRED_EVENT                                     = "nonce_expired_event"
 )

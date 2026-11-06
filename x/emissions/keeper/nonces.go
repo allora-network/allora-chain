@@ -243,14 +243,22 @@ func (k *NonceKeeper) AddWorkerNonce(ctx context.Context, topicId TopicId, nonce
 	maxUnfulfilledRequests := moduleParams.MaxUnfulfilledWorkerRequests
 
 	lenNonces := uint64(len(nonces.Nonces))
+	var evictedNonces []*types.Nonce
 	if lenNonces > maxUnfulfilledRequests {
+		evictedNonces = nonces.Nonces[maxUnfulfilledRequests:]
 		nonces.Nonces = nonces.Nonces[:maxUnfulfilledRequests]
 	}
 
 	if err := nonces.Validate(); err != nil {
 		return errorsmod.Wrap(err, "error validating unfulfilled worker nonces")
 	}
-	return k.unfulfilledWorkerNonces.Set(ctx, topicId, nonces)
+	if err := k.unfulfilledWorkerNonces.Set(ctx, topicId, nonces); err != nil {
+		return errorsmod.Wrap(err, "error setting unfulfilled worker nonces")
+	}
+	for _, evicted := range evictedNonces {
+		types.EmitNewNonceExpiredEvent(ctx, topicId, evicted.BlockHeight, types.ActorType_ACTOR_TYPE_INFERER_UNSPECIFIED, types.NonceExpiredReason_NONCE_EXPIRED_REASON_EVICTED_BY_CAP)
+	}
+	return nil
 }
 
 // Adds a nonce to the unfulfilled nonces for the topic if it is not yet added (idempotent).
@@ -292,13 +300,21 @@ func (k *NonceKeeper) AddReputerNonce(ctx context.Context, topicId TopicId, nonc
 	}
 	maxUnfulfilledRequests := moduleParams.MaxUnfulfilledReputerRequests
 	lenNonces := uint64(len(nonces.Nonces))
+	var evictedNonces []*types.ReputerRequestNonce
 	if lenNonces > maxUnfulfilledRequests {
+		evictedNonces = nonces.Nonces[maxUnfulfilledRequests:]
 		nonces.Nonces = nonces.Nonces[:maxUnfulfilledRequests]
 	}
 	if err := nonces.Validate(); err != nil {
 		return errorsmod.Wrap(err, "error validating unfulfilled reputer nonces")
 	}
-	return k.unfulfilledReputerNonces.Set(ctx, topicId, nonces)
+	if err := k.unfulfilledReputerNonces.Set(ctx, topicId, nonces); err != nil {
+		return errorsmod.Wrap(err, "error setting unfulfilled reputer nonces")
+	}
+	for _, evicted := range evictedNonces {
+		types.EmitNewNonceExpiredEvent(ctx, topicId, evicted.ReputerNonce.BlockHeight, types.ActorType_ACTOR_TYPE_REPUTER, types.NonceExpiredReason_NONCE_EXPIRED_REASON_EVICTED_BY_CAP)
+	}
+	return nil
 }
 
 func (k *NonceKeeper) GetUnfulfilledWorkerNonces(ctx context.Context, topicId TopicId) (types.Nonces, error) {
@@ -395,14 +411,6 @@ func (k *NonceKeeper) GetOpenWorkerSubmissionWindows(ctx context.Context, topicI
 	return types.Nonces{Nonces: openNonces}, nil
 }
 
-func (k *NonceKeeper) DeleteUnfulfilledWorkerNonces(ctx context.Context, topicId TopicId) error {
-	return k.unfulfilledWorkerNonces.Remove(ctx, topicId)
-}
-
-func (k *NonceKeeper) DeleteUnfulfilledReputerNonces(ctx context.Context, topicId TopicId) error {
-	return k.unfulfilledReputerNonces.Remove(ctx, topicId)
-}
-
 func (k *NonceKeeper) PruneWorkerNonces(ctx context.Context, topicId uint64, blockHeightThreshold int64) error {
 	if err := types.ValidateTopicId(topicId); err != nil {
 		return errorsmod.Wrap(err, "error validating topic id")
@@ -414,12 +422,15 @@ func (k *NonceKeeper) PruneWorkerNonces(ctx context.Context, topicId uint64, blo
 
 	// Filter Nonces based on block_height
 	filteredNonces := make([]*types.Nonce, 0)
+	prunedNonces := make([]*types.Nonce, 0)
 	for _, nonce := range nonces.Nonces {
 		if nonce == nil {
 			return errorsmod.Wrapf(types.ErrInvalidValue, "nil worker nonce entry in stored unfulfilled nonces for topic %d", topicId)
 		}
 		if nonce.BlockHeight >= blockHeightThreshold {
 			filteredNonces = append(filteredNonces, nonce)
+		} else {
+			prunedNonces = append(prunedNonces, nonce)
 		}
 	}
 
@@ -430,6 +441,9 @@ func (k *NonceKeeper) PruneWorkerNonces(ctx context.Context, topicId uint64, blo
 	}
 	if err := k.unfulfilledWorkerNonces.Set(ctx, topicId, nonces); err != nil {
 		return errorsmod.Wrap(err, "error setting unfulfilled worker nonces")
+	}
+	for _, pruned := range prunedNonces {
+		types.EmitNewNonceExpiredEvent(ctx, topicId, pruned.BlockHeight, types.ActorType_ACTOR_TYPE_INFERER_UNSPECIFIED, types.NonceExpiredReason_NONCE_EXPIRED_REASON_PRUNED_BY_AGE)
 	}
 
 	return nil
@@ -446,17 +460,26 @@ func (k *NonceKeeper) PruneReputerNonces(ctx context.Context, topicId uint64, bl
 
 	// Filter Nonces based on block_height
 	filteredNonces := make([]*types.ReputerRequestNonce, 0)
+	prunedNonces := make([]*types.ReputerRequestNonce, 0)
 	for _, nonce := range nonces.Nonces {
 		if nonce == nil || nonce.ReputerNonce == nil {
 			return errorsmod.Wrapf(types.ErrInvalidValue, "nil reputer nonce entry in stored unfulfilled nonces for topic %d", topicId)
 		}
 		if nonce.ReputerNonce.BlockHeight >= blockHeightThreshold {
 			filteredNonces = append(filteredNonces, nonce)
+		} else {
+			prunedNonces = append(prunedNonces, nonce)
 		}
 	}
 
 	if len(filteredNonces) == 0 {
-		return k.unfulfilledReputerNonces.Remove(ctx, topicId)
+		if err := k.unfulfilledReputerNonces.Remove(ctx, topicId); err != nil {
+			return err
+		}
+		for _, pruned := range prunedNonces {
+			types.EmitNewNonceExpiredEvent(ctx, topicId, pruned.ReputerNonce.BlockHeight, types.ActorType_ACTOR_TYPE_REPUTER, types.NonceExpiredReason_NONCE_EXPIRED_REASON_PRUNED_BY_AGE)
+		}
+		return nil
 	}
 
 	// Update nonces in the map
@@ -466,6 +489,9 @@ func (k *NonceKeeper) PruneReputerNonces(ctx context.Context, topicId uint64, bl
 	}
 	if err := k.unfulfilledReputerNonces.Set(ctx, topicId, nonces); err != nil {
 		return errorsmod.Wrap(err, "error setting unfulfilled reputer nonces")
+	}
+	for _, pruned := range prunedNonces {
+		types.EmitNewNonceExpiredEvent(ctx, topicId, pruned.ReputerNonce.BlockHeight, types.ActorType_ACTOR_TYPE_REPUTER, types.NonceExpiredReason_NONCE_EXPIRED_REASON_PRUNED_BY_AGE)
 	}
 
 	return nil
