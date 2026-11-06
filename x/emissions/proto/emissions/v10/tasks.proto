@@ -1,0 +1,14 @@
+syntax = "proto3";
+package emissions.v10;
+
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/allora-network/allora-chain/x/emissions/types";
+
+message EpochTransitionTaskArgs {
+  // The topic the epoch belongs to.
+  uint64 topic_id = 2;
+
+  // The epoch identifier, aka nonce.
+  uint64 nonce = 1 [(gogoproto.nullable) = false, (gogoproto.customtype) = "NonceV2"];
+}

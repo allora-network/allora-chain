@@ -12,10 +12,12 @@ import (
 	"cosmossdk.io/math"
 	storetypes "cosmossdk.io/store/types"
 	"github.com/allora-network/allora-chain/x/scheduler/types"
+	abci "github.com/cometbft/cometbft/abci/types"
 	"github.com/cosmos/cosmos-sdk/runtime"
 	"github.com/cosmos/cosmos-sdk/testutil"
 	cosmostypes "github.com/cosmos/cosmos-sdk/types"
 	moduletestutil "github.com/cosmos/cosmos-sdk/types/module/testutil"
+	"github.com/cosmos/gogoproto/proto"
 	"github.com/stretchr/testify/require"
 )
 
@@ -219,11 +221,12 @@ func TestApplyArbitrageDecision(t *testing.T) {
 	in10min := now.Add(10 * time.Minute).UTC()
 
 	testCases := []struct {
-		name        string
-		taskID      types.TaskID
-		decision    types.ArbitrageDecision
-		expectError bool
-		expectTask  *types.Task
+		name         string
+		taskID       types.TaskID
+		decision     types.ArbitrageDecision
+		expectError  bool
+		expectEvents []proto.Message
+		expectTask   *types.Task
 	}{
 		{
 			name:   "cancel task",
@@ -232,7 +235,14 @@ func TestApplyArbitrageDecision(t *testing.T) {
 				Action: types.ArbitrageActionCancel,
 			},
 			expectError: false,
-			expectTask:  nil,
+			expectEvents: []proto.Message{
+				&types.EventTaskUnscheduled{
+					Id:       "task1",
+					Typename: "noargs",
+					At:       &in5min,
+				},
+			},
+			expectTask: nil,
 		},
 		{
 			name:   "reschedule task",
@@ -244,6 +254,13 @@ func TestApplyArbitrageDecision(t *testing.T) {
 				},
 			},
 			expectError: false,
+			expectEvents: []proto.Message{
+				&types.EventTaskScheduled{
+					Id:       "task1",
+					Typename: "noargs",
+					At:       &in10min,
+				},
+			},
 			expectTask: &types.Task{
 				Id:                 "task1",
 				Typename:           "noargs",
@@ -261,7 +278,8 @@ func TestApplyArbitrageDecision(t *testing.T) {
 			decision: types.ArbitrageDecision{
 				Action: types.ArbitrageActionReschedule,
 			},
-			expectError: false,
+			expectError:  false,
+			expectEvents: nil,
 			expectTask: &types.Task{
 				Id:                 "task1",
 				Typename:           "noargs",
@@ -282,8 +300,9 @@ func TestApplyArbitrageDecision(t *testing.T) {
 					types.ScheduleAt(now.Add(-10 * time.Minute)),
 				},
 			},
-			expectError: true,
-			expectTask:  nil,
+			expectEvents: nil,
+			expectError:  true,
+			expectTask:   nil,
 		},
 	}
 
@@ -308,6 +327,8 @@ func TestApplyArbitrageDecision(t *testing.T) {
 
 			require.NoError(t, k.ScheduleTask(ctx, "noargs", "task1", nil, types.ScheduleAt(in5min)))
 
+			ctx = ctx.WithEventManager(cosmostypes.NewEventManager())
+
 			err = k.applyArbitrageDecision(ctx, tc.taskID, tc.decision)
 			if tc.expectError {
 				require.Error(t, err)
@@ -320,11 +341,14 @@ func TestApplyArbitrageDecision(t *testing.T) {
 					require.Equal(t, tc.expectTask, &task)
 				}
 			}
+
+			evts := parseEvents(t, ctx.EventManager().Events().ToABCIEvents())
+			require.Equal(t, tc.expectEvents, evts)
 		})
 	}
 }
 
-func TestRunTask(t *testing.T) {
+func TestExecuteTask(t *testing.T) {
 	now := time.Now().UTC()
 	interval := 10 * time.Minute
 	in10Min := now.Add(interval)
@@ -334,22 +358,42 @@ func TestRunTask(t *testing.T) {
 		taskID              types.TaskID
 		runFail             bool
 		expectError         bool
+		expectEvents        []proto.Message
 		expectTaskRemoval   bool
 		expectNewScheduleAt *time.Time
 	}{
 		{
-			name:                "successful run non-periodic task",
-			taskID:              "task1",
-			runFail:             false,
-			expectError:         false,
+			name:        "successful run non-periodic task",
+			taskID:      "task1",
+			runFail:     false,
+			expectError: false,
+			expectEvents: []proto.Message{
+				&types.EventTaskExecuted{
+					Id:       "task1",
+					Typename: "withargs",
+					At:       &now,
+				},
+			},
 			expectTaskRemoval:   true,
 			expectNewScheduleAt: nil,
 		},
 		{
-			name:                "successful run periodic task",
-			taskID:              "task2",
-			runFail:             false,
-			expectError:         false,
+			name:        "successful run periodic task",
+			taskID:      "task2",
+			runFail:     false,
+			expectError: false,
+			expectEvents: []proto.Message{
+				&types.EventTaskExecuted{
+					Id:       "task2",
+					Typename: "withargs",
+					At:       &now,
+				},
+				&types.EventTaskScheduled{
+					Id:       "task2",
+					Typename: "withargs",
+					At:       &in10Min,
+				},
+			},
 			expectTaskRemoval:   false,
 			expectNewScheduleAt: &in10Min,
 		},
@@ -358,6 +402,7 @@ func TestRunTask(t *testing.T) {
 			taskID:              "task1",
 			runFail:             true,
 			expectError:         true,
+			expectEvents:        nil,
 			expectTaskRemoval:   false,
 			expectNewScheduleAt: nil,
 		},
@@ -399,7 +444,7 @@ func TestRunTask(t *testing.T) {
 			require.NoError(t, k.ScheduleTask(ctx, "withargs", "task1", args, types.ScheduleAt(now)))
 			require.NoError(t, k.ScheduleTask(ctx, "withargs", "task2", args, types.ScheduleAt(now), types.ScheduleEvery(&interval)))
 
-			ctx = ctx.WithBlockTime(now)
+			ctx = ctx.WithBlockTime(now).WithEventManager(cosmostypes.NewEventManager())
 			task, err := k.tasks.Get(ctx, tc.taskID)
 			require.NoError(t, err)
 			err = k.executeTask(ctx, task, handler)
@@ -424,6 +469,21 @@ func TestRunTask(t *testing.T) {
 					}
 				}
 			}
+
+			evts := parseEvents(t, ctx.EventManager().Events().ToABCIEvents())
+			require.Equal(t, tc.expectEvents, evts)
 		})
 	}
+}
+
+func parseEvents(t *testing.T, events []abci.Event) []proto.Message {
+	t.Helper()
+
+	var parsed []proto.Message
+	for _, e := range events {
+		evt, err := cosmostypes.ParseTypedEvent(e)
+		require.NoError(t, err)
+		parsed = append(parsed, evt)
+	}
+	return parsed
 }
