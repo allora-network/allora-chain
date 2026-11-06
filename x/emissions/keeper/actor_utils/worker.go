@@ -123,13 +123,6 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topic types.Topic, nonc
 		return err
 	}
 
-	// closeActiveForecastsSet can drop a forecast left with fewer than two
-	// accepted inferers, so this list can be shorter than activeForecastAddresses.
-	finalActiveForecasterAddresses := make([]string, len(activeForecasts.Forecasts))
-	for i := range activeForecasts.Forecasts {
-		finalActiveForecasterAddresses[i] = activeForecasts.Forecasts[i].Forecaster
-	}
-
 	err = k.GetNonceKeeper().AddReputerNonce(ctx, topic.Id, &nonce)
 	if err != nil {
 		return err
@@ -156,7 +149,7 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topic types.Topic, nonc
 
 	types.EmitNewActiveInferersSetEvent(ctx, topic.Id, nonce.BlockHeight, activeInfererAddresses)
 	storedForecasters, discardedForecasters := splitForecastersByStored(activeForecastAddresses, activeForecasts)
-	types.EmitNewActiveForecastersSetEvent(ctx, topic.Id, nonce.BlockHeight, storedForecasters, discardedForecasters, finalActiveForecasterAddresses)
+	types.EmitNewActiveForecastersSetEvent(ctx, topic.Id, nonce.BlockHeight, storedForecasters, discardedForecasters)
 	types.EmitNewWorkerLastCommitSetEvent(ctx, topic.Id, blockHeight, &nonce)
 	return nil
 }
@@ -384,14 +377,18 @@ func closeActiveForecastsSet(
 		}
 	}
 
+	forecasts = new(types.Forecasts)
+
+	if len(activeForecasts) == 0 {
+		return forecasts, nil
+	}
+
 	// Ensure deterministic ordering
 	sort.Slice(activeForecasts, func(i, j int) bool {
 		return activeForecasts[i].Forecaster < activeForecasts[j].Forecaster
 	})
 
-	forecasts = &types.Forecasts{
-		Forecasts: activeForecasts,
-	}
+	forecasts.Forecasts = activeForecasts
 
 	err = k.GetWorkerKeeper().InsertActiveForecasts(ctx, topicId, nonce.BlockHeight, *forecasts)
 	if err != nil {

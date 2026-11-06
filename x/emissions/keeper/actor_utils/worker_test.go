@@ -779,14 +779,14 @@ func (s *WorkerTestSuite) TestCloseWorkerNonceReportsDiscardedForecasters() {
 	topic, err := s.TopicKeeper().GetTopic(s.Ctx(), topicId)
 	s.Require().NoError(err)
 
-	inferer0, inferer1 := s.AddrsStr(0), s.AddrsStr(1)
-	staleForecaster, offTargetForecaster, absentInferer := s.AddrsStr(2), s.AddrsStr(3), s.AddrsStr(5)
+	inferer0, inferer1, inferer2 := s.AddrsStr(0), s.AddrsStr(1), s.AddrsStr(2)
+	staleForecaster, offTargetForecaster, absentInferer := s.AddrsStr(3), s.AddrsStr(4), s.AddrsStr(5)
 	for _, worker := range []string{inferer0, inferer1, staleForecaster, offTargetForecaster} {
 		_, err = s.EmissionsMsgServer().Register(s.Ctx(), &types.RegisterRequest{
 			Sender:    worker,
 			TopicId:   topicId,
 			IsReputer: false,
-			Owner:     s.AddrsStr(4),
+			Owner:     s.AddrsStr(6),
 		})
 		s.Require().NoError(err)
 	}
@@ -797,7 +797,7 @@ func (s *WorkerTestSuite) TestCloseWorkerNonceReportsDiscardedForecasters() {
 	mustBounded := func(x string) alloraMath.BoundedExp40Dec {
 		return alloraMath.MustNewBoundedExp40DecFromString(x)
 	}
-	for i, inferer := range []string{inferer0, inferer1} {
+	for i, inferer := range []string{inferer0, inferer1, inferer2} {
 		input := types.InputInference{
 			TopicId:     topicId,
 			BlockHeight: blockHeight,
@@ -815,17 +815,21 @@ func (s *WorkerTestSuite) TestCloseWorkerNonceReportsDiscardedForecasters() {
 		s.Require().NoError(s.WorkerKeeper().AddActiveInferer(s.Ctx(), topicId, inferer))
 	}
 
-	forecast := func(forecaster string, height int64, inferer string) types.Forecast {
+	forecast := func(forecaster string, height int64, inferer ...string) types.Forecast {
+		elements := make([]*types.ForecastElement, len(inferer))
+		for i := range inferer {
+			elements[i] = &types.ForecastElement{Inferer: inferer[i], Value: alloraMath.MustNewDecFromString("0.15")}
+		}
 		return types.Forecast{
 			TopicId:          topicId,
 			BlockHeight:      height,
 			Forecaster:       forecaster,
-			ForecastElements: []*types.ForecastElement{{Inferer: inferer, Value: alloraMath.MustNewDecFromString("0.15")}},
+			ForecastElements: elements,
 			ExtraData:        nil,
 		}
 	}
 	forecasts := []types.Forecast{
-		forecast(inferer0, blockHeight, inferer1),
+		forecast(inferer0, blockHeight, inferer1, inferer2),
 		forecast(staleForecaster, blockHeight-1, inferer0),
 		forecast(offTargetForecaster, blockHeight, absentInferer),
 	}
