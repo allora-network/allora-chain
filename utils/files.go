@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"strconv"
@@ -24,7 +23,7 @@ func EnsureDirAndMaxPerms(path string, perms os.FileMode) error {
 		return os.MkdirAll(path, perms)
 	} else if !stat.IsDir() {
 		// Path exists, but it's a file, so don't clobber
-		return errors.New(fmt.Sprintf("%v already exists and is not a directory", path)) //nolint:gosimple
+		return fmt.Errorf("%v already exists and is not a directory", path)
 	} else if stat.Mode() != perms {
 		// Dir exists, but wrong perms, so chmod
 		return os.Chmod(path, (stat.Mode() & perms))
