@@ -489,6 +489,43 @@ func TestInputInference_Validate(t *testing.T) {
 	}
 }
 
+func TestForecast_ValidateAllowsDuplicateInferer(t *testing.T) {
+	addr := "allo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqas6usy"
+	element := &ForecastElement{
+		Inferer: addr,
+		Value:   alloraMath.MustNewDecFromString("1"),
+	}
+	duplicate := &Forecast{
+		TopicId:          1,
+		Forecaster:       addr,
+		BlockHeight:      100,
+		ForecastElements: []*ForecastElement{element, element},
+		ExtraData:        nil,
+	}
+	require.NoError(t, duplicate.Validate())
+
+	empty := &Forecast{
+		TopicId:          1,
+		Forecaster:       addr,
+		BlockHeight:      100,
+		ForecastElements: []*ForecastElement{},
+		ExtraData:        nil,
+	}
+	require.Error(t, empty.Validate())
+
+	invalid := &Forecast{
+		TopicId:     1,
+		Forecaster:  addr,
+		BlockHeight: 100,
+		ExtraData:   nil,
+		ForecastElements: []*ForecastElement{{
+			Inferer: "invalid",
+			Value:   alloraMath.MustNewDecFromString("1"),
+		}},
+	}
+	require.Error(t, invalid.Validate())
+}
+
 func TestInputForecast_Validate(t *testing.T) {
 	validElement := &InputForecastElement{
 		Inferer: "allo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqas6usy",
@@ -537,6 +574,20 @@ func TestInputForecast_Validate(t *testing.T) {
 					Inferer: "invalid",
 					Value:   alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("1")),
 				}},
+				ExtraData: nil,
+			},
+			wantErr: true,
+		},
+		{
+			name: "duplicate forecast element inferer",
+			input: &InputForecast{
+				TopicId:     1,
+				Forecaster:  "allo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqas6usy",
+				BlockHeight: 100,
+				ForecastElements: []*InputForecastElement{
+					validElement,
+					validElement,
+				},
 				ExtraData: nil,
 			},
 			wantErr: true,

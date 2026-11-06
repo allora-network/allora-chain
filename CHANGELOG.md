@@ -107,6 +107,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * [#1002](https://github.com/allora-network/allora-chain/pull/1002) Fix epoch-end topic reactivation bookkeeping: a refused reschedule now fully inactivates the topic instead of leaving it in the active set without a schedule, so its weight is not double-counted on a later activation. Migration fixes potential misalignment.
 * [#993](https://github.com/allora-network/allora-chain/pull/993) Open the reputer submission window at the end of the reveal epoch, and retire only the closing nonce's reputer submissions when closing it, fixing a permanent loss of network losses and rewards on fractional-lag topics.
 * [#1003](https://github.com/allora-network/allora-chain/pull/1003) Topic creation now emits its events in order — create, whitelist gates, fee — with the creation fee reported as `EventFundTopic` (creator as funder). Gate enable/disable emits once per state transition, and zero-fee payments skip no-op bank writes but still attempt activation.
+* [#1012](https://github.com/allora-network/allora-chain/pull/1012) When the worker nonce closes, drop a forecast left with fewer than two inferers in the active set. A new forecast that names the same inferer twice is rejected. A forecast already stored is still accepted.
 
 ### Security
 
