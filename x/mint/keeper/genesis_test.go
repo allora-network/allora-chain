@@ -80,6 +80,7 @@ func (s *GenesisTestSuite) TestImportExportGenesis() {
 		defaultParams.InvestorsPreseedPercentOfTotalSupply,
 		defaultParams.TeamPercentOfTotalSupply,
 		defaultParams.MaximumMonthlyPercentageYield,
+		6,
 	)
 	genesisState.PreviousRewardEmissionPerUnitStakedToken = types.DefaultPreviousRewardEmissionPerUnitStakedToken()
 	genesisState.PreviousBlockEmission = types.DefaultPreviousBlockEmission()

@@ -94,4 +94,10 @@ message Params {
   // Whether or not the network is allowed to emit any rewards
   // Must be set to true to allow the network to pay out rewards.
   bool emission_enabled = 12;
+
+  // Number of months by which the investors (seed and preseed) and team
+  // vesting schedules are pushed back. The one year cliff and the linear
+  // vesting that follows both start this many months later. The foundation
+  // schedule is not affected.
+  uint64 investors_team_vesting_delay_months = 13;
 }

@@ -56,14 +56,17 @@ func GetLockedVestingTokens(
 	if calculatedMonthsUnlocked.GT(monthsAlreadyUnlocked) {
 		monthsAlreadyUnlocked = calculatedMonthsUnlocked
 	}
-	// Clamp to max vesting length
-	if monthsAlreadyUnlocked.GT(thirtySix) {
-		monthsAlreadyUnlocked = thirtySix
+	// Investors and team vesting starts later by the configured delay, so the
+	// months counter only needs to be tracked until the delayed schedule ends.
+	delayMonths := math.NewIntFromUint64(params.InvestorsTeamVestingDelayMonths)
+	if maxTrackedMonths := thirtySix.Add(delayMonths); monthsAlreadyUnlocked.GT(maxTrackedMonths) {
+		monthsAlreadyUnlocked = maxTrackedMonths
 	}
 
 	// Determine Foundation tokens locked
 	// - At TGE: foundationInitialUnlock percent unlocked immediately
 	// - Remaining (1 - foundationInitialUnlock) percent vests linearly over 24 months
+	// The foundation schedule ignores the investors and team delay.
 	foundationVestingDuration := twentyFour
 	if monthsAlreadyUnlocked.LT(foundationVestingDuration) {
 		remainingMonthsFoundation := foundationVestingDuration.Sub(monthsAlreadyUnlocked)
@@ -73,12 +76,17 @@ func GetLockedVestingTokens(
 	}
 
 	// one year cliff : preseed, investors, team
-	if monthsAlreadyUnlocked.LT(twelve) {
+	// These schedules run on the months elapsed since TGE minus the delay.
+	investorsTeamMonths := math.ZeroInt()
+	if monthsAlreadyUnlocked.GT(delayMonths) {
+		investorsTeamMonths = monthsAlreadyUnlocked.Sub(delayMonths)
+	}
+	if investorsTeamMonths.LT(twelve) {
 		investorsLocked = fullInvestors
 		preseedInvestorsLocked = fullPreseedInvestors
 		teamLocked = fullTeam
-	} else if monthsAlreadyUnlocked.LT(thirtySix) {
-		remainingMonths := thirtySix.Sub(monthsAlreadyUnlocked)
+	} else if investorsTeamMonths.LT(thirtySix) {
+		remainingMonths := thirtySix.Sub(investorsTeamMonths)
 		investorsLocked = fullInvestors.Mul(remainingMonths).Quo(thirtySix)
 		preseedInvestorsLocked = fullPreseedInvestors.Mul(remainingMonths).Quo(thirtySix)
 		teamLocked = fullTeam.Mul(remainingMonths).Quo(thirtySix)

@@ -1,6 +1,7 @@
 package keeper_test
 
 import (
+	"fmt"
 	"math"
 
 	cosmosMath "cosmossdk.io/math"
@@ -871,4 +872,122 @@ func (s *MintKeeperTestSuite) TestGetLockedVestingTokensNewStressTest() {
 	s.Require().True(teamLocked.Equal(cosmosMath.ZeroInt()), "Team should be zero with max months")
 	s.Require().True(foundationLocked.Equal(cosmosMath.ZeroInt()), "Foundation should be zero with max months")
 	s.Require().True(participantsLocked.Equal(cosmosMath.ZeroInt()), "Participants should be zero with max months")
+}
+
+// expectedLockedLinear returns the locked amount of a bucket that is fully
+// locked until cliffMonths and then vests linearly until endMonths.
+func expectedLockedLinear(full cosmosMath.Int, months, cliffMonths, endMonths int64) cosmosMath.Int {
+	switch {
+	case months < cliffMonths:
+		return full
+	case months < endMonths:
+		return full.MulRaw(endMonths - months).QuoRaw(endMonths)
+	default:
+		return cosmosMath.ZeroInt()
+	}
+}
+
+// TestGetLockedVestingTokensInvestorsTeamDelay checks the investors and team
+// vesting schedules with and without a delay, and that the foundation
+// schedule never depends on the delay.
+func (s *MintKeeperTestSuite) TestGetLockedVestingTokensInvestorsTeamDelay() {
+	blocksPerMonth := uint64(525960)
+	alloToUallo := func(allo int64) cosmosMath.Int {
+		return cosmosMath.NewInt(allo).Mul(cosmosMath.NewIntWithDecimal(1, 18))
+	}
+
+	params := generateNewMintParams()
+	params.InvestorsPreseedPercentOfTotalSupply = cosmosMath.LegacyMustNewDecFromStr("0.05")
+	maxSupply := params.MaxSupply.ToLegacyDec()
+	fullInvestors := params.InvestorsPercentOfTotalSupply.MulTruncate(maxSupply).TruncateInt()
+	fullPreseed := params.InvestorsPreseedPercentOfTotalSupply.MulTruncate(maxSupply).TruncateInt()
+	fullTeam := params.TeamPercentOfTotalSupply.MulTruncate(maxSupply).TruncateInt()
+	fullFoundationLocked := params.FoundationTreasuryPercentOfTotalSupply.
+		Mul(keeper.FoundationInitialLockedPercentage).MulTruncate(maxSupply).TruncateInt()
+
+	months := []int64{0, 11, 12, 17, 18, 19, 24, 36, 41, 42, 48}
+	delays := []int64{0, 6}
+
+	foundationByMonth := map[int64]cosmosMath.Int{}
+	for _, delay := range delays {
+		for _, m := range months {
+			s.Run(fmt.Sprintf("delay_%d_month_%d", delay, m), func() {
+				p := params
+				p.InvestorsTeamVestingDelayMonths = uint64(delay) //nolint:gosec // delay is a small non-negative test constant
+				total, preseed, investors, team, foundation, participants, updatedMonths, err :=
+					keeper.GetLockedVestingTokens(
+						blocksPerMonth,
+						cosmosMath.NewIntFromUint64(blocksPerMonth*uint64(m)),
+						p,
+						cosmosMath.NewInt(m),
+					)
+				s.Require().NoError(err)
+
+				effective := m - delay
+				if effective < 0 {
+					effective = 0
+				}
+				expectedInvestors := expectedLockedLinear(fullInvestors, effective, 12, 36)
+				expectedPreseed := expectedLockedLinear(fullPreseed, effective, 12, 36)
+				expectedTeam := expectedLockedLinear(fullTeam, effective, 12, 36)
+				expectedFoundation := expectedLockedLinear(fullFoundationLocked, m, 0, 24)
+
+				s.Require().Equal(expectedInvestors.String(), investors.String(), "investors")
+				s.Require().Equal(expectedPreseed.String(), preseed.String(), "preseed")
+				s.Require().Equal(expectedTeam.String(), team.String(), "team")
+				s.Require().Equal(expectedFoundation.String(), foundation.String(), "foundation")
+				s.Require().True(participants.IsZero(), "participants")
+				// months since TGE are reported as is until the last schedule ends
+				expectedMonths := min(m, 36+delay)
+				s.Require().Equal(cosmosMath.NewInt(expectedMonths).String(), updatedMonths.String(), "months since TGE")
+
+				s.Require().Equal(
+					expectedInvestors.Add(expectedPreseed).Add(expectedTeam).Add(expectedFoundation).String(),
+					total.String(),
+					"total",
+				)
+
+				if prev, ok := foundationByMonth[m]; ok {
+					s.Require().Equal(prev.String(), foundation.String(), "foundation must not depend on the delay")
+				}
+				foundationByMonth[m] = foundation
+			})
+		}
+	}
+
+	s.Run("delayed cliff holds the full allocations", func() {
+		p := generateNewMintParams()
+		p.InvestorsTeamVestingDelayMonths = 6
+		_, _, investors, team, foundation, _, _, err := keeper.GetLockedVestingTokens(
+			blocksPerMonth, cosmosMath.NewIntFromUint64(blocksPerMonth*12), p, cosmosMath.NewInt(12))
+		s.Require().NoError(err)
+		s.Require().Equal(alloToUallo(310_500_000).String(), investors.String())
+		s.Require().Equal(alloToUallo(175_000_000).String(), team.String())
+		s.Require().Equal(alloToUallo(44_250_000).String(), foundation.String())
+	})
+
+	s.Run("everything is unlocked at month 42 with a delay of 6", func() {
+		p := generateNewMintParams()
+		p.InvestorsTeamVestingDelayMonths = 6
+		total, preseed, investors, team, foundation, participants, updatedMonths, err := keeper.GetLockedVestingTokens(
+			blocksPerMonth, cosmosMath.NewIntFromUint64(blocksPerMonth*42), p, cosmosMath.NewInt(42))
+		s.Require().NoError(err)
+		for name, v := range map[string]cosmosMath.Int{
+			"total": total, "preseed": preseed, "investors": investors,
+			"team": team, "foundation": foundation, "participants": participants,
+		} {
+			s.Require().True(v.IsZero(), name)
+		}
+		s.Require().Equal(cosmosMath.NewInt(42).String(), updatedMonths.String())
+	})
+
+	s.Run("persisted months beyond 36 do not freeze the delayed schedule", func() {
+		p := generateNewMintParams()
+		p.InvestorsTeamVestingDelayMonths = 6
+		// the persisted high-water mark is ahead of the block-derived months
+		_, _, investors, _, _, _, _, err := keeper.GetLockedVestingTokens(
+			blocksPerMonth, cosmosMath.NewIntFromUint64(blocksPerMonth*20), p, cosmosMath.NewInt(40))
+		s.Require().NoError(err)
+		s.Require().Equal(expectedLockedLinear(fullInvestors, 34, 12, 36).String(), investors.String())
+	})
 }

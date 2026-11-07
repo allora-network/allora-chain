@@ -12,6 +12,7 @@ import (
 	v1beta1 "github.com/allora-network/allora-chain/x/mint/api/mint/v1beta1"
 	"github.com/allora-network/allora-chain/x/mint/keeper"
 	migrationsV5 "github.com/allora-network/allora-chain/x/mint/migrations/v5"
+	migrationsV6 "github.com/allora-network/allora-chain/x/mint/migrations/v6"
 	"github.com/allora-network/allora-chain/x/mint/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -24,7 +25,7 @@ import (
 )
 
 // ConsensusVersion defines the current x/mint module consensus version.
-const ConsensusVersion = 6
+const ConsensusVersion = 7
 
 var (
 	_ module.AppModuleBasic = AppModule{} //nolint:exhaustruct
@@ -149,6 +150,13 @@ func (am AppModule) RegisterServices(cfg module.Configurator) {
 	})
 	if err != nil {
 		panic(fmt.Sprintf("failed to migrate x/%s from version 5 to 6: %v", types.ModuleName, err))
+	}
+	err = cfg.RegisterMigration(types.ModuleName, 6, func(ctx sdk.Context) error {
+		ctx.Logger().Info("MIGRATING %s MODULE FROM VERSION 6 TO VERSION 7", "module", types.ModuleName)
+		return migrationsV6.MigrateStore(ctx, am.keeper)
+	})
+	if err != nil {
+		panic(fmt.Sprintf("failed to migrate x/%s from version 6 to 7: %v", types.ModuleName, err))
 	}
 }
 

@@ -24,6 +24,7 @@ func NewParams(
 	investorsPreseedPercentOfTotalSupply math.LegacyDec,
 	teamPercentOfTotalSupply math.LegacyDec,
 	maxMonthlyPercentageYield math.LegacyDec,
+	investorsTeamVestingDelayMonths uint64,
 ) Params {
 	return Params{
 		MintDenom:                              mintDenom,
@@ -38,6 +39,7 @@ func NewParams(
 		InvestorsPreseedPercentOfTotalSupply:   investorsPreseedPercentOfTotalSupply,
 		TeamPercentOfTotalSupply:               teamPercentOfTotalSupply,
 		MaximumMonthlyPercentageYield:          maxMonthlyPercentageYield,
+		InvestorsTeamVestingDelayMonths:        investorsTeamVestingDelayMonths,
 	}
 }
 
@@ -60,6 +62,7 @@ func DefaultParams() Params {
 		InvestorsPreseedPercentOfTotalSupply:   math.LegacyMustNewDecFromStr("0.05"),   // 5%
 		TeamPercentOfTotalSupply:               math.LegacyMustNewDecFromStr("0.175"),  // 17.5%
 		MaximumMonthlyPercentageYield:          math.LegacyMustNewDecFromStr("0.0095"), // .95% per month
+		InvestorsTeamVestingDelayMonths:        0,                                      // no delay unless governance sets one
 	}
 }
 
@@ -127,6 +130,24 @@ func (p Params) Validate() error {
 	}
 	if err := validateAFractionValue(p.MaximumMonthlyPercentageYield); err != nil {
 		return err
+	}
+	if err := validateInvestorsTeamVestingDelayMonths(p.InvestorsTeamVestingDelayMonths); err != nil {
+		return err
+	}
+	return nil
+}
+
+// MaxInvestorsTeamVestingDelayMonths bounds the investors and team vesting
+// delay so a mistyped value cannot push the unlock out indefinitely.
+const MaxInvestorsTeamVestingDelayMonths uint64 = 120
+
+func validateInvestorsTeamVestingDelayMonths(months uint64) error {
+	if months > MaxInvestorsTeamVestingDelayMonths {
+		return fmt.Errorf(
+			"investors and team vesting delay must be at most %d months: %d",
+			MaxInvestorsTeamVestingDelayMonths,
+			months,
+		)
 	}
 	return nil
 }
