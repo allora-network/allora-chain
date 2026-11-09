@@ -403,6 +403,28 @@ func GenerateForecastScores(
 // Check if all workers are present in the reported losses and add NaN values for missing workers
 // Returns the reported losses adding NaN values for missing workers in uncompleted reported losses
 func EnsureWorkerPresence(reportedLosses types.LossBundles) types.LossBundles {
+	// A forecaster must appear in at most one one-out-inferer row. Collapse
+	// repeated rows to the first row seen, mirroring
+	// FilterUnacceptedWorkersFromReputerValueBundle, before the worker union
+	// is collected: a dropped row must not contribute workers any more than
+	// it contributes values. Rows without values are dropped without claiming
+	// their forecaster, so an empty row cannot shadow a later row.
+	for _, bundle := range reportedLosses {
+		forecasterAlreadySeen := make(map[string]bool, len(bundle.OneOutInfererForecasterValues))
+		retainedRows := bundle.OneOutInfererForecasterValues[:0]
+		for _, forecasterValue := range bundle.OneOutInfererForecasterValues {
+			if len(forecasterValue.OneOutInfererValues) == 0 {
+				continue
+			}
+			if forecasterAlreadySeen[forecasterValue.Forecaster] {
+				continue
+			}
+			forecasterAlreadySeen[forecasterValue.Forecaster] = true
+			retainedRows = append(retainedRows, forecasterValue)
+		}
+		bundle.OneOutInfererForecasterValues = retainedRows
+	}
+
 	// Consolidate all unique worker addresses and forecaster addresses
 	allWorkersInferer := make(map[string]struct{})
 	allWorkersForecaster := make(map[string]struct{})
