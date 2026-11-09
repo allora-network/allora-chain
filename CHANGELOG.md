@@ -87,6 +87,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+* [#943](https://github.com/allora-network/allora-chain/pull/943) Direct module bumps: `google.golang.org/grpc` 1.70.0 to 1.82.1, `golang.org/x/crypto` 0.33.0 to 0.50.0, `golang.org/x/net` 0.35.0 to 0.53.0, `golang.org/x/oauth2` 0.24.0 to 0.36.0, `golang.org/x/tools` 0.26.0 to 0.43.0, `github.com/hashicorp/go-getter` 1.7.5 to 1.8.6, `github.com/ulikunitz/xz` 0.5.11 to 0.5.15, `filippo.io/edwards25519` 1.1.0 to 1.1.1. The language line is 1.25.8 because go-getter 1.8.6 requires that patch, and that release replaces `aws-sdk-go` v1 with v2. grpc 1.82.1 stops reading a connection flooded with HTTP/2 frames. xz 0.5.15 fixes a decompression bug.
 * [#968](https://github.com/allora-network/allora-chain/pull/968) The global `max_top_inferers_to_reward` now rejects zero and serves as the live ceiling for the per-topic cap; score-history retention still uses the global value.
 * [#1004](https://github.com/allora-network/allora-chain/pull/1004) `EmitNewActorScoresSetEvent` no longer takes a height: `EventScoresSet` always carried the epoch nonce from the scores, and two callers passed the current block height, which was ignored.
 * [#1026](https://github.com/allora-network/allora-chain/pull/1026) `addresses` on `EventActiveForecastersSet` lists only the forecasters whose forecasts were stored for the epoch; it used to list every active forecaster, including those whose forecasts the close discarded.
