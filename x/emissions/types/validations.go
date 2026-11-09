@@ -262,7 +262,13 @@ func (inputInference *InputInference) ValidateWithLimits(
 	return nil
 }
 
-func ValidateForecastContents(topicId uint64, forecaster string, blockHeight BlockHeight) error {
+func ValidateForecastContents(
+	topicId uint64,
+	forecaster string,
+	blockHeight BlockHeight,
+	elements []*ForecastElement,
+	noDupes bool,
+) error {
 	if err := ValidateTopicId(topicId); err != nil {
 		return errors.Wrap(err, "forecast topic id is invalid")
 	}
@@ -272,43 +278,74 @@ func ValidateForecastContents(topicId uint64, forecaster string, blockHeight Blo
 	if err := ValidateBlockHeight(blockHeight); err != nil {
 		return errors.Wrap(err, "forecast block height is invalid")
 	}
+
+	if err := ValidateForecastElements(elements, noDupes); err != nil {
+		return errors.Wrap(err, "forecast elements are invalid")
+	}
 	return nil
 }
 
-// validate that a forecast follows the expected format
+func ValidateForecastElements(elements []*ForecastElement, noDupes bool) error {
+	if len(elements) == 0 {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "at least one forecast element must be provided")
+	}
+	seenInferers := make(map[string]struct{})
+	for _, el := range elements {
+		if err := el.Validate(); err != nil {
+			return errors.Wrap(err, "forecast element is invalid")
+		}
+		if !noDupes {
+			continue
+		}
+		if _, ok := seenInferers[el.Inferer]; ok {
+			return errors.Wrap(sdkerrors.ErrInvalidRequest, "duplicate inferer in forecast")
+		}
+		seenInferers[el.Inferer] = struct{}{}
+	}
+	return nil
+}
+
+// Validate validates that a forecast follows the expected format, while allowing inferer duplicates
 func (forecast *Forecast) Validate() error {
 	if forecast == nil {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "forecast cannot be nil")
 	}
-	if err := ValidateForecastContents(forecast.TopicId, forecast.Forecaster, forecast.BlockHeight); err != nil {
+	if err := ValidateForecastContents(
+		forecast.TopicId,
+		forecast.Forecaster,
+		forecast.BlockHeight,
+		forecast.ForecastElements,
+		false,
+	); err != nil {
 		return errors.Wrap(err, "forecast contents are invalid")
-	}
-	if len(forecast.ForecastElements) == 0 {
-		return errors.Wrap(sdkerrors.ErrInvalidRequest, "at least one forecast element must be provided")
-	}
-	for _, elem := range forecast.ForecastElements {
-		if err := elem.Validate(); err != nil {
-			return errors.Wrap(err, "forecast element is invalid")
-		}
 	}
 	// ExtraData not validated as it is not used by the chain
 	return nil
 }
 
+// Validate validates that a forecast follows the expected format, while disallowing inferer duplicates
 func (inputForecast *InputForecast) Validate() error {
 	if inputForecast == nil {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "forecast cannot be nil")
 	}
-	if err := ValidateForecastContents(inputForecast.TopicId, inputForecast.Forecaster, inputForecast.BlockHeight); err != nil {
-		return errors.Wrap(err, "forecast contents are invalid")
-	}
-	if len(inputForecast.ForecastElements) == 0 {
-		return errors.Wrap(sdkerrors.ErrInvalidRequest, "at least one forecast element must be provided")
-	}
-	for _, elem := range inputForecast.ForecastElements {
-		if err := elem.Validate(); err != nil {
-			return errors.Wrap(err, "forecast element is invalid")
+	forecastElements := make([]*ForecastElement, len(inputForecast.ForecastElements))
+	for i, fe := range inputForecast.ForecastElements {
+		if fe == nil {
+			return errors.Wrap(sdkerrors.ErrInvalidRequest, "forecast element cannot be nil")
 		}
+		forecastElements[i] = &ForecastElement{
+			Inferer: fe.Inferer,
+			Value:   fe.Value.ToDec(),
+		}
+	}
+	if err := ValidateForecastContents(
+		inputForecast.TopicId,
+		inputForecast.Forecaster,
+		inputForecast.BlockHeight,
+		forecastElements,
+		true,
+	); err != nil {
+		return errors.Wrap(err, "forecast contents are invalid")
 	}
 	// ExtraData not validated as it is not used by the chain
 	return nil
@@ -981,15 +1018,12 @@ const (
 	maxTopicUnityTolerance = "0.01"
 )
 
-// EffectiveMaxTopInferersToReward resolves a per-topic cap into the global
-// range: 0 means "use the global maximum", the minimum raises it, and the
-// maximum is applied last so it always wins. Applying the ceiling last keeps the
-// active set within the global-sized score-retention window even if the range is
-// inverted, which params validation already prevents.
+// EffectiveMaxTopInferersToReward clamps a stored per-topic cap into the global
+// range: the minimum raises it, and the maximum is applied last so it always
+// wins. Applying the ceiling last keeps the active set within the global-sized
+// score-retention window even if the range is inverted, which params validation
+// already prevents.
 func EffectiveMaxTopInferersToReward(topicCap, globalMin, globalMax uint64) uint64 {
-	if topicCap == 0 {
-		topicCap = globalMax
-	}
 	if topicCap < globalMin {
 		topicCap = globalMin
 	}
@@ -1088,10 +1122,10 @@ func (topic Topic) Validate(params Params) error {
 	if topic.CNorm.Lt(validationCNormMinDec) || topic.CNorm.Gt(validationCNormMaxDec) {
 		return errors.Wrap(sdkerrors.ErrInvalidType, "topic c_norm must be between -100 and 100")
 	}
-	// The per-topic inferer cap is deliberately not bounded by the globals here:
-	// they bound admission, not storage, so a governance change cannot make an
-	// existing topic unloadable. Any stored value, including zero, is valid at
-	// rest and is resolved by EffectiveMaxTopInferersToReward when used.
+	// MaxTopInferersToReward is not bounded by the globals here: they bound
+	// admission, not storage, so a governance change cannot make an existing
+	// topic fail re-validation on write. EffectiveMaxTopInferersToReward clamps
+	// the stored value when it is used.
 	if err := ValidateClassificationConsistency(
 		topic.TopicType,
 		topic.OutputArity,

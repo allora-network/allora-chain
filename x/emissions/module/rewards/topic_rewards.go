@@ -191,7 +191,7 @@ func GetAndUpdateActiveTopicWeights(
 
 		// If the topic is inactive, inactivate it
 		if weight.Lt(moduleParams.MinTopicWeight) {
-			err := k.GetTopicKeeper().InactivateTopic(ctx, topic.Id)
+			err := k.GetTopicKeeper().InactivateTopic(ctx, topic.Id, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_WEIGHT_BELOW_MINIMUM, weight, moduleParams.MinTopicWeight, moduleParams.MinTopicWeight)
 			if err != nil {
 				return nil, alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to inactivate topic")
 			}
@@ -200,16 +200,29 @@ func GetAndUpdateActiveTopicWeights(
 		}
 
 		// Update topic active status
-		err = k.GetTopicKeeper().AttemptTopicReactivation(ctx, topicId)
+		err = k.GetTopicKeeper().AttemptTopicReactivation(ctx, topicId, weight, moduleParams.MinTopicWeight)
 		if err != nil {
 			ctx.Logger().Error("Error on attempt topic reactivation, explicitly inactivating topic")
-			err := k.GetTopicKeeper().InactivateTopic(ctx, topic.Id)
+			err := k.GetTopicKeeper().InactivateTopic(ctx, topic.Id, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_REACTIVATION_ERROR, weight, moduleParams.MinTopicWeight, alloraMath.ZeroDec())
 			if err != nil {
 				return nil, alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to inactivate topic")
 			}
 			ctx.Logger().Debug("Topic inactivated at block", "topicId", topic.Id, "block", block)
 			continue
 		}
+
+		// A refused reactivation inactivates the topic, like the below-minimum-weight branch
+		// above: it must not be rewarded or given a new nonce for an epoch it will not run.
+		// Only a topic that still has a schedule after the attempt is rewardable.
+		isScheduled, err := k.GetTopicKeeper().IsTopicScheduled(ctx, topicId)
+		if err != nil {
+			return nil, alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to check whether topic %d is scheduled", topicId)
+		}
+		if !isScheduled {
+			ctx.Logger().Debug("Topic was inactivated by a refused reactivation, skipping rewards", "topicId", topicId, "block", block)
+			continue
+		}
+
 		totalRevenue = totalRevenue.Add(topicFeeRevenue)
 		weights[topic.Id] = &weight
 		sumWeight, err = sumWeight.Add(weight)

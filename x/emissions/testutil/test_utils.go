@@ -66,6 +66,10 @@ type TestSuite struct {
 	emissionsQueryServer  types.QueryServiceServer
 	emissionsMsgServer    types.MsgServiceServer
 	accounts              []account
+	// valueSource supplies the worker values and reputer stakes a test leaves
+	// unset. It is reseeded in SetupTest, so every run of a test sees the same
+	// values.
+	valueSource *rand.Rand
 }
 
 type account struct {
@@ -219,6 +223,7 @@ type (
 		labelDefaultValue     *alloraMath.Dec
 		reputerStake          *cosmosMath.Int
 		accounts              []account
+		limitForecastElements int
 	}
 )
 
@@ -337,7 +342,15 @@ func WithLabelDefaultValue(labelDefaultValue alloraMath.Dec) Option {
 	}
 }
 
+func WithLimitForecastElements(limit int) Option {
+	return func(p *customParams) {
+		p.limitForecastElements = limit
+	}
+}
+
 func (s *TestSuite) SetupTest() {
+	//nolint:gosec // test values, not secrets
+	s.valueSource = rand.New(rand.NewSource(1))
 	var (
 		keyEmissions        = storetypes.NewKVStoreKey("emissions")
 		keyAccount          = storetypes.NewKVStoreKey("account")
@@ -448,7 +461,7 @@ func (s *TestSuite) SetupTest() {
 
 	s.accounts = make([]account, numAccounts)
 
-	privKeys, pubKeyHexStr, addrs, addrsStr := alloratestutil.GenerateTestAccounts(numAccounts)
+	privKeys, pubKeyHexStr, addrs, addrsStr := alloratestutil.GenerateDeterministicTestAccounts("emissions-test-suite", numAccounts)
 	for i, addr := range addrs {
 		s.accounts[i] = account{
 			addr:         addr,
@@ -640,13 +653,14 @@ type TestWorkerValue struct {
 //   - SINGLE topics: set tv.Value; the scalar is carried on InputInference.Value
 //     with InputInference.Values left nil.
 //
-// When neither tv.Values nor tv.Value is set, a random scalar is used.
-func generateWorkerDataBundles(
-	s *TestSuite,
+// When neither tv.Values nor tv.Value is set, a scalar is drawn from the
+// suite's seeded value source.
+func (s *TestSuite) generateWorkerDataBundles(
 	nonce int64,
 	topicId uint64,
 	workerIndexes []int,
 	workerValues []TestWorkerValue,
+	limitForecastElements int,
 ) []*types.InputWorkerDataBundle {
 	lwv := len(workerValues)
 	hasWorkerValues := lwv > 0
@@ -671,8 +685,7 @@ func generateWorkerDataBundles(
 	singleScalarValue := func(tv TestWorkerValue) alloraMath.BoundedExp40Dec {
 		inferenceValueStr := tv.Value
 		if inferenceValueStr == "" {
-			//nolint:gosec
-			inferenceValueStr = strconv.FormatFloat(0.1+rand.Float64()*0.15, 'f', 5, 64)
+			inferenceValueStr = strconv.FormatFloat(0.1+s.valueSource.Float64()*0.15, 'f', 5, 64)
 		}
 		return alloraMath.MustNewBoundedExp40DecFromString(inferenceValueStr)
 	}
@@ -685,12 +698,10 @@ func generateWorkerDataBundles(
 		if tv.Value != "" {
 			return tv.Value
 		}
-		//nolint:gosec
-		return strconv.FormatFloat(0.1+rand.Float64()*0.15, 'f', 5, 64)
+		return strconv.FormatFloat(0.1+s.valueSource.Float64()*0.15, 'f', 5, 64)
 	}
 
 	var bundles []*types.InputWorkerDataBundle
-	totalAddresses := len(s.accounts)
 
 	for i, workerIdx := range workerIndexes {
 		var tv TestWorkerValue
@@ -705,25 +716,24 @@ func generateWorkerDataBundles(
 		}
 		forecastValueStr := getForecastValueStr(tv)
 
-		forecastTargets := []int{
-			(workerIdx + 0) % totalAddresses,
-			(workerIdx + 1) % totalAddresses,
-			(workerIdx + 2) % totalAddresses,
+		// Name inferers from this batch. Close drops a forecast left with
+		// fewer than two of them, and a repeated inferer is rejected on insert.
+		nWorkers := len(workerIndexes)
+		elementCount := nWorkers
+		if elementCount > 3 {
+			elementCount = 3
+		}
+		if limitForecastElements > 0 && limitForecastElements < elementCount {
+			elementCount = limitForecastElements
 		}
 
-		forecastElements := []*types.InputForecastElement{
-			{
-				Inferer: s.accounts[forecastTargets[0]].addrStr,
+		forecastElementsFinal := make([]*types.InputForecastElement, 0, elementCount)
+		for j := 0; j < elementCount; j++ {
+			target := workerIndexes[(i+j)%nWorkers]
+			forecastElementsFinal = append(forecastElementsFinal, &types.InputForecastElement{
+				Inferer: s.accounts[target].addrStr,
 				Value:   alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString(forecastValueStr)),
-			},
-			{
-				Inferer: s.accounts[forecastTargets[1]].addrStr,
-				Value:   alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString(forecastValueStr)),
-			},
-			{
-				Inferer: s.accounts[forecastTargets[2]].addrStr,
-				Value:   alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString(forecastValueStr)),
-			},
+			})
 		}
 
 		inferenceForecastBundle := &types.InputInferenceForecastBundle{
@@ -740,7 +750,7 @@ func generateWorkerDataBundles(
 				TopicId:          topicId,
 				BlockHeight:      nonce,
 				Forecaster:       s.accounts[workerIdx].addrStr,
-				ForecastElements: forecastElements,
+				ForecastElements: forecastElementsFinal,
 				ExtraData:        nil,
 			},
 		}
@@ -1218,6 +1228,10 @@ func (s *TestSuite) MockTopic() types.Topic {
 
 func (s *TestSuite) MockTopicMsg() *types.CreateNewTopicRequest {
 	topic := s.MockTopic()
+	// Read the live ceiling rather than the module default so the mock stays
+	// valid in tests that move the global max_top_inferers_to_reward.
+	params, err := s.ParamsKeeper().GetParams(s.Ctx())
+	s.Require().NoError(err)
 	return &types.CreateNewTopicRequest{
 		Creator:                  topic.Creator,
 		Metadata:                 topic.Metadata,
@@ -1243,10 +1257,7 @@ func (s *TestSuite) MockTopicMsg() *types.CreateNewTopicRequest {
 		MaxLabelsPerSubmission:   topic.MaxLabelsPerSubmission,
 		LabelWhitelist:           topic.LabelWhitelist,
 		LabelDefaultValue:        topic.LabelDefaultValue,
-		// Leave the per-topic inferer cap unset (0) so CreateNewTopic resolves it
-		// to the live global default. This keeps the mock valid in tests that
-		// lower the global max_top_inferers_to_reward below the module default.
-		MaxTopInferersToReward: 0,
+		MaxTopInferersToReward:   params.MaxTopInferersToReward,
 	}
 }
 
@@ -1287,7 +1298,7 @@ func (s *TestSuite) SetupParticipants(topicID uint64, indexes []int, isReputer b
 	}
 
 	// Add Stake for reputers
-	stakes := alloratestutil.GenerateTestStakes(len(addresses))
+	stakes := alloratestutil.GenerateTestStakes(s.valueSource, len(addresses))
 	for i, addr := range addresses {
 		stake := stakes[i]
 		if p.reputerStake != nil {
@@ -1306,11 +1317,17 @@ func (s *TestSuite) SetupParticipants(topicID uint64, indexes []int, isReputer b
 	}
 }
 
-func (s *TestSuite) SetupInferences(topicID uint64, nonce int64, workerIndexes []int, workerValues ...TestWorkerValue) types.Nonce {
+func (s *TestSuite) SetupInferences(topicID uint64, nonce int64, workerIndexes []int, options ...Option) types.Nonce {
 	if len(workerIndexes) == 0 {
 		return types.Nonce{} //nolint:exhaustruct
 	}
-	inferenceBundles := generateWorkerDataBundles(s, nonce, topicID, workerIndexes, workerValues)
+
+	p := new(customParams)
+	for _, opt := range options {
+		opt(p)
+	}
+
+	inferenceBundles := s.generateWorkerDataBundles(nonce, topicID, workerIndexes, p.workerValues, p.limitForecastElements)
 	for _, payload := range inferenceBundles {
 		_, err := s.emissionsMsgServer.InsertWorkerPayload(s.Ctx(), &types.InsertWorkerPayloadRequest{
 			Sender:           payload.Worker,
@@ -1394,13 +1411,12 @@ func (s *TestSuite) FullTopicSetup(workerIndexes, reputerIndexes []int, options 
 //   - finds the next churning block for the topic and uses it as the nonce,
 //   - submits inferences for the unfulfilled worker nonce,
 //   - forwards the chain to the end of the epoch,
-//   - submits reputer loss bundles for the unfulfilled reputer nonce,
-//   - forwards the chain to the rewards end blocker,
+//   - submits reputer loss bundles for the unfulfilled reputer nonce at a block inside
+//     its submission window, derived from keeper.ReputerSubmissionWindowBounds so the
+//     helper works for any ground_truth_lag/epoch_length ratio,
+//   - forwards the chain to the window end block,
 //   - runs the end blocker for closing the reputer nonce and calculating and distributing rewards (when appropriate),
 //   - when running on a newly created topic, there will be no losses, so no rewards will be distributed.
-//
-// Limitations:
-//   - with the current design, `ground_truth_lag` needs to be the same as `epoch_length`.
 func (s *TestSuite) FullTopicPass(workerIndexes, reputerIndexes []int, options ...Option) (uint64, int64) {
 	p := new(customParams)
 	for _, opt := range options {
@@ -1420,6 +1436,7 @@ func (s *TestSuite) FullTopicPass(workerIndexes, reputerIndexes []int, options .
 	if nonce == 0 {
 		nonce, _, err = s.TopicKeeper().GetNextPossibleChurningBlockByTopicId(s.Ctx(), p.topicID)
 		s.Require().NoError(err)
+		s.Require().NotZero(nonce, "topic %d has no churning block, so it has no epoch to run", p.topicID)
 		s.T().Logf("Moving nonce to post inferences for TopicId: %d, Next block: %v", p.topicID, nonce)
 		s.WithBlockHeight(nonce)
 		s.EndBlock()
@@ -1432,7 +1449,7 @@ func (s *TestSuite) FullTopicPass(workerIndexes, reputerIndexes []int, options .
 	s.Require().NoError(err)
 
 	if len(workerNonces.Nonces) > 0 {
-		s.SetupInferences(p.topicID, workerNonces.Nonces[0].BlockHeight, workerIndexes, p.workerValues...)
+		s.SetupInferences(p.topicID, workerNonces.Nonces[0].BlockHeight, workerIndexes, options...)
 		wswBlock := nonce + topic.WorkerSubmissionWindow
 		s.T().Logf("Moving nonce to end of worker submission window for TopicId: %d, Next block: %v", p.topicID, wswBlock)
 		s.WithBlockHeight(wswBlock)
@@ -1447,15 +1464,52 @@ func (s *TestSuite) FullTopicPass(workerIndexes, reputerIndexes []int, options .
 	reputerNonces, err := s.NonceKeeper().GetUnfulfilledReputerNonces(s.Ctx(), p.topicID)
 	s.Require().NoError(err)
 
+	var rewardsBlockHeight int64
 	if len(reputerNonces.Nonces) > 0 {
-		reputerTxBlockHeight := reputerNonces.Nonces[0].ReputerNonce.BlockHeight + topic.GroundTruthLag + 1
+		windowStart, windowEnd, err := keeper.ReputerSubmissionWindowBounds(topic, *reputerNonces.Nonces[0])
+		s.Require().NoError(err)
+
+		// A worker window closes only when the end blocker runs exactly at the
+		// height registered when the nonce was added (keeper.GetWorkerWindowTopicIds
+		// is a lookup by exact height). A ground truth lag longer than one epoch
+		// makes this helper jump over those heights, so close every worker window
+		// it passes on the way to the reputer close.
+		closeWorkerWindow := func(boundary int64) {
+			s.T().Logf("Moving nonce to worker window close for TopicId: %d, Next block: %v", p.topicID, boundary+topic.WorkerSubmissionWindow)
+			s.WithBlockHeight(boundary + topic.WorkerSubmissionWindow)
+			s.EndBlock()
+		}
+		lagLongerThanEpoch := windowStart > epochEndBlock
+		if lagLongerThanEpoch {
+			closeWorkerWindow(epochEndBlock)
+		}
+
+		// The window starts on the nonce's epoch grid. Run the end blocker on any
+		// grid block between the epoch already processed above and the window
+		// start, otherwise the topic is already inactive when the payload is
+		// submitted and the submission re-grids it off the nonce's schedule.
+		for boundary := nonce + 2*topic.EpochLength; boundary <= windowStart; boundary += topic.EpochLength {
+			s.T().Logf("Moving nonce to epoch boundary for TopicId: %d, Next block: %v", p.topicID, boundary)
+			s.WithBlockHeight(boundary)
+			s.EndBlock()
+			if lagLongerThanEpoch && boundary+topic.WorkerSubmissionWindow < windowStart {
+				closeWorkerWindow(boundary)
+			}
+		}
+
+		reputerTxBlockHeight := windowStart + 1
 		s.T().Logf("Moving nonce to insert loss bundles from reputers for TopicId: %d, Next block: %v, Nonce: %v", p.topicID, reputerTxBlockHeight, nonce)
 		s.WithBlockHeight(reputerTxBlockHeight)
 		err = s.InsertReputerLossBundle(topic.GetId(), reputerNonces.Nonces[0].ReputerNonce.BlockHeight, reputerIndexes, options...)
 		s.Require().NoError(err)
+		if lagLongerThanEpoch && windowStart+topic.WorkerSubmissionWindow < windowEnd {
+			closeWorkerWindow(windowStart)
+		}
+		rewardsBlockHeight = windowEnd
+	} else {
+		rewardsBlockHeight = nonce + topic.GroundTruthLag + topic.EpochLength
 	}
 
-	rewardsBlockHeight := nonce + topic.GroundTruthLag + topic.EpochLength
 	s.T().Logf("Moving nonce to rewards end blocker for TopicId: %d, Next block: %v", p.topicID, rewardsBlockHeight)
 	s.WithBlockHeight(rewardsBlockHeight)
 	s.EndBlock()

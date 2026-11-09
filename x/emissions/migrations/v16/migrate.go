@@ -1,6 +1,8 @@
 package v16
 
 import (
+	"slices"
+
 	errorsmod "cosmossdk.io/errors"
 	"cosmossdk.io/store/prefix"
 	storetypes "cosmossdk.io/store/types"
@@ -9,6 +11,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/runtime"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
+	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 )
@@ -19,7 +22,9 @@ import (
 // parameter. Existing topics decode this new field as zero and are backfilled
 // with the current on-chain global value so their admission behavior is
 // unchanged after the upgrade. It also backfills the new
-// Params.MinTopInferersToReward floor.
+// Params.MinTopInferersToReward floor, reconciles topic activity state and
+// recomputes totalSumPreviousTopicWeights from valid scheduled topics so any
+// drift accumulated by the incremental bookkeeping is cleared.
 func MigrateStore(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 	ctx.Logger().Info("STARTING EMISSIONS MODULE MIGRATION FROM VERSION 15 TO VERSION 16")
 	storageService := emissionsKeeper.GetStorageService()
@@ -38,16 +43,159 @@ func MigrateStore(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 		return err
 	}
 
+	if err := MigrateTotalSumPreviousTopicWeights(ctx, emissionsKeeper); err != nil {
+		ctx.Logger().Error("ERROR INVOKING MIGRATION HANDLER MigrateTotalSumPreviousTopicWeights() FROM VERSION 15 TO VERSION 16")
+		return err
+	}
+
 	ctx.Logger().Info("MIGRATION EMISSIONS MODULE FROM VERSION 15 TO VERSION 16 COMPLETE")
+	return nil
+}
+
+// MigrateTotalSumPreviousTopicWeights reconciles the stores that represent active topics,
+// then recomputes totalSumPreviousTopicWeights from topics with a valid schedule and matching
+// block-bucket entry. A schedule at a block the chain already passed is invalid because its
+// bucket can never be processed again. Topics with invalid or incomplete activity state are
+// made fully inactive, including a future schedule without its block listing: the topic
+// stays off until re-activated, and its stored weight counts once then.
+func MigrateTotalSumPreviousTopicWeights(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
+	topicKeeper := emissionsKeeper.GetTopicKeeper()
+
+	scheduledTopicIds, err := topicKeeper.GetScheduledTopicIds(ctx)
+	if err != nil {
+		return errorsmod.Wrap(err, "MIGRATION V16: failed to get scheduled topic ids")
+	}
+	scheduledBlocks := make(map[uint64]int64, len(scheduledTopicIds))
+	for _, topicId := range scheduledTopicIds {
+		block, err := topicKeeper.GetTopicSchedule(ctx, topicId)
+		if err != nil {
+			return errorsmod.Wrapf(err, "MIGRATION V16: failed to get schedule for topic %d", topicId)
+		}
+		scheduledBlocks[topicId] = block
+	}
+	currentBlock := ctx.BlockHeight()
+
+	blockBuckets, err := topicKeeper.GetActiveTopicIdsByBlock(ctx)
+	if err != nil {
+		return errorsmod.Wrap(err, "MIGRATION V16: failed to get active topic block buckets")
+	}
+	validScheduled := make(map[uint64]struct{}, len(scheduledTopicIds))
+	resetBuckets := 0
+	for _, bucket := range blockBuckets {
+		existing := []uint64(nil)
+		if bucket.TopicIds != nil {
+			existing = bucket.TopicIds.TopicIds
+		}
+		filtered := make([]uint64, 0, len(existing))
+		for _, topicId := range existing {
+			scheduledBlock, isScheduled := scheduledBlocks[topicId]
+			_, alreadyListed := validScheduled[topicId]
+			// A schedule at a block the chain already passed can never be processed again; it
+			// is dropped with its bucket listing, set membership and weight.
+			if !isScheduled || scheduledBlock < currentBlock || scheduledBlock != bucket.BlockHeight || alreadyListed {
+				continue
+			}
+			filtered = append(filtered, topicId)
+			validScheduled[topicId] = struct{}{}
+		}
+		changed := !slices.Equal(existing, filtered)
+		if changed {
+			if err := topicKeeper.SetBlockToActiveTopics(ctx, bucket.BlockHeight, emissionstypes.TopicIds{TopicIds: filtered}); err != nil {
+				return errorsmod.Wrapf(err, "MIGRATION V16: failed to repair active topics at block %d", bucket.BlockHeight)
+			}
+		}
+		if err := topicKeeper.ResetLowestActiveTopicWeightAtBlock(ctx, bucket.BlockHeight); err != nil {
+			return errorsmod.Wrapf(err, "MIGRATION V16: failed to reset lowest topic weight at block %d", bucket.BlockHeight)
+		}
+		resetBuckets++
+	}
+
+	removedSchedules := 0
+	for _, topicId := range scheduledTopicIds {
+		if _, valid := validScheduled[topicId]; valid {
+			continue
+		}
+		if err := topicKeeper.RemoveTopicSchedule(ctx, topicId); err != nil {
+			return errorsmod.Wrapf(err, "MIGRATION V16: failed to remove invalid schedule for topic %d", topicId)
+		}
+		removedSchedules++
+	}
+
+	activeTopicIds, err := topicKeeper.GetActiveTopicIds(ctx)
+	if err != nil {
+		return errorsmod.Wrap(err, "MIGRATION V16: failed to get active topic ids")
+	}
+	activeSet := make(map[uint64]struct{}, len(activeTopicIds))
+	removedActiveTopics := 0
+	for _, topicId := range activeTopicIds {
+		if _, valid := validScheduled[topicId]; !valid {
+			if err := topicKeeper.RemoveTopicFromActiveSet(ctx, topicId); err != nil {
+				return errorsmod.Wrapf(err, "MIGRATION V16: failed to remove topic %d from active set", topicId)
+			}
+			removedActiveTopics++
+			continue
+		}
+		activeSet[topicId] = struct{}{}
+	}
+	validTopicIds := make([]uint64, 0, len(validScheduled))
+	for topicId := range validScheduled {
+		validTopicIds = append(validTopicIds, topicId)
+	}
+	slices.Sort(validTopicIds)
+	addedActiveTopics := 0
+	for _, topicId := range validTopicIds {
+		if _, active := activeSet[topicId]; active {
+			continue
+		}
+		if err := topicKeeper.SetActiveTopics(ctx, topicId); err != nil {
+			return errorsmod.Wrapf(err, "MIGRATION V16: failed to add topic %d to active set", topicId)
+		}
+		addedActiveTopics++
+	}
+
+	recomputed := alloraMath.ZeroDec()
+	for _, topicId := range validTopicIds {
+		weight, noPrior, err := topicKeeper.GetPreviousTopicWeight(ctx, topicId)
+		if err != nil {
+			return errorsmod.Wrapf(err, "MIGRATION V16: failed to get previous weight of topic %d", topicId)
+		}
+		if noPrior {
+			continue
+		}
+		recomputed, err = recomputed.Add(weight)
+		if err != nil {
+			return errorsmod.Wrapf(err, "MIGRATION V16: failed to add previous weight of topic %d", topicId)
+		}
+	}
+
+	current, err := topicKeeper.GetTotalSumPreviousTopicWeights(ctx)
+	if err != nil {
+		return errorsmod.Wrap(err, "MIGRATION V16: failed to get total sum of previous topic weights")
+	}
+	if !current.Equal(recomputed) {
+		if err := topicKeeper.SetTotalSumPreviousTopicWeights(ctx, recomputed); err != nil {
+			return errorsmod.Wrap(err, "MIGRATION V16: failed to set recomputed total sum of previous topic weights")
+		}
+	}
+	ctx.Logger().Info(
+		"MIGRATION V16: topic activity state reconciled and total sum recomputed",
+		"previous", current.String(),
+		"recomputed", recomputed.String(),
+		"scheduledTopics", len(validTopicIds),
+		"resetBuckets", resetBuckets,
+		"removedSchedules", removedSchedules,
+		"removedActiveTopics", removedActiveTopics,
+		"addedActiveTopics", addedActiveTopics,
+	)
 	return nil
 }
 
 // MigrateParams backfills Params.MinTopInferersToReward, which an existing chain
 // decodes as zero. Zero means "no floor", so this installs one where there was
-// none; it changes no admission outcome at upgrade time only because
-// MigrateTopics has already raised every topic cap to the ceiling. A non-zero
-// value is left alone: an unset field is indistinguishable from a deliberate
-// zero, so only the zero case is backfilled.
+// none. It changes no admission outcome at upgrade time because MigrateTopics
+// runs first and has already set every topic cap to the ceiling, which is at or
+// above this floor. A non-zero value is left alone: an unset field is
+// indistinguishable from a deliberate zero, so only the zero case is backfilled.
 func MigrateParams(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 	params, err := emissionsKeeper.GetParams(ctx)
 	if err != nil {
@@ -129,16 +277,13 @@ func MigrateTopics(ctx sdk.Context, emissionsKeeper keeper.Keeper, store storety
 		}
 		topic.MaxTopInferersToReward = backfillValue
 
-		// No per-topic re-validation here: the backfilled cap equals the
-		// current global Params.MaxTopInferersToReward, which is exactly the
-		// value Topic.Validate treats as the ceiling, so the new field is
-		// valid by construction (>= 1 and <= the global) regardless of any
-		// other field on the topic. Running full Topic.Validate would also
-		// re-check unrelated, param-dependent fields (e.g. ground-truth-lag
-		// vs epoch-length bounds) that a pre-existing dormant topic could
-		// violate after some other param was tightened over time; halting the
-		// whole chain upgrade for a reason unrelated to this backfill is
-		// avoided by deliberately skipping that broader check.
+		// No per-topic re-validation here: Topic.Validate does not bound this
+		// field, so the backfill cannot fail on it. Running full Topic.Validate
+		// would also re-check unrelated, param-dependent fields (e.g.
+		// ground-truth-lag vs epoch-length bounds) that a pre-existing dormant
+		// topic could violate after some other param was tightened over time;
+		// halting the whole chain upgrade for a reason unrelated to this
+		// backfill is avoided by skipping that broader check.
 
 		updates = append(updates, kv{
 			key:   append([]byte(nil), iterator.Key()...),

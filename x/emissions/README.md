@@ -17,7 +17,7 @@ Key Features:
 
 The module provides queries to check which nonces are currently open for submission:
 
-- **`GetOpenReputerSubmissionWindows`**: Returns only the reputer nonces that are currently open for submission. A nonce is considered open if the current block height is within its submission window (from when ground truth is revealed until the window closes).
+- **`GetOpenReputerSubmissionWindows`**: Returns only the reputer nonces that are currently open for submission. A nonce is considered open if the current block height is within its submission window (from the end of the epoch in which ground truth is revealed, until the window closes one epoch later).
   
   - Endpoint: `/emissions/v9/open_reputer_submission_windows/{topic_id}`
   - CLI: `allorad query emissions open-reputer-submission-windows [topic_id]`
@@ -45,6 +45,8 @@ See `x/emissions/metrics/` for details.
 
 `Dec` values placed in emissions events are magnitude-clamped to `[1e-40, 1e40]` so extremely small or large values stay compact when serialized. This shapes event output only; consensus state is stored separately and is not clamped, so an event value may differ from the stored value at the extremes. See `ClampMagnitude` and the `clamp*` helpers in `x/emissions/types/events_utils.go`.
 
+`NaN` passes through to `Dec` event attributes verbatim, so consumers must not assume attributes parse as finite numbers.
+
 ## Parameters
 
 - **[Global parameters](docs/global-parameters.md)** — chain-wide parameters on `Params`: their defaults, and the ones whose behavior is not obvious from the name.
@@ -59,7 +61,7 @@ The `UpdateTopic` tx is intentionally limited to a subset of mutable fields. Top
 
 All other topic fields are immutable because they impact state transitions, scheduling/cadence, or other invariants that should remain stable once a topic is created.
 
-`UpdateTopic` is a **full replacement**: every editable field is overwritten by what the message carries, so send the current value back to keep it. An empty `label_whitelist` means *unrestricted*, not *unchanged*, and `max_top_inferers_to_reward` of `0` means *use the global maximum*, not *unchanged*.
+`UpdateTopic` is a **full replacement**: every editable field is overwritten by what the message carries, so send the current value back to keep it. An empty `label_whitelist` means *unrestricted*, not *unchanged*, and `max_top_inferers_to_reward` must be re-sent within the global range to keep it.
 
 ### Constraints
 

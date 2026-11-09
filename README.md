@@ -363,7 +363,7 @@ Data is submitted by workers and reputers within the allowed submission windows.
 
 For workers, the submission window is defined at the topic level, as the blocks starting at `nonce.BlockHeight` and ending at `nonce.BlockHeight + topic.WorkerSubmissionWindow`. 
 
-For reputers, the submission window starts at `(nonce.BlockHeight + topic.GroundTruthLag)` and it lasts 1 `topic.EpochLength` + any remaining additional lag until end of epoch, only applying when `topic.GroundTruthLag` and `topic.EpochLength` are not multiples, and calculated as `(topic.EpochLength - (topic.GroundTruthLag % topic.EpochLength))`.
+For reputers, the submission window opens at the end of the epoch in which ground truth is revealed, not at the revelation itself: it starts at `(nonce.BlockHeight + topic.GroundTruthLag + extraLag)` and lasts 1 `topic.EpochLength`, where `extraLag` is the distance from the revelation to the end of that epoch — `(topic.EpochLength - (topic.GroundTruthLag % topic.EpochLength))`, and zero when `topic.GroundTruthLag` is a whole multiple of `topic.EpochLength`. Waiting for the epoch boundary is what keeps consecutive windows from overlapping: a nonce is closed on the epoch grid, so opening the next window at the revelation would let a reputer submit for it while the previous nonce is still open.
 
 Both windows are inclusive of start and end boundaries.
 

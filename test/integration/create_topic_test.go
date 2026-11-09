@@ -40,7 +40,7 @@ func CreateTopic(m testCommon.TestConfig) (topicId uint64) {
 	require.Positive(m.T, topicIdStart.NextTopicId)
 	require.NoError(m.T, err)
 	createTopicRequest := &emissionstypes.CreateNewTopicRequest{
-		MaxTopInferersToReward:   0,
+		MaxTopInferersToReward:   GetEmissionsParams(m).MaxTopInferersToReward,
 		Creator:                  m.AliceAddr,
 		Metadata:                 "ETH 24h Prediction",
 		LossMethod:               "mse",
@@ -121,7 +121,7 @@ func CreateTopicMultiLabel(m testCommon.TestConfig) (topicId uint64) {
 	require.Positive(m.T, topicIdStart.NextTopicId)
 	require.NoError(m.T, err)
 	createTopicRequest := &emissionstypes.CreateNewTopicRequest{
-		MaxTopInferersToReward:   0,
+		MaxTopInferersToReward:   GetEmissionsParams(m).MaxTopInferersToReward,
 		Creator:                  m.AliceAddr,
 		Metadata:                 "ETH 24h Prediction",
 		LossMethod:               "mse",

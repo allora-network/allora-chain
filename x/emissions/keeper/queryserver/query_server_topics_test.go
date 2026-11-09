@@ -204,7 +204,7 @@ func (s *QueryServerTestSuite) TestIsTopicActive() {
 	_ = keeper.SetTopic(ctx, topicId, initialTopic)
 
 	// Activate the topic
-	err := keeper.ActivateTopic(ctx, topicId)
+	err := keeper.ActivateTopic(ctx, topicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec())
 	s.Require().NoError(err, "Reactivating topic should not fail")
 
 	// Check if topic is active
@@ -216,7 +216,7 @@ func (s *QueryServerTestSuite) TestIsTopicActive() {
 	s.Require().True(topicActive, "Topic should be active again")
 
 	// Inactivate the topic
-	err = keeper.InactivateTopic(ctx, topicId)
+	err = keeper.InactivateTopic(ctx, topicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec(), alloraMath.ZeroDec())
 	s.Require().NoError(err, "Inactivating topic should not fail")
 
 	// Check if topic is inactive
@@ -227,7 +227,7 @@ func (s *QueryServerTestSuite) TestIsTopicActive() {
 	s.Require().False(topicActive, "Topic should be inactive")
 
 	// Activate the topic
-	err = keeper.ActivateTopic(ctx, topicId)
+	err = keeper.ActivateTopic(ctx, topicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec())
 	s.Require().NoError(err, "Reactivating topic should not fail")
 
 	// Check if topic is active again
@@ -381,7 +381,8 @@ func (s *QueryServerTestSuite) TestGetWorkerSubmissionWindowStatus() {
 	response, err = queryServer.GetWorkerSubmissionWindowStatus(ctx, req)
 	s.Require().NoError(err)
 	s.Require().True(response.IsOpen)
-	s.Require().Equal(nonce2.BlockHeight, response.CurrentNonceBlockHeight) // Should be latest active
+	s.Require().Equal(nonce2.BlockHeight, response.Nonce) // Should be latest active
+	s.Require().Equal(nonce2.BlockHeight, response.CurrentNonceBlockHeight)
 
 	// Verify window calculations for the latest active window
 	expectedWindowStart := nonce2.BlockHeight
@@ -488,13 +489,12 @@ func (s *QueryServerTestSuite) TestGetReputerSubmissionWindowStatus() {
 	s.Require().NoError(err)
 	s.Require().True(isActive)
 
-	// Create multiple reputer nonces to test "latest active nonce" selection
-	// Reputer windows: [nonce + GroundTruthLag, nonce + GroundTruthLag + extraLag + EpochLength]
+	// Create overlapping windows to verify latest-active-nonce selection.
 	// extraLag = EpochLength - (GroundTruthLag % EpochLength) = 20 - (30 % 20) = 10
 
-	reputerNonce1 := &types.Nonce{BlockHeight: 0}  // Window [30, 60] (0+30 to 0+30+10+20)
-	reputerNonce2 := &types.Nonce{BlockHeight: 5}  // Window [35, 65] (5+30 to 5+30+10+20)
-	reputerNonce3 := &types.Nonce{BlockHeight: 20} // Window [50, 80] (20+30 to 20+30+10+20)
+	reputerNonce1 := &types.Nonce{BlockHeight: 0}  // Window [40, 60] (0+30+10, +20)
+	reputerNonce2 := &types.Nonce{BlockHeight: 5}  // Window [45, 65] (5+30+10, +20)
+	reputerNonce3 := &types.Nonce{BlockHeight: 20} // Window [60, 80] (20+30+10, +20)
 
 	err = s.NonceKeeper().AddReputerNonce(ctx, topicId, reputerNonce1)
 	s.Require().NoError(err)
@@ -503,8 +503,8 @@ func (s *QueryServerTestSuite) TestGetReputerSubmissionWindowStatus() {
 	err = s.NonceKeeper().AddReputerNonce(ctx, topicId, reputerNonce3)
 	s.Require().NoError(err)
 
-	// Set current block to be within multiple reputer windows
-	currentBlock = int64(40) // Within windows [30,60] and [35,65]
+	// Block 50 is inside the first two windows and before the third.
+	currentBlock = int64(50) // Within windows [40,60] and [45,65]
 	s.WithBlockHeight(currentBlock)
 	ctx = s.Ctx()
 
@@ -512,12 +512,13 @@ func (s *QueryServerTestSuite) TestGetReputerSubmissionWindowStatus() {
 	response, err = queryServer.GetReputerSubmissionWindowStatus(ctx, req)
 	s.Require().NoError(err)
 	s.Require().True(response.IsOpen)
-	s.Require().Equal(reputerNonce2.BlockHeight, response.CurrentNonceBlockHeight) // Should be latest active
-	s.Require().Equal(int64(35), response.WindowStartBlock)                        // 5 + 30
-	s.Require().Equal(int64(65), response.WindowEndBlock)                          // 35 + 10 + 20
+	s.Require().Equal(reputerNonce2.BlockHeight, response.Nonce) // Should be latest active
+	s.Require().Equal(reputerNonce2.BlockHeight, response.CurrentNonceBlockHeight)
+	s.Require().Equal(int64(45), response.WindowStartBlock) // 5 + 30 + 10
+	s.Require().Equal(int64(65), response.WindowEndBlock)   // 45 + 20
 
-	// Next window: [20+30, 20+30+10+20] = [50, 80]
-	expectedNextStart := int64(50) // From reputerNonce3 (BlockHeight=20)
+	// Next window: [20+30+10, +20] = [60, 80]
+	expectedNextStart := int64(60) // From reputerNonce3 (BlockHeight=20)
 	expectedNextEnd := int64(80)
 
 	response, err = queryServer.GetReputerSubmissionWindowStatus(ctx, req)

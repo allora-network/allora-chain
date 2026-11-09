@@ -489,6 +489,43 @@ func TestInputInference_Validate(t *testing.T) {
 	}
 }
 
+func TestForecast_ValidateAllowsDuplicateInferer(t *testing.T) {
+	addr := "allo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqas6usy"
+	element := &ForecastElement{
+		Inferer: addr,
+		Value:   alloraMath.MustNewDecFromString("1"),
+	}
+	duplicate := &Forecast{
+		TopicId:          1,
+		Forecaster:       addr,
+		BlockHeight:      100,
+		ForecastElements: []*ForecastElement{element, element},
+		ExtraData:        nil,
+	}
+	require.NoError(t, duplicate.Validate())
+
+	empty := &Forecast{
+		TopicId:          1,
+		Forecaster:       addr,
+		BlockHeight:      100,
+		ForecastElements: []*ForecastElement{},
+		ExtraData:        nil,
+	}
+	require.Error(t, empty.Validate())
+
+	invalid := &Forecast{
+		TopicId:     1,
+		Forecaster:  addr,
+		BlockHeight: 100,
+		ExtraData:   nil,
+		ForecastElements: []*ForecastElement{{
+			Inferer: "invalid",
+			Value:   alloraMath.MustNewDecFromString("1"),
+		}},
+	}
+	require.Error(t, invalid.Validate())
+}
+
 func TestInputForecast_Validate(t *testing.T) {
 	validElement := &InputForecastElement{
 		Inferer: "allo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqas6usy",
@@ -537,6 +574,20 @@ func TestInputForecast_Validate(t *testing.T) {
 					Inferer: "invalid",
 					Value:   alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("1")),
 				}},
+				ExtraData: nil,
+			},
+			wantErr: true,
+		},
+		{
+			name: "duplicate forecast element inferer",
+			input: &InputForecast{
+				TopicId:     1,
+				Forecaster:  "allo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqas6usy",
+				BlockHeight: 100,
+				ForecastElements: []*InputForecastElement{
+					validElement,
+					validElement,
+				},
 				ExtraData: nil,
 			},
 			wantErr: true,
@@ -1259,13 +1310,15 @@ func TestEffectiveMaxTopInferersToReward(t *testing.T) {
 		name                                 string
 		topicCap, globalMin, globalMax, want uint64
 	}{
-		{"zero uses global max", 0, 1, 32, 32},
+		// A cap below the floor is raised to it; with no floor it stays as stored.
+		{"zero raised to global min", 0, 1, 32, 1},
+		{"zero with a floor raised to that floor", 0, 10, 32, 10},
+		{"zero with no floor stays zero", 0, 0, 32, 0},
 		{"within range preserved", 10, 1, 32, 10},
 		{"equal to global max", 32, 1, 32, 32},
 		{"above global max clamped", 40, 1, 32, 32},
 		{"below global min raised", 3, 10, 32, 10},
 		{"equal to global min", 10, 10, 32, 10},
-		{"zero with a floor still uses global max", 0, 10, 32, 32},
 		{"no floor", 10, 0, 32, 10},
 		// With the default floor: below it is raised, within the range is kept,
 		// above the ceiling is clamped.

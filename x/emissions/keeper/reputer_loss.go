@@ -181,33 +181,36 @@ func (k *ReputerLossKeeper) ResetActiveReputersForTopic(ctx context.Context, top
 	return nil
 }
 
-// Append loss bundle for a topic and blockHeight
+// AppendReputerLoss appends a reputer loss bundle and returns the sortition
+// outcome for the submission: ADMITTED when it was stored in the active set,
+// NOT_ADMITTED when only score/liveness side effects were recorded, and
+// UNSPECIFIED together with any error.
 func (k *ReputerLossKeeper) AppendReputerLoss(
 	ctx sdk.Context,
 	topic types.Topic,
 	moduleParams types.Params,
 	nonceBlockHeight BlockHeight,
 	reputerLoss *types.ReputerValueBundle,
-) error {
+) (types.PayloadAdmissionOutcome, error) {
 	if reputerLoss == nil {
-		return errors.New("invalid reputerLoss bundle: reputer is empty or nil")
+		return types.PayloadAdmissionOutcome_PAYLOAD_ADMISSION_OUTCOME_UNSPECIFIED, errors.New("invalid reputerLoss bundle: reputer is empty or nil")
 	}
 
 	// Check if the reputer already submitted the loss
 	isActive, err := k.IsActiveReputer(ctx, topic.Id, reputerLoss.ValueBundle.Reputer)
 	if err != nil {
-		return errorsmod.Wrap(err, "error checking if reputer already submitted loss")
+		return types.PayloadAdmissionOutcome_PAYLOAD_ADMISSION_OUTCOME_UNSPECIFIED, errorsmod.Wrap(err, "error checking if reputer already submitted loss")
 	} else if isActive {
-		return errors.New("reputer loss already submitted")
+		return types.PayloadAdmissionOutcome_PAYLOAD_ADMISSION_OUTCOME_UNSPECIFIED, errors.New("reputer loss already submitted")
 	}
 
 	previousEmaScore, err := k.scoresKeeper.GetReputerScoreEma(ctx, topic.Id, reputerLoss.ValueBundle.Reputer)
 	if err != nil {
-		return errorsmod.Wrapf(err, "Error getting reputer score ema")
+		return types.PayloadAdmissionOutcome_PAYLOAD_ADMISSION_OUTCOME_UNSPECIFIED, errorsmod.Wrapf(err, "Error getting reputer score ema")
 	}
 	// Only calc and save if there's a new update
 	if previousEmaScore.BlockHeight >= nonceBlockHeight {
-		return types.ErrCantUpdateEmaMoreThanOncePerWindow
+		return types.PayloadAdmissionOutcome_PAYLOAD_ADMISSION_OUTCOME_UNSPECIFIED, types.ErrCantUpdateEmaMoreThanOncePerWindow
 	}
 
 	// Check if the reputer is new and set initial EMA score
@@ -216,7 +219,7 @@ func (k *ReputerLossKeeper) AppendReputerLoss(
 		firstSubmission = true
 		initialEmaScore, err := k.scoresKeeper.GetTopicInitialReputerEmaScore(ctx, topic.Id)
 		if err != nil {
-			return errorsmod.Wrap(err, "error getting topic initial ema score")
+			return types.PayloadAdmissionOutcome_PAYLOAD_ADMISSION_OUTCOME_UNSPECIFIED, errorsmod.Wrap(err, "error getting topic initial ema score")
 		}
 		err = k.scoresKeeper.SetReputerScoreEma(ctx, topic.Id, reputerLoss.ValueBundle.Reputer, types.Score{
 			TopicId:     topic.Id,
@@ -225,7 +228,7 @@ func (k *ReputerLossKeeper) AppendReputerLoss(
 			Score:       initialEmaScore,
 		})
 		if err != nil {
-			return errorsmod.Wrap(err, "error setting initial reputer score ema")
+			return types.PayloadAdmissionOutcome_PAYLOAD_ADMISSION_OUTCOME_UNSPECIFIED, errorsmod.Wrap(err, "error setting initial reputer score ema")
 		}
 		previousEmaScore = types.Score{
 			TopicId:     topic.Id,
@@ -237,40 +240,43 @@ func (k *ReputerLossKeeper) AppendReputerLoss(
 		// If not new: Penalise the reputer if needed
 		previousEmaScore, err = k.actorPenaltiesKeeper.ApplyLivenessPenaltyToReputer(ctx, topic, nonceBlockHeight, previousEmaScore)
 		if err != nil {
-			return errorsmod.Wrap(err, "error trying to penalise reputer")
+			return types.PayloadAdmissionOutcome_PAYLOAD_ADMISSION_OUTCOME_UNSPECIFIED, errorsmod.Wrap(err, "error trying to penalise reputer")
 		}
 
 		// Update score nonce for liveness tracking
 		previousEmaScore.BlockHeight = nonceBlockHeight
 		err = k.scoresKeeper.SetReputerScoreEma(ctx, topic.Id, previousEmaScore.Address, previousEmaScore)
 		if err != nil {
-			return errorsmod.Wrap(err, "error setting penalised reputer score ema")
+			return types.PayloadAdmissionOutcome_PAYLOAD_ADMISSION_OUTCOME_UNSPECIFIED, errorsmod.Wrap(err, "error setting penalised reputer score ema")
 		}
 	}
 
 	lowestEmaScore, _, err := k.scoresKeeper.GetLowestReputerScoreEma(ctx, topic.Id)
 	if err != nil {
-		return errorsmod.Wrap(err, "error getting lowest reputer score ema")
+		return types.PayloadAdmissionOutcome_PAYLOAD_ADMISSION_OUTCOME_UNSPECIFIED, errorsmod.Wrap(err, "error getting lowest reputer score ema")
 	}
 
 	reputerAddresses, err := k.GetActiveReputersForTopic(ctx, topic.Id)
 	if err != nil {
-		return errorsmod.Wrap(err, "error getting active reputers for topic")
+		return types.PayloadAdmissionOutcome_PAYLOAD_ADMISSION_OUTCOME_UNSPECIFIED, errorsmod.Wrap(err, "error getting active reputers for topic")
 	}
 	// If there are less than maxTopReputersToReward, add the current reputer
 	if uint64(len(reputerAddresses)) < moduleParams.MaxTopReputersToReward {
 		if uint64(len(reputerAddresses)) == 0 || lowestEmaScore.Score.Gt(previousEmaScore.Score) {
 			err = k.scoresKeeper.SetLowestReputerScoreEma(ctx, topic.Id, previousEmaScore)
 			if err != nil {
-				return errorsmod.Wrap(err, "error setting lowest reputer score ema")
+				return types.PayloadAdmissionOutcome_PAYLOAD_ADMISSION_OUTCOME_UNSPECIFIED, errorsmod.Wrap(err, "error setting lowest reputer score ema")
 			}
 		}
 
 		err = k.AddActiveReputer(ctx, topic.Id, reputerLoss.ValueBundle.Reputer)
 		if err != nil {
-			return errorsmod.Wrap(err, "error adding active reputer")
+			return types.PayloadAdmissionOutcome_PAYLOAD_ADMISSION_OUTCOME_UNSPECIFIED, errorsmod.Wrap(err, "error adding active reputer")
 		}
-		return k.InsertReputerLoss(ctx, topic.Id, *reputerLoss)
+		if err := k.InsertReputerLoss(ctx, topic.Id, *reputerLoss); err != nil {
+			return types.PayloadAdmissionOutcome_PAYLOAD_ADMISSION_OUTCOME_UNSPECIFIED, errorsmod.Wrap(err, "error inserting reputer loss")
+		}
+		return types.PayloadAdmissionOutcome_PAYLOAD_ADMISSION_OUTCOME_ADMITTED, nil
 	}
 
 	if previousEmaScore.Score.Gt(lowestEmaScore.Score) {
@@ -282,49 +288,59 @@ func (k *ReputerLossKeeper) AppendReputerLoss(
 			lowestEmaScore,
 		)
 		if err != nil {
-			return errorsmod.Wrap(err, "error calculating and saving reputer score ema with last saved topic quantile")
+			return types.PayloadAdmissionOutcome_PAYLOAD_ADMISSION_OUTCOME_UNSPECIFIED, errorsmod.Wrap(err, "error calculating and saving reputer score ema with last saved topic quantile")
 		}
 
 		// Check if the reputer with lowest score is active before removing it, because remove will not fail if the reputer is not active
 		isActive, err := k.IsActiveReputer(ctx, topic.Id, lowestEmaScore.Address)
 		if err != nil {
-			return errorsmod.Wrap(err, "error checking if reputer is active")
+			return types.PayloadAdmissionOutcome_PAYLOAD_ADMISSION_OUTCOME_UNSPECIFIED, errorsmod.Wrap(err, "error checking if reputer is active")
 		}
 		if !isActive {
-			return errors.New("reputer with lowest score is not active")
+			return types.PayloadAdmissionOutcome_PAYLOAD_ADMISSION_OUTCOME_UNSPECIFIED, errors.New("reputer with lowest score is not active")
 		}
 
 		// Remove reputer with lowest score
 		err = k.RemoveActiveReputer(ctx, topic.Id, lowestEmaScore.Address)
 		if err != nil {
-			return errorsmod.Wrap(err, "error removing active reputer")
+			return types.PayloadAdmissionOutcome_PAYLOAD_ADMISSION_OUTCOME_UNSPECIFIED, errorsmod.Wrap(err, "error removing active reputer")
 		}
 		// Remove reputer loss from reputer with lowest score
 		err = k.RemoveReputerLoss(ctx, topic.Id, lowestEmaScore.Address)
 		if err != nil {
-			return errorsmod.Wrap(err, "error removing reputer loss from reputer")
+			return types.PayloadAdmissionOutcome_PAYLOAD_ADMISSION_OUTCOME_UNSPECIFIED, errorsmod.Wrap(err, "error removing reputer loss from reputer")
 		}
 		// Add new active reputer
 		err = k.AddActiveReputer(ctx, topic.Id, reputerLoss.ValueBundle.Reputer)
 		if err != nil {
-			return errorsmod.Wrap(err, "error adding active reputer")
+			return types.PayloadAdmissionOutcome_PAYLOAD_ADMISSION_OUTCOME_UNSPECIFIED, errorsmod.Wrap(err, "error adding active reputer")
 		}
 		// Calculate new lowest score with updated reputerAddresses
 		err = k.scoresKeeper.UpdateLowestScoreFromReputerAddresses(ctx, topic.Id, reputerAddresses, reputerLoss.ValueBundle.Reputer, lowestEmaScore.Address)
 		if err != nil {
-			return errorsmod.Wrap(err, "error getting low score from all reputer losses")
+			return types.PayloadAdmissionOutcome_PAYLOAD_ADMISSION_OUTCOME_UNSPECIFIED, errorsmod.Wrap(err, "error getting low score from all reputer losses")
 		}
-		return k.InsertReputerLoss(ctx, topic.Id, *reputerLoss)
-	} else {
-		// Update EMA score for the current reputer, who is the lowest score reputer
-		if !firstSubmission {
-			err = k.scoresKeeper.CalcAndSaveReputerScoreEmaWithLastSavedTopicQuantile(ctx, topic, nonceBlockHeight, previousEmaScore)
-			if err != nil {
-				return errorsmod.Wrap(err, "error calculating and saving reputer score ema with last saved topic quantile")
-			}
+		if err := k.InsertReputerLoss(ctx, topic.Id, *reputerLoss); err != nil {
+			return types.PayloadAdmissionOutcome_PAYLOAD_ADMISSION_OUTCOME_UNSPECIFIED, errorsmod.Wrap(err, "error inserting reputer loss")
+		}
+		types.EmitNewReputerLossEvictedFromActiveSetEvent(
+			ctx,
+			topic.Id,
+			nonceBlockHeight,
+			lowestEmaScore.Address,
+			reputerLoss.ValueBundle.Reputer,
+		)
+		return types.PayloadAdmissionOutcome_PAYLOAD_ADMISSION_OUTCOME_ADMITTED, nil
+	}
+
+	// Update EMA score for the current reputer, who is the lowest score reputer
+	if !firstSubmission {
+		err = k.scoresKeeper.CalcAndSaveReputerScoreEmaWithLastSavedTopicQuantile(ctx, topic, nonceBlockHeight, previousEmaScore)
+		if err != nil {
+			return types.PayloadAdmissionOutcome_PAYLOAD_ADMISSION_OUTCOME_UNSPECIFIED, errorsmod.Wrap(err, "error calculating and saving reputer score ema with last saved topic quantile")
 		}
 	}
-	return nil
+	return types.PayloadAdmissionOutcome_PAYLOAD_ADMISSION_OUTCOME_NOT_ADMITTED, nil
 }
 
 // GetReputerLatestLossByTopicId
@@ -495,6 +511,94 @@ func (k *ReputerLossKeeper) ResetReputersIndividualSubmissionsForTopic(ctx conte
 	if err := k.lossBundles.Clear(ctx, reputerRange); err != nil {
 		return errorsmod.Wrap(err, "error clearing reputer losses")
 	}
+	return nil
+}
+
+// RetireReputerSubmissionsForNonce removes the pending loss bundle and active
+// marker of every reputer whose stored bundle belongs to the given nonce.
+// Submissions stored for other nonces are left in place so the close of those
+// nonces can consume them.
+func (k *ReputerLossKeeper) RetireReputerSubmissionsForNonce(ctx context.Context, topicId TopicId, nonceHeight BlockHeight) error {
+	return k.retireReputerSubmissions(ctx, topicId, func(bundleNonceHeight BlockHeight) bool {
+		return bundleNonceHeight == nonceHeight
+	})
+}
+
+// RetireReputerSubmissionsBeforeBlock removes the pending loss bundle and
+// active marker of every reputer whose stored bundle belongs to a nonce below
+// the given block height. Submissions for nonces that can no longer be closed
+// would never be consumed and would block their reputers from submitting
+// again, so they are retired alongside the prune that removes their nonces.
+func (k *ReputerLossKeeper) RetireReputerSubmissionsBeforeBlock(ctx context.Context, topicId TopicId, blockHeight BlockHeight) error {
+	return k.retireReputerSubmissions(ctx, topicId, func(bundleNonceHeight BlockHeight) bool {
+		return bundleNonceHeight < blockHeight
+	})
+}
+
+// retireReputerSubmissions walks the topic's active reputers and retires each
+// pending submission that matches the given predicate.
+func (k *ReputerLossKeeper) retireReputerSubmissions(
+	ctx context.Context,
+	topicId TopicId,
+	shouldRetireBundle func(bundleNonceHeight BlockHeight) bool,
+) error {
+	reputerAddresses, err := k.GetActiveReputersForTopic(ctx, topicId)
+	if err != nil {
+		return errorsmod.Wrap(err, "error getting active reputer addresses")
+	}
+	for _, address := range reputerAddresses {
+		err := k.retireReputerSubmission(ctx, topicId, address, shouldRetireBundle)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// retireReputerSubmission retires the pending submission of a single active
+// reputer when its stored bundle belongs to a nonce the caller is retiring.
+// A bundle that is unreadable or carries no nonce can never be consumed by a
+// close and is retired together with the matching ones; a bundle kept for a
+// later nonce is left fully in place for that nonce's close.
+func (k *ReputerLossKeeper) retireReputerSubmission(
+	ctx context.Context,
+	topicId TopicId,
+	address ActorId,
+	shouldRetireBundle func(bundleNonceHeight BlockHeight) bool,
+) error {
+	bundle, err := k.GetReputerLatestLossByTopicId(ctx, topicId, address)
+	// Only a missing entry or a malformed stored value are expected read
+	// errors; anything else is a storage failure and aborts the retirement.
+	if err != nil && !errors.Is(err, collections.ErrNotFound) && !errorsmod.IsOf(err, types.ErrInvalidValue) {
+		return errorsmod.Wrapf(err, "error reading loss bundle for reputer %s", address)
+	}
+	if err != nil || bundle.ReputerRequestNonce == nil || bundle.ReputerRequestNonce.ReputerNonce == nil {
+		// No readable submission remains for this marker, or the stored
+		// bundle cannot be attributed to any nonce: retire what is left so
+		// the reputer is not blocked from submitting again.
+		return k.removeReputerSubmission(ctx, topicId, address, 0)
+	}
+	bundleNonce := bundle.ReputerRequestNonce.ReputerNonce.BlockHeight
+	if !shouldRetireBundle(bundleNonce) {
+		return nil
+	}
+	return k.removeReputerSubmission(ctx, topicId, address, bundleNonce)
+}
+
+// removeReputerSubmission deletes the active marker and the stored bundle of a
+// reputer and announces the retirement with EventReputerSubmissionRetired.
+// Removing an entry that is not present is a no-op; nonce is the stored
+// bundle's nonce, or 0 when it could not be attributed to one.
+func (k *ReputerLossKeeper) removeReputerSubmission(ctx context.Context, topicId TopicId, address ActorId, nonce BlockHeight) error {
+	err := k.RemoveActiveReputer(ctx, topicId, address)
+	if err != nil {
+		return errorsmod.Wrapf(err, "error removing active marker for reputer %s", address)
+	}
+	err = k.RemoveReputerLoss(ctx, topicId, address)
+	if err != nil {
+		return errorsmod.Wrapf(err, "error removing loss bundle for reputer %s", address)
+	}
+	types.EmitNewReputerSubmissionRetiredEvent(ctx, topicId, nonce, address)
 	return nil
 }
 
