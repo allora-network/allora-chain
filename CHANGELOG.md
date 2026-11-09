@@ -67,6 +67,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+* [#1011](https://github.com/allora-network/allora-chain/pull/1011) `admission_outcome` (`PAYLOAD_ADMISSION_OUTCOME_*`) on the three insert-payload events; new `EventInferenceEvictedFromActiveSet`, `EventForecastEvictedFromActiveSet`, `EventReputerLossEvictedFromActiveSet` and `EventReputerSubmissionRetired` events.
 * [#968](https://github.com/allora-network/allora-chain/pull/968) Per-topic `max_top_inferers_to_reward`, required within the global range, with migration v16
 * [#969](https://github.com/allora-network/allora-chain/pull/969) New global `min_top_inferers_to_reward` as the floor for the per-topic inferer cap (default `5`)
 * [#1005](https://github.com/allora-network/allora-chain/pull/1005) `nonce`, the epoch nonce, on every `emissions.v10` event that carries the epoch under `block_height` or `nonce_block_height` (listed under Deprecated), and on the `Get{Worker,Reputer}SubmissionWindowStatus` responses
@@ -89,6 +90,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * [#968](https://github.com/allora-network/allora-chain/pull/968) The global `max_top_inferers_to_reward` now rejects zero and serves as the live ceiling for the per-topic cap; score-history retention still uses the global value.
 * [#1004](https://github.com/allora-network/allora-chain/pull/1004) `EmitNewActorScoresSetEvent` no longer takes a height: `EventScoresSet` always carried the epoch nonce from the scores, and two callers passed the current block height, which was ignored.
 * [#1026](https://github.com/allora-network/allora-chain/pull/1026) `addresses` on `EventActiveForecastersSet` lists only the forecasters whose forecasts were stored for the epoch; it used to list every active forecaster, including those whose forecasts the close discarded.
+* [#1011](https://github.com/allora-network/allora-chain/pull/1011) Additive API change: `types.EmitNewInsert{Inferer,Forecaster,Reputer}PayloadEvent` and their `New*EventBase` constructors take a `PayloadAdmissionOutcome`; `AppendForecast` and `AppendReputerLoss` return it.
 
 ### Deprecated
 
@@ -108,6 +110,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * [#993](https://github.com/allora-network/allora-chain/pull/993) Open the reputer submission window at the end of the reveal epoch, and retire only the closing nonce's reputer submissions when closing it, fixing a permanent loss of network losses and rewards on fractional-lag topics.
 * [#1003](https://github.com/allora-network/allora-chain/pull/1003) Topic creation now emits its events in order — create, whitelist gates, fee — with the creation fee reported as `EventFundTopic` (creator as funder). Gate enable/disable emits once per state transition, and zero-fee payments skip no-op bank writes but still attempt activation.
 * [#1012](https://github.com/allora-network/allora-chain/pull/1012) When the worker nonce closes, drop a forecast left with fewer than two inferers in the active set. A new forecast that names the same inferer twice is rejected. A forecast already stored is still accepted.
+* [#1011](https://github.com/allora-network/allora-chain/pull/1011) Restore `EventInsertInfererPayload` for not-admitted submissions and `EventInsertForecasterPayload` for fully-filtered forecasts (regression from #942 in v0.17.0).
 
 ### Security
 
