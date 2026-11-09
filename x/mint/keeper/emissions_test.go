@@ -33,7 +33,7 @@ func (s *MintKeeperTestSuite) TestGetNumStakedTokensNonNegative() {
 	s.stakingKeeper.EXPECT().TotalBondedTokens(s.ctx).Return(cosmosMath.NewInt(0), nil)
 	s.emissionsKeeper.EXPECT().GetTotalStake(s.ctx).Return(cosmosMath.NewInt(0), nil)
 	nst, err := keeper.GetNumStakedTokens(s.ctx, s.mintKeeper)
-	s.NoError(err)
+	s.Require().NoError(err)
 	s.False(nst.IsNegative())
 }
 

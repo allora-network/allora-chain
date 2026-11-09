@@ -1,25 +1,35 @@
-run:
-  timeout: 5m
-
+version: "2"
 linters:
-  disable-all: true
-  # Enable specific linter
-  # https://golangci-lint.run/usage/linters/#enabled-by-default-linters
+  default: none
   enable:
     - maprange
-
-linters-settings:
-  custom:
-    maprange:
-      path: bin/maprange.so
-      description: "Detects range loops over maps"
-
-issues:      
+  settings:
+    custom:
+      maprange:
+        path: bin/maprange.so
+        description: Detects range loops over maps
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    paths:
+      - .*\.pb\.go
+      - .*\.pb\.gw\.go
+      - .*\.pulsar\.go
+      - .*_mocks\.go
+      - third_party$
+      - builtin$
+      - examples$
+issues:
   max-issues-per-linter: 10000
   max-same-issues: 10000
-
-  exclude-files:
-    - ".*\\.pb\\.go"
-    - ".*\\.pb\\.gw\\.go"
-    - ".*\\.pulsar\\.go"
-    - ".*_mocks\\.go"
+formatters:
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$

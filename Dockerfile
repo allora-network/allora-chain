@@ -1,4 +1,4 @@
-FROM golang:1.22-bookworm AS builder
+FROM golang:1.26-bookworm AS builder
 
 # SECURITY: Do not pass credentials via `--build-arg` / `ARG` -- they are
 # embedded in image metadata (`docker history`, OCI provenance) and leak to
