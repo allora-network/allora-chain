@@ -25,6 +25,10 @@ jobs:
         uses: golangci/golangci-lint-action@v8
         with:
           version: v2.15.0
+          # The published binary is built with Go 1.27, and that gofmt
+          # realigns composite literals this toolchain leaves alone.
+          # goinstall builds the linter with the Go from setup-go.
+          install-mode: goinstall
           args: --timeout=10m
 
   custom-linters:
