@@ -102,6 +102,26 @@ type eventAudit struct {
 
 	acceptedForecasters map[uint64][]string
 	closedTopics        map[uint64]bool
+
+	// pendingPayloads replays the active sets and stored payloads the insert and
+	// eviction events describe, so every tx's insert event can be checked
+	// against the chain the same block committed. A nil payload is an active
+	// actor whose submission was not accepted into the store.
+	pendingPayloads map[pendingKey]*pendingPayload
+}
+
+type pendingKey struct {
+	topicId uint64
+	kind    string // inferer, forecaster, or reputer
+	actor   string
+}
+
+// pendingPayload is one actor's live submission marker. notAdmitted marks a
+// submission that recorded only score/liveness side effects, so the actor must
+// hold no stored payload.
+type pendingPayload struct {
+	notAdmitted bool
+	nonce       int64
 }
 
 // EventAuditStart returns the height a suite's event audit starts from.
@@ -164,6 +184,7 @@ func newEventAudit(ctx context.Context, m testCommon.TestConfig) *eventAudit {
 
 		acceptedForecasters: make(map[uint64][]string),
 		closedTopics:        make(map[uint64]bool),
+		pendingPayloads:     make(map[pendingKey]*pendingPayload),
 	}
 }
 
@@ -232,6 +253,7 @@ func (a *eventAudit) auditBlock(block chainBlock) {
 	a.auditRewardPayouts(block)
 	a.auditTopicWeights(block, facts)
 	a.auditCombinedValuesFromWeights(block.height, facts)
+	a.auditBlockPayloads(block)
 	for i, event := range block.events {
 		if event.typed == nil {
 			continue
@@ -887,6 +909,20 @@ func (a *eventAudit) auditEvent(height int64, facts blockContext, event chainEve
 		a.auditNonceExpired(height, typed)
 	case *emissionstypes.EventInsertForecasterPayload:
 		a.recordForecasterPayload(typed)
+		a.trackInsert(height, typed.TopicId, "forecaster", typed.Forecaster, typed.Nonce, typed.AdmissionOutcome)
+	case *emissionstypes.EventInsertInfererPayload:
+		a.trackInsert(height, typed.TopicId, "inferer", typed.Inferer, typed.Nonce, typed.AdmissionOutcome)
+	case *emissionstypes.EventInsertReputerPayload:
+		a.trackInsert(height, typed.TopicId, "reputer", typed.Reputer, typed.Nonce, typed.AdmissionOutcome)
+	case *emissionstypes.EventInferenceEvictedFromActiveSet:
+		a.trackEviction(height, "inferer", typed.TopicId, typed.EvictedInferer, typed.EvictingInferer)
+	case *emissionstypes.EventForecastEvictedFromActiveSet:
+		a.trackEviction(height, "forecaster", typed.TopicId, typed.EvictedForecaster, typed.EvictingForecaster)
+	case *emissionstypes.EventReputerLossEvictedFromActiveSet:
+		a.trackEviction(height, "reputer", typed.TopicId, typed.EvictedReputer, typed.EvictingReputer)
+	case *emissionstypes.EventReputerSubmissionRetired:
+		delete(a.pendingPayloads, pendingKey{topicId: typed.TopicId, kind: "reputer", actor: typed.Reputer})
+		a.coverage["EventReputerSubmissionRetired"]++
 	case *emissionstypes.EventScoresSet:
 		a.auditScores(height, facts, typed)
 	case *emissionstypes.EventRewardsSettled:
@@ -1043,6 +1079,7 @@ func (a *eventAudit) auditEvent(height int64, facts blockContext, event chainEve
 			a.failf(height, "EventWorkerSubmissionWindowClosed topic %d nonce %d is still unfulfilled", typed.TopicId, typed.Nonce)
 		}
 		a.resetForecasterPayloads(typed.TopicId)
+		a.clearPendingForTopic(typed.TopicId, "inferer", "forecaster")
 	case *emissionstypes.EventReputerSubmissionWindowOpened:
 		a.auditReputerWindowOpened(height, typed)
 	case *emissionstypes.EventReputerSubmissionWindowClosed:
