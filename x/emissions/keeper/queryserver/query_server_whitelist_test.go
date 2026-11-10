@@ -425,7 +425,7 @@ func (s *QueryServerTestSuite) TestCanSubmitWorkerPayload() {
 	s.Require().NoError(err)
 
 	// Initially should be able to submit
-	response, err := queryServer.CanSubmitWorkerPayload(ctx, req)
+	response, err := queryServer.CanSubmitWorkerPayload(ctx, req) //nolint:staticcheck // covers the deprecated query alias
 	s.Require().NoError(err)
 	s.Require().NotNil(response)
 	s.Require().True(response.CanSubmitWorkerPayload)
@@ -435,7 +435,7 @@ func (s *QueryServerTestSuite) TestCanSubmitWorkerPayload() {
 	s.Require().NoError(err)
 
 	// Should be unable to submit after whitelist is enabled and they are not whitelisted
-	response, err = queryServer.CanSubmitWorkerPayload(ctx, req)
+	response, err = queryServer.CanSubmitWorkerPayload(ctx, req) //nolint:staticcheck // covers the deprecated query alias
 	s.Require().NoError(err)
 	s.Require().NotNil(response)
 	s.Require().False(response.CanSubmitWorkerPayload)
@@ -445,10 +445,50 @@ func (s *QueryServerTestSuite) TestCanSubmitWorkerPayload() {
 	s.Require().NoError(err)
 
 	// Should be able to submit after whitelist is enabled and testAddr is whitelisted
-	response, err = queryServer.CanSubmitWorkerPayload(ctx, req)
+	response, err = queryServer.CanSubmitWorkerPayload(ctx, req) //nolint:staticcheck // covers the deprecated query alias
 	s.Require().NoError(err)
 	s.Require().NotNil(response)
 	s.Require().True(response.CanSubmitWorkerPayload)
+}
+
+func (s *QueryServerTestSuite) TestCanSubmitInferencePayload() {
+	ctx := s.Ctx()
+	queryServer := s.EmissionsQueryServer()
+
+	testAddr := "allo1snm6pxg7p9jetmkhz0jz9ku3vdzmszegy9q5lh"
+	topicId := uint64(1)
+
+	req := &types.CanSubmitInferencePayloadRequest{
+		TopicId: topicId,
+		Address: testAddr,
+	}
+
+	err := s.WhitelistsKeeper().DisableTopicWorkerWhitelist(ctx, topicId)
+	s.Require().NoError(err)
+
+	// Initially should be able to submit
+	response, err := queryServer.CanSubmitInferencePayload(ctx, req)
+	s.Require().NoError(err)
+	s.Require().NotNil(response)
+	s.Require().True(response.CanSubmitInferencePayload)
+
+	err = s.WhitelistsKeeper().EnableTopicWorkerWhitelist(ctx, topicId)
+	s.Require().NoError(err)
+
+	// Should be unable to submit after the whitelist is enabled and the actor is not whitelisted
+	response, err = queryServer.CanSubmitInferencePayload(ctx, req)
+	s.Require().NoError(err)
+	s.Require().NotNil(response)
+	s.Require().False(response.CanSubmitInferencePayload)
+
+	err = s.WhitelistsKeeper().AddToTopicWorkerWhitelist(ctx, topicId, testAddr)
+	s.Require().NoError(err)
+
+	// Should be able to submit after the whitelist is enabled and the actor is whitelisted
+	response, err = queryServer.CanSubmitInferencePayload(ctx, req)
+	s.Require().NoError(err)
+	s.Require().NotNil(response)
+	s.Require().True(response.CanSubmitInferencePayload)
 }
 
 func (s *QueryServerTestSuite) TestCanSubmitReputerPayload() {

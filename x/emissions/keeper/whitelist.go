@@ -583,10 +583,10 @@ func (k *WhitelistsKeeper) CanCreateTopic(ctx context.Context, actor ActorId) (b
 	return k.IsEnabledGlobalActor(ctx, actor)
 }
 
-// An actor can submit a worker (inferer) payload if they are topic worker
-// whitelisted, global actor, or global worker. The worker whitelist is the
-// inferer whitelist.
-func (k *WhitelistsKeeper) CanSubmitWorkerPayload(ctx context.Context, topicId TopicId, actor ActorId) (bool, error) {
+// CanSubmitInferencePayload returns true if the actor may submit an inference
+// for the topic: topic worker (inferer) whitelisted, global worker whitelisted,
+// or global actor.
+func (k *WhitelistsKeeper) CanSubmitInferencePayload(ctx context.Context, topicId TopicId, actor ActorId) (bool, error) {
 	isEnabledTopicWorker, err := k.IsEnabledTopicWorker(ctx, topicId, actor)
 	if err != nil {
 		return false, err
@@ -602,6 +602,14 @@ func (k *WhitelistsKeeper) CanSubmitWorkerPayload(ctx context.Context, topicId T
 		return true, nil
 	}
 	return k.IsEnabledGlobalActor(ctx, actor)
+}
+
+// CanSubmitWorkerPayload is the previous name for CanSubmitInferencePayload and
+// keeps the same authorization chain.
+//
+// Deprecated: use CanSubmitInferencePayload.
+func (k *WhitelistsKeeper) CanSubmitWorkerPayload(ctx context.Context, topicId TopicId, actor ActorId) (bool, error) {
+	return k.CanSubmitInferencePayload(ctx, topicId, actor)
 }
 
 // CanSubmitForecasterPayload returns true if the actor may submit a forecast

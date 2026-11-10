@@ -131,6 +131,7 @@ const (
 	QueryService_IsTopicForecasterWhitelistEnabled_FullMethodName           = "/emissions.v10.QueryService/IsTopicForecasterWhitelistEnabled"
 	QueryService_CanUpdateGlobalForecasterWhitelist_FullMethodName          = "/emissions.v10.QueryService/CanUpdateGlobalForecasterWhitelist"
 	QueryService_CanSubmitForecasterPayload_FullMethodName                  = "/emissions.v10.QueryService/CanSubmitForecasterPayload"
+	QueryService_CanSubmitInferencePayload_FullMethodName                   = "/emissions.v10.QueryService/CanSubmitInferencePayload"
 )
 
 // QueryServiceClient is the client API for QueryService service.
@@ -237,6 +238,8 @@ type QueryServiceClient interface {
 	CanUpdateParams(ctx context.Context, in *CanUpdateParamsRequest, opts ...grpc.CallOption) (*CanUpdateParamsResponse, error)
 	CanUpdateTopicWhitelist(ctx context.Context, in *CanUpdateTopicWhitelistRequest, opts ...grpc.CallOption) (*CanUpdateTopicWhitelistResponse, error)
 	CanCreateTopic(ctx context.Context, in *CanCreateTopicRequest, opts ...grpc.CallOption) (*CanCreateTopicResponse, error)
+	// Deprecated: Do not use.
+	// Deprecated: use CanSubmitInferencePayload.
 	CanSubmitWorkerPayload(ctx context.Context, in *CanSubmitWorkerPayloadRequest, opts ...grpc.CallOption) (*CanSubmitWorkerPayloadResponse, error)
 	CanSubmitReputerPayload(ctx context.Context, in *CanSubmitReputerPayloadRequest, opts ...grpc.CallOption) (*CanSubmitReputerPayloadResponse, error)
 	// GetTopicInitialInfererEmaScore returns the initial EMA score for inferers in a topic
@@ -260,6 +263,7 @@ type QueryServiceClient interface {
 	IsTopicForecasterWhitelistEnabled(ctx context.Context, in *IsTopicForecasterWhitelistEnabledRequest, opts ...grpc.CallOption) (*IsTopicForecasterWhitelistEnabledResponse, error)
 	CanUpdateGlobalForecasterWhitelist(ctx context.Context, in *CanUpdateGlobalForecasterWhitelistRequest, opts ...grpc.CallOption) (*CanUpdateGlobalForecasterWhitelistResponse, error)
 	CanSubmitForecasterPayload(ctx context.Context, in *CanSubmitForecasterPayloadRequest, opts ...grpc.CallOption) (*CanSubmitForecasterPayloadResponse, error)
+	CanSubmitInferencePayload(ctx context.Context, in *CanSubmitInferencePayloadRequest, opts ...grpc.CallOption) (*CanSubmitInferencePayloadResponse, error)
 }
 
 type queryServiceClient struct {
@@ -1240,6 +1244,7 @@ func (c *queryServiceClient) CanCreateTopic(ctx context.Context, in *CanCreateTo
 	return out, nil
 }
 
+// Deprecated: Do not use.
 func (c *queryServiceClient) CanSubmitWorkerPayload(ctx context.Context, in *CanSubmitWorkerPayloadRequest, opts ...grpc.CallOption) (*CanSubmitWorkerPayloadResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(CanSubmitWorkerPayloadResponse)
@@ -1390,6 +1395,16 @@ func (c *queryServiceClient) CanSubmitForecasterPayload(ctx context.Context, in 
 	return out, nil
 }
 
+func (c *queryServiceClient) CanSubmitInferencePayload(ctx context.Context, in *CanSubmitInferencePayloadRequest, opts ...grpc.CallOption) (*CanSubmitInferencePayloadResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CanSubmitInferencePayloadResponse)
+	err := c.cc.Invoke(ctx, QueryService_CanSubmitInferencePayload_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // QueryServiceServer is the server API for QueryService service.
 // All implementations must embed UnimplementedQueryServiceServer
 // for forward compatibility.
@@ -1494,6 +1509,8 @@ type QueryServiceServer interface {
 	CanUpdateParams(context.Context, *CanUpdateParamsRequest) (*CanUpdateParamsResponse, error)
 	CanUpdateTopicWhitelist(context.Context, *CanUpdateTopicWhitelistRequest) (*CanUpdateTopicWhitelistResponse, error)
 	CanCreateTopic(context.Context, *CanCreateTopicRequest) (*CanCreateTopicResponse, error)
+	// Deprecated: Do not use.
+	// Deprecated: use CanSubmitInferencePayload.
 	CanSubmitWorkerPayload(context.Context, *CanSubmitWorkerPayloadRequest) (*CanSubmitWorkerPayloadResponse, error)
 	CanSubmitReputerPayload(context.Context, *CanSubmitReputerPayloadRequest) (*CanSubmitReputerPayloadResponse, error)
 	// GetTopicInitialInfererEmaScore returns the initial EMA score for inferers in a topic
@@ -1517,6 +1534,7 @@ type QueryServiceServer interface {
 	IsTopicForecasterWhitelistEnabled(context.Context, *IsTopicForecasterWhitelistEnabledRequest) (*IsTopicForecasterWhitelistEnabledResponse, error)
 	CanUpdateGlobalForecasterWhitelist(context.Context, *CanUpdateGlobalForecasterWhitelistRequest) (*CanUpdateGlobalForecasterWhitelistResponse, error)
 	CanSubmitForecasterPayload(context.Context, *CanSubmitForecasterPayloadRequest) (*CanSubmitForecasterPayloadResponse, error)
+	CanSubmitInferencePayload(context.Context, *CanSubmitInferencePayloadRequest) (*CanSubmitInferencePayloadResponse, error)
 	mustEmbedUnimplementedQueryServiceServer()
 }
 
@@ -1862,6 +1880,9 @@ func (UnimplementedQueryServiceServer) CanUpdateGlobalForecasterWhitelist(contex
 }
 func (UnimplementedQueryServiceServer) CanSubmitForecasterPayload(context.Context, *CanSubmitForecasterPayloadRequest) (*CanSubmitForecasterPayloadResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CanSubmitForecasterPayload not implemented")
+}
+func (UnimplementedQueryServiceServer) CanSubmitInferencePayload(context.Context, *CanSubmitInferencePayloadRequest) (*CanSubmitInferencePayloadResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CanSubmitInferencePayload not implemented")
 }
 func (UnimplementedQueryServiceServer) mustEmbedUnimplementedQueryServiceServer() {}
 func (UnimplementedQueryServiceServer) testEmbeddedByValue()                      {}
@@ -3900,6 +3921,24 @@ func _QueryService_CanSubmitForecasterPayload_Handler(srv interface{}, ctx conte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _QueryService_CanSubmitInferencePayload_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CanSubmitInferencePayloadRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServiceServer).CanSubmitInferencePayload(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: QueryService_CanSubmitInferencePayload_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServiceServer).CanSubmitInferencePayload(ctx, req.(*CanSubmitInferencePayloadRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // QueryService_ServiceDesc is the grpc.ServiceDesc for QueryService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -4354,6 +4393,10 @@ var QueryService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CanSubmitForecasterPayload",
 			Handler:    _QueryService_CanSubmitForecasterPayload_Handler,
+		},
+		{
+			MethodName: "CanSubmitInferencePayload",
+			Handler:    _QueryService_CanSubmitInferencePayload_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

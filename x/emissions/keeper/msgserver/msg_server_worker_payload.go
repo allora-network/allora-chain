@@ -35,7 +35,7 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.InsertWo
 	// rejected unless the actor holds both permissions.
 	inferenceForecastsBundle := msg.WorkerDataBundle.GetInferenceForecastsBundle()
 	if inferenceForecastsBundle != nil && inferenceForecastsBundle.GetInference() != nil {
-		canSubmit, err := ms.wlk.CanSubmitWorkerPayload(ctx, msg.WorkerDataBundle.TopicId, msg.WorkerDataBundle.Worker)
+		canSubmit, err := ms.wlk.CanSubmitInferencePayload(ctx, msg.WorkerDataBundle.TopicId, msg.WorkerDataBundle.Worker)
 		if err != nil {
 			return nil, errorsmod.Wrapf(err, "Error checking if worker can submit inference payload")
 		} else if !canSubmit {

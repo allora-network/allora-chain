@@ -285,18 +285,34 @@ func (qs queryServer) CanCreateTopic(ctx context.Context, req *types.CanCreateTo
 	return &types.CanCreateTopicResponse{CanCreateTopic: val}, nil
 }
 
+// CanSubmitWorkerPayload is the deprecated alias of CanSubmitInferencePayload;
+// the RPC stays registered for existing clients.
 func (qs queryServer) CanSubmitWorkerPayload(ctx context.Context, req *types.CanSubmitWorkerPayloadRequest) (_ *types.CanSubmitWorkerPayloadResponse, err error) {
 	defer metrics.RecordMetrics("CanSubmitWorkerPayload", time.Now(), &err)
 	if err := types.ValidateStringIsBech32(req.Address); err != nil {
 		return nil, sdkerrors.ErrInvalidAddress.Wrapf("invalid address: %s", err)
 	}
 
-	val, err := qs.wlk.CanSubmitWorkerPayload(ctx, req.TopicId, req.Address)
+	val, err := qs.wlk.CanSubmitInferencePayload(ctx, req.TopicId, req.Address)
 	if err != nil {
 		return nil, errors.Wrapf(err, "error getting can submit worker payload")
 	}
 
 	return &types.CanSubmitWorkerPayloadResponse{CanSubmitWorkerPayload: val}, nil
+}
+
+func (qs queryServer) CanSubmitInferencePayload(ctx context.Context, req *types.CanSubmitInferencePayloadRequest) (_ *types.CanSubmitInferencePayloadResponse, err error) {
+	defer metrics.RecordMetrics("CanSubmitInferencePayload", time.Now(), &err)
+	if err := types.ValidateStringIsBech32(req.Address); err != nil {
+		return nil, sdkerrors.ErrInvalidAddress.Wrapf("invalid address: %s", err)
+	}
+
+	val, err := qs.wlk.CanSubmitInferencePayload(ctx, req.TopicId, req.Address)
+	if err != nil {
+		return nil, errors.Wrapf(err, "error getting can submit inference payload")
+	}
+
+	return &types.CanSubmitInferencePayloadResponse{CanSubmitInferencePayload: val}, nil
 }
 
 func (qs queryServer) CanSubmitReputerPayload(ctx context.Context, req *types.CanSubmitReputerPayloadRequest) (_ *types.CanSubmitReputerPayloadResponse, err error) {

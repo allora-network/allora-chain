@@ -875,7 +875,16 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				{
 					RpcMethod: "CanSubmitWorkerPayload",
 					Use:       "can-submit-worker-payload [topic_id] [address]",
-					Short:     "Check if address can submit worker (inferer) payload for topic",
+					Short:     "Check if address can submit inference payload for topic (deprecated: use can-submit-inference-payload)",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+						{ProtoField: "address"},
+					},
+				},
+				{
+					RpcMethod: "CanSubmitInferencePayload",
+					Use:       "can-submit-inference-payload [topic_id] [address]",
+					Short:     "Check if address can submit inference payload for topic",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "topic_id"},
 						{ProtoField: "address"},

@@ -540,11 +540,11 @@ func (s *KeeperTestSuite) TestWhitelistBasedPermissions() {
 			hasEnableDisable: false,
 		},
 		{
-			name:             "CanSubmitWorkerPayload",
+			name:             "CanSubmitInferencePayload",
 			setupWhitelist1:  k.AddToTopicWorkerWhitelist,
 			enableWhitelist:  k.EnableTopicWorkerWhitelist,
 			disableWhitelist: k.DisableTopicWorkerWhitelist,
-			checkPermission:  k.CanSubmitWorkerPayload,
+			checkPermission:  k.CanSubmitInferencePayload,
 			whitelistedAddr:  topicWorker,
 			hasEnableDisable: true,
 		},
@@ -642,6 +642,35 @@ func (s *KeeperTestSuite) TestWhitelistBasedPermissions() {
 			}
 		})
 	}
+}
+
+// TestCanSubmitWorkerPayloadAlias checks the deprecated alias keeps the same
+// result as CanSubmitInferencePayload for a denied and a whitelisted actor.
+func (s *KeeperTestSuite) TestCanSubmitWorkerPayloadAlias() {
+	ctx := s.Ctx()
+	k := s.WhitelistsKeeper()
+	actor := s.AddrsStr(5)
+	topicId := uint64(2)
+
+	err := k.EnableTopicWorkerWhitelist(ctx, topicId)
+	s.Require().NoError(err)
+
+	//nolint:staticcheck // the deprecated alias must stay equivalent to CanSubmitInferencePayload
+	legacy, err := k.CanSubmitWorkerPayload(ctx, topicId, actor)
+	s.Require().NoError(err)
+	current, err := k.CanSubmitInferencePayload(ctx, topicId, actor)
+	s.Require().NoError(err)
+	s.Require().Equal(current, legacy)
+
+	err = k.AddToTopicWorkerWhitelist(ctx, topicId, actor)
+	s.Require().NoError(err)
+
+	//nolint:staticcheck // the deprecated alias must stay equivalent to CanSubmitInferencePayload
+	legacy, err = k.CanSubmitWorkerPayload(ctx, topicId, actor)
+	s.Require().NoError(err)
+	current, err = k.CanSubmitInferencePayload(ctx, topicId, actor)
+	s.Require().NoError(err)
+	s.Require().Equal(current, legacy)
 }
 
 func (s *KeeperTestSuite) TestWhitelistInvalidAddressErrorMessages() {
