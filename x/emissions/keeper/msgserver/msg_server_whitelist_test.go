@@ -648,7 +648,7 @@ func (s *MsgServerTestSuite) TestTopicWhitelistOperations() {
 
 	testCases := []struct {
 		name          string
-		whitelistType string // "worker" or "reputer"
+		whitelistType string // "worker", "forecaster" or "reputer"
 		operation     string // "enable", "disable", "add", "remove"
 		topicId       uint64
 		setupMsg      func() any
@@ -932,6 +932,9 @@ func (s *MsgServerTestSuite) TestTopicWhitelistOperations() {
 				_, err := msgServer.AddToTopicForecasterWhitelist(ctx, msg.(*types.AddToTopicForecasterWhitelistRequest))
 				return err
 			},
+			verify: func() (bool, error) {
+				return keeper.IsWhitelistedTopicForecaster(ctx, topicId, targetAddr)
+			},
 		},
 		{
 			name:          "Remove from topic forecaster whitelist - success",
@@ -939,6 +942,10 @@ func (s *MsgServerTestSuite) TestTopicWhitelistOperations() {
 			operation:     "remove",
 			topicId:       topicId,
 			setupMsg: func() any {
+				// Seed the entry so the removal is not a no-op.
+				err := keeper.AddToTopicForecasterWhitelist(ctx, topicId, targetAddr)
+				s.Require().NoError(err)
+
 				return &types.RemoveFromTopicForecasterWhitelistRequest{
 					Sender:  adminAddr,
 					TopicId: topicId,
@@ -948,6 +955,9 @@ func (s *MsgServerTestSuite) TestTopicWhitelistOperations() {
 			execute: func(msg any) error {
 				_, err := msgServer.RemoveFromTopicForecasterWhitelist(ctx, msg.(*types.RemoveFromTopicForecasterWhitelistRequest))
 				return err
+			},
+			verify: func() (bool, error) {
+				return keeper.IsWhitelistedTopicForecaster(ctx, topicId, targetAddr)
 			},
 		},
 		{
@@ -982,9 +992,10 @@ func (s *MsgServerTestSuite) TestTopicWhitelistOperations() {
 				if tc.verify != nil {
 					result, err := tc.verify()
 					s.Require().NoError(err)
-					if tc.operation == "enable" {
+					switch tc.operation {
+					case "enable", "add":
 						s.Require().True(result)
-					} else if tc.operation == "disable" {
+					case "disable", "remove":
 						s.Require().False(result)
 					}
 				}
