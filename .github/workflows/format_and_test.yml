@@ -37,7 +37,12 @@ jobs:
 
   integration-test:
     runs-on: ubuntu-latest
-    timeout-minutes: 50
+    # Covers setup, both chain starts, both suite timeouts and the diagnostics caps.
+    timeout-minutes: 60
+    env:
+      INTEGRATION: "TRUE"
+      RPC_MODE: RoundRobin
+      RPC_URLS: http://localhost:26657,http://localhost:26658,http://localhost:26659
 
     steps:
     - uses: actions/checkout@v4
@@ -74,63 +79,39 @@ jobs:
       run: git apply ./test/fuzz/invariants.patch
 
     - name: Run allora l1 chain
+      id: first_chain
       run: bash ./test/local_testnet_l1.sh
 
-    - name: IntegrationTest
-      run: INTEGRATION=TRUE RPC_MODE="RoundRobin" RPC_URLS="http://localhost:26657,http://localhost:26658,http://localhost:26659" /usr/bin/go test -timeout 30m -run '^(TestExternalTestSuite|TestExternalMultiTestSuite)$' github.com/allora-network/allora-chain/test/integration -v
+    - name: Integration test on the first chain
+      run: /usr/bin/go test -count=1 -timeout 20m -run '^TestExternalTestSuite$' github.com/allora-network/allora-chain/test/integration -v
 
-    # The diagnostic steps below never affect the job result.
-    - name: Report validator state
-      if: failure() || cancelled()
+    # The diagnostic steps below never affect the job result. This one runs before the
+    # next step removes the first chain's containers. Logs are written outside the
+    # workspace so the upload cannot reach test/localnet, which holds keyrings.
+    - name: Keep the first chain's state and logs
+      if: always()
       continue-on-error: true
-      timeout-minutes: 1
-      shell: bash
-      run: |
-        set +e
-        # Prints "unreachable" when the node gives no JSON and "absent" when the
-        # field is missing, which is how an RPC error response looks.
-        rpc_field() {
-          local value
-          value=$(curl -fsS --connect-timeout 2 --max-time 5 "http://localhost:$1/$2" | jq -r "$3 // \"absent\"")
-          echo "${value:-unreachable}"
-        }
-        for i in 0 1 2; do
-          port=$((26657 + i))
-          echo "validator$i port=$port" \
-            "status.latest_block_height=$(rpc_field "$port" status .result.sync_info.latest_block_height)" \
-            "abci_info.last_block_height=$(rpc_field "$port" abci_info .result.response.last_block_height)"
-        done
-        docker ps -a
-        exit 0
+      timeout-minutes: 3
+      run: bash ./test/collect_validator_diagnostics.sh "$RUNNER_TEMP/validator-logs/first-chain"
 
-    # Logs are written outside the workspace so the upload cannot reach test/localnet,
-    # which holds keyrings.
-    - name: Capture validator logs
-      if: failure() || cancelled()
+    # Runs after a first-suite failure too; that failure still fails the job.
+    - name: Replace the first chain with a fresh one
+      id: second_chain
+      if: ${{ !cancelled() && steps.first_chain.outcome == 'success' }}
+      env:
+        LOCALNET_RESET: "true"
+        LOCALNET_REUSE_IMAGE: "true"
+      run: bash ./test/local_testnet_l1.sh
+
+    - name: Integration test on the fresh chain
+      if: ${{ !cancelled() && steps.second_chain.outcome == 'success' }}
+      run: /usr/bin/go test -count=1 -timeout 15m -run '^TestExternalMultiTestSuite$' github.com/allora-network/allora-chain/test/integration -v
+
+    - name: Keep the fresh chain's state and logs
+      if: ${{ (failure() || cancelled()) && steps.second_chain.outcome != 'skipped' }}
       continue-on-error: true
-      timeout-minutes: 2
-      shell: bash
-      run: |
-        set +e
-        log_dir="$RUNNER_TEMP/validator-logs"
-        mkdir -p "$log_dir"
-        for node in validator0 validator1 validator2; do
-          echo "=== $node ==="
-          if ! docker inspect "$node" > /dev/null; then
-            echo "no logs captured"
-            continue
-          fi
-          log_file="$log_dir/$node.log"
-          docker logs -t "$node" > "$log_file" 2>&1 || echo "docker logs failed, $log_file may be partial"
-          # -a keeps grep printing matched lines when a log contains binary bytes.
-          grep -aE 'Invariants broken|panic|CONSENSUS FAILURE' "$log_file"
-          case $? in
-            0) ;;
-            1) echo "no lines match Invariants broken, panic, or CONSENSUS FAILURE" ;;
-            *) echo "could not scan $log_file" ;;
-          esac
-        done
-        exit 0
+      timeout-minutes: 3
+      run: bash ./test/collect_validator_diagnostics.sh "$RUNNER_TEMP/validator-logs/fresh-chain"
 
     - name: Upload validator logs
       if: failure() || cancelled()
@@ -139,7 +120,6 @@ jobs:
       uses: actions/upload-artifact@v7
       with:
         name: validator-logs-${{ github.run_id }}-${{ github.run_attempt }}
-        path: ${{ runner.temp }}/validator-logs/*.log
+        path: ${{ runner.temp }}/validator-logs
         if-no-files-found: warn
         retention-days: 14
-

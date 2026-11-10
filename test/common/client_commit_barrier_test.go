@@ -169,7 +169,7 @@ func newBarrierTestClient(t *testing.T, mode RpcConnectionType, nodes ...*fakeCo
 	}
 	c := NewClient(t, mode, urls, t.TempDir(), 1)
 	c.commitPollInterval = 5 * time.Millisecond
-	return &c
+	return c
 }
 
 // runBarrier runs wait on its own goroutine and returns a channel carrying its result.

@@ -14,19 +14,29 @@ RUN test -d .git || (echo "Dockerfile.upgrade needs a full clone: .git is not a 
 RUN git worktree add --detach /baseline $BASELINE_VERSION_TAG
 
 RUN mkdir -p $GOMODCACHE
+
+# Compiles run outside retry-fetch with GOPROXY=off, so a build error fails on its first attempt.
+COPY --chmod=755 scripts/retry-fetch.sh /usr/local/bin/retry-fetch
+
+RUN --mount=type=cache,target=/gocache retry-fetch go mod download
+RUN --mount=type=cache,target=/gocache retry-fetch go -C /baseline mod download
+
+# `go install -n` resolves, downloads and verifies every module without compiling.
+ENV COSMOVISOR_PKG=cosmossdk.io/tools/cosmovisor/cmd/cosmovisor@v1.6.0
 RUN --mount=type=cache,target=/gocache \
     --mount=type=cache,target=/root/.cache/go-build \
-    go install cosmossdk.io/tools/cosmovisor/cmd/cosmovisor@v1.6.0
+    retry-fetch go install -n "$COSMOVISOR_PKG" && \
+    GOPROXY=off go install "$COSMOVISOR_PKG"
 
 # Build the baseline version
 RUN --mount=type=cache,target=/gocache \
     --mount=type=cache,target=/root/.cache/go-build \
-    make -C /baseline install
+    GOPROXY=off make -C /baseline install
 
 # Build the upgrade binary from the build context, including any uncommitted changes
 RUN --mount=type=cache,target=/gocache \
     --mount=type=cache,target=/root/.cache/go-build \
-    make build-local-edits
+    GOPROXY=off make build-local-edits
 
 RUN cp build/allorad /go/bin/allorad-$UPGRADE_VERSION_TAG
 
@@ -57,8 +67,13 @@ RUN apt update && \
 
 #* Install dasel to work with json/yaml/toml configs
 ENV DASEL_VERSION="v2.8.1"
-ADD https://github.com/TomWright/dasel/releases/download/${DASEL_VERSION}/dasel_linux_amd64 /usr/local/bin/dasel
-RUN chmod a+x /usr/local/bin/dasel
+ENV DASEL_SHA256="21fda0a4dc3c779c42737eca4b37e4f187d7ab91ba6301eed97b801af84a9ea2"
+RUN curl --fail --silent --show-error --location \
+        --connect-timeout 20 --max-time 300 --retry 5 --retry-all-errors \
+        --output /usr/local/bin/dasel \
+        "https://github.com/TomWright/dasel/releases/download/${DASEL_VERSION}/dasel_linux_amd64" && \
+    echo "${DASEL_SHA256}  /usr/local/bin/dasel" | sha256sum --check --strict - && \
+    chmod a+x /usr/local/bin/dasel
 
 COPY --from=builder /go/bin/* /usr/local/bin/
 

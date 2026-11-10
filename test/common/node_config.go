@@ -22,7 +22,7 @@ import (
 // handle to various node data
 type TestConfig struct {
 	T              *testing.T
-	Client         Client                     // a testcommon.Client which holds several cosmosclient.Client instances
+	Client         *Client                    // a testcommon.Client which holds several cosmosclient.Client instances
 	AlloraHomeDir  string                     // home directory for the allora keystore
 	FaucetAcc      cosmosaccount.Account      // account info for the faucet
 	FaucetAddr     string                     // faucets address, string encoded bech32
