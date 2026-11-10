@@ -129,13 +129,20 @@ func EmitRewards(args EmitRewardsArgs) error {
 	for _, topicId := range sortedRewardableTopics {
 		topicRewardNonce, err := args.K.GetTopicKeeper().GetTopicRewardNonce(args.Ctx, topicId)
 		if err != nil || topicRewardNonce == 0 {
+			nonceReadFailed := err != nil
 			// return reward to ecosystem account
 			moved, err := args.K.GetBankingKeeper().MoveCoinsFromAlloraRewardsToEcosystem(args.Ctx, *topicRewards[topicId])
 			if err != nil {
 				Logger(args.Ctx).Error("Failed to move coins from allora rewards to ecosystem", "topicId", topicId, "error", err)
 				panic(err)
 			}
-			types.EmitNewTopicRewardForfeitedNoRewardNonceEvent(args.Ctx, topicId, epochsLastEnded[topicId], moved)
+			// A read error is not "no reward nonce": the coins move the same way,
+			// but the event says why, so consumers don't index a false cause.
+			if nonceReadFailed {
+				types.EmitNewTopicRewardForfeitedNonceReadFailedEvent(args.Ctx, topicId, epochsLastEnded[topicId], moved)
+			} else {
+				types.EmitNewTopicRewardForfeitedNoRewardNonceEvent(args.Ctx, topicId, epochsLastEnded[topicId], moved)
+			}
 			*topicRewards[topicId] = alloraMath.ZeroDec()
 
 			Logger(args.Ctx).Info("Topic has no valid reward nonce, skipping", "topicId", topicId)

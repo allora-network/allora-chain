@@ -680,6 +680,18 @@ func EmitNewTopicRewardForfeitedNoRewardNonceEvent(ctx context.Context, topicId 
 	}
 }
 
+// EmitNewTopicRewardForfeitedNonceReadFailedEvent notifies that a topic's
+// reward went back to the ecosystem account because reading its reward nonce
+// failed.
+func EmitNewTopicRewardForfeitedNonceReadFailedEvent(ctx context.Context, topicId TopicId, epoch int64, amount cosmosMath.Int) {
+	metrics.IncrProducerEventCount(metrics.TOPIC_REWARD_FORFEITED_NONCE_READ_FAILED_EVENT)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	err := sdkCtx.EventManager().EmitTypedEvent(NewTopicRewardForfeitedNonceReadFailedEventBase(topicId, epoch, amount))
+	if err != nil {
+		sdkCtx.Logger().Warn("Error emitting TopicRewardForfeitedNonceReadFailedEvent", "error", err)
+	}
+}
+
 // EmitNewTopicRewardForfeitedDistributionFailedEvent notifies that a topic's
 // reward went back to the ecosystem account because distributing and paying
 // it out to the topic's actors failed.

@@ -6,6 +6,7 @@ import (
 	"strings"
 	"testing"
 
+	"cosmossdk.io/collections"
 	cosmosMath "cosmossdk.io/math"
 	abci "github.com/cometbft/cometbft/abci/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
@@ -1819,4 +1820,62 @@ func (s *RewardsTestSuite) printRewardsDistributionTable(rewardsDistributions [2
 
 	// Log the entire table in one statement to preserve formatting
 	s.Ctx().Logger().Info(sb.String())
+}
+
+// A failed reward-nonce read forfeits the same coins but reports the read
+// failure, not "no reward nonce".
+func (s *RewardsTestSuite) TestEmitRewardsNonceReadFailedForfeitsAndReportsReadFailure() {
+	s.SetParamsForTest()
+
+	topic := s.MockTopic()
+	topic.Id = 2
+	topic.EpochLength = 1
+	topic.GroundTruthLag = topic.EpochLength
+	topic.WorkerSubmissionWindow = topic.EpochLength
+	topic.EpochLastEnded = 50
+	s.Require().NoError(s.TopicKeeper().SetTopic(s.Ctx(), topic.Id, topic))
+	s.Require().NoError(s.TopicKeeper().SetTotalSumPreviousTopicWeights(s.Ctx(), alloraMath.NewDecFromInt64(3)))
+	s.Require().NoError(s.EmissionsKeeper().SetRewardCurrentBlockEmission(s.Ctx(), cosmosMath.NewInt(100)))
+	s.MintTokensToModule(types.AlloraRewardsAccountName, cosmosMath.NewInt(1000))
+
+	// Corrupt this topic's stored nonce so GetTopicRewardNonce fails to decode it
+	// rather than returning (0, nil) for a missing nonce. The key format matches
+	// the keeper's collections.Map[uint64]int64: prefix 49, big-endian topic id.
+	encoded, err := collections.EncodeKeyWithPrefix(types.TopicRewardNonceKey.Bytes(), collections.Uint64Key, topic.Id)
+	s.Require().NoError(err)
+	s.StoreServiceEmissions().OpenKVStore(s.Ctx()).Set(encoded, []byte{0xff})
+
+	nonce, readErr := s.TopicKeeper().GetTopicRewardNonce(s.Ctx(), topic.Id)
+	s.Require().Error(readErr, "the setup must produce a real read error, not (0, nil)")
+	s.Require().Zero(nonce)
+
+	ecosystemAddr := authtypes.NewModuleAddress(minttypes.EcosystemModuleName)
+	ecosystemBefore := s.BankKeeper().GetBalance(s.Ctx(), ecosystemAddr, params.DefaultBondDenom)
+
+	moduleParams, err := s.ParamsKeeper().GetParams(s.Ctx())
+	s.Require().NoError(err)
+	weight := alloraMath.NewDecFromInt64(1)
+	em := sdk.NewEventManager()
+	s.Require().NoError(rewards.EmitRewards(rewards.EmitRewardsArgs{
+		Ctx:          s.Ctx().WithEventManager(em),
+		K:            *s.EmissionsKeeper(),
+		ModuleParams: moduleParams,
+		BlockHeight:  topic.EpochLastEnded,
+		Weights:      map[uint64]*alloraMath.Dec{topic.Id: &weight},
+		SumWeight:    weight,
+		TotalRevenue: cosmosMath.NewInt(1000),
+	}))
+
+	s.Require().Empty(typedEvents[*types.EventTopicRewardForfeitedNoRewardNonce](em),
+		"a read error is not 'no reward nonce'")
+	readFailed := typedEvents[*types.EventTopicRewardForfeitedNonceReadFailed](em)
+	s.Require().Len(readFailed, 1)
+	s.Require().Equal(topic.Id, readFailed[0].TopicId)
+	s.Require().Equal(topic.EpochLastEnded, readFailed[0].Epoch)
+
+	ecosystemAfter := s.BankKeeper().GetBalance(s.Ctx(), ecosystemAddr, params.DefaultBondDenom)
+	delta := ecosystemAfter.Amount.Sub(ecosystemBefore.Amount)
+	s.Require().Equal("33", readFailed[0].Amount.String())
+	s.Require().Equal(readFailed[0].Amount.String(), delta.String(),
+		"the coins move exactly as they do for a missing nonce")
 }
