@@ -356,6 +356,24 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadWithFewTopElementsPerFore
 	require.Equal(forecasts.ForecastElements[2].Inferer, inferer4)
 }
 
+// infererPayloadEvents returns all EventInsertInfererPayload typed events
+// currently on the SDK context's event manager, reconstructed via
+// sdk.ParseTypedEvent so the assertion stays agnostic to the proto package
+// version.
+func infererPayloadEvents(ctx sdk.Context) []*types.EventInsertInfererPayload {
+	out := make([]*types.EventInsertInfererPayload, 0)
+	for _, ev := range ctx.EventManager().Events() {
+		msg, err := sdk.ParseTypedEvent(abci.Event(ev))
+		if err != nil {
+			continue
+		}
+		if e, ok := msg.(*types.EventInsertInfererPayload); ok {
+			out = append(out, e)
+		}
+	}
+	return out
+}
+
 // forecasterPayloadEvents returns all EventInsertForecasterPayload typed events
 // currently on the SDK context's event manager. It reconstructs each event via
 // sdk.ParseTypedEvent so the assertion stays agnostic to the proto package
@@ -374,12 +392,14 @@ func forecasterPayloadEvents(ctx sdk.Context) []*types.EventInsertForecasterPayl
 	return out
 }
 
-// TestMsgInsertWorkerPayloadNoForecasterEventWhenAllFiltered pins the contract
-// that a forecaster payload event is emitted only when forecast elements were
-// actually stored. With MaxElementsPerForecast == 0, FindTopNByScoreDesc selects
-// no inferers, every element is filtered out, AppendForecast is skipped, and no
-// event must be emitted - mirroring the admission-gated inference path.
-func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadNoForecasterEventWhenAllFiltered() {
+// TestMsgInsertWorkerPayloadForecasterEventNoElementsAccepted pins the
+// contract that a forecaster payload event is emitted for every forecast that
+// passes validation, even when nothing is stored. With
+// MaxElementsPerForecast == 0, FindTopNByScoreDesc selects no inferers, every
+// element is filtered out, AppendForecast is skipped, and the single emitted
+// event carries NO_ELEMENTS_ACCEPTED while still reporting the submitted
+// (un-filtered) elements, so indexers still see the submission.
+func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadForecasterEventNoElementsAccepted() {
 	require := s.Require()
 
 	workerPrivateKey := secp256k1.GenPrivKey()
@@ -412,9 +432,23 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadNoForecasterEventWhenAllF
 	// Nothing was stored...
 	require.Equal(0, s.getCountForecastsAtBlock(topicId, workerBlockHeight),
 		"no forecast should be stored when all elements are filtered out")
-	// ...so no forecaster payload event should have been emitted.
-	require.Empty(forecasterPayloadEvents(s.Ctx()),
-		"no forecaster payload event should be emitted when nothing is stored")
+	// ...but the submission is still announced with NO_ELEMENTS_ACCEPTED.
+	events := forecasterPayloadEvents(s.Ctx())
+	require.Len(events, 1, "exactly one forecaster payload event should be emitted")
+	require.Equal(types.PayloadAdmissionOutcome_PAYLOAD_ADMISSION_OUTCOME_NO_ELEMENTS_ACCEPTED,
+		events[0].AdmissionOutcome)
+
+	// The outcome says nothing was accepted, yet the event still carries the
+	// submitted (un-filtered) elements for indexers.
+	submitted := workerMsg.WorkerDataBundle.InferenceForecastsBundle.Forecast.ForecastElements
+	submittedInferers := make([]string, 0, len(submitted))
+	for _, el := range submitted {
+		submittedInferers = append(submittedInferers, el.Inferer)
+	}
+	require.Equal(submittedInferers, events[0].InfererAddresses,
+		"the fully-filtered event should carry the submitted elements")
+	require.Len(events[0].InfererValues, len(submittedInferers),
+		"the fully-filtered event should carry the submitted element values")
 }
 
 // TestMsgInsertWorkerPayloadEmitsForecasterEventReflectingStoredElements guards
@@ -442,6 +476,8 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadEmitsForecasterEventRefle
 
 	events := forecasterPayloadEvents(s.Ctx())
 	require.Len(events, 1, "exactly one forecaster payload event should be emitted on a successful store")
+	require.Equal(types.PayloadAdmissionOutcome_PAYLOAD_ADMISSION_OUTCOME_ADMITTED,
+		events[0].AdmissionOutcome)
 
 	storedInferers := make([]string, 0, len(stored.ForecastElements))
 	for _, el := range stored.ForecastElements {
@@ -533,13 +569,12 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadFailsWithUnregisteredFore
 	require.Equal(forecastsCount1, 0)
 }
 
-func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadFiltersDuplicateForecastElements() {
+func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadRejectsDuplicateForecastElements() {
 	require := s.Require()
 
 	workerPrivateKey := secp256k1.GenPrivKey()
 	workerMsg, topicId := s.setUpMsgInsertWorkerPayload(workerPrivateKey)
 
-	// BEGIN MODIFICATION
 	forecast := workerMsg.WorkerDataBundle.InferenceForecastsBundle.Forecast
 	originalElement := forecast.ForecastElements[0]
 	duplicateElement := &types.InputForecastElement{
@@ -547,9 +582,7 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadFiltersDuplicateForecastE
 		Value:   originalElement.Value,
 	}
 	forecast.ForecastElements = append(forecast.ForecastElements, duplicateElement)
-	// END MODIFICATION
 
-	// Add worker to topic whitelist
 	err := s.WhitelistsKeeper().AddToTopicWorkerWhitelist(s.Ctx(), workerMsg.WorkerDataBundle.TopicId, workerMsg.WorkerDataBundle.Worker)
 	require.NoError(err)
 
@@ -558,18 +591,10 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadFiltersDuplicateForecastE
 	blockHeight := forecast.BlockHeight
 	s.WithBlockHeight(blockHeight)
 	_, err = s.EmissionsMsgServer().InsertWorkerPayload(s.Ctx(), &workerMsg)
-	require.NoError(err, "InsertWorkerPayload should not return an error")
+	require.ErrorContains(err, "duplicate inferer in forecast")
 
-	storedForecasts, err := s.WorkerKeeper().GetWorkerLatestForecastByTopicId(s.Ctx(), topicId, workerMsg.WorkerDataBundle.Worker)
-	require.NoError(err, "GetForecastsAtBlock should not return an error")
-	require.NotZero(len(storedForecasts.ForecastElements), "ForecastElements should not be empty")
-
-	infererMap := make(map[string]bool)
-	for _, el := range storedForecasts.ForecastElements {
-		_, exists := infererMap[el.Inferer]
-		require.False(exists, "Each inferer should appear only once in ForecastElements")
-		infererMap[el.Inferer] = true
-	}
+	forecastsCount := s.getCountForecastsAtBlock(topicId, blockHeight)
+	require.Equal(0, forecastsCount)
 }
 
 func (s *MsgServerTestSuite) TestInsertingHugeBundleWorkerPayloadFails() {
@@ -1427,6 +1452,13 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayload_NotAdmittedDoesNotStageI
 	isActive, err := s.WorkerKeeper().IsActiveInferer(s.Ctx(), topicId, msg.WorkerDataBundle.Worker)
 	s.Require().NoError(err)
 	s.Require().False(isActive)
+
+	// The submission passed validation, so indexers still see it - with an
+	// explicit not-admitted outcome.
+	events := infererPayloadEvents(s.Ctx())
+	s.Require().Len(events, 1)
+	s.Require().Equal(types.PayloadAdmissionOutcome_PAYLOAD_ADMISSION_OUTCOME_NOT_ADMITTED,
+		events[0].AdmissionOutcome)
 }
 
 //nolint:exhaustruct
