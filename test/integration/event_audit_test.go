@@ -907,6 +907,14 @@ func (a *eventAudit) auditEvent(height int64, facts blockContext, event chainEve
 		a.requireRewardNonce(height, facts, "EventRewardPayoutFailed", typed.TopicId, typed.Nonce)
 	case *emissionstypes.EventNonceExpired:
 		a.auditNonceExpired(height, typed)
+		if typed.Reason == emissionstypes.NonceExpiredReason_NONCE_EXPIRED_REASON_PRUNED_BY_AGE {
+			// Pruning drops the nonce and its stored submissions, so the
+			// replayed pending set for that nonce is gone with it.
+			a.clearPendingForNonce(typed.TopicId, typed.Nonce)
+		}
+		if typed.Reason == emissionstypes.NonceExpiredReason_NONCE_EXPIRED_REASON_CLOSE_FAILED {
+			a.clearPendingForNonce(typed.TopicId, typed.Nonce)
+		}
 	case *emissionstypes.EventInsertForecasterPayload:
 		a.recordForecasterPayload(typed)
 		a.trackInsert(height, typed.TopicId, "forecaster", typed.Forecaster, typed.Nonce, typed.AdmissionOutcome)

@@ -177,3 +177,13 @@ func (a *eventAudit) checkReputerRetired(height int64, event *emissionstypes.Eve
 		a.failf(height, "EventReputerSubmissionRetired topic %d reputer %s has negative nonce %d", event.TopicId, event.Reputer, event.Nonce)
 	}
 }
+
+// clearPendingForNonce drops replayed submissions stored for one nonce, used
+// when the chain prunes that nonce and everything it held.
+func (a *eventAudit) clearPendingForNonce(topicId uint64, nonce int64) {
+	for key, entry := range a.pendingPayloads { //nolint:maprange // entries are deleted, order does not matter
+		if key.topicId == topicId && entry.nonce == nonce {
+			delete(a.pendingPayloads, key)
+		}
+	}
+}
