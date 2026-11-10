@@ -213,9 +213,16 @@ func UnstakeAliceAsReputer(m testCommon.TestConfig) {
 	m.T.Log("--- Unstake removal is queued, waiting for block ", stakeRemoval.Removal.BlockRemovalCompleted, " ---")
 	err = m.Client.WaitForBlockHeight(ctx, stakeRemoval.Removal.BlockRemovalCompleted+1)
 	require.NoError(m.T, err)
-	blockHeight, err := m.Client.BlockHeight(ctx)
-	require.NoError(m.T, err)
-	require.Greater(m.T, blockHeight, stakeRemoval.Removal.BlockRemovalCompleted)
+	requireState(m, ctx, func() error {
+		blockHeight, err := m.Client.BlockHeight(ctx)
+		if err != nil {
+			return err
+		}
+		if blockHeight <= stakeRemoval.Removal.BlockRemovalCompleted {
+			return fmt.Errorf("chain height %d has not passed removal block %d", blockHeight, stakeRemoval.Removal.BlockRemovalCompleted)
+		}
+		return nil
+	})
 
 	// Check Alice has zero stake left
 	aliceStakedAfter, err := m.Client.QueryEmissions().GetStakeFromReputerInTopicInSelf(
