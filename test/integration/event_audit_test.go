@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"slices"
 	"sort"
+	"strconv"
 	"strings"
 
 	cosmosMath "cosmossdk.io/math"
@@ -42,6 +43,7 @@ var requiredEventCoverage = []string{
 	"TOPIC_STATUS_CHANGE_REASON_ACTIVATED_BY_FUNDING",
 	"TOPIC_STATUS_CHANGE_REASON_REACTIVATED",
 	"emissions.v10.EventTopicRewardForfeitedNoRewardNonce",
+	"emissions.v10.EventTopicRewardForfeitedNonceReadFailed",
 	"EventNonceExpired/ACTOR_TYPE_INFERER_UNSPECIFIED/NONCE_EXPIRED_REASON_CLOSE_FAILED",
 	"EventScoresSet/ACTOR_TYPE_INFERER_UNSPECIFIED",
 	"EventScoresSet/ACTOR_TYPE_FORECASTER",
@@ -371,6 +373,22 @@ func topicNonceKey(topicId uint64, nonce int64) string {
 	return fmt.Sprintf("%d/%d", topicId, nonce)
 }
 
+func parseTopicNonceKey(key string) (topicId uint64, nonce int64, found bool) {
+	parts := strings.SplitN(key, "/", 3)
+	if len(parts) != 2 {
+		return 0, 0, false
+	}
+	topicId, err := strconv.ParseUint(parts[0], 10, 64)
+	if err != nil {
+		return 0, 0, false
+	}
+	nonce, err = strconv.ParseInt(parts[1], 10, 64)
+	if err != nil {
+		return 0, 0, false
+	}
+	return topicId, nonce, true
+}
+
 // auditEpochNonceFields checks that the deprecated epoch field repeats nonce and
 // that nonce names a block the chain has reached.
 func (a *eventAudit) auditEpochNonceFields(height int64, typed proto.Message) {
@@ -514,6 +532,8 @@ func expectedLedgerEvents(block chainBlock) (forfeited, delegateDistributed, min
 	for _, event := range block.events {
 		switch typed := event.typed.(type) {
 		case *emissionstypes.EventTopicRewardForfeitedNoRewardNonce:
+			forfeited = forfeited.Add(typed.Amount)
+		case *emissionstypes.EventTopicRewardForfeitedNonceReadFailed:
 			forfeited = forfeited.Add(typed.Amount)
 		case *emissionstypes.EventTopicRewardForfeitedDistributionFailed:
 			forfeited = forfeited.Add(typed.Amount)
@@ -852,6 +872,11 @@ func (a *eventAudit) auditEvent(height int64, facts blockContext, event chainEve
 		if nonce := a.expectedRewardNonce(height, facts, typed.TopicId); nonce != 0 {
 			a.failf(height, "EventTopicRewardForfeitedNoRewardNonce topic %d has reward nonce %d", typed.TopicId, nonce)
 		}
+	case *emissionstypes.EventTopicRewardForfeitedNonceReadFailed:
+		// The keeper's reward-nonce store is in-memory and cannot fail a read on
+		// a live chain, so this event is pinned by the unit test instead; the
+		// ledger rule counts it here in case it ever appears.
+		a.auditForfeit(height, "EventTopicRewardForfeitedNonceReadFailed", typed.TopicId, typed.Epoch)
 	case *emissionstypes.EventTopicRewardForfeitedDistributionFailed:
 		a.auditForfeit(height, "EventTopicRewardForfeitedDistributionFailed", typed.TopicId, typed.Epoch)
 		a.requireRewardNonce(height, facts, "EventTopicRewardForfeitedDistributionFailed", typed.TopicId, typed.RewardNonce)

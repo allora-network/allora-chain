@@ -817,7 +817,11 @@ message EventNetworkInferenceInfererWeightsSet {
   // The epoch nonce, kept under this name for compatibility; read
   // nonce instead.
   int64 nonce_block_height = 2 [deprecated = true];
+  // The inferers that contributed to the combined inference.
   repeated string addresses = 3;
+  // The weights the combined inference was computed with. On a topic's first
+  // multi-inferer epoch (every inferer is new) this is 1 per inferer; otherwise
+  // it is the regret-informed weight of each inferer.
   repeated string weights = 4 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
@@ -831,7 +835,13 @@ message EventNetworkInferenceForecasterWeightsSet {
   // The epoch nonce, kept under this name for compatibility; read
   // nonce instead.
   int64 nonce_block_height = 2 [deprecated = true];
+  // The forecasters whose forecast-implied inferences contributed to the
+  // combined inference.
   repeated string addresses = 3;
+  // The weights the combined inference was computed with. On a topic's first
+  // multi-inferer epoch (every inferer is new) this is empty, because
+  // forecasters contribute nothing; otherwise it is the regret-informed weight
+  // of each forecaster.
   repeated string weights = 4 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false

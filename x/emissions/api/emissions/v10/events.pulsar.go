@@ -55452,9 +55452,13 @@ type EventNetworkInferenceInfererWeightsSet struct {
 	// nonce instead.
 	//
 	// Deprecated: Do not use.
-	NonceBlockHeight int64    `protobuf:"varint,2,opt,name=nonce_block_height,json=nonceBlockHeight,proto3" json:"nonce_block_height,omitempty"`
-	Addresses        []string `protobuf:"bytes,3,rep,name=addresses,proto3" json:"addresses,omitempty"`
-	Weights          []string `protobuf:"bytes,4,rep,name=weights,proto3" json:"weights,omitempty"`
+	NonceBlockHeight int64 `protobuf:"varint,2,opt,name=nonce_block_height,json=nonceBlockHeight,proto3" json:"nonce_block_height,omitempty"`
+	// The inferers that contributed to the combined inference.
+	Addresses []string `protobuf:"bytes,3,rep,name=addresses,proto3" json:"addresses,omitempty"`
+	// The weights the combined inference was computed with. On a topic's first
+	// multi-inferer epoch (every inferer is new) this is 1 per inferer; otherwise
+	// it is the regret-informed weight of each inferer.
+	Weights []string `protobuf:"bytes,4,rep,name=weights,proto3" json:"weights,omitempty"`
 	// The epoch nonce the values belong to.
 	Nonce int64 `protobuf:"varint,5,opt,name=nonce,proto3" json:"nonce,omitempty"`
 }
@@ -55525,9 +55529,15 @@ type EventNetworkInferenceForecasterWeightsSet struct {
 	// nonce instead.
 	//
 	// Deprecated: Do not use.
-	NonceBlockHeight int64    `protobuf:"varint,2,opt,name=nonce_block_height,json=nonceBlockHeight,proto3" json:"nonce_block_height,omitempty"`
-	Addresses        []string `protobuf:"bytes,3,rep,name=addresses,proto3" json:"addresses,omitempty"`
-	Weights          []string `protobuf:"bytes,4,rep,name=weights,proto3" json:"weights,omitempty"`
+	NonceBlockHeight int64 `protobuf:"varint,2,opt,name=nonce_block_height,json=nonceBlockHeight,proto3" json:"nonce_block_height,omitempty"`
+	// The forecasters whose forecast-implied inferences contributed to the
+	// combined inference.
+	Addresses []string `protobuf:"bytes,3,rep,name=addresses,proto3" json:"addresses,omitempty"`
+	// The weights the combined inference was computed with. On a topic's first
+	// multi-inferer epoch (every inferer is new) this is empty, because
+	// forecasters contribute nothing; otherwise it is the regret-informed weight
+	// of each forecaster.
+	Weights []string `protobuf:"bytes,4,rep,name=weights,proto3" json:"weights,omitempty"`
 	// The epoch nonce the values belong to.
 	Nonce int64 `protobuf:"varint,5,opt,name=nonce,proto3" json:"nonce,omitempty"`
 }

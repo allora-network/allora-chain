@@ -859,3 +859,89 @@ func (s *WorkerTestSuite) TestCloseWorkerNonceReportsDiscardedForecasters() {
 		s.Require().NotContains(event.Addresses, discarded)
 	}
 }
+
+// typedEventsOf returns every event of the requested concrete proto type the
+// manager holds, in emission order. T is a pointer to the event message.
+func typedEventsOf[T any](em sdk.EventManagerI) []T {
+	out := make([]T, 0)
+	for _, ev := range em.Events() {
+		msg, err := sdk.ParseTypedEvent(abci.Event(ev))
+		if err != nil {
+			continue
+		}
+		if typed, ok := msg.(T); ok {
+			out = append(out, typed)
+		}
+	}
+	return out
+}
+
+// On a topic's first multi-inferer epoch every inferer is new: the combined
+// inference is a uniform average of the inferer values and forecasters
+// contribute nothing, so the network inference weight events must report one
+// weight of 1 per inferer and no forecaster weights.
+func (s *WorkerTestSuite) TestNetworkInferenceWeightsAreAppliedValuesWhenAllInferersAreNew() {
+	s.SetupTest()
+	ctx := s.Ctx()
+	keeper := s.EmissionsKeeper()
+	blockHeight := int64(100)
+
+	topicId := s.CreateTopic(testutil.WithOutputArity(types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE))
+	topic, err := s.TopicKeeper().GetTopic(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().True(topic.InitialRegret.IsZero(), "a fresh topic has zero initial regret")
+
+	worker0, worker1 := s.AddrsStr(0), s.AddrsStr(1)
+	forecaster0 := s.AddrsStr(4)
+	inferences := &types.Inferences{
+		Inferences: []*types.Inference{
+			{Inferer: worker0, Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("1.0")}, TopicId: topicId, BlockHeight: blockHeight},
+			{Inferer: worker1, Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("3.0")}, TopicId: topicId, BlockHeight: blockHeight},
+		},
+	}
+	forecasts := &types.Forecasts{
+		Forecasts: []*types.Forecast{
+			{
+				Forecaster: forecaster0,
+				ForecastElements: []*types.ForecastElement{
+					{Inferer: worker0, Value: alloraMath.MustNewDecFromString("0.5")},
+					{Inferer: worker1, Value: alloraMath.MustNewDecFromString("4.5")},
+				},
+				TopicId:     topicId,
+				BlockHeight: blockHeight,
+			},
+		},
+	}
+
+	s.TopicKeeper().SetLastMedianInferences(ctx, topicId, alloraMath.MustNewDecFromString("2.0")) //nolint:errcheck // fixed values
+	s.TopicKeeper().SetMadInferences(ctx, topicId, alloraMath.MustNewDecFromString("1.0"))        //nolint:errcheck // fixed values
+	params, err := s.ParamsKeeper().GetParams(ctx)
+	s.Require().NoError(err)
+	_, _, err = s.TopicKeeper().RegisterEpochLabels(
+		ctx, topicId, topic.LabelCaseSensitive, blockHeight,
+		[]string{"y"}, params.MaxCanonicalLabelByteLength, params.MaxEpochLabelRegistrySize,
+	)
+	s.Require().NoError(err)
+
+	err = actorutils.ProcessAndStoreNetworkInferences(keeper, ctx, topic, blockHeight, inferences, forecasts)
+	s.Require().NoError(err)
+
+	infererEvents := typedEventsOf[*types.EventNetworkInferenceInfererWeightsSet](ctx.EventManager())
+	s.Require().Len(infererEvents, 1, "one combined inference emits one inferer weight event")
+	got := infererEvents[0]
+	s.Require().Equal([]string{worker0, worker1}, got.Addresses)
+	s.Require().Len(got.Weights, 2)
+	for i, weight := range got.Weights {
+		s.Require().True(weight.Equal(alloraMath.OneDec()),
+			"inferer %s weight is %s; the all-new epoch applies a uniform weight of 1, not the regret-informed value", got.Addresses[i], weight)
+	}
+
+	forecasterEvents := typedEventsOf[*types.EventNetworkInferenceForecasterWeightsSet](ctx.EventManager())
+	s.Require().Empty(forecasterEvents, "forecasters contribute nothing to an all-new epoch")
+
+	bundle, err := keeper.GetNetworkInferences(ctx, topicId, blockHeight)
+	s.Require().NoError(err)
+	s.Require().Len(bundle.CombinedValue, 1)
+	s.Require().True(bundle.CombinedValue[0].Value.Equal(alloraMath.MustNewDecFromString("2.0")),
+		"uniform average of 1.0 and 3.0 is 2.0, got %s", bundle.CombinedValue[0].Value)
+}

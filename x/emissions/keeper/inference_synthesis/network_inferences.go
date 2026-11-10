@@ -13,9 +13,13 @@ import (
 )
 
 type GetNetworkInferencesResult struct {
-	NetworkInferences    *emissions.NetworkInferenceBundle
-	InfererToWeight      map[Inferer]Weight
-	ForecasterToWeight   map[Forecaster]Weight
+	NetworkInferences  *emissions.NetworkInferenceBundle
+	InfererToWeight    map[Inferer]Weight
+	ForecasterToWeight map[Forecaster]Weight
+	// True when every inferer is new: the combined inference is a uniform
+	// average of the inferer values, so InfererToWeight carries the
+	// regret-informed values that were computed but not applied.
+	AllInferersAreNew    bool
 	InferenceBlockHeight int64
 	LossBlockHeight      int64
 }
@@ -130,6 +134,7 @@ func calcNetworkInferencesMultiple(
 		NetworkInferences:    networkInferences,
 		InfererToWeight:      weights.Inferers,
 		ForecasterToWeight:   weights.Forecasters,
+		AllInferersAreNew:    calcArgs.AllInferersAreNew,
 		InferenceBlockHeight: inferenceBlockHeight,
 		LossBlockHeight:      lossBlockHeight,
 	}, nil

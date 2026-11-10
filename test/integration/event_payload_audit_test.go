@@ -139,8 +139,28 @@ func (a *eventAudit) auditRegretsUsed(height int64, name string, topicId uint64,
 // auditCombinedValuesFromWeights recomputes each network inference from its emitted
 // weights: I_i = Σ w_il I_il / Σ w_il over inferers and forecast-implied inferences.
 // No query returns these weights, so the bundle they produced is what checks them.
+// On a topic's first multi-inferer epoch the topic's initial regret is still zero:
+// the applied weights are uniform 1s and forecasters contribute nothing.
 func (a *eventAudit) auditCombinedValuesFromWeights(height int64, facts blockContext) {
 	for key, weights := range facts.networkWeights { //nolint:maprange // every entry is checked and the order does not matter
+		if topicId, _, found := parseTopicNonceKey(key); found {
+			topicResponse, err := a.m.Client.QueryEmissions().GetTopic(atHeight(a.ctx, height), &emissionstypes.GetTopicRequest{TopicId: topicId})
+			if err != nil {
+				a.failf(height, "network inference weights for %s: %v", key, err)
+			} else if topicResponse.Topic.InitialRegret.IsZero() {
+				// A topic with zero initial regret has no prior weights: the
+				// combined inference is a uniform average over inferers only,
+				// and that is what the event must report.
+				for i, weight := range weights.infererWeights {
+					if !weight.Equal(alloraMath.OneDec()) {
+						a.failf(height, "%s initial-regret epoch inferer[%s] applied weight is %s, want 1", key, weights.infererAddresses[i], weight)
+					}
+				}
+				if len(weights.forecasterAddresses) != 0 {
+					a.failf(height, "%s initial-regret epoch emitted %d forecaster weights, want none", key, len(weights.forecasterAddresses))
+				}
+			}
+		}
 		bundle, found := facts.networkBundles[key]
 		if !found {
 			a.failf(height, "network inference weights for %s have no EventNetworkInferenceBundle", key)

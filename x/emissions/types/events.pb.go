@@ -4451,9 +4451,13 @@ type EventNetworkInferenceInfererWeightsSet struct {
 	TopicId uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
 	// The epoch nonce, kept under this name for compatibility; read
 	// nonce instead.
-	NonceBlockHeight int64                                             `protobuf:"varint,2,opt,name=nonce_block_height,json=nonceBlockHeight,proto3" json:"nonce_block_height,omitempty"` // Deprecated: Do not use.
-	Addresses        []string                                          `protobuf:"bytes,3,rep,name=addresses,proto3" json:"addresses,omitempty"`
-	Weights          []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,4,rep,name=weights,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"weights"`
+	NonceBlockHeight int64 `protobuf:"varint,2,opt,name=nonce_block_height,json=nonceBlockHeight,proto3" json:"nonce_block_height,omitempty"` // Deprecated: Do not use.
+	// The inferers that contributed to the combined inference.
+	Addresses []string `protobuf:"bytes,3,rep,name=addresses,proto3" json:"addresses,omitempty"`
+	// The weights the combined inference was computed with. On a topic's first
+	// multi-inferer epoch (every inferer is new) this is 1 per inferer; otherwise
+	// it is the regret-informed weight of each inferer.
+	Weights []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,4,rep,name=weights,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"weights"`
 	// The epoch nonce the values belong to.
 	Nonce int64 `protobuf:"varint,5,opt,name=nonce,proto3" json:"nonce,omitempty"`
 }
@@ -4526,9 +4530,15 @@ type EventNetworkInferenceForecasterWeightsSet struct {
 	TopicId uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
 	// The epoch nonce, kept under this name for compatibility; read
 	// nonce instead.
-	NonceBlockHeight int64                                             `protobuf:"varint,2,opt,name=nonce_block_height,json=nonceBlockHeight,proto3" json:"nonce_block_height,omitempty"` // Deprecated: Do not use.
-	Addresses        []string                                          `protobuf:"bytes,3,rep,name=addresses,proto3" json:"addresses,omitempty"`
-	Weights          []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,4,rep,name=weights,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"weights"`
+	NonceBlockHeight int64 `protobuf:"varint,2,opt,name=nonce_block_height,json=nonceBlockHeight,proto3" json:"nonce_block_height,omitempty"` // Deprecated: Do not use.
+	// The forecasters whose forecast-implied inferences contributed to the
+	// combined inference.
+	Addresses []string `protobuf:"bytes,3,rep,name=addresses,proto3" json:"addresses,omitempty"`
+	// The weights the combined inference was computed with. On a topic's first
+	// multi-inferer epoch (every inferer is new) this is empty, because
+	// forecasters contribute nothing; otherwise it is the regret-informed weight
+	// of each forecaster.
+	Weights []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,4,rep,name=weights,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"weights"`
 	// The epoch nonce the values belong to.
 	Nonce int64 `protobuf:"varint,5,opt,name=nonce,proto3" json:"nonce,omitempty"`
 }
