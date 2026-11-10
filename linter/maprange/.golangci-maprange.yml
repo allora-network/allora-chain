@@ -1,4 +1,6 @@
 version: "2"
+run:
+  timeout: 5m
 linters:
   default: none
   enable:
@@ -23,6 +25,8 @@ linters:
       - third_party$
       - builtin$
       - examples$
+      # A directory whose name starts with a dot.
+      - '(^|/)\.[^/]+/'
 issues:
   max-issues-per-linter: 10000
   max-same-issues: 10000
@@ -33,3 +37,4 @@ formatters:
       - third_party$
       - builtin$
       - examples$
+      - '(^|/)\.[^/]+/'

@@ -29,10 +29,9 @@ jobs:
     if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
     uses: allora-network/ci-workflows-private/.github/workflows/go-install-hardened.yml@v1
     with:
-      # Latest 1.26 patch, the same minor as go.mod's toolchain.
-      # Not `stable`: a floating major is a different toolchain from
-      # the one the module and the other workflows use.
-      go_version: '1.26.x'
+      # Same patch as the toolchain line in go.mod. A floating minor
+      # would pick up a later 1.26 release on its own.
+      go_version: '1.26.10'
       # cosmwasm/wasmvm (a transitive Cosmos SDK dep) requires CGO to
       # link against libwasmvm; matches the goreleaser build path.
       cgo_enabled: '1'
