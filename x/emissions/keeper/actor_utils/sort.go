@@ -5,13 +5,11 @@ import (
 	"slices"
 
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // Sorts the given actors by score, desc, breaking ties randomly
 // Returns the top N actors as a map with the actor as the key and a boolean (True) as the value
 func FindTopNByScoreDesc(
-	ctx sdk.Context,
 	n uint64,
 	scores []emissionstypes.Score,
 	randSeed int64,
