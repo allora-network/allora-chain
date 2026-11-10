@@ -67,6 +67,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+* [#1011](https://github.com/allora-network/allora-chain/pull/1011) `admission_outcome` (`PAYLOAD_ADMISSION_OUTCOME_*`) on the three insert-payload events; new `EventInferenceEvictedFromActiveSet`, `EventForecastEvictedFromActiveSet`, `EventReputerLossEvictedFromActiveSet` and `EventReputerSubmissionRetired` events.
 * [#968](https://github.com/allora-network/allora-chain/pull/968) Per-topic `max_top_inferers_to_reward`, required within the global range, with migration v16
 * [#969](https://github.com/allora-network/allora-chain/pull/969) New global `min_top_inferers_to_reward` as the floor for the per-topic inferer cap (default `5`)
 * [#1005](https://github.com/allora-network/allora-chain/pull/1005) `nonce`, the epoch nonce, on every `emissions.v10` event that carries the epoch under `block_height` or `nonce_block_height` (listed under Deprecated), and on the `Get{Worker,Reputer}SubmissionWindowStatus` responses
@@ -76,7 +77,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * [#1009](https://github.com/allora-network/allora-chain/pull/1009) `reason` (why the status changed), `weight` (the topic's weight in the decision) and `min_weight` (the global `MinTopicWeight` param in force) on `EventTopicStatusChanged`
 * [#1015](https://github.com/allora-network/allora-chain/pull/1015) `threshold_weight` on `EventTopicStatusChanged`, the weight the decision was measured against: `MinTopicWeight`, the block's lowest weight, the challenger's weight on an eviction, or zero when no comparison happened; when a full block's slot was at stake `weight` is the value that comparison used
 * [#1015](https://github.com/allora-network/allora-chain/pull/1015) `REACTIVATION_ERROR` on `TopicStatusChangeReason`, for a topic inactivated because its reactivation attempt returned an error; `REACTIVATION_FAILED` now only means the topic lost the comparison for a full block's slot
-* [#1004](https://github.com/allora-network/allora-chain/pull/1004) `EVICTED_BY_EQUAL_WEIGHT` on `TopicStatusChangeReason`, for a topic evicted from a full active set by a challenger with the same weight; `EVICTED_BY_HIGHER_WEIGHT` now only means the challenger's weight was strictly higher
+* [#1030](https://github.com/allora-network/allora-chain/pull/1030) `EVICTED_BY_EQUAL_WEIGHT` on `TopicStatusChangeReason`, for a topic evicted from a full active set by a challenger with the same weight; `EVICTED_BY_HIGHER_WEIGHT` now only means the challenger's weight was strictly higher
 * [#1009](https://github.com/allora-network/allora-chain/pull/1009) `EventRewardPayoutFailed`, emitted per actor when paying a topic participant's reward fails, carrying `topic_id`, the reward `nonce`, `address`, `actor_type`, `amount` and the failure `reason`
 * [#1009](https://github.com/allora-network/allora-chain/pull/1009) `WORKER_INFO_LOOKUP`, `ACCOUNT_SEND` and `NEGATIVE_REWARD` on `RewardPayoutFailureReason`; `EventRewardPayoutFailed` is now emitted for every payout failure where the actor is not paid
 * [#1009](https://github.com/allora-network/allora-chain/pull/1009) `EventTopicRewardForfeitedNoRewardNonce` and `EventTopicRewardForfeitedDistributionFailed`, emitted when a topic's reward goes back to the ecosystem account, carrying `topic_id`, the just-ended `epoch` and `amount`, the integer coins moved to the ecosystem account (zero when the reward was under one unit and nothing moved); the latter also carries the `reward_nonce` whose settlement failed
@@ -89,6 +90,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * [#968](https://github.com/allora-network/allora-chain/pull/968) The global `max_top_inferers_to_reward` now rejects zero and serves as the live ceiling for the per-topic cap; score-history retention still uses the global value.
 * [#1004](https://github.com/allora-network/allora-chain/pull/1004) `EmitNewActorScoresSetEvent` no longer takes a height: `EventScoresSet` always carried the epoch nonce from the scores, and two callers passed the current block height, which was ignored.
 * [#1026](https://github.com/allora-network/allora-chain/pull/1026) `addresses` on `EventActiveForecastersSet` lists only the forecasters whose forecasts were stored for the epoch; it used to list every active forecaster, including those whose forecasts the close discarded.
+* [#1011](https://github.com/allora-network/allora-chain/pull/1011) Additive API change: `types.EmitNewInsert{Inferer,Forecaster,Reputer}PayloadEvent` and their `New*EventBase` constructors take a `PayloadAdmissionOutcome`; `AppendForecast` and `AppendReputerLoss` return it.
 
 ### Deprecated
 
@@ -107,10 +109,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * [#1002](https://github.com/allora-network/allora-chain/pull/1002) Fix epoch-end topic reactivation bookkeeping: a refused reschedule now fully inactivates the topic instead of leaving it in the active set without a schedule, so its weight is not double-counted on a later activation. Migration fixes potential misalignment.
 * [#993](https://github.com/allora-network/allora-chain/pull/993) Open the reputer submission window at the end of the reveal epoch, and retire only the closing nonce's reputer submissions when closing it, fixing a permanent loss of network losses and rewards on fractional-lag topics.
 * [#1003](https://github.com/allora-network/allora-chain/pull/1003) Topic creation now emits its events in order — create, whitelist gates, fee — with the creation fee reported as `EventFundTopic` (creator as funder). Gate enable/disable emits once per state transition, and zero-fee payments skip no-op bank writes but still attempt activation.
+* [#1012](https://github.com/allora-network/allora-chain/pull/1012) When the worker nonce closes, drop a forecast left with fewer than two inferers in the active set. A new forecast that names the same inferer twice is rejected. A forecast already stored is still accepted.
+* [#1011](https://github.com/allora-network/allora-chain/pull/1011) Restore `EventInsertInfererPayload` for not-admitted submissions and `EventInsertForecasterPayload` for fully-filtered forecasts (regression from #942 in v0.17.0).
 
 ### Security
 
 * [#980](https://github.com/allora-network/allora-chain/pull/980) Patch a fast-node cache/commit race in `iavl` that caused `AppHash` divergence: the ecosystem treasury account is deleted every block at zero balance, and a concurrent balance query during commit could read its value one block stale, minting the wrong amount and forking the node. Points `iavl` at `github.com/allora-network/iavl` (`v1.2.6` + backport of [cosmos/iavl#1142](https://github.com/cosmos/iavl/pull/1142)). Not consensus-breaking; no migration required.
+* [#1013](https://github.com/allora-network/allora-chain/pull/1013) Reject duplicate actor entries in reputer value bundles at submission, and keep the first one-out-inferer row per forecaster at nonce close and before reputer scoring, so the order of the values extracted for scoring no longer depends on the sort implementation.
 
 ### API Breaking Changes
 

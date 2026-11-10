@@ -62,20 +62,25 @@ func TestEmitNewEpochLabelRegistryFrozenEventCarriesTheLabels(t *testing.T) {
 }
 
 // A network inference bundle's label names follow the registry its values were
-// labeled with, in compact-id order, so they match the frozen-registry event's
-// labels for the same epoch.
+// labeled with, each name at its value's position. Close-time compaction stores
+// registries with ids 1..n in slice order, so on such a registry the names are in
+// compact-id order and match the frozen-registry event's labels for the epoch.
 //
 //nolint:exhaustruct // the bundle has many fields that play no part in label order
 func TestNetworkInferenceBundleLabelNamesFollowTheRegistry(t *testing.T) {
 	registry := types.EpochLabelRegistry{TopicId: 1, EpochId: 10, Labels: []*types.TopicLabel{
 		{Id: 1, Name: "up"}, {Id: 2, Name: "flat"}, {Id: 3, Name: "down"},
 	}}
-	values := []alloraMath.Dec{alloraMath.NewDecFromInt64(1), alloraMath.NewDecFromInt64(2), alloraMath.NewDecFromInt64(3)}
+	values := []alloraMath.Dec{alloraMath.NewDecFromInt64(10), alloraMath.NewDecFromInt64(20), alloraMath.NewDecFromInt64(30)}
 	combined, err := types.ConvertInferenceValuesToLabeledValues(values, &registry)
 	require.NoError(t, err)
 
 	event, ok := types.NewNetworkInferencesEventBase(types.NetworkInferenceBundle{TopicId: 1, Nonce: 10, CombinedValue: combined}).(*types.EventNetworkInferenceBundle)
 	require.True(t, ok)
+
+	require.Equal(t, []string{"up", "flat", "down"}, event.LabelNames)
+	require.Equal(t, []string{"10", "20", "30"}, []string{event.CombinedValue[0].String(), event.CombinedValue[1].String(), event.CombinedValue[2].String()},
+		"each value stays at its label's position")
 
 	frozenLabels, err := registry.LabelNamesByID()
 	require.NoError(t, err)

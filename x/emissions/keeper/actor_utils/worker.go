@@ -314,6 +314,10 @@ func splitForecastersByStored(activeForecastAddresses []string, stored *types.Fo
 	return storedForecasters, discardedForecasters
 }
 
+const (
+	minAcceptedForecastElements = 2
+)
+
 // insert forecasts from top forecasters
 // check forecast elements to ensure they are forecasts made about
 // the active list of inferers.
@@ -347,7 +351,7 @@ func closeActiveForecastsSet(
 		// Examine forecast elements to verify that they're for inferers in the current set.
 		// We assume that set of inferers has been verified above.
 		// We keep what we can, ignoring the forecaster and their contribution (forecast) entirely
-		// if they're left with no valid forecast elements.
+		// if they're left with less than the minimum valid forecast elements.
 		acceptedForecastElements := make([]*types.ForecastElement, 0)
 		for _, el := range forecast.ForecastElements {
 			if _, ok := acceptedInferersOfBatch[el.Inferer]; ok {
@@ -355,8 +359,8 @@ func closeActiveForecastsSet(
 			}
 		}
 
-		// Discard if no accepted forecasts elements found
-		if len(acceptedForecastElements) == 0 {
+		// Discard if minimum accepted forecasts elements is not achieved
+		if len(acceptedForecastElements) < minAcceptedForecastElements {
 			continue
 		}
 
@@ -373,14 +377,18 @@ func closeActiveForecastsSet(
 		}
 	}
 
+	forecasts = new(types.Forecasts)
+
+	if len(activeForecasts) == 0 {
+		return forecasts, nil
+	}
+
 	// Ensure deterministic ordering
 	sort.Slice(activeForecasts, func(i, j int) bool {
 		return activeForecasts[i].Forecaster < activeForecasts[j].Forecaster
 	})
 
-	forecasts = &types.Forecasts{
-		Forecasts: activeForecasts,
-	}
+	forecasts.Forecasts = activeForecasts
 
 	err = k.GetWorkerKeeper().InsertActiveForecasts(ctx, topicId, nonce.BlockHeight, *forecasts)
 	if err != nil {
