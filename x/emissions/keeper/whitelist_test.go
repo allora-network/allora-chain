@@ -652,24 +652,34 @@ func (s *KeeperTestSuite) TestCanSubmitWorkerPayloadAlias() {
 	actor := s.AddrsStr(5)
 	topicId := uint64(2)
 
-	err := k.EnableTopicWorkerWhitelist(ctx, topicId)
+	// The suite globally whitelists all of its generated accounts, so drop this
+	// one from the global actor list to leave the topic gate as the only thing
+	// granting access.
+	err := k.RemoveFromGlobalWhitelist(ctx, actor)
 	s.Require().NoError(err)
 
+	err = k.EnableTopicWorkerWhitelist(ctx, topicId)
+	s.Require().NoError(err)
+
+	// Denied: gate on, actor not in the topic list.
 	//nolint:staticcheck // the deprecated alias must stay equivalent to CanSubmitInferencePayload
 	legacy, err := k.CanSubmitWorkerPayload(ctx, topicId, actor)
 	s.Require().NoError(err)
 	current, err := k.CanSubmitInferencePayload(ctx, topicId, actor)
 	s.Require().NoError(err)
+	s.Require().False(current)
 	s.Require().Equal(current, legacy)
 
 	err = k.AddToTopicWorkerWhitelist(ctx, topicId, actor)
 	s.Require().NoError(err)
 
+	// Granted: actor is in the topic list.
 	//nolint:staticcheck // the deprecated alias must stay equivalent to CanSubmitInferencePayload
 	legacy, err = k.CanSubmitWorkerPayload(ctx, topicId, actor)
 	s.Require().NoError(err)
 	current, err = k.CanSubmitInferencePayload(ctx, topicId, actor)
 	s.Require().NoError(err)
+	s.Require().True(current)
 	s.Require().Equal(current, legacy)
 }
 
