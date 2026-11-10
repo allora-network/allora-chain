@@ -785,6 +785,10 @@ func simulateAutomaticInitialState(
 	iterationCount++
 	require.True(m.T, removeFromGlobalReputerWhitelist(m, faucet, pickRandomActor(m, data), nil, 0, data, iterationCount))
 	iterationCount++
+	require.True(m.T, addToGlobalForecasterWhitelist(m, faucet, pickRandomActor(m, data), nil, 0, data, iterationCount))
+	iterationCount++
+	require.True(m.T, removeFromGlobalForecasterWhitelist(m, faucet, pickRandomActor(m, data), nil, 0, data, iterationCount))
+	iterationCount++
 	require.True(m.T, addToGlobalAdminWhitelist(m, faucet, pickRandomActor(m, data), nil, 0, data, iterationCount))
 	iterationCount++
 	require.True(m.T, removeFromGlobalAdminWhitelist(m, faucet, pickRandomActor(m, data), nil, 0, data, iterationCount))
@@ -796,6 +800,10 @@ func simulateAutomaticInitialState(
 	require.True(m.T, bulkAddToGlobalReputerWhitelist(m, faucet, pickRandomActor(m, data), nil, 0, data, iterationCount))
 	iterationCount++
 	require.True(m.T, bulkRemoveFromGlobalReputerWhitelist(m, faucet, pickRandomActor(m, data), nil, 0, data, iterationCount))
+	iterationCount++
+	require.True(m.T, bulkAddToGlobalForecasterWhitelist(m, faucet, pickRandomActor(m, data), nil, 0, data, iterationCount))
+	iterationCount++
+	require.True(m.T, bulkRemoveFromGlobalForecasterWhitelist(m, faucet, pickRandomActor(m, data), nil, 0, data, iterationCount))
 	iterationCount++
 
 	// create two topics with both reputers and workers whitelist enabled
