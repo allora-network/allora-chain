@@ -43,7 +43,6 @@ var requiredEventCoverage = []string{
 	"TOPIC_STATUS_CHANGE_REASON_ACTIVATED_BY_FUNDING",
 	"TOPIC_STATUS_CHANGE_REASON_REACTIVATED",
 	"emissions.v10.EventTopicRewardForfeitedNoRewardNonce",
-	"emissions.v10.EventTopicRewardForfeitedNonceReadFailed",
 	"EventNonceExpired/ACTOR_TYPE_INFERER_UNSPECIFIED/NONCE_EXPIRED_REASON_CLOSE_FAILED",
 	"EventScoresSet/ACTOR_TYPE_INFERER_UNSPECIFIED",
 	"EventScoresSet/ACTOR_TYPE_FORECASTER",
