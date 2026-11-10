@@ -673,6 +673,71 @@ func (s *KeeperTestSuite) TestCanSubmitWorkerPayloadAlias() {
 	s.Require().Equal(current, legacy)
 }
 
+// TestCanSubmitPayloadGlobalFallback checks the global list layer of the
+// inference and forecast fallback chains: with the topic gate enabled and the
+// actor absent from the topic list, an entry in the matching global list alone
+// grants permission, and removing it revokes it again.
+func (s *KeeperTestSuite) TestCanSubmitPayloadGlobalFallback() {
+	ctx := s.Ctx()
+	k := s.WhitelistsKeeper()
+	topicId := uint64(3)
+	actor := s.AddrsStr(6)
+
+	// The suite globally whitelists all of its generated accounts, so drop this
+	// one from the global actor list to leave the global fallback layers as the
+	// only thing that can grant access.
+	err := k.RemoveFromGlobalWhitelist(ctx, actor)
+	s.Require().NoError(err)
+
+	testCases := []struct {
+		name         string
+		enableGate   func(context.Context, uint64) error
+		addGlobal    func(context.Context, string) error
+		removeGlobal func(context.Context, string) error
+		check        func(context.Context, uint64, string) (bool, error)
+	}{
+		{
+			name:         "CanSubmitInferencePayload",
+			enableGate:   k.EnableTopicWorkerWhitelist,
+			addGlobal:    k.AddToGlobalWorkerWhitelist,
+			removeGlobal: k.RemoveFromGlobalWorkerWhitelist,
+			check:        k.CanSubmitInferencePayload,
+		},
+		{
+			name:         "CanSubmitForecasterPayload",
+			enableGate:   k.EnableTopicForecasterWhitelist,
+			addGlobal:    k.AddToGlobalForecasterWhitelist,
+			removeGlobal: k.RemoveFromGlobalForecasterWhitelist,
+			check:        k.CanSubmitForecasterPayload,
+		},
+	}
+
+	for _, tc := range testCases {
+		s.Run(tc.name, func() {
+			err := tc.enableGate(ctx, topicId)
+			s.Require().NoError(err)
+
+			can, err := tc.check(ctx, topicId, actor)
+			s.Require().NoError(err)
+			s.Require().False(can)
+
+			err = tc.addGlobal(ctx, actor)
+			s.Require().NoError(err)
+
+			can, err = tc.check(ctx, topicId, actor)
+			s.Require().NoError(err)
+			s.Require().True(can)
+
+			err = tc.removeGlobal(ctx, actor)
+			s.Require().NoError(err)
+
+			can, err = tc.check(ctx, topicId, actor)
+			s.Require().NoError(err)
+			s.Require().False(can)
+		})
+	}
+}
+
 func (s *KeeperTestSuite) TestWhitelistInvalidAddressErrorMessages() {
 	ctx := s.Ctx()
 	k := s.WhitelistsKeeper()
