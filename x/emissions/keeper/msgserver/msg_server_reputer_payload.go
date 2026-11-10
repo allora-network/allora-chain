@@ -109,11 +109,11 @@ func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.InsertR
 		return nil, err
 	}
 
-	err = ms.rlk.AppendReputerLoss(sdkCtx, topic, moduleParams, nonce.ReputerNonce.BlockHeight, rvb)
+	admissionOutcome, err := ms.rlk.AppendReputerLoss(sdkCtx, topic, moduleParams, nonce.ReputerNonce.BlockHeight, rvb)
 	if err != nil {
 		return nil, err
 	}
 
-	types.EmitNewInsertReputerPayloadEvent(ctx, vb)
+	types.EmitNewInsertReputerPayloadEvent(ctx, vb, admissionOutcome)
 	return &types.InsertReputerPayloadResponse{}, nil
 }

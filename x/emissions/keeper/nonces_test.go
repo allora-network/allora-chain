@@ -1,9 +1,28 @@
 package keeper_test
 
 import (
+	abci "github.com/cometbft/cometbft/abci/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	"github.com/allora-network/allora-chain/x/emissions/testutil"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
+
+// nonceExpiredEvents collects every EventNonceExpired the manager holds, in
+// emission order.
+func nonceExpiredEvents(em *sdk.EventManager) []*types.EventNonceExpired {
+	out := make([]*types.EventNonceExpired, 0)
+	for _, ev := range em.Events() {
+		msg, err := sdk.ParseTypedEvent(abci.Event(ev))
+		if err != nil {
+			continue
+		}
+		if typed, ok := msg.(*types.EventNonceExpired); ok {
+			out = append(out, typed)
+		}
+	}
+	return out
+}
 
 // WORKER NONCE TESTS
 
@@ -656,11 +675,9 @@ func (s *KeeperTestSuite) TestPruneWorkerNoncesLogicNoNonces() {
 	k := s.NonceKeeper()
 	topicId1 := uint64(1)
 	blockHeightThreshold := int64(10)
-	err := k.DeleteUnfulfilledWorkerNonces(s.Ctx(), topicId1)
-	s.Require().NoError(err, "Failed to delete unfulfilled worker nonces, topicId1")
 
 	// Call pruneWorkerNonces
-	err = k.PruneWorkerNonces(s.Ctx(), topicId1, blockHeightThreshold)
+	err := k.PruneWorkerNonces(s.Ctx(), topicId1, blockHeightThreshold)
 	s.Require().NoError(err)
 
 	// Check remaining nonces
@@ -708,11 +725,9 @@ func (s *KeeperTestSuite) TestPruneWorkerNoncesLogicCorrectness() {
 		},
 	}
 	k := s.NonceKeeper()
-	topicId1 := uint64(1)
-	for _, tt := range tests {
+	for i, tt := range tests {
 		s.Run(tt.name, func() {
-			err := k.DeleteUnfulfilledWorkerNonces(s.Ctx(), topicId1)
-			s.Require().NoError(err, "Failed to delete unfulfilled worker nonces, topicId1")
+			topicId1 := uint64(i + 1)
 			// Set multiple worker nonces
 			for _, val := range tt.nonces {
 				err := k.AddWorkerNonce(s.Ctx(), topicId1, val)
@@ -720,7 +735,7 @@ func (s *KeeperTestSuite) TestPruneWorkerNoncesLogicCorrectness() {
 			}
 
 			// Call pruneWorkerNonces
-			err = k.PruneWorkerNonces(s.Ctx(), topicId1, tt.blockHeightThreshold)
+			err := k.PruneWorkerNonces(s.Ctx(), topicId1, tt.blockHeightThreshold)
 			s.Require().NoError(err)
 
 			// Check remaining nonces
@@ -791,11 +806,9 @@ func (s *KeeperTestSuite) TestPruneReputerNoncesLogicCorrectness() {
 		},
 	}
 	k := s.NonceKeeper()
-	topicId1 := uint64(1)
-	for _, tt := range tests {
+	for i, tt := range tests {
 		s.Run(tt.name, func() {
-			err := k.DeleteUnfulfilledReputerNonces(s.Ctx(), topicId1)
-			s.Require().NoError(err, "Failed to delete unfulfilled reputer nonces, topicId1")
+			topicId1 := uint64(i + 1)
 			// Set multiple reputer nonces
 			for _, val := range tt.nonces {
 				err := k.AddReputerNonce(s.Ctx(), topicId1, val.ReputerNonce)
@@ -803,7 +816,7 @@ func (s *KeeperTestSuite) TestPruneReputerNoncesLogicCorrectness() {
 			}
 
 			// Call PruneReputerNonces
-			err = k.PruneReputerNonces(s.Ctx(), topicId1, tt.blockHeightThreshold)
+			err := k.PruneReputerNonces(s.Ctx(), topicId1, tt.blockHeightThreshold)
 			s.Require().NoError(err)
 
 			// Check remaining nonces
@@ -820,42 +833,164 @@ func (s *KeeperTestSuite) TestPruneReputerNoncesLogicCorrectness() {
 	}
 }
 
-func (s *KeeperTestSuite) TestDeleteUnfulfilledWorkerNonces() {
-	topicId := uint64(1)
+// A nonce cut by the unfulfilled-request cap emits one EVICTED_BY_CAP event
+// per evicted nonce, oldest first.
+func (s *KeeperTestSuite) TestAddWorkerNonceEmitsCapEvictionForCutNonces() {
+	ctx := s.Ctx()
 	k := s.NonceKeeper()
-	// Setup initial nonces
-	err := k.AddWorkerNonce(s.Ctx(), topicId, &types.Nonce{BlockHeight: 10})
-	s.Require().NoError(err)
-	err = k.AddWorkerNonce(s.Ctx(), topicId, &types.Nonce{BlockHeight: 20})
-	s.Require().NoError(err)
+	topicId := uint64(1)
 
-	// Call DeleteUnfulfilledWorkerNonces
-	err = k.DeleteUnfulfilledWorkerNonces(s.Ctx(), topicId)
-	s.Require().NoError(err)
+	params := types.DefaultParams()
+	params.MaxUnfulfilledWorkerRequests = 3
+	s.Require().NoError(s.ParamsKeeper().SetParams(ctx, params))
 
-	// Check that the nonces were removed
-	nonces, err := k.GetUnfulfilledWorkerNonces(s.Ctx(), topicId)
+	// Adding 100, 200, 300 stays under the cap: no events.
+	em := sdk.NewEventManager()
+	eventCtx := ctx.WithEventManager(em)
+	for _, h := range []int64{100, 200, 300} {
+		s.Require().NoError(k.AddWorkerNonce(eventCtx, topicId, &types.Nonce{BlockHeight: h}))
+	}
+	s.Require().Empty(nonceExpiredEvents(em))
+
+	// The fourth add pushes the list past the cap and cuts the oldest.
+	s.Require().NoError(k.AddWorkerNonce(eventCtx, topicId, &types.Nonce{BlockHeight: 400}))
+
+	events := nonceExpiredEvents(em)
+	s.Require().Len(events, 1)
+	s.Require().Equal(topicId, events[0].TopicId)
+	s.Require().Equal(int64(100), events[0].Nonce)
+	s.Require().Equal(types.ActorType_ACTOR_TYPE_INFERER_UNSPECIFIED, events[0].ActorType)
+	s.Require().Equal(types.NonceExpiredReason_NONCE_EXPIRED_REASON_EVICTED_BY_CAP, events[0].Reason)
+
+	// The next add cuts the next-oldest.
+	s.Require().NoError(k.AddWorkerNonce(eventCtx, topicId, &types.Nonce{BlockHeight: 500}))
+	events = nonceExpiredEvents(em)
+	s.Require().Len(events, 2)
+	s.Require().Equal(int64(200), events[1].Nonce)
+
+	nonces, err := k.GetUnfulfilledWorkerNonces(ctx, topicId)
 	s.Require().NoError(err)
-	s.Require().Empty(nonces.Nonces)
+	s.Require().Len(nonces.Nonces, 3)
 }
 
-func (s *KeeperTestSuite) TestDeleteUnfulfilledreputerNonces() {
-	topicId := uint64(1)
+// A reputer nonce cut by the unfulfilled-request cap emits one EVICTED_BY_CAP
+// event per evicted nonce, oldest first.
+func (s *KeeperTestSuite) TestAddReputerNonceEmitsCapEvictionForCutNonces() {
+	ctx := s.Ctx()
 	k := s.NonceKeeper()
-	// Setup initial nonces
-	err := k.AddReputerNonce(s.Ctx(), topicId, &types.Nonce{BlockHeight: 50})
-	s.Require().NoError(err)
-	err = k.AddReputerNonce(s.Ctx(), topicId, &types.Nonce{BlockHeight: 60})
-	s.Require().NoError(err)
+	topicId := uint64(1)
 
-	// Call DeleteUnfulfilledWorkerNonces
-	err = k.DeleteUnfulfilledReputerNonces(s.Ctx(), topicId)
-	s.Require().NoError(err)
+	params := types.DefaultParams()
+	params.MaxUnfulfilledReputerRequests = 3
+	s.Require().NoError(s.ParamsKeeper().SetParams(ctx, params))
 
-	// Check that the nonces were removed
-	nonces, err := k.GetUnfulfilledReputerNonces(s.Ctx(), topicId)
+	em := sdk.NewEventManager()
+	eventCtx := ctx.WithEventManager(em)
+	for _, h := range []int64{100, 200, 300} {
+		s.Require().NoError(k.AddReputerNonce(eventCtx, topicId, &types.Nonce{BlockHeight: h}))
+	}
+	s.Require().Empty(nonceExpiredEvents(em))
+
+	s.Require().NoError(k.AddReputerNonce(eventCtx, topicId, &types.Nonce{BlockHeight: 400}))
+
+	events := nonceExpiredEvents(em)
+	s.Require().Len(events, 1)
+	s.Require().Equal(topicId, events[0].TopicId)
+	s.Require().Equal(int64(100), events[0].Nonce)
+	s.Require().Equal(types.ActorType_ACTOR_TYPE_REPUTER, events[0].ActorType)
+	s.Require().Equal(types.NonceExpiredReason_NONCE_EXPIRED_REASON_EVICTED_BY_CAP, events[0].Reason)
+
+	nonces, err := k.GetUnfulfilledReputerNonces(ctx, topicId)
 	s.Require().NoError(err)
-	s.Require().Empty(nonces.Nonces)
+	s.Require().Len(nonces.Nonces, 3)
+}
+
+// Pruning worker nonces by age emits one PRUNED_BY_AGE event per dropped
+// nonce, in the order the stored list holds them.
+func (s *KeeperTestSuite) TestPruneWorkerNoncesEmitsExpiredEventPerPrunedNonce() {
+	ctx := s.Ctx()
+	k := s.NonceKeeper()
+	topicId := uint64(1)
+
+	em := sdk.NewEventManager()
+	eventCtx := ctx.WithEventManager(em)
+	// Adds prepend, so the stored list is newest first: 20, 10, 5.
+	for _, h := range []int64{5, 10, 20} {
+		s.Require().NoError(k.AddWorkerNonce(eventCtx, topicId, &types.Nonce{BlockHeight: h}))
+	}
+	s.Require().Empty(nonceExpiredEvents(em))
+
+	s.Require().NoError(k.PruneWorkerNonces(eventCtx, topicId, 10))
+
+	events := nonceExpiredEvents(em)
+	s.Require().Len(events, 1)
+	s.Require().Equal(int64(5), events[0].Nonce)
+	for _, event := range events {
+		s.Require().Equal(topicId, event.TopicId)
+		s.Require().Equal(types.ActorType_ACTOR_TYPE_INFERER_UNSPECIFIED, event.ActorType)
+		s.Require().Equal(types.NonceExpiredReason_NONCE_EXPIRED_REASON_PRUNED_BY_AGE, event.Reason)
+	}
+}
+
+// Pruning reputer nonces by age emits one PRUNED_BY_AGE event per dropped
+// nonce whether the prune updates the stored list or removes it entirely.
+func (s *KeeperTestSuite) TestPruneReputerNoncesEmitsExpiredEventOnBothExits() {
+	s.Run("some survive", func() {
+		s.SetupTest()
+		ctx := s.Ctx()
+		k := s.NonceKeeper()
+		topicId := uint64(1)
+
+		em := sdk.NewEventManager()
+		eventCtx := ctx.WithEventManager(em)
+		for _, h := range []int64{5, 10, 20} {
+			s.Require().NoError(k.AddReputerNonce(eventCtx, topicId, &types.Nonce{BlockHeight: h}))
+		}
+
+		s.Require().NoError(k.PruneReputerNonces(eventCtx, topicId, 10))
+
+		events := nonceExpiredEvents(em)
+		s.Require().Len(events, 1)
+		s.Require().Equal(int64(5), events[0].Nonce)
+		for _, event := range events {
+			s.Require().Equal(topicId, event.TopicId)
+			s.Require().Equal(types.ActorType_ACTOR_TYPE_REPUTER, event.ActorType)
+			s.Require().Equal(types.NonceExpiredReason_NONCE_EXPIRED_REASON_PRUNED_BY_AGE, event.Reason)
+		}
+
+		nonces, err := k.GetUnfulfilledReputerNonces(ctx, topicId)
+		s.Require().NoError(err)
+		s.Require().Len(nonces.Nonces, 2)
+	})
+
+	s.Run("all pruned removes the entry", func() {
+		s.SetupTest()
+		ctx := s.Ctx()
+		k := s.NonceKeeper()
+		topicId := uint64(1)
+
+		em := sdk.NewEventManager()
+		eventCtx := ctx.WithEventManager(em)
+		for _, h := range []int64{5, 7} {
+			s.Require().NoError(k.AddReputerNonce(eventCtx, topicId, &types.Nonce{BlockHeight: h}))
+		}
+
+		s.Require().NoError(k.PruneReputerNonces(eventCtx, topicId, 10))
+
+		events := nonceExpiredEvents(em)
+		s.Require().Len(events, 2)
+		s.Require().Equal(int64(7), events[0].Nonce)
+		s.Require().Equal(int64(5), events[1].Nonce)
+		for _, event := range events {
+			s.Require().Equal(topicId, event.TopicId)
+			s.Require().Equal(types.ActorType_ACTOR_TYPE_REPUTER, event.ActorType)
+			s.Require().Equal(types.NonceExpiredReason_NONCE_EXPIRED_REASON_PRUNED_BY_AGE, event.Reason)
+		}
+
+		nonces, err := k.GetUnfulfilledReputerNonces(ctx, topicId)
+		s.Require().NoError(err)
+		s.Require().Empty(nonces.Nonces)
+	})
 }
 
 // NIL GUARD TESTS

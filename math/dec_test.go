@@ -18,6 +18,13 @@ import (
 	"pgregory.net/rapid"
 )
 
+// apd accepts these spellings, in any case, as numbers. An alphabetic draw
+// that hits one of them is not an invalid decimal string.
+var genAlphabeticNotNaN = rapid.StringMatching("[[:alpha:]]+").Filter(func(s string) bool {
+	lower := strings.ToLower(s)
+	return lower != "nan" && lower != "snan"
+})
+
 func TestDec(t *testing.T) {
 	// Property tests
 	t.Run("TestNewDecFromInt64", rapid.MakeCheck(testDecInt64))
@@ -205,7 +212,7 @@ func testDecInt64(t *rapid.T) {
 
 // Property: invalid_number_string(s) => alloraMath.NewDecFromString(s) == err
 func testInvalidNewDecFromString(t *rapid.T) {
-	s := rapid.StringMatching("[[:alpha:]]+").Draw(t, "s")
+	s := genAlphabeticNotNaN.Draw(t, "s")
 	_, err := alloraMath.NewDecFromString(s)
 	require.Error(t, err)
 }
@@ -214,7 +221,7 @@ func testInvalidNewDecFromString(t *rapid.T) {
 // => NewNonNegativeDecFromString(s) == err
 func testInvalidNewNonNegativeDecFromString(t *rapid.T) {
 	s := rapid.OneOf(
-		rapid.StringMatching("[[:alpha:]]+"),
+		genAlphabeticNotNaN,
 		rapid.StringMatching(`^-\d*\.?\d+$`).Filter(
 			func(s string) bool { return !strings.HasPrefix(s, "-0") && !strings.HasPrefix(s, "-.0") },
 		),
@@ -228,7 +235,7 @@ func testInvalidNewNonNegativeDecFromString(t *rapid.T) {
 func testInvalidNewNonNegativeFixedDecFromString(t *rapid.T) {
 	n := rapid.Uint32Range(0, 999).Draw(t, "n")
 	s := rapid.OneOf(
-		rapid.StringMatching("[[:alpha:]]+"),
+		genAlphabeticNotNaN,
 		rapid.StringMatching(`^-\d*\.?\d+$`).Filter(
 			func(s string) bool { return !strings.HasPrefix(s, "-0") && !strings.HasPrefix(s, "-.0") },
 		),
@@ -242,7 +249,7 @@ func testInvalidNewNonNegativeFixedDecFromString(t *rapid.T) {
 // => NewPositiveDecFromString(s) == err
 func testInvalidNewPositiveDecFromString(t *rapid.T) {
 	s := rapid.OneOf(
-		rapid.StringMatching("[[:alpha:]]+"),
+		genAlphabeticNotNaN,
 		rapid.StringMatching(`^-\d*\.?\d+|0$`),
 	).Draw(t, "s")
 	_, err := alloraMath.NewPositiveDecFromString(s)
@@ -254,7 +261,7 @@ func testInvalidNewPositiveDecFromString(t *rapid.T) {
 func testInvalidNewPositiveFixedDecFromString(t *rapid.T) {
 	n := rapid.Uint32Range(0, 999).Draw(t, "n")
 	s := rapid.OneOf(
-		rapid.StringMatching("[[:alpha:]]+"),
+		genAlphabeticNotNaN,
 		rapid.StringMatching(`^-\d*\.?\d+|0$`),
 		rapid.StringMatching(fmt.Sprintf(`\d*\.\d{%d,}`, n+1)),
 	).Draw(t, "s")

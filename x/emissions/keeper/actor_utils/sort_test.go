@@ -5,20 +5,18 @@ import (
 	"strconv"
 	"testing"
 
-	storetypes "cosmossdk.io/store/types"
+	"github.com/cometbft/cometbft/crypto/secp256k1"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/stretchr/testify/require"
+
 	alloraMath "github.com/allora-network/allora-chain/math"
 	alloratestutil "github.com/allora-network/allora-chain/test/testutil"
 	actorutils "github.com/allora-network/allora-chain/x/emissions/keeper/actor_utils"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
-	"github.com/cometbft/cometbft/crypto/secp256k1"
-	"github.com/cosmos/cosmos-sdk/testutil"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/stretchr/testify/require"
 )
 
 // test helper function reduce code duplication
 func setUpSomeWorkers(t *testing.T) (
-	testCtx sdk.Context,
 	worker1Addr sdk.AccAddress,
 	worker2Addr sdk.AccAddress,
 	worker3Addr sdk.AccAddress,
@@ -38,16 +36,12 @@ func setUpSomeWorkers(t *testing.T) (
 	worker4Addr = sdk.AccAddress(worker4PrivateKey.PubKey().Address())
 	worker5Addr = sdk.AccAddress(worker5PrivateKey.PubKey().Address())
 
-	key := storetypes.NewKVStoreKey("test")
-	testCtx = testutil.DefaultContextWithDB(t, key, storetypes.NewTransientStoreKey("transient_test")).Ctx
-
-	return testCtx, worker1Addr, worker2Addr, worker3Addr, worker4Addr, worker5Addr
+	return worker1Addr, worker2Addr, worker3Addr, worker4Addr, worker5Addr
 }
 
 func TestFindTopNByScoreDesc(t *testing.T) {
 	topicId := uint64(0)
-	testCtx,
-		worker1Addr,
+	worker1Addr,
 		worker2Addr,
 		worker3Addr,
 		worker4Addr,
@@ -61,7 +55,7 @@ func TestFindTopNByScoreDesc(t *testing.T) {
 		{TopicId: topicId, BlockHeight: 1, Address: worker5Addr.String(), Score: alloraMath.NewDecFromInt64(100)},
 	}
 
-	topActors, _, topActorsBool := actorutils.FindTopNByScoreDesc(testCtx, 3, reputerScoreEmas, 1)
+	topActors, _, topActorsBool := actorutils.FindTopNByScoreDesc(3, reputerScoreEmas, 1)
 	require.Equal(t, worker5Addr.String(), topActors[0].Address)
 	require.Equal(t, worker1Addr.String(), topActors[1].Address)
 	require.Equal(t, worker3Addr.String(), topActors[2].Address)
@@ -92,8 +86,6 @@ func requireIsTop(t *testing.T, expectedTop alloraMath.Dec, isTop bool) {
 func TestFindTopNByScoreDescCsv(t *testing.T) {
 	for epoch := 301; epoch < 400; epoch++ {
 		epochGet := alloratestutil.GetSortitionSimulatorValuesGetterForEpochs()[epoch]
-		key := storetypes.NewKVStoreKey("test")
-		testCtx := testutil.DefaultContextWithDB(t, key, storetypes.NewTransientStoreKey("transient_test")).Ctx
 		topicId := uint64(0)
 
 		nParticipants, err := epochGet("n_participants").UInt64()
@@ -113,7 +105,6 @@ func TestFindTopNByScoreDescCsv(t *testing.T) {
 		require.NoError(t, err)
 
 		_, _, topActorsBool := actorutils.FindTopNByScoreDesc(
-			testCtx,
 			nParticipantsDrawn,
 			reputerScoreEmas,
 			1,
@@ -133,7 +124,7 @@ func TestFindTopNByScoreDescCsv(t *testing.T) {
 // and just file empty scores at the end of the list
 func TestFindTopNByScoreDescWithNils(t *testing.T) {
 	topicId := uint64(0)
-	testCtx, _, _, worker3Addr, _, worker5Addr := setUpSomeWorkers(t)
+	_, _, worker3Addr, _, worker5Addr := setUpSomeWorkers(t)
 
 	reputerScoreEmas := []emissionstypes.Score{
 		{TopicId: topicId, BlockHeight: 1, Address: worker3Addr.String(), Score: alloraMath.NewDecFromInt64(80)},
@@ -142,7 +133,7 @@ func TestFindTopNByScoreDescWithNils(t *testing.T) {
 	}
 
 	// Actors with nil scores sent to the end
-	topActors, allActorsSorted, actorIsTop := actorutils.FindTopNByScoreDesc(testCtx, 3, reputerScoreEmas, 1)
+	topActors, allActorsSorted, actorIsTop := actorutils.FindTopNByScoreDesc(3, reputerScoreEmas, 1)
 	require.Len(t, topActors, 3)
 	require.Equal(t, worker5Addr.String(), topActors[0].Address)
 	require.Equal(t, struct{}{}, actorIsTop[worker5Addr.String()])
