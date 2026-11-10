@@ -11,11 +11,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    - name: Check code formatting using gofmt
-      uses: Jerome1337/gofmt-action@v1.0.5
+    - uses: actions/setup-go@v5
       with:
-          gofmt-path: '.'
-          gofmt-flags: '-l -d'
+        go-version: 1.27.3
+    - name: Check code formatting using gofmt
+      run: |
+        unformatted="$(gofmt -l .)"
+        if [ -n "$unformatted" ]; then
+          gofmt -d $unformatted
+          exit 1
+        fi
 
   test:
     runs-on: ubuntu-latest
@@ -25,7 +30,7 @@ jobs:
 
     - uses: actions/setup-go@v5
       with:
-        go-version: 1.26.10
+        go-version: 1.27.3
 
     - name: Test
       uses: robherley/go-test-action@v1.1.0
@@ -44,7 +49,7 @@ jobs:
 
     - uses: actions/setup-go@v5
       with:
-        go-version: 1.26.10
+        go-version: 1.27.3
 
     - name: Disk usage (before)
       shell: bash
