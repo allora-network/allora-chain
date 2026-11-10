@@ -32,27 +32,97 @@ enum ActorType {
   ACTOR_TYPE_REPUTER = 2;
 }
 
+// Why paying a topic participant's reward failed.
+enum RewardPayoutFailureReason {
+  REWARD_PAYOUT_FAILURE_REASON_UNSPECIFIED = 0;
+  // The reward could not be converted to an integer coin amount.
+  REWARD_PAYOUT_FAILURE_REASON_REWARD_CONVERSION = 1;
+  // The module-to-module send into the staking account failed.
+  REWARD_PAYOUT_FAILURE_REASON_MODULE_SEND = 2;
+  // The reputer's reward could not be restaked.
+  REWARD_PAYOUT_FAILURE_REASON_ADD_STAKE = 3;
+  // The payout address is not valid.
+  REWARD_PAYOUT_FAILURE_REASON_INVALID_PAYOUT_ADDRESS = 4;
+  // The worker's registration info could not be read.
+  REWARD_PAYOUT_FAILURE_REASON_WORKER_INFO_LOOKUP = 5;
+  // The module-to-account send to the payout address failed.
+  REWARD_PAYOUT_FAILURE_REASON_ACCOUNT_SEND = 6;
+  // The reward was negative.
+  REWARD_PAYOUT_FAILURE_REASON_NEGATIVE_REWARD = 7;
+}
+
+// Why a topic's active status changed.
+enum TopicStatusChangeReason {
+  TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED = 0;
+  // The topic's weight fell below the minimum weight for active topics.
+  TOPIC_STATUS_CHANGE_REASON_WEIGHT_BELOW_MINIMUM = 1;
+  // The topic lost a comparison for a full active set: its weight was below
+  // the lowest weight at the block it needed a slot in.
+  TOPIC_STATUS_CHANGE_REASON_REACTIVATION_FAILED = 2;
+  // The topic had the lowest weight in a full active set and a topic with a
+  // strictly higher weight took its place.
+  TOPIC_STATUS_CHANGE_REASON_EVICTED_BY_HIGHER_WEIGHT = 3;
+  // Funding (fees or stake) raised the topic's weight to the minimum for
+  // active topics.
+  TOPIC_STATUS_CHANGE_REASON_ACTIVATED_BY_FUNDING = 4;
+  // The topic kept its place in the active set at its next epoch.
+  TOPIC_STATUS_CHANGE_REASON_REACTIVATED = 5;
+  // Attempting to re-add the topic to the active set returned an error, so the
+  // topic was inactivated without a weight comparison deciding it.
+  TOPIC_STATUS_CHANGE_REASON_REACTIVATION_ERROR = 6;
+  // The topic had the lowest weight in a full active set and a topic with the
+  // same weight took its place: a tie admits the challenger.
+  TOPIC_STATUS_CHANGE_REASON_EVICTED_BY_EQUAL_WEIGHT = 7;
+}
+
+// Outcome of merit-based sortition for a worker or reputer payload submission.
+// UNSPECIFIED is the zero value so events emitted before this field existed
+// decode as "unknown" rather than as a specific outcome.
+enum PayloadAdmissionOutcome {
+  // Legacy events emitted before the field existed; the outcome is unknown.
+  PAYLOAD_ADMISSION_OUTCOME_UNSPECIFIED = 0;
+  // The payload was admitted into the active set at submission time. This is
+  // not a guarantee of final-set membership: the actor can still be evicted
+  // later in the same window by a higher-scoring submission.
+  PAYLOAD_ADMISSION_OUTCOME_ADMITTED = 1;
+  // The submission passed validation but was not admitted into the active
+  // set; only score/liveness side effects were recorded.
+  PAYLOAD_ADMISSION_OUTCOME_NOT_ADMITTED = 2;
+  // No forecast element survived filtering to top inferers, so the forecast
+  // never reached sortition. The emitted event still carries the submitted
+  // elements, none of them was accepted or stored.
+  PAYLOAD_ADMISSION_OUTCOME_NO_ELEMENTS_ACCEPTED = 3;
+}
+
 message EventScoresSet {
   ActorType actor_type = 1;
   uint64 topic_id = 2;
-  int64 block_height = 3;
+  // The epoch nonce, kept under this name for compatibility; read
+  // nonce instead.
+  int64 block_height = 3 [deprecated = true];
   repeated string addresses = 4;
   repeated string scores = 5 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
   ];
+  // The epoch nonce the values belong to.
+  int64 nonce = 6;
 }
 
 message EventRewardsSettled {
   ActorType actor_type = 1;
   uint64 topic_id = 2;
-  int64 block_height = 3;
+  // The epoch nonce, kept under this name for compatibility; read
+  // nonce instead.
+  int64 block_height = 3 [deprecated = true];
   repeated string addresses = 4;
   repeated string rewards = 5 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
   ];
   int64 block_height_tx = 6;
+  // The epoch nonce the values belong to.
+  int64 nonce = 7;
 }
 
 message EventNetworkLossSet {
@@ -111,6 +181,8 @@ message EventNetworkInferenceBundle {
   uint64 topic_id = 1;
   int64 nonce = 2;
 
+  // The epoch's frozen label registry, in compact-id order: the labels of
+  // EventEpochLabelRegistryFrozen for the same topic and nonce.
   repeated string label_names = 3;
 
   repeated string inferer_addresses = 4;
@@ -170,6 +242,9 @@ message EventInsertInfererPayload {
   ];
   bytes extra_data = 5;
   repeated InputLabeledValue values = 6;
+  // Outcome of sortition for this submission. Final membership of the active
+  // set is published at window close by EventActiveInferersSet.
+  PayloadAdmissionOutcome admission_outcome = 7;
 }
 
 message EventInsertForecasterPayload {
@@ -183,6 +258,29 @@ message EventInsertForecasterPayload {
     (gogoproto.nullable) = false
   ];
   bytes extra_data = 6;
+  // Outcome of sortition for this submission. Final membership of the active
+  // set is published at window close by EventActiveForecastersSet.
+  PayloadAdmissionOutcome admission_outcome = 7;
+}
+
+// Emitted when an admitted inferer's inference is removed from the active set
+// because a higher-scoring inferer took its slot during the same submission
+// window. Enables block-by-block reconstruction of the active set.
+message EventInferenceEvictedFromActiveSet {
+  uint64 topic_id = 1;
+  int64 nonce = 2;
+  string evicted_inferer = 3;
+  string evicting_inferer = 4;
+}
+
+// Emitted when an admitted forecaster's forecast is removed from the active
+// set because a higher-scoring forecaster took its slot during the same
+// submission window. Enables block-by-block reconstruction of the active set.
+message EventForecastEvictedFromActiveSet {
+  uint64 topic_id = 1;
+  int64 nonce = 2;
+  string evicted_forecaster = 3;
+  string evicting_forecaster = 4;
 }
 
 message EventCreateNewTopic {
@@ -204,6 +302,13 @@ message EventAddStake {
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];
+  // The topic's total stake after the addition.
+  string topic_stake = 5 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
 }
 
 message EventRemoveStake {
@@ -211,6 +316,13 @@ message EventRemoveStake {
   string reputer = 2;
   string delegator = 3;
   string amount = 4 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+  // The topic's total stake after the removal.
+  string topic_stake = 5 [
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false,
@@ -263,10 +375,37 @@ message EventRewardDelegateStake {
 }
 
 message EventInsertReputerPayload {
+  reserved 4;
   uint64 topic_id = 1;
   int64 nonce = 2;
   string reputer = 3;
   EventValueBundle bundle = 5;
+  // Outcome of sortition for this submission. Final membership of the active
+  // set is published at window close by EventActiveReputersSet.
+  PayloadAdmissionOutcome admission_outcome = 6;
+}
+
+// Emitted when an admitted reputer's loss bundle is removed from the active
+// set because a higher-scoring reputer took its slot during the same
+// submission window. Enables block-by-block reconstruction of the active set.
+message EventReputerLossEvictedFromActiveSet {
+  uint64 topic_id = 1;
+  int64 nonce = 2;
+  string evicted_reputer = 3;
+  string evicting_reputer = 4;
+}
+
+// Emitted when a reputer's pending submission (the active marker and the
+// stored loss bundle) is retired without a sortition eviction, because the
+// nonce it was stored for was closed, or the nonce was pruned and can no
+// longer be closed. Enables block-by-block reconstruction of pending
+// submissions.
+message EventReputerSubmissionRetired {
+  uint64 topic_id = 1;
+  // Nonce the retired submission was stored for; 0 when the stored bundle was
+  // missing or unreadable and the marker was retired without one.
+  int64 nonce = 2;
+  string reputer = 3;
 }
 
 message EventReputerRegistered {
@@ -403,18 +542,26 @@ message EventForecastTaskScoreSet {
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
   ];
-  int64 nonce_block_height = 3;
+  // The epoch nonce, kept under this name for compatibility; read
+  // nonce instead.
+  int64 nonce_block_height = 3 [deprecated = true];
+  // The epoch nonce the values belong to.
+  int64 nonce = 4;
 }
 
 message EventWorkerLastCommitSet {
   uint64 topic_id = 1;
-  int64 block_height = 2;
+  // The height of the block the event is emitted in. The block already records
+  // it, so the field only duplicates it; kept for compatibility.
+  int64 block_height = 2 [deprecated = true];
   emissions.v3.Nonce nonce = 3;
 }
 
 message EventReputerLastCommitSet {
   uint64 topic_id = 1;
-  int64 block_height = 2;
+  // The height of the block the event is emitted in. The block already records
+  // it, so the field only duplicates it; kept for compatibility.
+  int64 block_height = 2 [deprecated = true];
   emissions.v3.Nonce nonce = 3;
 }
 
@@ -441,94 +588,132 @@ message EventEMAScoresSet {
 message EventListeningCoefficientsSet {
   ActorType actor_type = 1;
   uint64 topic_id = 2;
-  int64 block_height = 3;
+  // The epoch nonce, kept under this name for compatibility; read
+  // nonce instead.
+  int64 block_height = 3 [deprecated = true];
   repeated string addresses = 4;
   repeated string coefficients = 5 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
   ];
+  // The epoch nonce the values belong to.
+  int64 nonce = 6;
 }
 
 message EventInfererNetworkRegretSet {
   uint64 topic_id = 1;
-  int64 block_height = 2;
+  // The epoch nonce, kept under this name for compatibility; read
+  // nonce instead.
+  int64 block_height = 2 [deprecated = true];
   repeated string addresses = 3;
   repeated string regrets = 4 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
   ];
+  // The epoch nonce the values belong to.
+  int64 nonce = 5;
 }
 
 message EventForecasterNetworkRegretSet {
   uint64 topic_id = 1;
-  int64 block_height = 2;
+  // The epoch nonce, kept under this name for compatibility; read
+  // nonce instead.
+  int64 block_height = 2 [deprecated = true];
   repeated string addresses = 3;
   repeated string regrets = 4 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
   ];
+  // The epoch nonce the values belong to.
+  int64 nonce = 5;
 }
 
 message EventNaiveInfererNetworkRegretSet {
   uint64 topic_id = 1;
-  int64 block_height = 2;
+  // The epoch nonce, kept under this name for compatibility; read
+  // nonce instead.
+  int64 block_height = 2 [deprecated = true];
   repeated string addresses = 3;
   repeated string regrets = 4 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
   ];
+  // The epoch nonce the values belong to.
+  int64 nonce = 5;
 }
 
 message EventTopicInitialRegretSet {
   uint64 topic_id = 1;
-  int64 block_height = 2;
+  // The epoch nonce, kept under this name for compatibility; read
+  // nonce instead.
+  int64 block_height = 2 [deprecated = true];
   string regret = 3 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
   ];
+  // The epoch nonce the values belong to.
+  int64 nonce = 4;
 }
 
 message EventTopicInitialEmaScoreSet {
   ActorType actor_type = 1;
   uint64 topic_id = 2;
-  int64 block_height = 3;
+  // The epoch nonce, kept under this name for compatibility; read
+  // nonce instead.
+  int64 block_height = 3 [deprecated = true];
   string score = 4 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
   ];
+  // The epoch nonce the values belong to.
+  int64 nonce = 5;
 }
 
 message EventRegretStdNormSet {
   uint64 topic_id = 1;
-  int64 block_height = 2;
+  // The epoch nonce, kept under this name for compatibility; read
+  // nonce instead.
+  int64 block_height = 2 [deprecated = true];
   string stdnorm = 3 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
   ];
+  // The epoch nonce the values belong to.
+  int64 nonce = 4;
 }
 
 message EventInfererWeightsSet {
   uint64 topic_id = 1;
-  int64 block_height = 2;
+  // The epoch nonce, kept under this name for compatibility; read
+  // nonce instead.
+  int64 block_height = 2 [deprecated = true];
   repeated string addresses = 3;
   repeated string weights = 4 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
   ];
+  // The epoch nonce the values belong to.
+  int64 nonce = 5;
 }
 
 message EventForecasterWeightsSet {
   uint64 topic_id = 1;
-  int64 block_height = 2;
+  // The epoch nonce, kept under this name for compatibility; read
+  // nonce instead.
+  int64 block_height = 2 [deprecated = true];
   repeated string addresses = 3;
   repeated string weights = 4 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
   ];
+  // The epoch nonce the values belong to.
+  int64 nonce = 5;
 }
 
 message EventPreviousPercentageRewardToStakedReputersSet {
-  int64 block_height = 1;
+  // The height of the block the event is emitted in. The block already records
+  // it, so the field only duplicates it; kept for compatibility.
+  int64 block_height = 1 [deprecated = true];
   string percentage = 2 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
@@ -547,6 +732,8 @@ message EventDelegateRewardShareUpdated {
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
   ];
+  // The epoch nonce the reward distribution belongs to.
+  int64 nonce = 4;
 }
 
 message EventDelegateRewardDistributed {
@@ -558,72 +745,152 @@ message EventDelegateRewardDistributed {
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];
+  // The epoch nonce the reward distribution belongs to.
+  int64 nonce = 4;
 }
 
 message EventActiveReputersSet {
   uint64 topic_id = 1;
   repeated string addresses = 2;
-  int64 nonce_block_height = 3;
+  // The epoch nonce, kept under this name for compatibility; read
+  // nonce instead.
+  int64 nonce_block_height = 3 [deprecated = true];
+  // The epoch nonce the values belong to.
+  int64 nonce = 4;
 }
 
 message EventActiveInferersSet {
   uint64 topic_id = 1;
   repeated string addresses = 2;
-  int64 nonce_block_height = 3;
+  // The epoch nonce, kept under this name for compatibility; read
+  // nonce instead.
+  int64 nonce_block_height = 3 [deprecated = true];
+  // The epoch nonce the values belong to.
+  int64 nonce = 4;
 }
 
 message EventActiveForecastersSet {
   uint64 topic_id = 1;
+  // The forecasters whose forecasts the chain stored for the epoch.
   repeated string addresses = 2;
-  int64 nonce_block_height = 3;
+  // The epoch nonce, kept under this name for compatibility; read
+  // nonce instead.
+  int64 nonce_block_height = 3 [deprecated = true];
+  // The epoch nonce the values belong to.
+  int64 nonce = 4;
+  // The forecasters active for the epoch whose forecasts the chain discarded
+  // when it closed the epoch, so they are not in addresses.
+  repeated string discarded_addresses = 5;
 }
 
 message EventTopicStatusChanged {
   uint64 topic_id = 1;
   bool is_active = 2;
+  // Why the status changed.
+  TopicStatusChangeReason reason = 3;
+  // The topic's weight in this decision. When a full block's slot was at stake
+  // this is the value the comparison used: the weight compared against the
+  // block's lowest weight, or the evicted topic's stored weight.
+  string weight = 4 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
+  // The global MinTopicWeight param in force.
+  string min_weight = 5 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
+  // The weight this decision was measured against: MinTopicWeight for
+  // WEIGHT_BELOW_MINIMUM and for an activation into a free slot; the block's
+  // lowest weight for REACTIVATION_FAILED and for an activation that took a
+  // full block's slot; the challenger's weight for EVICTED_BY_HIGHER_WEIGHT
+  // and EVICTED_BY_EQUAL_WEIGHT.
+  // Zero for REACTIVATION_ERROR: no comparison happened.
+  string threshold_weight = 6 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
 }
 
 message EventNetworkInferenceInfererWeightsSet {
   uint64 topic_id = 1;
-  int64 nonce_block_height = 2;
+  // The epoch nonce, kept under this name for compatibility; read
+  // nonce instead.
+  int64 nonce_block_height = 2 [deprecated = true];
   repeated string addresses = 3;
   repeated string weights = 4 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
   ];
+  // The epoch nonce the values belong to.
+  int64 nonce = 5;
 }
 
 message EventNetworkInferenceForecasterWeightsSet {
   uint64 topic_id = 1;
-  int64 nonce_block_height = 2;
+  // The epoch nonce, kept under this name for compatibility; read
+  // nonce instead.
+  int64 nonce_block_height = 2 [deprecated = true];
   repeated string addresses = 3;
   repeated string weights = 4 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
   ];
+  // The epoch nonce the values belong to.
+  int64 nonce = 5;
 }
 
 message EventNetworkInferenceInfererRegretsUsedSet {
   uint64 topic_id = 1;
-  int64 nonce_block_height = 2;
+  // The epoch nonce, kept under this name for compatibility; read
+  // nonce instead.
+  int64 nonce_block_height = 2 [deprecated = true];
   repeated string addresses = 3;
   repeated string regrets = 4 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
   ];
+  // The epoch nonce the values belong to.
+  int64 nonce = 5;
 }
 
 message EventNetworkInferenceForecasterRegretsUsedSet {
   uint64 topic_id = 1;
-  int64 nonce_block_height = 2;
+  // The epoch nonce, kept under this name for compatibility; read
+  // nonce instead.
+  int64 nonce_block_height = 2 [deprecated = true];
   repeated string addresses = 3;
   repeated string regrets = 4 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
   ];
+  // The epoch nonce the values belong to.
+  int64 nonce = 5;
 }
 
 message EventTopicWeightUpdated {
+  uint64 topic_id = 1;
+  string new_weight = 2 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
+  string topic_stake = 3 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+  string topic_fee_revenue = 4 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+}
+
+// Same payload as EventTopicWeightUpdated, emitted when a stake change (not
+// the epoch path) recomputes the topic weight.
+message EventTopicWeightUpdatedAfterStakeChange {
   uint64 topic_id = 1;
   string new_weight = 2 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
@@ -667,24 +934,124 @@ message EventTopicFeeRevenueDripped {
 
 message EventWorkerSubmissionWindowOpened {
   uint64 topic_id = 1;
-  int64 nonce_block_height = 2;
+  // The epoch nonce, kept under this name for compatibility; read
+  // nonce instead.
+  int64 nonce_block_height = 2 [deprecated = true];
   int64 window_end_block = 3;
+  // The epoch nonce.
+  int64 nonce = 4;
 }
 
 message EventWorkerSubmissionWindowClosed {
   uint64 topic_id = 1;
-  int64 nonce_block_height = 2;
+  // The epoch nonce, kept under this name for compatibility; read
+  // nonce instead.
+  int64 nonce_block_height = 2 [deprecated = true];
+  // The epoch nonce.
+  int64 nonce = 3;
 }
 
 message EventReputerSubmissionWindowOpened {
   uint64 topic_id = 1;
-  int64 nonce_block_height = 2;
+  // The epoch nonce, kept under this name for compatibility; read
+  // nonce instead.
+  int64 nonce_block_height = 2 [deprecated = true];
   int64 window_end_block = 3;
+  // The epoch nonce.
+  int64 nonce = 4;
 }
 
 message EventReputerSubmissionWindowClosed {
   uint64 topic_id = 1;
-  int64 nonce_block_height = 2;
+  // The epoch nonce, kept under this name for compatibility; read
+  // nonce instead.
+  int64 nonce_block_height = 2 [deprecated = true];
+  // The epoch nonce.
+  int64 nonce = 3;
+}
+
+// Emitted when paying one topic participant's reward fails; the payout loop
+// skips the actor and continues with the rest.
+message EventRewardPayoutFailed {
+  uint64 topic_id = 1;
+  // The epoch nonce the reward distribution belongs to.
+  int64 nonce = 2;
+  string address = 3;
+  ActorType actor_type = 4;
+  // The reward that could not be paid.
+  string amount = 5 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
+  RewardPayoutFailureReason reason = 6;
+}
+
+// Emitted when a topic's reward goes back to the ecosystem account because
+// the topic had no reward nonce to settle the reward against.
+message EventTopicRewardForfeitedNoRewardNonce {
+  uint64 topic_id = 1;
+  // The topic's EpochLastEnded. For a topic rewarded in this block, this is
+  // the height of the block the event is emitted in.
+  int64 epoch = 2;
+  // The coins moved to the ecosystem account, zero when the reward was under
+  // one unit and nothing moved.
+  string amount = 3 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+}
+
+// Emitted when a topic's reward goes back to the ecosystem account because
+// distributing and paying it out to the topic's actors failed.
+message EventTopicRewardForfeitedDistributionFailed {
+  uint64 topic_id = 1;
+  // The topic's EpochLastEnded. For a topic rewarded in this block, this is
+  // the height of the block the event is emitted in.
+  int64 epoch = 2;
+  // The reward nonce whose settlement failed.
+  int64 reward_nonce = 3;
+  // The coins moved to the ecosystem account, zero when the reward was under
+  // one unit and nothing moved.
+  string amount = 4 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+}
+
+// Why an unfulfilled nonce was removed from state.
+enum NonceExpiredReason {
+  NONCE_EXPIRED_REASON_UNSPECIFIED = 0;
+  // The nonce was the oldest outstanding one, at the tail of the newest-first
+  // unfulfilled list, and was cut when a new nonce pushed the list past the
+  // cap on unfulfilled requests.
+  NONCE_EXPIRED_REASON_EVICTED_BY_CAP = 1;
+  // The nonce aged past the retention threshold and was pruned.
+  NONCE_EXPIRED_REASON_PRUNED_BY_AGE = 2;
+  // Closing the nonce failed (e.g. no usable submissions), and the nonce
+  // left state unfulfilled during cleanup.
+  NONCE_EXPIRED_REASON_CLOSE_FAILED = 3;
+}
+
+// Emitted for each unfulfilled nonce that leaves state without being
+// fulfilled. An unfulfilled nonce leaves state in exactly three ways, each
+// covered here: it is evicted by the cap on unfulfilled requests, it is pruned
+// by age, or its close fails and it is dropped during cleanup. Consumers key
+// on `nonce`, the expired nonce itself, not on the block the event is emitted
+// in. `actor_type` says what kind of nonce expired: a worker nonce (no
+// inferences arrived for that epoch) carries ACTOR_TYPE_INFERER_UNSPECIFIED,
+// the zero value, and a reputer nonce (no losses arrived, so the epoch gets no
+// rewards) carries ACTOR_TYPE_REPUTER. The zero value here is meaningful, not
+// unset: key on the enum name.
+message EventNonceExpired {
+  uint64 topic_id = 1;
+  // The expired nonce: the epoch the submissions were due for.
+  int64 nonce = 2;
+  ActorType actor_type = 3;
+  NonceExpiredReason reason = 4;
 }
 
 // Emitted once per epoch at CloseWorkerNonce, after the EpochLabelRegistry is
@@ -693,6 +1060,15 @@ message EventReputerSubmissionWindowClosed {
 // committed registry (always 1 for SINGLE-output topics).
 message EventEpochLabelRegistryFrozen {
   uint64 topic_id = 1;
-  int64 nonce_block_height = 2;
+  // The epoch nonce, kept under this name for compatibility; read
+  // nonce instead.
+  int64 nonce_block_height = 2 [deprecated = true];
   uint64 registry_size = 3;
+  // The epoch nonce.
+  int64 nonce = 4;
+  // The frozen registry's canonical label names in compact-id order:
+  // labels[i] is the label with id i+1. The size grows with the registry, about
+  // 2 MiB at 32768 labels of 64 bytes; MaxEpochLabelRegistrySize has no upper
+  // bound.
+  repeated string labels = 5;
 }

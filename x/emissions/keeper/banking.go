@@ -4,6 +4,7 @@ import (
 	"context"
 
 	errorsmod "cosmossdk.io/errors"
+	cosmosMath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/allora-network/allora-chain/app/params"
@@ -52,27 +53,32 @@ func (k *BankingKeeper) GetBalance(ctx context.Context, addr sdk.AccAddress, den
 	return k.bankKeeper.GetBalance(ctx, addr, denom)
 }
 
-// MoveCoinsFromAlloraRewardsToEcosystem moves funds from the allora rewards account to the ecosystem account
-func (k *BankingKeeper) MoveCoinsFromAlloraRewardsToEcosystem(ctx context.Context, amount alloraMath.Dec) error {
+// MoveCoinsFromAlloraRewardsToEcosystem moves the integer part of amount from the allora rewards
+// account to the ecosystem account and returns the integer amount it moved, zero when nothing moved.
+func (k *BankingKeeper) MoveCoinsFromAlloraRewardsToEcosystem(ctx context.Context, amount alloraMath.Dec) (cosmosMath.Int, error) {
 	if amount.IsNegative() {
-		return errorsmod.Wrap(types.ErrInvalidValue, "amount to move cannot be negative")
+		return cosmosMath.ZeroInt(), errorsmod.Wrap(types.ErrInvalidValue, "amount to move cannot be negative")
 	}
 	if amount.IsZero() {
-		return nil
+		return cosmosMath.ZeroInt(), nil
 	}
 	amountInt, err := amount.SdkIntTrim()
 	if err != nil {
-		return errorsmod.Wrap(err, "failed to sdk int trim amount")
+		return cosmosMath.ZeroInt(), errorsmod.Wrap(err, "failed to sdk int trim amount")
 	}
 	if amountInt.IsZero() {
-		return nil
+		return cosmosMath.ZeroInt(), nil
 	}
-	return k.bankKeeper.SendCoinsFromModuleToModule(
+	err = k.bankKeeper.SendCoinsFromModuleToModule(
 		ctx,
 		types.AlloraRewardsAccountName,
 		minttypes.EcosystemModuleName,
 		sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, amountInt)),
 	)
+	if err != nil {
+		return cosmosMath.ZeroInt(), err
+	}
+	return amountInt, nil
 }
 
 // Gets the total rewards available to be distributed from the Allora Rewards Module Account

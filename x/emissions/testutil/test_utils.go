@@ -223,6 +223,7 @@ type (
 		labelDefaultValue     *alloraMath.Dec
 		reputerStake          *cosmosMath.Int
 		accounts              []account
+		limitForecastElements int
 	}
 )
 
@@ -338,6 +339,12 @@ func WithLabelCaseSensitive(labelCaseSensitive bool) Option {
 func WithLabelDefaultValue(labelDefaultValue alloraMath.Dec) Option {
 	return func(p *customParams) {
 		p.labelDefaultValue = &labelDefaultValue
+	}
+}
+
+func WithLimitForecastElements(limit int) Option {
+	return func(p *customParams) {
+		p.limitForecastElements = limit
 	}
 }
 
@@ -648,12 +655,12 @@ type TestWorkerValue struct {
 //
 // When neither tv.Values nor tv.Value is set, a scalar is drawn from the
 // suite's seeded value source.
-func generateWorkerDataBundles(
-	s *TestSuite,
+func (s *TestSuite) generateWorkerDataBundles(
 	nonce int64,
 	topicId uint64,
 	workerIndexes []int,
 	workerValues []TestWorkerValue,
+	limitForecastElements int,
 ) []*types.InputWorkerDataBundle {
 	lwv := len(workerValues)
 	hasWorkerValues := lwv > 0
@@ -695,7 +702,6 @@ func generateWorkerDataBundles(
 	}
 
 	var bundles []*types.InputWorkerDataBundle
-	totalAddresses := len(s.accounts)
 
 	for i, workerIdx := range workerIndexes {
 		var tv TestWorkerValue
@@ -710,25 +716,24 @@ func generateWorkerDataBundles(
 		}
 		forecastValueStr := getForecastValueStr(tv)
 
-		forecastTargets := []int{
-			(workerIdx + 0) % totalAddresses,
-			(workerIdx + 1) % totalAddresses,
-			(workerIdx + 2) % totalAddresses,
+		// Name inferers from this batch. Close drops a forecast left with
+		// fewer than two of them, and a repeated inferer is rejected on insert.
+		nWorkers := len(workerIndexes)
+		elementCount := nWorkers
+		if elementCount > 3 {
+			elementCount = 3
+		}
+		if limitForecastElements > 0 && limitForecastElements < elementCount {
+			elementCount = limitForecastElements
 		}
 
-		forecastElements := []*types.InputForecastElement{
-			{
-				Inferer: s.accounts[forecastTargets[0]].addrStr,
+		forecastElementsFinal := make([]*types.InputForecastElement, 0, elementCount)
+		for j := 0; j < elementCount; j++ {
+			target := workerIndexes[(i+j)%nWorkers]
+			forecastElementsFinal = append(forecastElementsFinal, &types.InputForecastElement{
+				Inferer: s.accounts[target].addrStr,
 				Value:   alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString(forecastValueStr)),
-			},
-			{
-				Inferer: s.accounts[forecastTargets[1]].addrStr,
-				Value:   alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString(forecastValueStr)),
-			},
-			{
-				Inferer: s.accounts[forecastTargets[2]].addrStr,
-				Value:   alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString(forecastValueStr)),
-			},
+			})
 		}
 
 		inferenceForecastBundle := &types.InputInferenceForecastBundle{
@@ -745,7 +750,7 @@ func generateWorkerDataBundles(
 				TopicId:          topicId,
 				BlockHeight:      nonce,
 				Forecaster:       s.accounts[workerIdx].addrStr,
-				ForecastElements: forecastElements,
+				ForecastElements: forecastElementsFinal,
 				ExtraData:        nil,
 			},
 		}
@@ -1063,6 +1068,7 @@ func NetworkInferenceBundleToLossBundleSkeleton(b *types.NetworkInferenceBundle)
 	}
 
 	ooif := make([]*types.OneOutInfererForecasterValues, 0, len(b.OneOutInfererForecasterValues))
+	forecasterRows := make(map[string]*types.OneOutInfererForecasterValues)
 	for _, x := range b.OneOutInfererForecasterValues {
 		if x == nil {
 			continue
@@ -1071,14 +1077,15 @@ func NetworkInferenceBundleToLossBundleSkeleton(b *types.NetworkInferenceBundle)
 		if len(x.CombinedInference) > 0 {
 			val = x.CombinedInference[0].Value
 		}
-		ooif = append(ooif, &types.OneOutInfererForecasterValues{
-			Forecaster: x.Forecaster,
-			OneOutInfererValues: []*types.WithheldWorkerAttributedValue{
-				{
-					Worker: x.WithheldInferer,
-					Value:  val,
-				},
-			},
+		row, ok := forecasterRows[x.Forecaster]
+		if !ok {
+			row = &types.OneOutInfererForecasterValues{Forecaster: x.Forecaster}
+			forecasterRows[x.Forecaster] = row
+			ooif = append(ooif, row)
+		}
+		row.OneOutInfererValues = append(row.OneOutInfererValues, &types.WithheldWorkerAttributedValue{
+			Worker: x.WithheldInferer,
+			Value:  val,
 		})
 	}
 	combVal := alloraMath.ZeroDec()
@@ -1312,11 +1319,17 @@ func (s *TestSuite) SetupParticipants(topicID uint64, indexes []int, isReputer b
 	}
 }
 
-func (s *TestSuite) SetupInferences(topicID uint64, nonce int64, workerIndexes []int, workerValues ...TestWorkerValue) types.Nonce {
+func (s *TestSuite) SetupInferences(topicID uint64, nonce int64, workerIndexes []int, options ...Option) types.Nonce {
 	if len(workerIndexes) == 0 {
 		return types.Nonce{} //nolint:exhaustruct
 	}
-	inferenceBundles := generateWorkerDataBundles(s, nonce, topicID, workerIndexes, workerValues)
+
+	p := new(customParams)
+	for _, opt := range options {
+		opt(p)
+	}
+
+	inferenceBundles := s.generateWorkerDataBundles(nonce, topicID, workerIndexes, p.workerValues, p.limitForecastElements)
 	for _, payload := range inferenceBundles {
 		_, err := s.emissionsMsgServer.InsertWorkerPayload(s.Ctx(), &types.InsertWorkerPayloadRequest{
 			Sender:           payload.Worker,
@@ -1438,7 +1451,7 @@ func (s *TestSuite) FullTopicPass(workerIndexes, reputerIndexes []int, options .
 	s.Require().NoError(err)
 
 	if len(workerNonces.Nonces) > 0 {
-		s.SetupInferences(p.topicID, workerNonces.Nonces[0].BlockHeight, workerIndexes, p.workerValues...)
+		s.SetupInferences(p.topicID, workerNonces.Nonces[0].BlockHeight, workerIndexes, options...)
 		wswBlock := nonce + topic.WorkerSubmissionWindow
 		s.T().Logf("Moving nonce to end of worker submission window for TopicId: %d, Next block: %v", p.topicID, wswBlock)
 		s.WithBlockHeight(wswBlock)
