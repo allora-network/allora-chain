@@ -25,7 +25,7 @@ jobs:
 
     - uses: actions/setup-go@v5
       with:
-        go-version: 1.26.10
+        go-version: 1.27.3
 
     - name: Test
       uses: robherley/go-test-action@v1.1.0
@@ -44,7 +44,7 @@ jobs:
 
     - uses: actions/setup-go@v5
       with:
-        go-version: 1.26.10
+        go-version: 1.27.3
 
     - name: Disk usage (before)
       shell: bash

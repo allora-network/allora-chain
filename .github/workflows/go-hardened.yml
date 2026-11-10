@@ -30,8 +30,8 @@ jobs:
     uses: allora-network/ci-workflows-private/.github/workflows/go-install-hardened.yml@v1
     with:
       # Same patch as the toolchain line in go.mod. A floating minor
-      # would pick up a later 1.26 release on its own.
-      go_version: '1.26.10'
+      # would pick up a later 1.27 release on its own.
+      go_version: '1.27.3'
       # cosmwasm/wasmvm (a transitive Cosmos SDK dep) requires CGO to
       # link against libwasmvm; matches the goreleaser build path.
       cgo_enabled: '1'
