@@ -4,11 +4,16 @@ on:
   workflow_dispatch:
   pull_request:
     paths:
+      - 'app/app.go'
       - 'app/upgrades.go'
       - 'app/upgrades/**'
       - 'x/*/module/module.go'
+      - 'x/*/module.go'
       - 'x/*/migrations/**'
       - 'Dockerfile.upgrade'
+      - 'Makefile'
+      - 'go.mod'
+      - 'go.sum'
       - 'test/local_testnet_l1.sh'
       - 'test/generate_genesis.sh'
       - 'test/validator.tmpl'
