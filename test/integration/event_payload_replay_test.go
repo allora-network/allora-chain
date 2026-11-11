@@ -188,16 +188,23 @@ func (a *eventAudit) checkInfererStored(height int64, event *emissionstypes.Even
 		if !bytes.Equal(got.ExtraData, event.ExtraData) {
 			a.failf(height, "stored inference for %s topic %d extra_data differs from the insert event", event.Inferer, event.TopicId)
 		}
-		if !got.Value.Equal(event.Value) {
-			a.failf(height, "stored inference for %s topic %d value %s, event value %s", event.Inferer, event.TopicId, got.Value, event.Value)
-		}
 		// Single-arity submissions carry only Value and the stored form keeps
-		// Values nil; multi-arity submissions carry Values and the stored form
-		// reconstructs them. Comparing the event's Values against the stored
-		// Values would reject every single-arity submission.
-		if len(event.Values) > 0 && len(got.Values) > 0 {
+		// Values nil; multi-arity submissions carry Values, which the stored
+		// form reconstructs, and the stored Value stays zero. Compare only the
+		// field the submission actually supplied.
+		if len(event.Values) == 0 {
+			if !got.Value.Equal(event.Value) {
+				a.failf(height, "stored inference for %s topic %d value %s, event value %s", event.Inferer, event.TopicId, got.Value, event.Value)
+			}
+		} else if len(got.Values) > 0 {
 			if len(got.Values) != len(event.Values) {
 				a.failf(height, "stored inference for %s topic %d has %d labeled values, event has %d", event.Inferer, event.TopicId, len(got.Values), len(event.Values))
+			} else {
+				for i, lv := range event.Values {
+					if got.Values[i].Label != lv.Label || !got.Values[i].Value.Equal(lv.Value) {
+						a.failf(height, "stored inference for %s topic %d labeled value %d is %s=%s, event has %s=%s", event.Inferer, event.TopicId, i, got.Values[i].Label, got.Values[i].Value, lv.Label, lv.Value)
+					}
+				}
 			}
 		}
 		return
