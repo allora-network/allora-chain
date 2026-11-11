@@ -4,29 +4,27 @@ ENV GO111MODULE=on
 ENV GOMODCACHE=/gocache
 ENV BASELINE_VERSION_TAG=v0.17.0
 ENV UPGRADE_VERSION_TAG=v0.18.0
-ENV GIT_STASH_MESSAGE="Docker build"
-
 
 ADD . /src
 WORKDIR /src
 
-# Save the uncommited changes
-RUN git stash -u -m "$GIT_STASH_MESSAGE"
-# Switch to the baseline version
-RUN git checkout $BASELINE_VERSION_TAG
-
-# Build the baseline version
 RUN mkdir -p $GOMODCACHE
 RUN --mount=type=cache,target=/gocache \
     --mount=type=cache,target=/root/.cache/go-build \
     go install cosmossdk.io/tools/cosmovisor/cmd/cosmovisor@v1.6.0
-RUN --mount=type=cache,target=/gocache \
-    --mount=type=cache,target=/root/.cache/go-build \
-    make install
 
-# Restore the current version
-RUN git switch -
-RUN sh -c 'git stash list | grep "$GIT_STASH_MESSAGE" && git stash pop'; true
+# The baseline is the released binary that validators run, checked
+# against the release's checksum file.
+ARG TARGETARCH
+RUN set -eu; \
+    V="${BASELINE_VERSION_TAG#v}"; \
+    BASE="https://github.com/allora-network/allora-chain/releases/download/${BASELINE_VERSION_TAG}"; \
+    BIN="allora-chain_${V}_linux_${TARGETARCH}"; \
+    cd /tmp; \
+    curl -fsSLO "${BASE}/${BIN}"; \
+    curl -fsSLO "${BASE}/allora-chain_${V}_checksums.txt"; \
+    grep " ${BIN}\$" "allora-chain_${V}_checksums.txt" | sha256sum -c -; \
+    install -m 0755 "${BIN}" /go/bin/allorad
 
 # Build the current version
 RUN --mount=type=cache,target=/gocache \

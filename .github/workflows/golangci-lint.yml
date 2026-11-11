@@ -18,15 +18,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v6
         with:
-          go-version: 1.27.3
+          go-version-file: go.mod
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v8
         with:
           version: v2.15.0
           # Build the linter with the Go from setup-go so its gofmt
-          # matches this pin.
+          # matches the go line in go.mod.
           install-mode: goinstall
           args: --timeout=10m
 
@@ -35,13 +35,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v6
         with:
           # Not `stable`. The custom analyzers link golang.org/x/tools,
           # whose go/packages loader only understands export data up to
-          # the Go release it shipped with. A floating major outruns that
-          # loader. Pinned to the toolchain patch in go.mod.
-          go-version: 1.27.3
+          # the Go release it shipped with. The go line in go.mod keeps
+          # Go and x/tools in step.
+          go-version-file: go.mod
       - name: check-defer-close
         run: go run ./linter/check-defer-close .
         timeout-minutes: 10

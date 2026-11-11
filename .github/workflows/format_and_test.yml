@@ -11,9 +11,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    - uses: actions/setup-go@v5
+    - uses: actions/setup-go@v6
       with:
-        go-version: 1.27.3
+        go-version-file: go.mod
     - name: Check code formatting using gofmt
       run: |
         unformatted="$(gofmt -l .)"
@@ -28,9 +28,9 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - uses: actions/setup-go@v5
+    - uses: actions/setup-go@v6
       with:
-        go-version: 1.27.3
+        go-version-file: go.mod
 
     - name: Test
       uses: robherley/go-test-action@v1.1.0
@@ -47,9 +47,9 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - uses: actions/setup-go@v5
+    - uses: actions/setup-go@v6
       with:
-        go-version: 1.27.3
+        go-version-file: go.mod
 
     - name: Disk usage (before)
       shell: bash
