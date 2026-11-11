@@ -2,6 +2,7 @@ package actorutils_test
 
 import (
 	"fmt"
+	"sort"
 	"testing"
 
 	abci "github.com/cometbft/cometbft/abci/types"
@@ -929,7 +930,9 @@ func (s *WorkerTestSuite) TestNetworkInferenceWeightsAreAppliedValuesWhenAllInfe
 	infererEvents := typedEventsOf[*types.EventNetworkInferenceInfererWeightsSet](ctx.EventManager())
 	s.Require().Len(infererEvents, 1, "one combined inference emits one inferer weight event")
 	got := infererEvents[0]
-	s.Require().Equal([]string{worker0, worker1}, got.Addresses)
+	wantAddresses := []string{worker0, worker1}
+	sort.Strings(wantAddresses)
+	s.Require().Equal(wantAddresses, got.Addresses, "addresses are emitted in lexicographic order")
 	s.Require().Len(got.Weights, 2)
 	for i, weight := range got.Weights {
 		s.Require().True(weight.Equal(alloraMath.OneDec()),

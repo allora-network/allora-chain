@@ -107,6 +107,10 @@ type eventAudit struct {
 	// against the chain the same block committed. A nil payload is an active
 	// actor whose submission was not accepted into the store.
 	pendingPayloads map[pendingKey]*pendingPayload
+	// priorAdmittedInferer records an inferer whose admitted submission is
+	// still stored. A later not-admitted insert for the same inferer must not
+	// erase that payload.
+	priorAdmittedInferer map[pendingKey]bool
 }
 
 type pendingKey struct {
@@ -181,9 +185,10 @@ func newEventAudit(ctx context.Context, m testCommon.TestConfig) *eventAudit {
 		bundleLabels:  make(map[string][]string),
 		topicStatus:   make(map[uint64]bool),
 
-		acceptedForecasters: make(map[uint64][]string),
-		closedTopics:        make(map[uint64]bool),
-		pendingPayloads:     make(map[pendingKey]*pendingPayload),
+		acceptedForecasters:  make(map[uint64][]string),
+		closedTopics:         make(map[uint64]bool),
+		pendingPayloads:      make(map[pendingKey]*pendingPayload),
+		priorAdmittedInferer: make(map[pendingKey]bool),
 	}
 }
 

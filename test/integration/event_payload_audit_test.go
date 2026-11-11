@@ -151,6 +151,10 @@ func (a *eventAudit) auditCombinedValuesFromWeights(height int64, facts blockCon
 				// A topic with zero initial regret has no prior weights: the
 				// combined inference is a uniform average over inferers only,
 				// and that is what the event must report.
+				if len(weights.infererWeights) != len(weights.infererAddresses) {
+					a.failf(height, "%s initial-regret epoch has %d inferer addresses and %d weights", key, len(weights.infererAddresses), len(weights.infererWeights))
+					continue
+				}
 				for i, weight := range weights.infererWeights {
 					if !weight.Equal(alloraMath.OneDec()) {
 						a.failf(height, "%s initial-regret epoch inferer[%s] applied weight is %s, want 1", key, weights.infererAddresses[i], weight)
