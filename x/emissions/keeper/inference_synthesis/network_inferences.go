@@ -13,9 +13,13 @@ import (
 )
 
 type GetNetworkInferencesResult struct {
-	NetworkInferences    *emissions.NetworkInferenceBundle
-	InfererToWeight      map[Inferer]Weight
-	ForecasterToWeight   map[Forecaster]Weight
+	NetworkInferences  *emissions.NetworkInferenceBundle
+	InfererToWeight    map[Inferer]Weight
+	ForecasterToWeight map[Forecaster]Weight
+	// True when every inferer is new: the combined inference is a uniform
+	// average of the inferer values, so InfererToWeight carries the
+	// regret-informed values that were computed but not applied.
+	AllInferersAreNew    bool
 	InferenceBlockHeight int64
 	LossBlockHeight      int64
 }
@@ -130,6 +134,7 @@ func calcNetworkInferencesMultiple(
 		NetworkInferences:    networkInferences,
 		InfererToWeight:      weights.Inferers,
 		ForecasterToWeight:   weights.Forecasters,
+		AllInferersAreNew:    calcArgs.AllInferersAreNew,
 		InferenceBlockHeight: inferenceBlockHeight,
 		LossBlockHeight:      lossBlockHeight,
 	}, nil
@@ -170,9 +175,13 @@ func calcNetworkInferencesSingle(
 		OneOutInfererForecasterValues: nil,
 	}
 	return &GetNetworkInferencesResult{
-		NetworkInferences:    networkInferences,
-		InfererToWeight:      nil,
-		ForecasterToWeight:   nil,
+		NetworkInferences:  networkInferences,
+		InfererToWeight:    nil,
+		ForecasterToWeight: nil,
+		// A single inferer has no weights to apply: the combined value is the
+		// inferer's own value, which is neither the all-new case nor the
+		// regret-informed case.
+		AllInferersAreNew:    false,
 		InferenceBlockHeight: inferenceBlockHeight,
 		LossBlockHeight:      0, // Loss data may actually be available but is not needed to calculate network inference in this case
 	}, nil

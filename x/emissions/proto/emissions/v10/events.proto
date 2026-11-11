@@ -817,7 +817,11 @@ message EventNetworkInferenceInfererWeightsSet {
   // The epoch nonce, kept under this name for compatibility; read
   // nonce instead.
   int64 nonce_block_height = 2 [deprecated = true];
+  // The inferers that contributed to the combined inference.
   repeated string addresses = 3;
+  // The weights the combined inference was computed with. On a topic's first
+  // multi-inferer epoch (every inferer is new) this is 1 per inferer; otherwise
+  // it is the regret-informed weight of each inferer.
   repeated string weights = 4 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
@@ -831,7 +835,12 @@ message EventNetworkInferenceForecasterWeightsSet {
   // The epoch nonce, kept under this name for compatibility; read
   // nonce instead.
   int64 nonce_block_height = 2 [deprecated = true];
+  // The forecasters whose forecast-implied inferences contributed to the
+  // combined inference.
   repeated string addresses = 3;
+  // The regret-informed weight of each forecaster in the combined inference.
+  // The event is not emitted on a topic's first multi-inferer epoch (every
+  // inferer is new), because forecasters contribute nothing to it.
   repeated string weights = 4 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
@@ -1071,4 +1080,21 @@ message EventEpochLabelRegistryFrozen {
   // 2 MiB at 32768 labels of 64 bytes; MaxEpochLabelRegistrySize has no upper
   // bound.
   repeated string labels = 5;
+}
+
+// Emitted when a topic's reward goes back to the ecosystem account because
+// reading the topic's reward nonce failed. Nothing is claimed about the nonce.
+message EventTopicRewardForfeitedNonceReadFailed {
+  uint64 topic_id = 1;
+  // The topic's EpochLastEnded. For a topic rewarded in this block, this is
+  // the height of the block the event is emitted in.
+  int64 epoch = 2;
+  // The coins moved to the ecosystem account, zero when the reward was under
+  // one unit and nothing moved.
+  string amount = 3 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
 }

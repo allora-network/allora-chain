@@ -927,6 +927,14 @@ func NewTopicRewardForfeitedNoRewardNonceEventBase(topicId TopicId, epoch int64,
 	}
 }
 
+func NewTopicRewardForfeitedNonceReadFailedEventBase(topicId TopicId, epoch int64, amount math.Int) proto.Message {
+	return &EventTopicRewardForfeitedNonceReadFailed{
+		TopicId: topicId,
+		Epoch:   epoch,
+		Amount:  amount,
+	}
+}
+
 func NewTopicRewardForfeitedDistributionFailedEventBase(topicId TopicId, epoch int64, rewardNonce int64, amount math.Int) proto.Message {
 	return &EventTopicRewardForfeitedDistributionFailed{
 		TopicId:     topicId,

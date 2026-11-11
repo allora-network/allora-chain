@@ -28,6 +28,7 @@ func TestExternalTestSuite(t *testing.T) {
 		[]*types.InputLabeledValue{{Label: "y", Value: alloraMath.MustNewBoundedExp40DecFromString("100")}}...,
 	)
 
+	eventAuditStart := EventAuditStart(testConfig)
 	t.Log(">>> Test Getting Chain Params <<<")
 	GetParams(testConfig)
 	t.Log(">>> Test Update Params <<<")
@@ -48,10 +49,14 @@ func TestExternalTestSuite(t *testing.T) {
 	TopicWeightDistributionChecks(testConfig)
 	t.Log(">>> Test Making Inference <<<")
 	WorkerInferenceAndForecastChecks(testConfig)
+	t.Log(">>> Test Epoch With Two Inferers <<<")
+	SecondInfererChecks(testConfig)
 	t.Log(">>> Test Label Registry Classification Scenarios <<<")
 	LabelRegistryClassificationChecks(testConfig)
 	t.Log(">>> Test Reputer Un-Staking <<<")
 	UnstakingChecks(testConfig)
+	t.Log(">>> Test Events Against Chain State <<<")
+	EventLiveChecks(testConfig, eventAuditStart, requiredEventCoverage)
 }
 
 func TestExternalMultiTestSuite(t *testing.T) {
@@ -84,6 +89,7 @@ func TestExternalMultiTestSuite(t *testing.T) {
 		}...,
 	)
 
+	eventAuditStart := EventAuditStart(testConfig)
 	t.Log(">>> Test Update Params <<<")
 	UpdateParamsChecks(testConfig)
 	t.Log(">>> Test Multi-Label Topic Creation <<<")
@@ -98,6 +104,8 @@ func TestExternalMultiTestSuite(t *testing.T) {
 	TopicFundingChecks(testConfig)
 	t.Log(">>> Test Making Inference <<<")
 	WorkerInferenceAndForecastChecks(testConfig)
+	t.Log(">>> Test Events Against Chain State <<<")
+	EventLiveChecks(testConfig, eventAuditStart, requiredMultiLabelEventCoverage)
 }
 
 func TestUpgradeTestSuite(t *testing.T) {

@@ -88,5 +88,6 @@ const (
 	PRUNE_RECORDS_EVENT                                     = "prune_records_event"
 	TOPIC_REWARD_FORFEITED_NO_REWARD_NONCE_EVENT            = "topic_reward_forfeited_no_reward_nonce_event"
 	TOPIC_REWARD_FORFEITED_DISTRIBUTION_FAILED_EVENT        = "topic_reward_forfeited_distribution_failed_event"
+	TOPIC_REWARD_FORFEITED_NONCE_READ_FAILED_EVENT          = "topic_reward_forfeited_nonce_read_failed_event"
 	NONCE_EXPIRED_EVENT                                     = "nonce_expired_event"
 )
