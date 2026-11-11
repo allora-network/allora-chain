@@ -1,8 +1,6 @@
 module github.com/allora-network/allora-chain
 
-go 1.27.0
-
-toolchain go1.27.3
+go 1.27.3
 
 replace (
 	// cosmos simapp still pins these versions
