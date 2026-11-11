@@ -1843,7 +1843,7 @@ func (s *RewardsTestSuite) TestEmitRewardsNonceReadFailedForfeitsAndReportsReadF
 	// the keeper's collections.Map[uint64]int64: prefix 49, big-endian topic id.
 	encoded, err := collections.EncodeKeyWithPrefix(types.TopicRewardNonceKey.Bytes(), collections.Uint64Key, topic.Id)
 	s.Require().NoError(err)
-	s.StoreServiceEmissions().OpenKVStore(s.Ctx()).Set(encoded, []byte{0xff})
+	s.Require().NoError(s.StoreServiceEmissions().OpenKVStore(s.Ctx()).Set(encoded, []byte{0xff}))
 
 	nonce, readErr := s.TopicKeeper().GetTopicRewardNonce(s.Ctx(), topic.Id)
 	s.Require().Error(readErr, "the setup must produce a real read error, not (0, nil)")
