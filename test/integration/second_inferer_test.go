@@ -182,4 +182,21 @@ func SecondInfererChecks(m testCommon.TestConfig) {
 	require.NoError(m.T, insertTwoWorkerReputerBundle(m, m.TopicID, nonce, workers))
 	require.NoError(m.T, m.Client.WaitForBlockHeight(ctx, nonce+topic.GroundTruthLag+topic.EpochLength))
 	ValidateGetNetworkLossBundle(m, m.TopicID, nonce)
+
+	// A second epoch with the same two inferers so the topic no longer sits on
+	// its all-new-inferer epoch: the combined inference now uses regret-informed
+	// weights and the forecaster's submission contributes through the
+	// forecast-implied inference, which is what the audit's recompute rule and
+	// forecaster weight coverage need.
+	nextTopic, err := waitForNextChurningBlock(m, m.TopicID)
+	require.NoError(m.T, err)
+	nextNonce := nextTopic.EpochLastEnded
+	m.T.Log(time.Now(), "--- Repeat two-inferer epoch with regret-informed weights for nonce ", nextNonce, " ---")
+	require.NoError(m.T, insertWorkerPayload(m, m.BobAcc, m.BobAddr, m.TopicID, nextNonce, &firstValue, workers[:]))
+	require.NoError(m.T, insertWorkerPayload(m, m.Validator0Acc, m.Validator0Addr, m.TopicID, nextNonce, &secondValue, workers[:]))
+	require.NoError(m.T, insertWorkerPayload(m, m.Validator1Acc, m.Validator1Addr, m.TopicID, nextNonce, nil, workers[:]))
+	require.NoError(m.T, m.Client.WaitForBlockHeight(ctx, nextNonce+nextTopic.GroundTruthLag))
+	require.NoError(m.T, insertTwoWorkerReputerBundle(m, m.TopicID, nextNonce, workers))
+	require.NoError(m.T, m.Client.WaitForBlockHeight(ctx, nextNonce+nextTopic.GroundTruthLag+nextTopic.EpochLength))
+	ValidateGetNetworkLossBundle(m, m.TopicID, nextNonce)
 }

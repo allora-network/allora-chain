@@ -174,14 +174,22 @@ func (a *eventAudit) auditCombinedValuesFromWeights(height int64, facts blockCon
 			a.failf(height, "network inference weights for %s name inferers %v, bundle has %v", key, weights.infererAddresses, bundle.InfererAddresses)
 			continue
 		}
-		if !slices.Equal(weights.forecasterAddresses, bundle.ForecasterAddresses) {
+		if !slices.Equal(weights.forecasterAddresses, bundle.ForecasterAddresses) && len(weights.forecasterAddresses) != 0 {
 			a.failf(height, "network inference weights for %s name forecasters %v, bundle has %v", key, weights.forecasterAddresses, bundle.ForecasterAddresses)
 			continue
 		}
-		if !hasRowsForWeights(bundle.InfererValues, weights.infererWeights, len(bundle.CombinedValue)) ||
-			!hasRowsForWeights(bundle.ForecasterValues, weights.forecasterWeights, len(bundle.CombinedValue)) {
-			a.failf(height, "network inference weights for %s do not fit the bundle's value matrices", key)
+		if !hasRowsForWeights(bundle.InfererValues, weights.infererWeights, len(bundle.CombinedValue)) {
+			a.failf(height, "network inference weights for %s do not fit the bundle's inferer value matrix", key)
 			continue
+		}
+		// A topic on its all-new-inferer epoch emits no forecaster weights and
+		// the stored bundle carries no forecaster rows either; on every other
+		// epoch both must match.
+		if !hasRowsForWeights(bundle.ForecasterValues, weights.forecasterWeights, len(bundle.CombinedValue)) {
+			if !(len(weights.forecasterWeights) == 0 && len(bundle.ForecasterValues) == 0) {
+				a.failf(height, "network inference weights for %s do not fit the bundle's forecaster value matrix", key)
+				continue
+			}
 		}
 		for label := range bundle.CombinedValue {
 			sum, sumWeights := alloraMath.ZeroDec(), alloraMath.ZeroDec()
