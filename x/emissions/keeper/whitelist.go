@@ -674,23 +674,3 @@ func (k *WhitelistsKeeper) CanAddReputerStake(ctx context.Context, topicId Topic
 func (k *WhitelistsKeeper) CanUpdateTopicCreatorWhitelist(ctx context.Context, actor ActorId) (bool, error) {
 	return k.IsWhitelistAdmin(ctx, actor)
 }
-
-// IterateGlobalWorkerWhitelist returns a streaming iterator over every
-// globally whitelisted worker, sorted by address. Callers process one key at
-// a time and Close the iterator, so the whole whitelist is never held in
-// memory at once — unlike the GetAll* helpers.
-func (k *WhitelistsKeeper) IterateGlobalWorkerWhitelist(ctx context.Context) (collections.KeySetIterator[ActorId], error) {
-	return k.globalWorkerWhitelist.Iterate(ctx, nil)
-}
-
-// IterateTopicWorkerWhitelist returns a streaming iterator over every
-// (topic, actor) in the topic worker whitelist, sorted by topic then actor.
-func (k *WhitelistsKeeper) IterateTopicWorkerWhitelist(ctx context.Context) (collections.KeySetIterator[collections.Pair[TopicId, ActorId]], error) {
-	return k.topicWorkerWhitelist.Iterate(ctx, nil)
-}
-
-// IterateTopicWorkerWhitelistEnabled returns a streaming iterator over every
-// topic id with the worker gate enabled, sorted.
-func (k *WhitelistsKeeper) IterateTopicWorkerWhitelistEnabled(ctx context.Context) (collections.KeySetIterator[TopicId], error) {
-	return k.topicWorkerWhitelistEnabled.Iterate(ctx, nil)
-}

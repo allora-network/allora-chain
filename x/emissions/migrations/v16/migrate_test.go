@@ -1,6 +1,7 @@
 package v16_test
 
 import (
+	"encoding/json"
 	"testing"
 
 	"cosmossdk.io/store/prefix"
@@ -9,6 +10,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/runtime"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	moduletestutil "github.com/cosmos/cosmos-sdk/types/module/testutil"
 	"github.com/stretchr/testify/suite"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
@@ -546,179 +548,141 @@ func (s *EmissionsV16MigrationTestSuite) TestMigrateTotalSumPreviousTopicWeights
 	s.Require().Equal(weight.String(), s.totalSum().String())
 }
 
-func (s *EmissionsV16MigrationTestSuite) TestMigrateForecasterWhitelistParamBackfillsFromWorker() {
+// TestMigrateStoreLeavesForecasterStateUninitialized verifies that worker
+// memberships do not seed the independent forecaster role. With no topic
+// forecaster gate, an actor still denied as an inferer is allowed to forecast.
+func (s *EmissionsV16MigrationTestSuite) TestMigrateStoreLeavesForecasterStateUninitialized() {
+	ctx := s.Ctx()
 	store, cdc := s.storeAndCodec()
+	wlk := s.WhitelistsKeeper()
+	worker := s.AddrsStr(0)
+	outsider := s.AddrsStr(1)
+	topicId := uint64(2)
 
+	// Reproduce the zero bool decoded from a legacy Params object that lacks
+	// the new field. Global actors are removed from the fallback under test.
 	params := emissionstypes.DefaultParams()
+	params.GlobalForecasterWhitelistEnabled = false
 	params.GlobalWorkerWhitelistEnabled = true
-	params.GlobalForecasterWhitelistEnabled = false
 	store.Set(emissionstypes.ParamsKey, cdc.MustMarshal(&params))
+	s.Require().NoError(wlk.RemoveFromGlobalWhitelist(ctx, outsider))
+	s.Require().NoError(wlk.AddToGlobalWorkerWhitelist(ctx, worker))
+	s.Require().NoError(wlk.AddToTopicWorkerWhitelist(ctx, topicId, worker))
+	s.Require().NoError(wlk.EnableTopicWorkerWhitelist(ctx, topicId))
 
-	s.Require().NoError(v16.MigrateForecasterWhitelistParam(s.Ctx(), *s.EmissionsKeeper()))
-
-	got, err := s.EmissionsKeeper().GetParams(s.Ctx())
+	canInfer, err := wlk.CanSubmitInferencePayload(ctx, topicId, outsider)
 	s.Require().NoError(err)
-	s.Require().True(got.GlobalForecasterWhitelistEnabled)
+	s.Require().False(canInfer)
+
+	s.Require().NoError(v16.MigrateStore(ctx, *s.EmissionsKeeper()))
+
+	migratedParams, err := s.EmissionsKeeper().GetParams(ctx)
+	s.Require().NoError(err)
+	s.Require().False(migratedParams.GlobalForecasterWhitelistEnabled)
+	s.Require().True(migratedParams.GlobalWorkerWhitelistEnabled)
+
+	globalWorker, err := wlk.IsWhitelistedGlobalWorker(ctx, worker)
+	s.Require().NoError(err)
+	s.Require().True(globalWorker)
+	topicWorker, err := wlk.IsWhitelistedTopicWorker(ctx, topicId, worker)
+	s.Require().NoError(err)
+	s.Require().True(topicWorker)
+	workerGate, err := wlk.IsTopicWorkerWhitelistEnabled(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().True(workerGate)
+
+	globalForecaster, err := wlk.IsWhitelistedGlobalForecaster(ctx, worker)
+	s.Require().NoError(err)
+	s.Require().False(globalForecaster)
+	topicForecaster, err := wlk.IsWhitelistedTopicForecaster(ctx, topicId, worker)
+	s.Require().NoError(err)
+	s.Require().False(topicForecaster)
+	forecasterGate, err := wlk.IsTopicForecasterWhitelistEnabled(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().False(forecasterGate)
+
+	canInfer, err = wlk.CanSubmitInferencePayload(ctx, topicId, outsider)
+	s.Require().NoError(err)
+	s.Require().False(canInfer)
+	canForecast, err := wlk.CanSubmitForecasterPayload(ctx, topicId, outsider)
+	s.Require().NoError(err)
+	s.Require().True(canForecast)
 }
 
-func (s *EmissionsV16MigrationTestSuite) TestMigrateForecasterWhitelistParamCopiesFalseWorkerGate() {
+// TestMigrateStorePreservesIndependentForecasterState verifies that opting out
+// of automatic backfill does not erase or override explicitly configured state.
+func (s *EmissionsV16MigrationTestSuite) TestMigrateStorePreservesIndependentForecasterState() {
+	ctx := s.Ctx()
 	store, cdc := s.storeAndCodec()
+	wlk := s.WhitelistsKeeper()
+	globalActor := s.AddrsStr(0)
+	topicActor := s.AddrsStr(1)
+	topicId := uint64(2)
 
 	params := emissionstypes.DefaultParams()
-	params.GlobalWorkerWhitelistEnabled = false
-	params.GlobalForecasterWhitelistEnabled = false
-	store.Set(emissionstypes.ParamsKey, cdc.MustMarshal(&params))
-
-	s.Require().NoError(v16.MigrateForecasterWhitelistParam(s.Ctx(), *s.EmissionsKeeper()))
-
-	got, err := s.EmissionsKeeper().GetParams(s.Ctx())
-	s.Require().NoError(err)
-	s.Require().False(got.GlobalForecasterWhitelistEnabled)
-}
-
-func (s *EmissionsV16MigrationTestSuite) TestMigrateForecasterWhitelistParamPreservesExistingTrue() {
-	params := emissionstypes.DefaultParams()
-	params.GlobalWorkerWhitelistEnabled = false
 	params.GlobalForecasterWhitelistEnabled = true
-	s.Require().NoError(s.EmissionsKeeper().SetParams(s.Ctx(), params))
+	store.Set(emissionstypes.ParamsKey, cdc.MustMarshal(&params))
+	s.Require().NoError(wlk.AddToGlobalForecasterWhitelist(ctx, globalActor))
+	s.Require().NoError(wlk.AddToTopicForecasterWhitelist(ctx, topicId, topicActor))
+	s.Require().NoError(wlk.EnableTopicForecasterWhitelist(ctx, topicId))
 
-	s.Require().NoError(v16.MigrateForecasterWhitelistParam(s.Ctx(), *s.EmissionsKeeper()))
+	s.Require().NoError(v16.MigrateStore(ctx, *s.EmissionsKeeper()))
 
-	got, err := s.EmissionsKeeper().GetParams(s.Ctx())
+	migratedParams, err := s.EmissionsKeeper().GetParams(ctx)
 	s.Require().NoError(err)
-	s.Require().True(got.GlobalForecasterWhitelistEnabled)
+	s.Require().True(migratedParams.GlobalForecasterWhitelistEnabled)
+	globalForecaster, err := wlk.IsWhitelistedGlobalForecaster(ctx, globalActor)
+	s.Require().NoError(err)
+	s.Require().True(globalForecaster)
+	topicForecaster, err := wlk.IsWhitelistedTopicForecaster(ctx, topicId, topicActor)
+	s.Require().NoError(err)
+	s.Require().True(topicForecaster)
+	forecasterGate, err := wlk.IsTopicForecasterWhitelistEnabled(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().True(forecasterGate)
 }
 
-func (s *EmissionsV16MigrationTestSuite) TestMigrateWhitelistsCopiesWorkerIntoForecaster() {
-	ctx := s.Ctx()
-	wlk := s.WhitelistsKeeper()
-	addr0 := s.AddrsStr(0)
-	addr1 := s.AddrsStr(1)
-	topicId := uint64(1)
+// TestLegacyGenesisUsesZeroForecasterDefaults verifies the same absent-field
+// semantics as v16: old-shape JSON does not gain values from DefaultParams(),
+// while explicit current-genesis values would still go through InitGenesis.
+func (s *EmissionsV16MigrationTestSuite) TestLegacyGenesisUsesZeroForecasterDefaults() {
+	cdc := moduletestutil.MakeTestEncodingConfig().Codec
+	var document map[string]interface{}
+	bz := cdc.MustMarshalJSON(emissionstypes.NewGenesisState())
+	s.Require().NoError(json.Unmarshal(bz, &document))
 
-	s.Require().NoError(wlk.AddToGlobalWorkerWhitelist(ctx, addr0))
-	s.Require().NoError(wlk.AddToTopicWorkerWhitelist(ctx, topicId, addr1))
-	s.Require().NoError(wlk.EnableTopicWorkerWhitelist(ctx, topicId))
-
-	s.Require().NoError(v16.MigrateWhitelists(ctx, *s.EmissionsKeeper()))
-
-	isGlobal, err := wlk.IsWhitelistedGlobalForecaster(ctx, addr0)
-	s.Require().NoError(err)
-	s.Require().True(isGlobal)
-
-	isTopic, err := wlk.IsWhitelistedTopicForecaster(ctx, topicId, addr1)
-	s.Require().NoError(err)
-	s.Require().True(isTopic)
-
-	enabled, err := wlk.IsTopicForecasterWhitelistEnabled(ctx, topicId)
-	s.Require().NoError(err)
-	s.Require().True(enabled)
-}
-
-func (s *EmissionsV16MigrationTestSuite) TestMigrateWhitelistsIdempotent() {
-	ctx := s.Ctx()
-	wlk := s.WhitelistsKeeper()
-	addr0 := s.AddrsStr(0)
-	topicId := uint64(1)
-
-	s.Require().NoError(wlk.AddToGlobalWorkerWhitelist(ctx, addr0))
-	s.Require().NoError(wlk.AddToTopicWorkerWhitelist(ctx, topicId, addr0))
-	s.Require().NoError(wlk.EnableTopicWorkerWhitelist(ctx, topicId))
-
-	s.Require().NoError(v16.MigrateWhitelists(ctx, *s.EmissionsKeeper()))
-	s.Require().NoError(v16.MigrateWhitelists(ctx, *s.EmissionsKeeper()))
-
-	isGlobal, err := wlk.IsWhitelistedGlobalForecaster(ctx, addr0)
-	s.Require().NoError(err)
-	s.Require().True(isGlobal)
-
-	isTopic, err := wlk.IsWhitelistedTopicForecaster(ctx, topicId, addr0)
-	s.Require().NoError(err)
-	s.Require().True(isTopic)
-
-	enabled, err := wlk.IsTopicForecasterWhitelistEnabled(ctx, topicId)
-	s.Require().NoError(err)
-	s.Require().True(enabled)
-}
-
-func (s *EmissionsV16MigrationTestSuite) TestMigrateWhitelistsEmptyStore() {
-	s.Require().NoError(v16.MigrateWhitelists(s.Ctx(), *s.EmissionsKeeper()))
-}
-
-// TestMigrateWhitelistsMultipleTopicsAndWorkers verifies that the streaming
-// iteration correctly copies every entry when the whitelists span multiple
-// topics with several workers each, plus multiple global workers and a mix
-// of gates enabled and disabled.
-func (s *EmissionsV16MigrationTestSuite) TestMigrateWhitelistsMultipleTopicsAndWorkers() {
-	ctx := s.Ctx()
-	wlk := s.WhitelistsKeeper()
-
-	addrs := []string{
-		s.AddrsStr(0),
-		s.AddrsStr(1),
-		s.AddrsStr(2),
-		s.AddrsStr(3),
-		s.AddrsStr(4),
+	params, ok := document["params"].(map[string]interface{})
+	s.Require().True(ok)
+	for _, key := range []string{"global_forecaster_whitelist_enabled", "globalForecasterWhitelistEnabled"} {
+		delete(params, key)
 	}
-	topics := []uint64{1, 2, 3}
-
-	// Global workers: addrs 0, 1
-	s.Require().NoError(wlk.AddToGlobalWorkerWhitelist(ctx, addrs[0]))
-	s.Require().NoError(wlk.AddToGlobalWorkerWhitelist(ctx, addrs[1]))
-
-	// Topic 1: workers 0, 1, 2 — gate enabled
-	s.Require().NoError(wlk.AddToTopicWorkerWhitelist(ctx, topics[0], addrs[0]))
-	s.Require().NoError(wlk.AddToTopicWorkerWhitelist(ctx, topics[0], addrs[1]))
-	s.Require().NoError(wlk.AddToTopicWorkerWhitelist(ctx, topics[0], addrs[2]))
-	s.Require().NoError(wlk.EnableTopicWorkerWhitelist(ctx, topics[0]))
-
-	// Topic 2: workers 3, 4 — gate enabled
-	s.Require().NoError(wlk.AddToTopicWorkerWhitelist(ctx, topics[1], addrs[3]))
-	s.Require().NoError(wlk.AddToTopicWorkerWhitelist(ctx, topics[1], addrs[4]))
-	s.Require().NoError(wlk.EnableTopicWorkerWhitelist(ctx, topics[1]))
-
-	// Topic 3: worker 0 — gate disabled (should NOT be copied)
-	s.Require().NoError(wlk.AddToTopicWorkerWhitelist(ctx, topics[2], addrs[0]))
-
-	s.Require().NoError(v16.MigrateWhitelists(ctx, *s.EmissionsKeeper()))
-
-	// Global forecaster whitelist: both global workers copied.
-	isGlobal0, err := wlk.IsWhitelistedGlobalForecaster(ctx, addrs[0])
-	s.Require().NoError(err)
-	s.Require().True(isGlobal0)
-	isGlobal1, err := wlk.IsWhitelistedGlobalForecaster(ctx, addrs[1])
-	s.Require().NoError(err)
-	s.Require().True(isGlobal1)
-
-	// Topic 1 forecaster whitelist: all three workers copied, gate enabled.
-	for _, actor := range []string{addrs[0], addrs[1], addrs[2]} {
-		isT, err := wlk.IsWhitelistedTopicForecaster(ctx, topics[0], actor)
-		s.Require().NoError(err)
-		s.Require().True(isT, "topic %d forecaster %s should be whitelisted", topics[0], actor)
+	for _, key := range []string{
+		"global_forecaster_whitelist", "globalForecasterWhitelist",
+		"topic_forecaster_whitelist", "topicForecasterWhitelist",
+		"topic_forecaster_whitelist_enabled", "topicForecasterWhitelistEnabled",
+	} {
+		delete(document, key)
 	}
-	enabled1, err := wlk.IsTopicForecasterWhitelistEnabled(ctx, topics[0])
+	legacyJSON, err := json.Marshal(document)
 	s.Require().NoError(err)
-	s.Require().True(enabled1)
 
-	// Topic 2 forecaster whitelist: both workers copied, gate enabled.
-	for _, actor := range []string{addrs[3], addrs[4]} {
-		isT, err := wlk.IsWhitelistedTopicForecaster(ctx, topics[1], actor)
-		s.Require().NoError(err)
-		s.Require().True(isT, "topic %d forecaster %s should be whitelisted", topics[1], actor)
+	fresh := &EmissionsV16MigrationTestSuite{
+		testutil.NewTestSuite("emissions_V16MigrationsLegacyGenesis"),
 	}
-	enabled2, err := wlk.IsTopicForecasterWhitelistEnabled(ctx, topics[1])
-	s.Require().NoError(err)
-	s.Require().True(enabled2)
+	fresh.SetT(s.T())
+	fresh.SetupTest()
+	fresh.EmissionsAppModule().InitGenesis(fresh.Ctx(), cdc, legacyJSON)
 
-	// Topic 3: worker gate was disabled, so the forecaster gate should NOT be
-	// enabled. The worker entry is still copied into the forecaster list
-	// (MigrateWhitelists copies all topicWorkerWhitelist entries), but the
-	// gate stays off, so IsEnabledTopicForecaster returns true for everyone —
-	// the pre-upgrade behavior is preserved.
-	isT3, err := wlk.IsWhitelistedTopicForecaster(ctx, topics[2], addrs[0])
-	s.Require().NoError(err)
-	s.Require().True(isT3, "topic %d forecaster %s entry should be copied even with gate off", topics[2], addrs[0])
-	enabled3, err := wlk.IsTopicForecasterWhitelistEnabled(ctx, topics[2])
-	s.Require().NoError(err)
-	s.Require().False(enabled3)
+	gotParams, err := fresh.EmissionsKeeper().GetParams(fresh.Ctx())
+	fresh.Require().NoError(err)
+	fresh.Require().False(gotParams.GlobalForecasterWhitelistEnabled)
+	global, err := fresh.WhitelistsKeeper().IsWhitelistedGlobalForecaster(fresh.Ctx(), fresh.AddrsStr(0))
+	fresh.Require().NoError(err)
+	fresh.Require().False(global)
+	topicMember, err := fresh.WhitelistsKeeper().IsWhitelistedTopicForecaster(fresh.Ctx(), 2, fresh.AddrsStr(0))
+	fresh.Require().NoError(err)
+	fresh.Require().False(topicMember)
+	enabled, err := fresh.WhitelistsKeeper().IsTopicForecasterWhitelistEnabled(fresh.Ctx(), 2)
+	fresh.Require().NoError(err)
+	fresh.Require().False(enabled)
 }

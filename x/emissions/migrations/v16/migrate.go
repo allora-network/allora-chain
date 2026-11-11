@@ -25,6 +25,12 @@ import (
 // Params.MinTopInferersToReward floor, reconciles topic activity state and
 // recomputes totalSumPreviousTopicWeights from valid scheduled topics so any
 // drift accumulated by the incremental bookkeeping is cleared.
+//
+// Forecaster whitelist params, memberships, and topic gates are deliberately
+// left untouched. A legacy params object does not contain the new forecaster
+// bool, so it decodes as false; the fresh-genesis default in DefaultParams is
+// not applied to that existing object. Forecaster restrictions are configured
+// independently through the normal whitelist and params messages.
 func MigrateStore(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 	ctx.Logger().Info("STARTING EMISSIONS MODULE MIGRATION FROM VERSION 15 TO VERSION 16")
 	storageService := emissionsKeeper.GetStorageService()
@@ -40,16 +46,6 @@ func MigrateStore(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 
 	if err := MigrateParams(ctx, emissionsKeeper); err != nil {
 		ctx.Logger().Error("ERROR INVOKING MIGRATION HANDLER MigrateParams() FROM VERSION 15 TO VERSION 16")
-		return err
-	}
-
-	if err := MigrateForecasterWhitelistParam(ctx, emissionsKeeper); err != nil {
-		ctx.Logger().Error("ERROR INVOKING MIGRATION HANDLER MigrateForecasterWhitelistParam() FROM VERSION 15 TO VERSION 16")
-		return err
-	}
-
-	if err := MigrateWhitelists(ctx, emissionsKeeper); err != nil {
-		ctx.Logger().Error("ERROR INVOKING MIGRATION HANDLER MigrateWhitelists() FROM VERSION 15 TO VERSION 16")
 		return err
 	}
 
@@ -231,119 +227,6 @@ func MigrateParams(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 	ctx.Logger().Info(
 		"MIGRATION V16: params backfill completed",
 		"minTopInferersToReward", params.MinTopInferersToReward,
-	)
-	return nil
-}
-
-// MigrateForecasterWhitelistParam backfills Params.GlobalForecasterWhitelistEnabled,
-// which existing chains decode as false. When the global worker gate is on, the
-// global forecaster gate is switched on too so pre-upgrade participation is
-// preserved; the per-topic forecaster whitelist is then seeded from the topic
-// worker whitelist by MigrateWhitelists. A non-zero (true) existing value is
-// left alone: an unset field is indistinguishable from a deliberate false.
-func MigrateForecasterWhitelistParam(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
-	params, err := emissionsKeeper.GetParams(ctx)
-	if err != nil {
-		return errorsmod.Wrap(err, "MIGRATION V16: failed to get existing params")
-	}
-	if params.GlobalForecasterWhitelistEnabled {
-		ctx.Logger().Info(
-			"MIGRATION V16: global_forecaster_whitelist_enabled already set, skipping backfill",
-			"value", params.GlobalForecasterWhitelistEnabled,
-		)
-		return nil
-	}
-	params.GlobalForecasterWhitelistEnabled = params.GlobalWorkerWhitelistEnabled
-	if err := params.Validate(); err != nil {
-		return errorsmod.Wrap(err, "MIGRATION V16: backfilled forecaster whitelist param failed validation")
-	}
-	if err := emissionsKeeper.SetParams(ctx, params); err != nil {
-		return errorsmod.Wrap(err, "MIGRATION V16: failed to persist backfilled forecaster whitelist param")
-	}
-	ctx.Logger().Info(
-		"MIGRATION V16: global_forecaster_whitelist_enabled backfill completed",
-		"value", params.GlobalForecasterWhitelistEnabled,
-	)
-	return nil
-}
-
-// MigrateWhitelists copies each topic's worker whitelist into its forecaster
-// whitelist and copies the topic worker whitelist enabled flag to the topic
-// forecaster whitelist enabled flag, so that pre-upgrade participation is
-// preserved. Existing forecaster whitelist state is left alone: keysets are
-// idempotent sets, so adding an address already present is a no-op.
-//
-// The worker stores are streamed via the keeper's Iterate* methods (the same
-// pattern ExportGenesis uses) rather than materialized through GetAll*
-// helpers: the migration runs in a single upgrade block, so holding every
-// entry in memory at once is wasteful when the whitelists are large. Streaming
-// one key at a time keeps memory bounded to a single entry regardless of
-// total whitelist size.
-func MigrateWhitelists(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
-	wlk := emissionsKeeper.GetWhitelistsKeeper()
-
-	globalWorkersIter, err := wlk.IterateGlobalWorkerWhitelist(ctx)
-	if err != nil {
-		return errorsmod.Wrap(err, "MIGRATION V16: failed to list global worker whitelist")
-	}
-	defer globalWorkersIter.Close()
-	var globalWorkers int
-	for ; globalWorkersIter.Valid(); globalWorkersIter.Next() {
-		actor, err := globalWorkersIter.Key()
-		if err != nil {
-			return errorsmod.Wrapf(err, "MIGRATION V16: failed to read global worker whitelist entry")
-		}
-		if err := wlk.AddToGlobalForecasterWhitelist(ctx, actor); err != nil {
-			return errorsmod.Wrapf(err, "MIGRATION V16: failed to add actor %s to global forecaster whitelist", actor)
-		}
-		globalWorkers++
-	}
-
-	topicWorkersIter, err := wlk.IterateTopicWorkerWhitelist(ctx)
-	if err != nil {
-		return errorsmod.Wrap(err, "MIGRATION V16: failed to list topic worker whitelist")
-	}
-	defer topicWorkersIter.Close()
-	var topicWorkers int
-	var lastTopicId uint64
-	for ; topicWorkersIter.Valid(); topicWorkersIter.Next() {
-		keyValue, err := topicWorkersIter.Key()
-		if err != nil {
-			return errorsmod.Wrapf(err, "MIGRATION V16: failed to read topic worker whitelist entry")
-		}
-		topicId := keyValue.K1()
-		if topicId != lastTopicId {
-			ctx.Logger().Info("MIGRATION V16: copying worker whitelist to forecaster whitelist", "topicId", topicId)
-			lastTopicId = topicId
-		}
-		if err := wlk.AddToTopicForecasterWhitelist(ctx, topicId, keyValue.K2()); err != nil {
-			return errorsmod.Wrapf(err, "MIGRATION V16: failed to add actor %s to topic %d forecaster whitelist", keyValue.K2(), topicId)
-		}
-		topicWorkers++
-	}
-
-	topicGatesIter, err := wlk.IterateTopicWorkerWhitelistEnabled(ctx)
-	if err != nil {
-		return errorsmod.Wrap(err, "MIGRATION V16: failed to list topic worker whitelist enabled flags")
-	}
-	defer topicGatesIter.Close()
-	var topicsEnabled int
-	for ; topicGatesIter.Valid(); topicGatesIter.Next() {
-		topicId, err := topicGatesIter.Key()
-		if err != nil {
-			return errorsmod.Wrapf(err, "MIGRATION V16: failed to read topic worker whitelist enabled entry")
-		}
-		if err := wlk.EnableTopicForecasterWhitelist(ctx, topicId); err != nil {
-			return errorsmod.Wrapf(err, "MIGRATION V16: failed to enable topic %d forecaster whitelist", topicId)
-		}
-		topicsEnabled++
-	}
-
-	ctx.Logger().Info(
-		"MIGRATION V16: forecaster whitelists backfilled",
-		"globalWorkers", globalWorkers,
-		"topicWorkerEntries", topicWorkers,
-		"topicsEnabled", topicsEnabled,
 	)
 	return nil
 }
