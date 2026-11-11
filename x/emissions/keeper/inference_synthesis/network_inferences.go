@@ -175,9 +175,13 @@ func calcNetworkInferencesSingle(
 		OneOutInfererForecasterValues: nil,
 	}
 	return &GetNetworkInferencesResult{
-		NetworkInferences:    networkInferences,
-		InfererToWeight:      nil,
-		ForecasterToWeight:   nil,
+		NetworkInferences:  networkInferences,
+		InfererToWeight:    nil,
+		ForecasterToWeight: nil,
+		// A single inferer has no weights to apply: the combined value is the
+		// inferer's own value, which is neither the all-new case nor the
+		// regret-informed case.
+		AllInferersAreNew:    false,
 		InferenceBlockHeight: inferenceBlockHeight,
 		LossBlockHeight:      0, // Loss data may actually be available but is not needed to calculate network inference in this case
 	}, nil

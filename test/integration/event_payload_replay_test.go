@@ -58,7 +58,7 @@ func (a *eventAudit) trackInsert(height int64, topicId uint64, kind, actor strin
 	switch outcome {
 	case emissionstypes.PayloadAdmissionOutcome_PAYLOAD_ADMISSION_OUTCOME_ADMITTED:
 		if _, exists := a.pendingPayloads[key]; !exists {
-			a.pendingPayloads[key] = &pendingPayload{}
+			a.pendingPayloads[key] = &pendingPayload{notAdmitted: false, nonce: nonce}
 		}
 		a.pendingPayloads[key].nonce = nonce
 		if kind == "inferer" {
