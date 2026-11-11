@@ -185,9 +185,9 @@ func ProcessAndStoreNetworkInferences(
 	types.EmitNewNetworkInferencesEvent(ctx, *networkInferencesResult.NetworkInferences)
 
 	// Emit packed network inference weight events. When every inferer is new,
-	// the combined inference is a uniform average with no forecaster input;
-	// report those applied weights rather than the regret-informed values a
-	// later epoch stores for the same workers.
+	// the combined inference is a uniform average with no forecaster input, so
+	// the events report those applied weights, not the regret-informed values
+	// computed alongside them.
 	infererAddresses, infererWeights := buildSortedAddressWeights(networkInferencesResult.InfererToWeight)
 	if len(infererAddresses) > 0 {
 		if networkInferencesResult.AllInferersAreNew {

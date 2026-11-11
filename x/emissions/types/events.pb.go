@@ -4534,10 +4534,9 @@ type EventNetworkInferenceForecasterWeightsSet struct {
 	// The forecasters whose forecast-implied inferences contributed to the
 	// combined inference.
 	Addresses []string `protobuf:"bytes,3,rep,name=addresses,proto3" json:"addresses,omitempty"`
-	// The weights the combined inference was computed with. On a topic's first
-	// multi-inferer epoch (every inferer is new) this is empty, because
-	// forecasters contribute nothing; otherwise it is the regret-informed weight
-	// of each forecaster.
+	// The regret-informed weight of each forecaster in the combined inference.
+	// The event is not emitted on a topic's first multi-inferer epoch (every
+	// inferer is new), because forecasters contribute nothing to it.
 	Weights []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,4,rep,name=weights,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"weights"`
 	// The epoch nonce the values belong to.
 	Nonce int64 `protobuf:"varint,5,opt,name=nonce,proto3" json:"nonce,omitempty"`
