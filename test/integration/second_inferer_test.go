@@ -188,8 +188,11 @@ func SecondInfererChecks(m testCommon.TestConfig) {
 	// weights and the forecaster's submission contributes through the
 	// forecast-implied inference, which is what the audit's recompute rule and
 	// forecaster weight coverage need.
-	nextTopic, err := waitForNextChurningBlock(m, m.TopicID)
+	_, err = waitForNextChurningBlock(m, m.TopicID)
 	require.NoError(m.T, err)
+	nextTopicResponse, err := m.Client.QueryEmissions().GetTopic(ctx, &types.GetTopicRequest{TopicId: m.TopicID})
+	require.NoError(m.T, err)
+	nextTopic := nextTopicResponse.Topic
 	nextNonce := nextTopic.EpochLastEnded
 	m.T.Log(time.Now(), "--- Repeat two-inferer epoch with regret-informed weights for nonce ", nextNonce, " ---")
 	require.NoError(m.T, insertWorkerPayload(m, m.BobAcc, m.BobAddr, m.TopicID, nextNonce, &firstValue, workers[:]))
