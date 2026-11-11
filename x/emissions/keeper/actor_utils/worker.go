@@ -200,7 +200,7 @@ func ProcessAndStoreNetworkInferences(
 	}
 
 	forecasterAddresses, forecasterWeights := buildSortedAddressWeights(networkInferencesResult.ForecasterToWeight)
-	if len(forecasterAddresses) > 0 {
+	if len(forecasterAddresses) > 0 && !networkInferencesResult.AllInferersAreNew {
 		types.EmitNewNetworkInferenceForecasterWeightsSetEvent(ctx, topic.Id, nonce, forecasterAddresses, forecasterWeights)
 	}
 
