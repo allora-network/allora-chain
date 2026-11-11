@@ -191,8 +191,14 @@ func (a *eventAudit) checkInfererStored(height int64, event *emissionstypes.Even
 		if !got.Value.Equal(event.Value) {
 			a.failf(height, "stored inference for %s topic %d value %s, event value %s", event.Inferer, event.TopicId, got.Value, event.Value)
 		}
-		if len(got.Values) != len(event.Values) {
-			a.failf(height, "stored inference for %s topic %d has %d labeled values, event has %d", event.Inferer, event.TopicId, len(got.Values), len(event.Values))
+		// Single-arity submissions carry only Value and the stored form keeps
+		// Values nil; multi-arity submissions carry Values and the stored form
+		// reconstructs them. Comparing the event's Values against the stored
+		// Values would reject every single-arity submission.
+		if len(event.Values) > 0 && len(got.Values) > 0 {
+			if len(got.Values) != len(event.Values) {
+				a.failf(height, "stored inference for %s topic %d has %d labeled values, event has %d", event.Inferer, event.TopicId, len(got.Values), len(event.Values))
+			}
 		}
 		return
 	}

@@ -143,11 +143,13 @@ func (a *eventAudit) auditRegretsUsed(height int64, name string, topicId uint64,
 // the applied weights are uniform 1s and forecasters contribute nothing.
 func (a *eventAudit) auditCombinedValuesFromWeights(height int64, facts blockContext) {
 	for key, weights := range facts.networkWeights { //nolint:maprange // every entry is checked and the order does not matter
+		allNewEpoch := false
 		if topicId, _, found := parseTopicNonceKey(key); found {
 			topicResponse, err := a.m.Client.QueryEmissions().GetTopic(atHeight(a.ctx, height), &emissionstypes.GetTopicRequest{TopicId: topicId})
 			if err != nil {
 				a.failf(height, "network inference weights for %s: %v", key, err)
 			} else if topicResponse.Topic.InitialRegret.IsZero() {
+				allNewEpoch = true
 				// A topic with zero initial regret has no prior weights: the
 				// combined inference is a uniform average over inferers only,
 				// and that is what the event must report.
@@ -174,7 +176,7 @@ func (a *eventAudit) auditCombinedValuesFromWeights(height int64, facts blockCon
 			a.failf(height, "network inference weights for %s name inferers %v, bundle has %v", key, weights.infererAddresses, bundle.InfererAddresses)
 			continue
 		}
-		if !slices.Equal(weights.forecasterAddresses, bundle.ForecasterAddresses) && len(weights.forecasterAddresses) != 0 {
+		if !slices.Equal(weights.forecasterAddresses, bundle.ForecasterAddresses) && !allNewEpoch {
 			a.failf(height, "network inference weights for %s name forecasters %v, bundle has %v", key, weights.forecasterAddresses, bundle.ForecasterAddresses)
 			continue
 		}
@@ -182,11 +184,11 @@ func (a *eventAudit) auditCombinedValuesFromWeights(height int64, facts blockCon
 			a.failf(height, "network inference weights for %s do not fit the bundle's inferer value matrix", key)
 			continue
 		}
-		// A topic on its all-new-inferer epoch emits no forecaster weights and
-		// the stored bundle carries no forecaster rows either; on every other
-		// epoch both must match.
+		// On the all-new-inferer epoch no forecaster weights are emitted, so the
+		// emitted weights never line up with the forecast-implied rows the
+		// bundle carries; the sum below skips them too.
 		if !hasRowsForWeights(bundle.ForecasterValues, weights.forecasterWeights, len(bundle.CombinedValue)) {
-			if !(len(weights.forecasterWeights) == 0 && len(bundle.ForecasterValues) == 0) {
+			if !allNewEpoch {
 				a.failf(height, "network inference weights for %s do not fit the bundle's forecaster value matrix", key)
 				continue
 			}
@@ -210,9 +212,11 @@ func (a *eventAudit) auditCombinedValuesFromWeights(height int64, facts blockCon
 					err = accumulate(weight, bundle.InfererValues[i][label])
 				}
 			}
-			for i, weight := range weights.forecasterWeights {
-				if err == nil {
-					err = accumulate(weight, bundle.ForecasterValues[i][label])
+			if !allNewEpoch {
+				for i, weight := range weights.forecasterWeights {
+					if err == nil {
+						err = accumulate(weight, bundle.ForecasterValues[i][label])
+					}
 				}
 			}
 			if err != nil {
