@@ -757,6 +757,14 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					},
 				},
 				{
+					RpcMethod: "CanUpdateGlobalForecasterWhitelist",
+					Use:       "can-update-global-forecaster-whitelist [address]",
+					Short:     "Check if address can update global forecaster whitelist",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "address"},
+					},
+				},
+				{
 					RpcMethod: "IsTopicWorkerWhitelistEnabled",
 					Use:       "is-topic-worker-whitelist-enabled [topic_id]",
 					Short:     "Check if topic-level worker whitelist is enabled for a topic",
@@ -768,6 +776,14 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					RpcMethod: "IsTopicReputerWhitelistEnabled",
 					Use:       "is-topic-reputer-whitelist-enabled [topic_id]",
 					Short:     "Check if topic-level reputer whitelist is enabled for a topic",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+					},
+				},
+				{
+					RpcMethod: "IsTopicForecasterWhitelistEnabled",
+					Use:       "is-topic-forecaster-whitelist-enabled [topic_id]",
+					Short:     "Check if topic-level forecaster whitelist is enabled for a topic",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "topic_id"},
 					},
@@ -801,6 +817,23 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					RpcMethod: "IsWhitelistedTopicReputer",
 					Use:       "is-whitelisted-topic-reputer [topic_id] [address]",
 					Short:     "Check if address is whitelisted as reputer for topic",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+						{ProtoField: "address"},
+					},
+				},
+				{
+					RpcMethod: "IsWhitelistedGlobalForecaster",
+					Use:       "is-whitelisted-global-forecaster [address]",
+					Short:     "Check if address is whitelisted as global forecaster",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "address"},
+					},
+				},
+				{
+					RpcMethod: "IsWhitelistedTopicForecaster",
+					Use:       "is-whitelisted-topic-forecaster [topic_id] [address]",
+					Short:     "Check if address is whitelisted as forecaster for topic",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "topic_id"},
 						{ProtoField: "address"},
@@ -842,7 +875,16 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				{
 					RpcMethod: "CanSubmitWorkerPayload",
 					Use:       "can-submit-worker-payload [topic_id] [address]",
-					Short:     "Check if address can submit worker payload for topic",
+					Short:     "Check if address can submit inference payload for topic (deprecated: use can-submit-inference-payload)",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+						{ProtoField: "address"},
+					},
+				},
+				{
+					RpcMethod: "CanSubmitInferencePayload",
+					Use:       "can-submit-inference-payload [topic_id] [address]",
+					Short:     "Check if address can submit inference payload for topic",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "topic_id"},
 						{ProtoField: "address"},
@@ -852,6 +894,15 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					RpcMethod: "CanSubmitReputerPayload",
 					Use:       "can-submit-reputer-payload [topic_id] [address]",
 					Short:     "Check if address can submit reputer payload for topic",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+						{ProtoField: "address"},
+					},
+				},
+				{
+					RpcMethod: "CanSubmitForecasterPayload",
+					Use:       "can-submit-forecaster-payload [topic_id] [address]",
+					Short:     "Check if address can submit forecaster payload for topic",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "topic_id"},
 						{ProtoField: "address"},
@@ -962,7 +1013,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "CreateNewTopic",
-					Use:       "create-topic [creator] [metadata] [loss_method] [epoch_length] [ground_truth_lag] [worker_submission_window] [p_norm] [alpha_regret] [allow_negative] [epsilon] [merit_sortition_alpha] [active_inferer_quantile] [active_forecaster_quantile] [active_reputer_quantile] [enable_worker_whitelist] [enable_reputer_whitelist] [c_norm] [topic_type] [output_arity] [require_unity] [unity_tolerance] [max_labels_per_submission] [label_whitelist] [label_default_value] [label_case_sensitive] [max_top_inferers_to_reward]",
+					Use:       "create-topic [creator] [metadata] [loss_method] [epoch_length] [ground_truth_lag] [worker_submission_window] [p_norm] [alpha_regret] [allow_negative] [epsilon] [merit_sortition_alpha] [active_inferer_quantile] [active_forecaster_quantile] [active_reputer_quantile] [enable_worker_whitelist] [enable_reputer_whitelist] [c_norm] [topic_type] [output_arity] [require_unity] [unity_tolerance] [max_labels_per_submission] [label_whitelist] [label_default_value] [label_case_sensitive] [max_top_inferers_to_reward] [enable_forecaster_whitelist]",
 					Short:     "Add a new topic to the network",
 					Long: `Add a new topic to the network.
 
@@ -997,6 +1048,7 @@ emissions params to see the current range.`,
 						{ProtoField: "label_default_value"},
 						{ProtoField: "label_case_sensitive"},
 						{ProtoField: "max_top_inferers_to_reward"},
+						{ProtoField: "enable_forecaster_whitelist"},
 					},
 				},
 				{
@@ -1201,6 +1253,24 @@ while a worker submission window is open.`,
 					},
 				},
 				{
+					RpcMethod: "AddToGlobalForecasterWhitelist",
+					Use:       "add-to-global-forecaster-whitelist [sender] [address]",
+					Short:     "Add an address to the global forecaster whitelist",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "sender"},
+						{ProtoField: "address"},
+					},
+				},
+				{
+					RpcMethod: "RemoveFromGlobalForecasterWhitelist",
+					Use:       "remove-from-global-forecaster-whitelist [sender] [address]",
+					Short:     "Remove an address from the global forecaster whitelist",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "sender"},
+						{ProtoField: "address"},
+					},
+				},
+				{
 					RpcMethod: "RemoveFromGlobalWorkerWhitelist",
 					Use:       "remove-from-global-worker-whitelist [sender] [address]",
 					Short:     "Remove an address from the global worker whitelist",
@@ -1264,6 +1334,24 @@ while a worker submission window is open.`,
 					},
 				},
 				{
+					RpcMethod: "BulkAddToGlobalForecasterWhitelist",
+					Use:       "bulk-add-to-global-forecaster-whitelist [sender] [addresses]",
+					Short:     "Bulk add addresses to the global forecaster whitelist",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "sender"},
+						{ProtoField: "addresses"},
+					},
+				},
+				{
+					RpcMethod: "BulkRemoveFromGlobalForecasterWhitelist",
+					Use:       "bulk-remove-from-global-forecaster-whitelist [sender] [addresses]",
+					Short:     "Bulk remove addresses from the global forecaster whitelist",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "sender"},
+						{ProtoField: "addresses"},
+					},
+				},
+				{
 					RpcMethod: "BulkAddToGlobalReputerWhitelist",
 					Use:       "bulk-add-to-global-reputer-whitelist [sender] [addresses]",
 					Short:     "Bulk add addresses to the global reputer whitelist",
@@ -1305,6 +1393,26 @@ while a worker submission window is open.`,
 					RpcMethod: "BulkAddToTopicReputerWhitelist",
 					Use:       "bulk-add-to-topic-reputer-whitelist [sender] [topic_id] [addresses]",
 					Short:     "Bulk add addresses to a topic's reputer whitelist",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "sender"},
+						{ProtoField: "topic_id"},
+						{ProtoField: "addresses"},
+					},
+				},
+				{
+					RpcMethod: "BulkAddToTopicForecasterWhitelist",
+					Use:       "bulk-add-to-topic-forecaster-whitelist [sender] [topic_id] [addresses]",
+					Short:     "Bulk add addresses to a topic's forecaster whitelist",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "sender"},
+						{ProtoField: "topic_id"},
+						{ProtoField: "addresses"},
+					},
+				},
+				{
+					RpcMethod: "BulkRemoveFromTopicForecasterWhitelist",
+					Use:       "bulk-remove-from-topic-forecaster-whitelist [sender] [topic_id] [addresses]",
+					Short:     "Bulk remove addresses from a topic's forecaster whitelist",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "sender"},
 						{ProtoField: "topic_id"},
@@ -1367,6 +1475,24 @@ while a worker submission window is open.`,
 					},
 				},
 				{
+					RpcMethod: "EnableTopicForecasterWhitelist",
+					Use:       "enable-topic-forecaster-whitelist [sender] [topic_id]",
+					Short:     "Enable forecaster whitelist for a topic",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "sender"},
+						{ProtoField: "topic_id"},
+					},
+				},
+				{
+					RpcMethod: "DisableTopicForecasterWhitelist",
+					Use:       "disable-topic-forecaster-whitelist [sender] [topic_id]",
+					Short:     "Disable forecaster whitelist for a topic",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "sender"},
+						{ProtoField: "topic_id"},
+					},
+				},
+				{
 					RpcMethod: "AddToTopicCreatorWhitelist",
 					Use:       "add-to-topic-creator-whitelist [sender] [address]",
 					Short:     "Add an address to the topic creator whitelist",
@@ -1408,6 +1534,26 @@ while a worker submission window is open.`,
 					RpcMethod: "AddToTopicReputerWhitelist",
 					Use:       "add-to-topic-reputer-whitelist [sender] [address] [topic_id]",
 					Short:     "Add an address to a topic's reputer whitelist",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "sender"},
+						{ProtoField: "address"},
+						{ProtoField: "topic_id"},
+					},
+				},
+				{
+					RpcMethod: "AddToTopicForecasterWhitelist",
+					Use:       "add-to-topic-forecaster-whitelist [sender] [address] [topic_id]",
+					Short:     "Add an address to a topic's forecaster whitelist",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "sender"},
+						{ProtoField: "address"},
+						{ProtoField: "topic_id"},
+					},
+				},
+				{
+					RpcMethod: "RemoveFromTopicForecasterWhitelist",
+					Use:       "remove-from-topic-forecaster-whitelist [sender] [address] [topic_id]",
+					Short:     "Remove an address from a topic's forecaster whitelist",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "sender"},
 						{ProtoField: "address"},

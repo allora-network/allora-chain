@@ -507,7 +507,9 @@ service QueryService {
     option (google.api.http).get = "/emissions/v10/can_create_topic/{address}";
   }
 
+  // Deprecated: use CanSubmitInferencePayload.
   rpc CanSubmitWorkerPayload(CanSubmitWorkerPayloadRequest) returns (CanSubmitWorkerPayloadResponse) {
+    option deprecated = true;
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v10/can_submit_worker_payload/{topic_id}/{address}";
   }
@@ -563,6 +565,36 @@ service QueryService {
   rpc GetReputerSubmissionWindowStatus(GetReputerSubmissionWindowStatusRequest) returns (GetReputerSubmissionWindowStatusResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v10/reputer_submission_window_status/{topic_id}";
+  }
+
+  rpc IsWhitelistedGlobalForecaster(IsWhitelistedGlobalForecasterRequest) returns (IsWhitelistedGlobalForecasterResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v10/is_whitelisted_global_forecaster/{address}";
+  }
+
+  rpc IsWhitelistedTopicForecaster(IsWhitelistedTopicForecasterRequest) returns (IsWhitelistedTopicForecasterResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v10/is_whitelisted_topic_forecaster/{topic_id}/{address}";
+  }
+
+  rpc IsTopicForecasterWhitelistEnabled(IsTopicForecasterWhitelistEnabledRequest) returns (IsTopicForecasterWhitelistEnabledResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v10/is_topic_forecaster_whitelist_enabled/{topic_id}";
+  }
+
+  rpc CanUpdateGlobalForecasterWhitelist(CanUpdateGlobalForecasterWhitelistRequest) returns (CanUpdateGlobalForecasterWhitelistResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v10/can_update_global_forecaster_whitelist/{address}";
+  }
+
+  rpc CanSubmitForecasterPayload(CanSubmitForecasterPayloadRequest) returns (CanSubmitForecasterPayloadResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v10/can_submit_forecaster_payload/{topic_id}/{address}";
+  }
+
+  rpc CanSubmitInferencePayload(CanSubmitInferencePayloadRequest) returns (CanSubmitInferencePayloadResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v10/can_submit_inference_payload/{topic_id}/{address}";
   }
 }
 
@@ -705,6 +737,48 @@ message CanSubmitReputerPayloadRequest {
 
 message CanSubmitReputerPayloadResponse {
   bool can_submit_reputer_payload = 1 [(amino.dont_omitempty) = true];
+}
+
+message IsWhitelistedGlobalForecasterRequest {
+  string address = 1;
+}
+
+message IsWhitelistedGlobalForecasterResponse {
+  bool is_whitelisted_global_forecaster = 1 [(amino.dont_omitempty) = true];
+}
+
+message IsWhitelistedTopicForecasterRequest {
+  uint64 topic_id = 1;
+  string address = 2;
+}
+
+message IsWhitelistedTopicForecasterResponse {
+  bool is_whitelisted_topic_forecaster = 1 [(amino.dont_omitempty) = true];
+}
+
+message IsTopicForecasterWhitelistEnabledRequest {
+  uint64 topic_id = 1;
+}
+
+message IsTopicForecasterWhitelistEnabledResponse {
+  bool is_topic_forecaster_whitelist_enabled = 1 [(amino.dont_omitempty) = true];
+}
+
+message CanUpdateGlobalForecasterWhitelistRequest {
+  string address = 1;
+}
+
+message CanUpdateGlobalForecasterWhitelistResponse {
+  bool can_update_global_forecaster_whitelist = 1 [(amino.dont_omitempty) = true];
+}
+
+message CanSubmitForecasterPayloadRequest {
+  uint64 topic_id = 1;
+  string address = 2;
+}
+
+message CanSubmitForecasterPayloadResponse {
+  bool can_submit_forecaster_payload = 1 [(amino.dont_omitempty) = true];
 }
 
 message GetCountInfererInclusionsInTopicRequest {
@@ -1660,4 +1734,13 @@ message GetReputerSubmissionWindowStatusResponse {
   bool is_topic_active = 9 [(amino.dont_omitempty) = true];
   // The epoch nonce of the open window.
   int64 nonce = 10;
+}
+
+message CanSubmitInferencePayloadRequest {
+  uint64 topic_id = 1;
+  string address = 2;
+}
+
+message CanSubmitInferencePayloadResponse {
+  bool can_submit_inference_payload = 1 [(amino.dont_omitempty) = true];
 }

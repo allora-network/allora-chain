@@ -68,7 +68,8 @@ Defaults are the module defaults, not necessarily what any given chain is runnin
 | `lambda_initial_score` | `Dec` | `2` | New-participant score initialization. |
 | `global_whitelist_enabled` | `bool` | `true` | Global whitelist gates topic creation and participation. |
 | `topic_creator_whitelist_enabled` | `bool` | `true` | Only whitelisted actors may create topics. |
-| `global_worker_whitelist_enabled` | `bool` | `true` | Global worker whitelist governs worker participation. |
+| `global_worker_whitelist_enabled` | `bool` | `true` | Global worker whitelist governs inferer (worker) participation. |
+| `global_forecaster_whitelist_enabled` | `bool` | `true` | Global forecaster whitelist governs forecaster participation. |
 | `global_reputer_whitelist_enabled` | `bool` | `true` | Global reputer whitelist governs reputer participation. |
 | `global_admin_whitelist_appended` | `bool` | `true` | Global admins are appended to whitelists. |
 | `max_whitelist_input_array_length` | `uint64` | `2000` | Max array length for whitelist operations. |
@@ -125,4 +126,8 @@ An *assumption*, not a measurement — it drives the emission rate. If real bloc
 
 ### Whitelist flags
 
-The five whitelist booleans compose rather than override one another: `global_whitelist_enabled` gates broadly, while `topic_creator_whitelist_enabled`, `global_worker_whitelist_enabled` and `global_reputer_whitelist_enabled` gate specific roles, and `global_admin_whitelist_appended` adds global admins on top. Reason about the combination, not any single flag.
+The whitelist booleans compose rather than override one another: `global_whitelist_enabled` gates broadly, while `topic_creator_whitelist_enabled`, `global_worker_whitelist_enabled`, `global_forecaster_whitelist_enabled` and `global_reputer_whitelist_enabled` gate specific roles, and `global_admin_whitelist_appended` adds global admins on top. Reason about the combination, not any single flag. An `InsertWorkerPayload` that carries both an inference and a forecast is rejected unless the actor holds both the worker (inferer) and forecaster permissions.
+
+The per-topic gate flags on `CreateNewTopic` (`enable_worker_whitelist`, `enable_reputer_whitelist`, `enable_forecaster_whitelist`) are independent opt-ins, all default `false`. A topic created with only `enable_worker_whitelist=true` gates inferences but not forecasts; set `enable_forecaster_whitelist` too to gate forecasts.
+
+The v15→v16 migration does not copy worker state into the forecaster stores. Forecaster lists remain empty and topic forecaster gates remain absent unless explicitly configured through their normal messages. The new global parameter `global_forecaster_whitelist_enabled` decodes as `false` in a pre-existing store that does not contain it, rather than inheriting the `DefaultParams()` value `true` used for newly generated genesis. New chains will be generated with `true` value.

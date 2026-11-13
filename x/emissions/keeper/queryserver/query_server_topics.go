@@ -214,8 +214,8 @@ func (qs queryServer) GetWorkerSubmissionWindowStatus(ctx context.Context, req *
 		}
 		response.IsRegistered = isRegistered
 
-		// Check if worker can submit payload (whitelist check)
-		isWhitelisted, err := qs.wlk.CanSubmitWorkerPayload(ctx, req.TopicId, req.Address)
+		// Check if worker can submit an inference payload (whitelist check)
+		isWhitelisted, err := qs.wlk.CanSubmitInferencePayload(ctx, req.TopicId, req.Address)
 		if err != nil {
 			return nil, errors.Wrapf(err, "error checking worker whitelist status")
 		}

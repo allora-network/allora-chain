@@ -71,6 +71,7 @@ func (s *MsgServerTestSuite) TestUpdateAllParams() {
 		LambdaInitialScore:                  []alloraMath.Dec{alloraMath.MustNewDecFromString("2")},
 		GlobalWorkerWhitelistEnabled:        []bool{true},
 		GlobalReputerWhitelistEnabled:       []bool{true},
+		GlobalForecasterWhitelistEnabled:    []bool{true},
 		GlobalAdminWhitelistAppended:        []bool{true},
 		MaxWhitelistInputArrayLength:        []uint64{10},
 		MinWeightThresholdForStdnorm:        []alloraMath.Dec{alloraMath.MustNewDecFromString("0.000001")},
@@ -142,12 +143,44 @@ func (s *MsgServerTestSuite) TestUpdateAllParams() {
 	require.Equal(newParams.LambdaInitialScore[0], updatedParams.LambdaInitialScore)
 	require.Equal(newParams.GlobalWorkerWhitelistEnabled[0], updatedParams.GlobalWorkerWhitelistEnabled)
 	require.Equal(newParams.GlobalReputerWhitelistEnabled[0], updatedParams.GlobalReputerWhitelistEnabled)
+	require.Equal(newParams.GlobalForecasterWhitelistEnabled[0], updatedParams.GlobalForecasterWhitelistEnabled)
 	require.Equal(newParams.GlobalAdminWhitelistAppended[0], updatedParams.GlobalAdminWhitelistAppended)
 	require.Equal(newParams.MaxWhitelistInputArrayLength[0], updatedParams.MaxWhitelistInputArrayLength)
 	require.Equal(newParams.MinWeightThresholdForStdnorm[0], updatedParams.MinWeightThresholdForStdnorm)
 	require.Equal(newParams.MaxCanonicalLabelByteLength[0], updatedParams.MaxCanonicalLabelByteLength)
 	require.Equal(newParams.MaxTopicLabelWhitelistSize[0], updatedParams.MaxTopicLabelWhitelistSize)
 	require.Equal(newParams.MaxEpochLabelRegistrySize[0], updatedParams.MaxEpochLabelRegistrySize)
+}
+
+// TestUpdateGlobalForecasterWhitelistEnabled covers both transitions while
+// ensuring that updating only this field leaves every other parameter unchanged.
+func (s *MsgServerTestSuite) TestUpdateGlobalForecasterWhitelistEnabled() {
+	ctx, msgServer := s.Ctx(), s.EmissionsMsgServer()
+	require := s.Require()
+
+	adminPrivateKey := secp256k1.GenPrivKey()
+	adminAddr := sdk.AccAddress(adminPrivateKey.PubKey().Address())
+	require.NoError(s.WhitelistsKeeper().AddWhitelistAdmin(ctx, adminAddr.String()))
+
+	before, err := s.ParamsKeeper().GetParams(ctx)
+	require.NoError(err)
+	require.True(before.GlobalForecasterWhitelistEnabled)
+
+	for _, want := range []bool{false, true} {
+		_, err = msgServer.UpdateParams(ctx, &types.UpdateParamsRequest{
+			Sender: adminAddr.String(),
+			Params: &types.OptionalParams{ //nolint:exhaustruct
+				GlobalForecasterWhitelistEnabled: []bool{want},
+			},
+		})
+		require.NoError(err)
+
+		after, err := s.ParamsKeeper().GetParams(ctx)
+		require.NoError(err)
+		expected := before
+		expected.GlobalForecasterWhitelistEnabled = want
+		require.Equal(expected, after)
+	}
 }
 
 // TestUpdateMinTopInferersToReward covers updating only the floor: it changes and
