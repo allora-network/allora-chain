@@ -72,6 +72,108 @@ func TestFindTopNByScoreDesc(t *testing.T) {
 	require.True(t, isTop)
 }
 
+func tiedScores(addresses []string, score int64) []emissionstypes.Score {
+	scores := make([]emissionstypes.Score, 0, len(addresses))
+	for _, a := range addresses {
+		scores = append(scores, emissionstypes.Score{
+			TopicId:     1,
+			BlockHeight: 1,
+			Address:     a,
+			Score:       alloraMath.NewDecFromInt64(score),
+		})
+	}
+	return scores
+}
+
+func sortedAddresses(scores []emissionstypes.Score) []string {
+	addresses := make([]string, 0, len(scores))
+	for _, s := range scores {
+		addresses = append(addresses, s.Address)
+	}
+	return addresses
+}
+
+// permutations returns every ordering of items (Heap's algorithm).
+func permutations(items []string) [][]string {
+	var out [][]string
+	var generate func(k int, a []string)
+	generate = func(k int, a []string) {
+		if k == 1 {
+			out = append(out, append([]string(nil), a...))
+			return
+		}
+		generate(k-1, a)
+		for i := 0; i < k-1; i++ {
+			if k%2 == 0 {
+				a[i], a[k-1] = a[k-1], a[i]
+			} else {
+				a[0], a[k-1] = a[k-1], a[0]
+			}
+			generate(k-1, a)
+		}
+	}
+	generate(len(items), append([]string(nil), items...))
+	return out
+}
+
+// The expected orders are sha256(bigEndian(seed) || address), ascending,
+// computed outside the function under test. Any change to these orders
+// changes which actors win ties, which is a consensus change.
+func TestFindTopNByScoreDescTieBreakIsPinned(t *testing.T) {
+	addresses := []string{"alice", "bob", "carol", "dave", "erin"}
+	tests := []struct {
+		seed int64
+		want []string
+	}{
+		{seed: 1, want: []string{"erin", "carol", "bob", "dave", "alice"}},
+		{seed: 2, want: []string{"erin", "dave", "carol", "alice", "bob"}},
+		{seed: 42, want: []string{"dave", "carol", "bob", "alice", "erin"}},
+		{seed: 1000, want: []string{"alice", "carol", "bob", "dave", "erin"}},
+	}
+	for _, tc := range tests {
+		t.Run(strconv.FormatInt(tc.seed, 10), func(t *testing.T) {
+			_, all, _ := actorutils.FindTopNByScoreDesc(5, tiedScores(addresses, 7), tc.seed)
+			require.Equal(t, tc.want, sortedAddresses(all))
+		})
+	}
+}
+
+func TestFindTopNByScoreDescIgnoresInputOrder(t *testing.T) {
+	addresses := []string{"alice", "bob", "carol", "dave", "erin", "frank"}
+	scoreOf := map[string]int64{"alice": 5, "bob": 9, "carol": 5, "dave": 9, "erin": 5, "frank": 1}
+
+	var want []string
+	for _, perm := range permutations(addresses) {
+		scores := make([]emissionstypes.Score, 0, len(perm))
+		for _, a := range perm {
+			scores = append(scores, tiedScores([]string{a}, scoreOf[a])...)
+		}
+		top, all, isTop := actorutils.FindTopNByScoreDesc(3, scores, 42)
+		got := sortedAddresses(all)
+		if want == nil {
+			want = got
+		}
+		require.Equal(t, want, got, "input order %v", perm)
+		require.Equal(t, want[:3], sortedAddresses(top))
+		require.Len(t, isTop, 3)
+		for _, a := range want[:3] {
+			require.Contains(t, isTop, a)
+		}
+	}
+	// Scores stay descending; only the order within each tie depends on the seed.
+	require.ElementsMatch(t, []string{"bob", "dave"}, want[:2])
+	require.ElementsMatch(t, []string{"alice", "carol", "erin"}, want[2:5])
+	require.Equal(t, "frank", want[5])
+}
+
+func TestFindTopNByScoreDescSeedChoosesTieWinner(t *testing.T) {
+	addresses := []string{"alice", "bob", "carol", "dave", "erin"}
+	top1, _, _ := actorutils.FindTopNByScoreDesc(1, tiedScores(addresses, 7), 1)
+	top1000, _, _ := actorutils.FindTopNByScoreDesc(1, tiedScores(addresses, 7), 1000)
+	require.Equal(t, "erin", top1[0].Address)
+	require.Equal(t, "alice", top1000[0].Address)
+}
+
 // helper function that handles the expected types of the top actors
 func requireIsTop(t *testing.T, expectedTop alloraMath.Dec, isTop bool) {
 	t.Helper()
