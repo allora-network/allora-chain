@@ -207,7 +207,7 @@ func NewDecFinite(coeff int64, exp int32) Dec {
 	return res
 }
 
-// NewDec takes a cosmos `sdkmath.Int` and turns it into a Dec
+// NewDecFromSdkInt takes a cosmos `sdkmath.Int` and turns it into a Dec
 // it converts via strings and throws an error if the string
 // is unable to be parsed
 func NewDecFromSdkInt(x sdkmath.Int) (Dec, error) {
@@ -215,7 +215,7 @@ func NewDecFromSdkInt(x sdkmath.Int) (Dec, error) {
 	return NewDecFromString(strRep)
 }
 
-// NewDec takes a cosmos `sdkmath.LegacyDec` and turns it into a Dec
+// NewDecFromSdkLegacyDec takes a cosmos `sdkmath.LegacyDec` and turns it into a Dec
 // it converts via strings and throws an error if the string
 // is unable to be parsed
 func NewDecFromSdkLegacyDec(x sdkmath.LegacyDec) (Dec, error) {

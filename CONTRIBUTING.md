@@ -109,7 +109,7 @@ It is critical to avoid performing network requests to external services since i
 
 Imagine a service that returns exchange rates when clients query its HTTP endpoint. This service might experience downtime or be restricted in some geographical areas.
 
-As a result, nodes may get diverging responses where some get successful responses while others errors, leading to state breakage.
+As a result, nodes may get diverging responses where some get successful responses while others get errors, leading to state breakage.
 
 #### Randomness
 

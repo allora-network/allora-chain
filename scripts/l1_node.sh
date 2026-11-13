@@ -66,8 +66,8 @@ if [ ! -f $INIT_FLAG ]; then
 fi
 echo "Node is initialized"
 
-SEEDS=$(curl -Ls ${SEEDS_URL})
-PEERS=$(curl -Ls ${PEERS_URL})
+SEEDS=$(curl -Ls "${SEEDS_URL}")
+PEERS=$(curl -Ls "${PEERS_URL}")
 
 if [ "x${STATE_SYNC_RPC1}" != "x" ]; then
     echo "Enable state sync"
