@@ -67,6 +67,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+* [#1036](https://github.com/allora-network/allora-chain/pull/1036) `scripts/check_proposer_priorities.sh` compares the proposer priorities that RPC endpoints report at one height and lists the validators that differ, to find nodes whose priorities diverged after state sync.
 * [#1011](https://github.com/allora-network/allora-chain/pull/1011) `admission_outcome` (`PAYLOAD_ADMISSION_OUTCOME_*`) on the three insert-payload events; new `EventInferenceEvictedFromActiveSet`, `EventForecastEvictedFromActiveSet`, `EventReputerLossEvictedFromActiveSet` and `EventReputerSubmissionRetired` events.
 * [#968](https://github.com/allora-network/allora-chain/pull/968) Per-topic `max_top_inferers_to_reward`, required within the global range, with migration v16
 * [#969](https://github.com/allora-network/allora-chain/pull/969) New global `min_top_inferers_to_reward` as the floor for the per-topic inferer cap (default `5`)
