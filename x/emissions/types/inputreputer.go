@@ -2,20 +2,18 @@ package types
 
 import alloramath "github.com/allora-network/allora-chain/math"
 
-func (m *InputWorkerAttributedValue) SetWorker(s string) {
-	m.Worker = s
+func (inputWorkerValue *InputWorkerAttributedValue) SetWorker(s string) {
+	inputWorkerValue.Worker = s
 }
 
-//nolint:stylecheck
-func (m *InputWorkerAttributedValue) SetValue(val alloramath.Dec) {
-	m.Value = alloramath.MustNewBoundedExp40Dec(val)
+func (inputWorkerValue *InputWorkerAttributedValue) SetValue(val alloramath.Dec) {
+	inputWorkerValue.Value = alloramath.MustNewBoundedExp40Dec(val)
 }
 
-func (m *InputWithheldWorkerAttributedValue) SetWorker(worker string) {
-	m.Worker = worker
+func (inputWithheldWorkerValue *InputWithheldWorkerAttributedValue) SetWorker(worker string) {
+	inputWithheldWorkerValue.Worker = worker
 }
 
-//nolint:stylecheck
-func (m *InputWithheldWorkerAttributedValue) SetValue(val alloramath.Dec) {
-	m.Value = alloramath.MustNewBoundedExp40Dec(val)
+func (inputWithheldWorkerValue *InputWithheldWorkerAttributedValue) SetValue(val alloramath.Dec) {
+	inputWithheldWorkerValue.Value = alloramath.MustNewBoundedExp40Dec(val)
 }

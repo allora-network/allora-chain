@@ -1,26 +1,19 @@
-run:
-  timeout: 5m
-
+version: "2"
 linters:
-  disable-all: true
-  # Enable specific linter
-  # https://golangci-lint.run/usage/linters/#enabled-by-default-linters
+  default: none
   enable:
     - asciicheck
     - bidichk
+    - copyloopvar
     - durationcheck
     - errcheck
     - errname
-    - copyloopvar
     - exhaustruct
     - forcetypeassert
-    - goconst
-    - gofmt
-    - goimports
     - goheader
     - gomodguard
     - goprintffuncname
-    - gosimple
+    - gosec
     - govet
     - importas
     - ineffassign
@@ -29,78 +22,123 @@ linters:
     - nakedret
     - nilnil
     - promlinter
+    - revive
     - staticcheck
-    - stylecheck
-    - tenv
+    - testifylint
     - thelper
     - tparallel
-    - typecheck
-    - thelper
     - unconvert
-    - unused
     - unparam
-    - revive
-    - gosec
-    - testifylint
-
-linters-settings:
-  revive:
+    - unused
+  settings:
+    # These checkers report on code already in the tree. goconst is
+    # omitted from the enable list for the same reason.
+    testifylint:
+      disable:
+        - bool-compare
+        - empty
+        - encoded-compare
+        - error-is-as
+        - expected-actual
+        - float-compare
+        - formatter
+        - len
+    staticcheck:
+      checks:
+        - all
+        - -QF*
+        - -S1028
+        - -ST1000
+        - -ST1003
+        - -ST1016
+        - -ST1020
+        - -ST1021
+        - -ST1022
+    gosec:
+      excludes:
+        - G115
+        - G602
+        - G703
+      config:
+        G101:
+          entropy_threshold: "80.0"
+          ignore_entropy: false
+          pattern: (?i)passwd|pass|password|pwd|secret|private_key|token|pw|apiKey|bearer|cred|mneumonic|seed|seedphrase|entropy
+          per_char_threshold: "3.0"
+          truncate: "32"
+    revive:
+      rules:
+        - name: var-naming
+          arguments:
+            - - ID
+              - RPC
+              - IDS
+              - JSON
+            - []
+            - - upperCaseConst: true
+          severity: warning
+          disabled: false
+          exclude:
+            - ""
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
     rules:
-      - name: var-naming
-        severity: warning
-        disabled: false
-        exclude: [""]
-        arguments:
-          - ["ID", "RPC", "IDS", "JSON"] # AllowList
-          - [] # DenyList
-          - - upperCaseConst: true
-  gosec:
-    config:
-      G101:
-        pattern: "(?i)passwd|pass|password|pwd|secret|private_key|token|pw|apiKey|bearer|cred|mneumonic|seed|seedphrase|entropy"
-        ignore_entropy: false
-        # Maximum allowed entropy of the string.
-        entropy_threshold: "80.0"
-        # Maximum allowed value of entropy/string length.
-        # Is taken into account if entropy >= entropy_threshold/2.
-        per_char_threshold: "3.0"
-        # Calculate entropy for first N chars of the string.
-        truncate: "32"
-
+      - linters:
+          - staticcheck
+        text: 'SA1024: cutset contains duplicate characters'
+      - linters:
+          - staticcheck
+        text: 'SA9004: only the first constant in this group has an explicit type'
+      - linters:
+          - staticcheck
+        text: 'ST1003:'
+      - linters:
+          - staticcheck
+        text: 'ST1005:'
+      - linters:
+          - staticcheck
+        text: 'SA1019: "github.com/cosmos/ibc-go/v8/modules/core/02-client/types" is deprecated`'
+      - linters:
+          - staticcheck
+        text: 'SA1019: \(cosmossdk.io/x/upgrade/types.Plan\)'
+      - linters:
+          - forcetypeassert
+        text: 'right hand must be only type assertion'
+      - linters:
+          - revive
+        path: _test\.go
+        text: 'var-naming: don''t use underscores in Go names;'
+      - linters:
+          - gosec
+        path: _test\.go
+        text: 'G404: Use of weak random number generator'
+    paths:
+      - .*\.pb\.go
+      - .*\.pb\.gw\.go
+      - .*\.pulsar\.go
+      - .*_mocks\.go
+      - third_party$
+      - builtin$
+      - examples$
 issues:
-  exclude-rules:
-    - linters:
-        - staticcheck
-      text: "SA1024: cutset contains duplicate characters" # proved to not provide much value, only false positives.
-    - linters:
-        - staticcheck
-      text: "SA9004: only the first constant in this group has an explicit type" # explicitly recommended in go syntax
-    - linters:
-        - stylecheck
-      text: "ST1003:" # requires identifiers with "id" to be "ID".
-    - linters:
-        - stylecheck
-      text: "ST1005:" # punctuation in error messages
-    - linters:
-        - staticcheck
-      text: "SA1019: \"github.com/cosmos/ibc-go/v8/modules/core/02-client/types\" is deprecated`"
-    - path: _test\.go
-      text: "var-naming: don't use underscores in Go names;"
-      linters:
-        - revive
-    - path: _test\.go
-      linters:
-        - goconst
-    - path: _test\.go
-      text: "G404: Use of weak random number generator"
-      linters:
-        - gosec
-      
   max-issues-per-linter: 10000
   max-same-issues: 10000
-
-  exclude-files:
-    - ".*\\.pb\\.go"
-    - ".*\\.pb\\.gw\\.go"
-    - ".*\\.pulsar\\.go"
-    - ".*_mocks\\.go"
+formatters:
+  enable:
+    - gofmt
+    - goimports
+  exclusions:
+    generated: lax
+    paths:
+      - .*\.pb\.go
+      - .*\.pb\.gw\.go
+      - .*\.pulsar\.go
+      - .*_mocks\.go
+      - third_party$
+      - builtin$
+      - examples$

@@ -90,7 +90,7 @@ func NewTaskHandler[T proto.Message](
 	var zeroArgs T
 	if any(zeroArgs) != nil {
 		typ := reflect.TypeOf(zeroArgs)
-		if typ.Kind() != reflect.Ptr {
+		if typ.Kind() != reflect.Pointer {
 			// Should never happen
 			panic("task args must be a pointer type")
 		}

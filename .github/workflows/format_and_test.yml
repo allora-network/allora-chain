@@ -25,7 +25,7 @@ jobs:
 
     - uses: actions/setup-go@v5
       with:
-        go-version: 1.22.x
+        go-version: 1.26.10
 
     - name: Test
       uses: robherley/go-test-action@v1.1.0
@@ -44,7 +44,7 @@ jobs:
 
     - uses: actions/setup-go@v5
       with:
-        go-version: 1.22.x
+        go-version: 1.26.10
 
     - name: Disk usage (before)
       shell: bash
@@ -77,7 +77,7 @@ jobs:
       run: bash ./test/local_testnet_l1.sh
 
     - name: IntegrationTest
-      run: INTEGRATION=TRUE RPC_MODE="RoundRobin" RPC_URLS="http://localhost:26657,http://localhost:26658,http://localhost:26659" /usr/bin/go test -timeout 30m -run '^(TestExternalTestSuite|TestExternalMultiTestSuite)$' github.com/allora-network/allora-chain/test/integration -v
+      run: INTEGRATION=TRUE RPC_MODE="RoundRobin" RPC_URLS="http://localhost:26657,http://localhost:26658,http://localhost:26659" go test -count=1 -timeout 30m -run '^(TestExternalTestSuite|TestExternalMultiTestSuite)$' github.com/allora-network/allora-chain/test/integration -v
 
     # The diagnostic steps below never affect the job result.
     - name: Report validator state
