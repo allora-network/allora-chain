@@ -5,6 +5,23 @@ on: [pull_request]
 permissions:
   contents: read
 
+# Shai-Hulud defense: pin module integrity for every `go` invocation in this
+# workflow. Mirrors the GOPROXY / GOSUMDB / GOFLAGS env exported by the
+# reusable hardened-install workflow in go-hardened.yml. CGO_ENABLED=0 matches
+# the release path (.goreleaser.yaml sets CGO_ENABLED=0 per-build with
+# netgo + pebbledb + ledger build tags); no source in this repo does
+# `import "C"` and no transitive dep (no wasmvm/libwasmvm/cosmwasm in go.mod
+# or go.sum) forces CGO. Integration tests here build/run the chain via
+# test/local_testnet_l1.sh, which matches the CGO=0 release toolchain.
+# go-hardened.yml is now aligned to cgo_enabled='0'; revisit all four
+# CGO_ENABLED values together if a CGO-linking dep is reintroduced
+# (ENGN-8441 tracks the broader wasmvm question).
+env:
+  GOPROXY: "https://proxy.golang.org,direct"
+  GOSUMDB: "sum.golang.org"
+  GOFLAGS: "-mod=readonly"
+  CGO_ENABLED: "0"
+
 jobs:
   gofmt:
     name: "Go Format Check"
