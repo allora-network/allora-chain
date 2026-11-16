@@ -16,7 +16,6 @@ import (
 	"github.com/allora-network/allora-chain/app/upgrades/v0_16_0"
 	"github.com/allora-network/allora-chain/app/upgrades/v0_17_0"
 	"github.com/allora-network/allora-chain/app/upgrades/v0_18_0"
-	"github.com/allora-network/allora-chain/app/upgrades/v0_19_0"
 	"github.com/allora-network/allora-chain/app/upgrades/v0_3_0"
 	"github.com/allora-network/allora-chain/app/upgrades/v0_4_0"
 	"github.com/allora-network/allora-chain/app/upgrades/v0_5_0"
@@ -43,7 +42,6 @@ var upgradeHandlers = []upgrades.Upgrade{
 	v0_16_0.Upgrade,
 	v0_17_0.Upgrade,
 	v0_18_0.Upgrade,
-	v0_19_0.Upgrade,
 	// Add more upgrade handlers here
 	// ...
 }

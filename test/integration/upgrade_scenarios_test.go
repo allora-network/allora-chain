@@ -147,9 +147,9 @@ var UpgradeScenarios = map[string]UpgradeScenario{
 			},
 			{
 				ModuleName: "mint",
-				CheckType:  ModuleCheckExpectEqual,
+				CheckType:  ModuleCheckExpectIncrease,
 				ExpectedVersion: func() *uint64 {
-					version := uint64(6)
+					version := uint64(7)
 					return &version
 				}(),
 			},
