@@ -48,7 +48,7 @@ Read extra references only when needed:
 3. **If signing fails or hangs**: Do not retry with signing disabled. Stop and inform the user that the SSH signing key is unavailable and needs to be loaded into the agent.
 4. **Verify after committing**: After each commit, run `git log -1 --format='%G?'` to confirm the commit was signed. A result of `G` means good signature. If the signature is missing or bad, stop and inform the user before pushing.
 5. **Never use `--no-verify`**: Do not skip pre-commit hooks unless the user explicitly asks for it.
-6. Allow changes in agentic files (e.g. `AGENTS.md`) in any PR regardless of the scope.
+6. Allow changes in agentic files (e.g. `AGENTS.md`) in PRs to improve operational performance and knowledge
 
 ### Pre-flight Check
 Before the first commit in any session, run these checks. If any fail, **stop and inform the user** before doing any work — but ask whether they still want you to proceed with non-committing tasks (e.g. code changes, exploration, reviews) while they resolve the issue.
