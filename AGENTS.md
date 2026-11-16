@@ -15,7 +15,7 @@ Short, high-signal guidance for working in the `allora-chain` repo. Keep context
 - PR comments/replies: written for a public reader — never reference private context (chat labels, local issue numbers, unpublished commits); when referring to another PR comment, review, issue, or piece of code, include a public, resolvable link at least once in the message.
 
 ## Go Conventions
-- Lint/tests: use `CGO_ENABLED=0` and set `GOTOOLCHAIN` from `go.mod`'s `toolchain` directive, never a hard-coded version.
+- Lint/tests: Set `GOTOOLCHAIN` from `go.mod`'s `toolchain` directive, never a hard-coded version.
 - Always `gofmt`/`goimports`; `make lint` must always pass clean after producing complete code. Avoid using `nolint` statements if possible, but if you need to use it, add a comment on the reason why.
 - Prefer table-driven unit tests and explicit dependency injection for easy mocking.
 - Use `sdk.Context.Logger()` for chain logs; avoid noisy logs in consensus paths.
