@@ -15,6 +15,7 @@ Short, high-signal guidance for working in the `allora-chain` repo. Keep context
 - PR comments/replies: written for a public reader — never reference private context (chat labels, local issue numbers, unpublished commits); when referring to another PR comment, review, issue, or piece of code, include a public, resolvable link at least once in the message.
 
 ## Go Conventions
+- Lint/tests: use `CGO_ENABLED=0` and set `GOTOOLCHAIN` from `go.mod`'s `toolchain` directive, never a hard-coded version.
 - Always `gofmt`/`goimports`; `make lint` must always pass clean after producing complete code. Avoid using `nolint` statements if possible, but if you need to use it, add a comment on the reason why.
 - Prefer table-driven unit tests and explicit dependency injection for easy mocking.
 - Use `sdk.Context.Logger()` for chain logs; avoid noisy logs in consensus paths.
@@ -46,6 +47,7 @@ Read extra references only when needed:
 3. **If signing fails or hangs**: Do not retry with signing disabled. Stop and inform the user that the SSH signing key is unavailable and needs to be loaded into the agent.
 4. **Verify after committing**: After each commit, run `git log -1 --format='%G?'` to confirm the commit was signed. A result of `G` means good signature. If the signature is missing or bad, stop and inform the user before pushing.
 5. **Never use `--no-verify`**: Do not skip pre-commit hooks unless the user explicitly asks for it.
+6. Allow changes in agentic files (e.g. `AGENTS.md`) in any PR regardless of the scope.
 
 ### Pre-flight Check
 Before the first commit in any session, run these checks. If any fail, **stop and inform the user** before doing any work — but ask whether they still want you to proceed with non-committing tasks (e.g. code changes, exploration, reviews) while they resolve the issue.
