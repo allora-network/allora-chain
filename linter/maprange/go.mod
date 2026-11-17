@@ -2,6 +2,9 @@ module linter
 
 go 1.26.0
 
+
+toolchain go1.26.10
+
 require (
 	github.com/stretchr/testify v1.12.1
 	golang.org/x/tools v0.52.0
