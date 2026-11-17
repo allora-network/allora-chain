@@ -183,6 +183,31 @@ func (s *MsgServerTestSuite) TestUpdateGlobalForecasterWhitelistEnabled() {
 	}
 }
 
+func (s *MsgServerTestSuite) TestUpdateParamsRejectsZeroMaxActiveTopicsPerBlock() {
+	ctx, msgServer := s.Ctx(), s.EmissionsMsgServer()
+	require := s.Require()
+
+	adminPrivateKey := secp256k1.GenPrivKey()
+	adminAddr := sdk.AccAddress(adminPrivateKey.PubKey().Address())
+	require.NoError(s.WhitelistsKeeper().AddWhitelistAdmin(ctx, adminAddr.String()))
+
+	before, err := s.ParamsKeeper().GetParams(ctx)
+	require.NoError(err)
+
+	response, err := msgServer.UpdateParams(ctx, &types.UpdateParamsRequest{
+		Sender: adminAddr.String(),
+		Params: &types.OptionalParams{ //nolint:exhaustruct
+			MaxActiveTopicsPerBlock: []uint64{0},
+		},
+	})
+	require.ErrorIs(err, types.ErrValidationMustBeGreaterthanZero)
+	require.Nil(response)
+
+	after, err := s.ParamsKeeper().GetParams(ctx)
+	require.NoError(err)
+	require.Equal(before, after)
+}
+
 // TestUpdateMinTopInferersToReward covers updating only the floor: it changes and
 // the ceiling is left untouched. Zero is accepted, meaning no floor.
 func (s *MsgServerTestSuite) TestUpdateMinTopInferersToReward() {

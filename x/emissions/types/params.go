@@ -661,8 +661,13 @@ func validateMaxElementsPerForecast(_ uint64) error {
 }
 
 // maximum number of active topics per block
-// Should be zero or positive. Enforced by uint type
-func validateMaxActiveTopicsPerBlock(_ uint64) error { return nil }
+// Must be greater than zero: a zero cap prevents every topic from activating.
+func validateMaxActiveTopicsPerBlock(i uint64) error {
+	if i == 0 {
+		return ErrValidationMustBeGreaterthanZero
+	}
+	return nil
+}
 
 // max this many top reputers by score are rewarded for a topic
 // Should be zero or positive. Enforced by uint type
