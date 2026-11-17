@@ -21,8 +21,9 @@ func MigrateStore(ctx sdk.Context, mintKeeper keeper.Keeper) error {
 	return nil
 }
 
-// migrateParams adds the investors and team vesting delay param. Existing
-// networks start with no delay; governance or an upgrade handler sets it.
+// migrateParams adds the investors and team vesting delay param. The field
+// is additive in proto3 so this is a wire-level no-op; writing the zero delay
+// explicitly makes the migrated state canonical.
 func migrateParams(ctx sdk.Context, mintKeeper keeper.Keeper) error {
 	store := runtime.KVStoreAdapter(mintKeeper.GetStorageService().OpenKVStore(ctx))
 	cdc := mintKeeper.GetBinaryCodec()
