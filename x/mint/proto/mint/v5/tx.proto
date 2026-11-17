@@ -13,11 +13,16 @@ option go_package = "github.com/allora-network/allora-chain/x/mint/types";
 service MsgService {
   option (cosmos.msg.v1.service) = true;
 
-  // update params. Only callable by someone on the emissions module whitelist
+  // update params. Only callable by someone on the emissions module whitelist.
+  // InvestorsTeamVestingDelayMonths cannot be changed through this message; use
+  // UpdateInvestorsTeamVestingDelay instead.
   rpc UpdateParams(UpdateParamsRequest) returns (UpdateParamsResponse);
   // force a target emission calculation right now. Otherwise waits until the
   // end of params.BlocksPerMonth
   rpc RecalculateTargetEmission(RecalculateTargetEmissionRequest) returns (RecalculateTargetEmissionResponse);
+  // UpdateInvestorsTeamVestingDelay sets the investors and team vesting delay.
+  // Only callable by x/gov.
+  rpc UpdateInvestorsTeamVestingDelay(UpdateInvestorsTeamVestingDelayRequest) returns (UpdateInvestorsTeamVestingDelayResponse);
 }
 
 // UpdateParams allows an update to the minting parameters of the module.
@@ -30,6 +35,8 @@ message UpdateParamsRequest {
   // params defines the x/mint parameters to update.
   //
   // NOTE: All parameters must be supplied.
+  // InvestorsTeamVestingDelayMonths in the supplied Params must equal the
+  // stored value. Use UpdateInvestorsTeamVestingDelay to change it.
   Params params = 2 [
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
@@ -56,3 +63,17 @@ message RecalculateTargetEmissionRequest {
 
 // response from recalculating the target emission
 message RecalculateTargetEmissionResponse {}
+
+// UpdateInvestorsTeamVestingDelay sets the investors and team vesting delay.
+// Only the module authority (x/gov) may call this.
+message UpdateInvestorsTeamVestingDelayRequest {
+  option (cosmos.msg.v1.signer) = "authority";
+  option (amino.name) = "allora-chain/mint/MsgUpdateVestingDelay";
+
+  string authority = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  uint64 months = 2;
+}
+
+// UpdateInvestorsTeamVestingDelayResponse is the response to
+// UpdateInvestorsTeamVestingDelay.
+message UpdateInvestorsTeamVestingDelayResponse {}

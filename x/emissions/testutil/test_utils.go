@@ -439,6 +439,7 @@ func (s *TestSuite) SetupTest() {
 		bankKeeper,
 		emissionsKeeper,
 		authtypes.FeeCollectorName,
+		authtypes.NewModuleAddress("gov").String(),
 	)
 
 	s.ctx = ctx

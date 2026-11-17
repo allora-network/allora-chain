@@ -30,6 +30,7 @@ type Keeper struct {
 	bankKeeper       types.BankKeeper
 	emissionsKeeper  types.EmissionsKeeper
 	feeCollectorName string
+	authority        string
 
 	Schema                                   collections.Schema
 	Params                                   collections.Item[types.Params]
@@ -50,6 +51,7 @@ func NewKeeper(
 	bk types.BankKeeper,
 	ek types.EmissionsKeeper,
 	feeCollectorName string,
+	authority string,
 ) Keeper {
 	// ensure mint module account is set
 	if addr := ak.GetModuleAddress(types.ModuleName); addr == nil {
@@ -66,6 +68,7 @@ func NewKeeper(
 		bankKeeper:                               bk,
 		emissionsKeeper:                          ek,
 		feeCollectorName:                         feeCollectorName,
+		authority:                                authority,
 		Params:                                   collections.NewItem(sb, types.ParamsKey, "params", codec.CollValue[types.Params](cdc)),
 		PreviousRewardEmissionPerUnitStakedToken: collections.NewItem(sb, types.PreviousRewardEmissionPerUnitStakedTokenKey, "previousrewardsemissionsperunitstakedtoken", alloraMath.LegacyDecValue),
 		PreviousBlockEmission:                    collections.NewItem(sb, types.PreviousBlockEmissionKey, "previousblockemission", sdk.IntValue),
@@ -96,6 +99,12 @@ func (k Keeper) GetStorageService() storetypes.KVStoreService {
 // getter for the binary codec
 func (k Keeper) GetBinaryCodec() codec.BinaryCodec {
 	return k.cdc
+}
+
+// GetAuthority returns the address that is allowed to submit
+// MsgUpdateInvestorsTeamVestingDelay.
+func (k Keeper) GetAuthority() string {
+	return k.authority
 }
 
 // This function increases the ledger that tracks the total tokens minted by the ecosystem treasury

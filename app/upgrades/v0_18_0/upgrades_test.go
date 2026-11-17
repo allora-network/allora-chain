@@ -36,6 +36,7 @@ func TestSetInvestorsTeamVestingDelay(t *testing.T) {
 		minttestutil.NewMockBankKeeper(ctrl),
 		minttestutil.NewMockEmissionsKeeper(ctrl),
 		authtypes.FeeCollectorName,
+		authtypes.NewModuleAddress("gov").String(),
 	)
 
 	before := minttypes.DefaultParams()
@@ -73,6 +74,7 @@ func TestSetInvestorsTeamVestingDelayAfterMigration(t *testing.T) {
 		minttestutil.NewMockBankKeeper(ctrl),
 		minttestutil.NewMockEmissionsKeeper(ctrl),
 		authtypes.FeeCollectorName,
+		authtypes.NewModuleAddress("gov").String(),
 	)
 	require.NoError(t, mintKeeper.Params.Set(testCtx.Ctx, minttypes.DefaultParams()))
 

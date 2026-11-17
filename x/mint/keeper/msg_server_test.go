@@ -322,3 +322,113 @@ func (s *MintKeeperTestSuite) TestRecalculateTargetEmissionMonthsAlreadyUnlocked
 	monhsAlreadyUnlockedEnd := s.mintKeeper.GetMonthsAlreadyUnlocked(s.ctx)
 	s.Require().True(monhsAlreadyUnlockedEnd.GT(monhsAlreadyUnlockedStart))
 }
+
+func (s *MintKeeperTestSuite) TestUpdateInvestorsTeamVestingDelay() {
+	govAddr := s.mintKeeper.GetAuthority()
+	request := &types.UpdateInvestorsTeamVestingDelayRequest{
+		Authority: govAddr,
+		Months:    6,
+	}
+
+	emissionsParams := emissionstypes.DefaultParams()
+	s.emissionsKeeper.EXPECT().GetParams(s.ctx).Return(emissionsParams, nil)
+
+	resp, err := s.msgServer.UpdateInvestorsTeamVestingDelay(s.ctx, request)
+	s.Require().NoError(err)
+	s.Require().NotNil(resp)
+
+	params, err := s.mintKeeper.Params.Get(s.ctx)
+	s.Require().NoError(err)
+	s.Require().Equal(uint64(6), params.InvestorsTeamVestingDelayMonths)
+
+	// event was emitted
+	events := s.ctx.EventManager().Events()
+	var found bool
+	for _, ev := range events {
+		if ev.Type == "mint.v3.EventParamsSet" {
+			found = true
+			break
+		}
+	}
+	s.Require().True(found, "expected EventParamsSet event")
+}
+
+func (s *MintKeeperTestSuite) TestUpdateInvestorsTeamVestingDelayUnauthorized() {
+	// a whitelist admin is NOT the authority
+	nonGov := sdk.AccAddress(secp256k1.GenPrivKey().PubKey().Address()).String()
+	request := &types.UpdateInvestorsTeamVestingDelayRequest{
+		Authority: nonGov,
+		Months:    6,
+	}
+
+	resp, err := s.msgServer.UpdateInvestorsTeamVestingDelay(s.ctx, request)
+	s.Require().Error(err)
+	s.Require().Nil(resp)
+
+	// even the whitelist admin addr is rejected
+	request2 := &types.UpdateInvestorsTeamVestingDelayRequest{
+		Authority: s.adminAddr,
+		Months:    6,
+	}
+	resp2, err2 := s.msgServer.UpdateInvestorsTeamVestingDelay(s.ctx, request2)
+	s.Require().Error(err2)
+	s.Require().Nil(resp2)
+}
+
+func (s *MintKeeperTestSuite) TestUpdateInvestorsTeamVestingDelayAboveBound() {
+	govAddr := s.mintKeeper.GetAuthority()
+	request := &types.UpdateInvestorsTeamVestingDelayRequest{
+		Authority: govAddr,
+		Months:    types.MaxInvestorsTeamVestingDelayMonths + 1,
+	}
+
+	resp, err := s.msgServer.UpdateInvestorsTeamVestingDelay(s.ctx, request)
+	s.Require().Error(err)
+	s.Require().Nil(resp)
+}
+
+func (s *MintKeeperTestSuite) TestUpdateParamsRejectsDelayChange() {
+	// set a non-zero delay first
+	params, err := s.mintKeeper.Params.Get(s.ctx)
+	s.Require().NoError(err)
+	params.InvestorsTeamVestingDelayMonths = 6
+	s.Require().NoError(s.mintKeeper.Params.Set(s.ctx, params))
+
+	// try to change it via UpdateParams
+	newParams := params
+	newParams.InvestorsTeamVestingDelayMonths = 12
+	request := &types.UpdateParamsRequest{
+		Sender:         s.adminAddr,
+		Params:         newParams,
+		BlocksPerMonth: 525590,
+	}
+	s.emissionsKeeper.EXPECT().IsWhitelistAdmin(s.ctx, s.adminAddr).Return(true, nil)
+	resp, err := s.msgServer.UpdateParams(s.ctx, request)
+	s.Require().Error(err)
+	s.Require().Nil(resp)
+	s.Require().Contains(err.Error(), "MsgUpdateInvestorsTeamVestingDelay")
+}
+
+func (s *MintKeeperTestSuite) TestUpdateParamsAllowsUnchangedDelay() {
+	// set a non-zero delay first
+	params, err := s.mintKeeper.Params.Get(s.ctx)
+	s.Require().NoError(err)
+	params.InvestorsTeamVestingDelayMonths = 6
+	s.Require().NoError(s.mintKeeper.Params.Set(s.ctx, params))
+
+	// same delay in the request should succeed
+	newParams := params
+	request := &types.UpdateParamsRequest{
+		Sender:         s.adminAddr,
+		Params:         newParams,
+		BlocksPerMonth: 525590,
+	}
+	expectedEmissionsParams := emissionstypes.DefaultParams()
+	s.emissionsKeeper.EXPECT().IsWhitelistAdmin(s.ctx, s.adminAddr).Return(true, nil)
+	s.emissionsKeeper.EXPECT().GetParams(s.ctx).Return(expectedEmissionsParams, nil)
+	expectedEmissionsParams.BlocksPerMonth = 525590
+	s.emissionsKeeper.EXPECT().SetParams(s.ctx, expectedEmissionsParams).Return(nil)
+	resp, err := s.msgServer.UpdateParams(s.ctx, request)
+	s.Require().NoError(err)
+	s.Require().NotNil(resp)
+}

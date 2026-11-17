@@ -47,6 +47,15 @@ func (ms msgServiceServer) UpdateParams(ctx context.Context, msg *types.UpdatePa
 		return nil, errors.Wrap(err, "error getting module params")
 	}
 
+	if msg.Params.InvestorsTeamVestingDelayMonths != moduleParams.InvestorsTeamVestingDelayMonths {
+		return nil, errors.Wrapf(
+			types.ErrUnauthorized,
+			"investors_team_vesting_delay_months cannot be changed via UpdateParams (current %d, requested %d); use MsgUpdateInvestorsTeamVestingDelay",
+			moduleParams.InvestorsTeamVestingDelayMonths,
+			msg.Params.InvestorsTeamVestingDelayMonths,
+		)
+	}
+
 	startingEmissionsBlockHeight, err := ms.Keeper.GetStartingEmissionsBlockHeight(ctx)
 	if err != nil {
 		return nil, errors.Wrap(err, "error getting starting emissions block height")
@@ -205,4 +214,36 @@ func getArgsForRecalculate(ctx context.Context, ms msgServiceServer) (
 
 	return sdkCtx, moduleParams, blocksPerMonth, vPercent,
 		ecosystemMintSupplyRemaining, ecosystemBalance, nil
+}
+
+// UpdateInvestorsTeamVestingDelay sets the investors and team vesting delay.
+// Only the module authority (x/gov) may call this.
+func (ms msgServiceServer) UpdateInvestorsTeamVestingDelay(ctx context.Context, msg *types.UpdateInvestorsTeamVestingDelayRequest) (*types.UpdateInvestorsTeamVestingDelayResponse, error) {
+	if msg.Authority != ms.GetAuthority() {
+		return nil, errors.Wrapf(types.ErrUnauthorized, "invalid authority; expected %s, got %s", ms.GetAuthority(), msg.Authority)
+	}
+
+	if err := types.ValidateInvestorsTeamVestingDelayMonths(msg.Months); err != nil {
+		return nil, err
+	}
+
+	params, err := ms.Keeper.Params.Get(ctx)
+	if err != nil {
+		return nil, errors.Wrap(err, "error getting module params")
+	}
+	params.InvestorsTeamVestingDelayMonths = msg.Months
+	if err := params.Validate(); err != nil {
+		return nil, errors.Wrap(err, "error validating params")
+	}
+	if err := ms.Keeper.Params.Set(ctx, params); err != nil {
+		return nil, errors.Wrap(err, "error setting params")
+	}
+
+	blocksPerMonth, err := ms.Keeper.GetParamsBlocksPerMonth(ctx)
+	if err != nil {
+		return nil, errors.Wrap(err, "error getting blocks per month")
+	}
+	types.EmitNewParamsSetEvent(ctx, params, blocksPerMonth)
+
+	return &types.UpdateInvestorsTeamVestingDelayResponse{}, nil
 }

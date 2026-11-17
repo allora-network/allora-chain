@@ -50,6 +50,15 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 						{ProtoField: "sender"},
 					},
 				},
+				{
+					RpcMethod: "UpdateInvestorsTeamVestingDelay",
+					Use:       "update-investors-team-vesting-delay [authority] [months]",
+					Short:     "Set the investors and team vesting delay (gov only)",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "authority"},
+						{ProtoField: "months"},
+					},
+				},
 			},
 			SubCommands:          nil,
 			EnhanceCustomCommand: false,

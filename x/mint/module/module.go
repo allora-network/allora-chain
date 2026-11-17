@@ -21,6 +21,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	gwruntime "github.com/grpc-ecosystem/grpc-gateway/runtime"
 )
 
@@ -228,6 +229,8 @@ func ProvideModule(in ModuleInputs) ModuleOutputs {
 		feeCollectorName = authtypes.FeeCollectorName
 	}
 
+	authority := authtypes.NewModuleAddress(govtypes.ModuleName).String()
+
 	k := keeper.NewKeeper(
 		in.Cdc,
 		in.StoreService,
@@ -236,6 +239,7 @@ func ProvideModule(in ModuleInputs) ModuleOutputs {
 		in.BankKeeper,
 		in.EmissionsKeeper,
 		feeCollectorName,
+		authority,
 	)
 
 	// when no inflation calculation function is provided it will use the default types.DefaultInflationCalculationFn

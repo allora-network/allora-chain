@@ -19,8 +19,9 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	MsgService_UpdateParams_FullMethodName              = "/mint.v5.MsgService/UpdateParams"
-	MsgService_RecalculateTargetEmission_FullMethodName = "/mint.v5.MsgService/RecalculateTargetEmission"
+	MsgService_UpdateParams_FullMethodName                    = "/mint.v5.MsgService/UpdateParams"
+	MsgService_RecalculateTargetEmission_FullMethodName       = "/mint.v5.MsgService/RecalculateTargetEmission"
+	MsgService_UpdateInvestorsTeamVestingDelay_FullMethodName = "/mint.v5.MsgService/UpdateInvestorsTeamVestingDelay"
 )
 
 // MsgServiceClient is the client API for MsgService service.
@@ -29,11 +30,16 @@ const (
 //
 // Msg defines the x/mint Msg service.
 type MsgServiceClient interface {
-	// update params. Only callable by someone on the emissions module whitelist
+	// update params. Only callable by someone on the emissions module whitelist.
+	// InvestorsTeamVestingDelayMonths cannot be changed through this message; use
+	// UpdateInvestorsTeamVestingDelay instead.
 	UpdateParams(ctx context.Context, in *UpdateParamsRequest, opts ...grpc.CallOption) (*UpdateParamsResponse, error)
 	// force a target emission calculation right now. Otherwise waits until the
 	// end of params.BlocksPerMonth
 	RecalculateTargetEmission(ctx context.Context, in *RecalculateTargetEmissionRequest, opts ...grpc.CallOption) (*RecalculateTargetEmissionResponse, error)
+	// UpdateInvestorsTeamVestingDelay sets the investors and team vesting delay.
+	// Only callable by x/gov.
+	UpdateInvestorsTeamVestingDelay(ctx context.Context, in *UpdateInvestorsTeamVestingDelayRequest, opts ...grpc.CallOption) (*UpdateInvestorsTeamVestingDelayResponse, error)
 }
 
 type msgServiceClient struct {
@@ -64,17 +70,32 @@ func (c *msgServiceClient) RecalculateTargetEmission(ctx context.Context, in *Re
 	return out, nil
 }
 
+func (c *msgServiceClient) UpdateInvestorsTeamVestingDelay(ctx context.Context, in *UpdateInvestorsTeamVestingDelayRequest, opts ...grpc.CallOption) (*UpdateInvestorsTeamVestingDelayResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UpdateInvestorsTeamVestingDelayResponse)
+	err := c.cc.Invoke(ctx, MsgService_UpdateInvestorsTeamVestingDelay_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MsgServiceServer is the server API for MsgService service.
 // All implementations must embed UnimplementedMsgServiceServer
 // for forward compatibility.
 //
 // Msg defines the x/mint Msg service.
 type MsgServiceServer interface {
-	// update params. Only callable by someone on the emissions module whitelist
+	// update params. Only callable by someone on the emissions module whitelist.
+	// InvestorsTeamVestingDelayMonths cannot be changed through this message; use
+	// UpdateInvestorsTeamVestingDelay instead.
 	UpdateParams(context.Context, *UpdateParamsRequest) (*UpdateParamsResponse, error)
 	// force a target emission calculation right now. Otherwise waits until the
 	// end of params.BlocksPerMonth
 	RecalculateTargetEmission(context.Context, *RecalculateTargetEmissionRequest) (*RecalculateTargetEmissionResponse, error)
+	// UpdateInvestorsTeamVestingDelay sets the investors and team vesting delay.
+	// Only callable by x/gov.
+	UpdateInvestorsTeamVestingDelay(context.Context, *UpdateInvestorsTeamVestingDelayRequest) (*UpdateInvestorsTeamVestingDelayResponse, error)
 	mustEmbedUnimplementedMsgServiceServer()
 }
 
@@ -90,6 +111,9 @@ func (UnimplementedMsgServiceServer) UpdateParams(context.Context, *UpdateParams
 }
 func (UnimplementedMsgServiceServer) RecalculateTargetEmission(context.Context, *RecalculateTargetEmissionRequest) (*RecalculateTargetEmissionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RecalculateTargetEmission not implemented")
+}
+func (UnimplementedMsgServiceServer) UpdateInvestorsTeamVestingDelay(context.Context, *UpdateInvestorsTeamVestingDelayRequest) (*UpdateInvestorsTeamVestingDelayResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateInvestorsTeamVestingDelay not implemented")
 }
 func (UnimplementedMsgServiceServer) mustEmbedUnimplementedMsgServiceServer() {}
 func (UnimplementedMsgServiceServer) testEmbeddedByValue()                    {}
@@ -148,6 +172,24 @@ func _MsgService_RecalculateTargetEmission_Handler(srv interface{}, ctx context.
 	return interceptor(ctx, in, info, handler)
 }
 
+func _MsgService_UpdateInvestorsTeamVestingDelay_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateInvestorsTeamVestingDelayRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServiceServer).UpdateInvestorsTeamVestingDelay(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MsgService_UpdateInvestorsTeamVestingDelay_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServiceServer).UpdateInvestorsTeamVestingDelay(ctx, req.(*UpdateInvestorsTeamVestingDelayRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // MsgService_ServiceDesc is the grpc.ServiceDesc for MsgService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -162,6 +204,10 @@ var MsgService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "RecalculateTargetEmission",
 			Handler:    _MsgService_RecalculateTargetEmission_Handler,
+		},
+		{
+			MethodName: "UpdateInvestorsTeamVestingDelay",
+			Handler:    _MsgService_UpdateInvestorsTeamVestingDelay_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

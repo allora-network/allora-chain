@@ -131,7 +131,7 @@ func (p Params) Validate() error {
 	if err := validateAFractionValue(p.MaximumMonthlyPercentageYield); err != nil {
 		return err
 	}
-	if err := validateInvestorsTeamVestingDelayMonths(p.InvestorsTeamVestingDelayMonths); err != nil {
+	if err := ValidateInvestorsTeamVestingDelayMonths(p.InvestorsTeamVestingDelayMonths); err != nil {
 		return err
 	}
 	return nil
@@ -141,7 +141,8 @@ func (p Params) Validate() error {
 // delay so a mistyped value cannot push the unlock out indefinitely.
 const MaxInvestorsTeamVestingDelayMonths uint64 = 120
 
-func validateInvestorsTeamVestingDelayMonths(months uint64) error {
+// ValidateInvestorsTeamVestingDelayMonths checks the delay is within bounds.
+func ValidateInvestorsTeamVestingDelayMonths(months uint64) error {
 	if months > MaxInvestorsTeamVestingDelayMonths {
 		return fmt.Errorf(
 			"investors and team vesting delay must be at most %d months: %d",

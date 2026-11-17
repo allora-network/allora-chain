@@ -74,6 +74,7 @@ func (s *MintKeeperTestSuite) SetupTest() {
 		bankKeeper,
 		emissionsKeeper,
 		authtypes.FeeCollectorName,
+		authtypes.NewModuleAddress("gov").String(),
 	)
 	s.stakingKeeper = stakingKeeper
 	s.bankKeeper = bankKeeper

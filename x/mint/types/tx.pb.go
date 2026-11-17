@@ -37,6 +37,8 @@ type UpdateParamsRequest struct {
 	// params defines the x/mint parameters to update.
 	//
 	// NOTE: All parameters must be supplied.
+	// InvestorsTeamVestingDelayMonths in the supplied Params must equal the
+	// stored value. Use UpdateInvestorsTeamVestingDelay to change it.
 	Params Params `protobuf:"bytes,2,opt,name=params,proto3" json:"params"`
 	// allow updating params to also force a recalculation of the target emission
 	RecalculateTargetEmission bool `protobuf:"varint,3,opt,name=recalculate_target_emission,json=recalculateTargetEmission,proto3" json:"recalculate_target_emission,omitempty"`
@@ -227,48 +229,152 @@ func (m *RecalculateTargetEmissionResponse) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_RecalculateTargetEmissionResponse proto.InternalMessageInfo
 
+// UpdateInvestorsTeamVestingDelay sets the investors and team vesting delay.
+// Only the module authority (x/gov) may call this.
+type UpdateInvestorsTeamVestingDelayRequest struct {
+	Authority string `protobuf:"bytes,1,opt,name=authority,proto3" json:"authority,omitempty"`
+	Months    uint64 `protobuf:"varint,2,opt,name=months,proto3" json:"months,omitempty"`
+}
+
+func (m *UpdateInvestorsTeamVestingDelayRequest) Reset() {
+	*m = UpdateInvestorsTeamVestingDelayRequest{}
+}
+func (m *UpdateInvestorsTeamVestingDelayRequest) String() string { return proto.CompactTextString(m) }
+func (*UpdateInvestorsTeamVestingDelayRequest) ProtoMessage()    {}
+func (*UpdateInvestorsTeamVestingDelayRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_4b19af806a9d832c, []int{4}
+}
+func (m *UpdateInvestorsTeamVestingDelayRequest) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *UpdateInvestorsTeamVestingDelayRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_UpdateInvestorsTeamVestingDelayRequest.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *UpdateInvestorsTeamVestingDelayRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_UpdateInvestorsTeamVestingDelayRequest.Merge(m, src)
+}
+func (m *UpdateInvestorsTeamVestingDelayRequest) XXX_Size() int {
+	return m.Size()
+}
+func (m *UpdateInvestorsTeamVestingDelayRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_UpdateInvestorsTeamVestingDelayRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_UpdateInvestorsTeamVestingDelayRequest proto.InternalMessageInfo
+
+func (m *UpdateInvestorsTeamVestingDelayRequest) GetAuthority() string {
+	if m != nil {
+		return m.Authority
+	}
+	return ""
+}
+
+func (m *UpdateInvestorsTeamVestingDelayRequest) GetMonths() uint64 {
+	if m != nil {
+		return m.Months
+	}
+	return 0
+}
+
+// UpdateInvestorsTeamVestingDelayResponse is the response to
+// UpdateInvestorsTeamVestingDelay.
+type UpdateInvestorsTeamVestingDelayResponse struct {
+}
+
+func (m *UpdateInvestorsTeamVestingDelayResponse) Reset() {
+	*m = UpdateInvestorsTeamVestingDelayResponse{}
+}
+func (m *UpdateInvestorsTeamVestingDelayResponse) String() string { return proto.CompactTextString(m) }
+func (*UpdateInvestorsTeamVestingDelayResponse) ProtoMessage()    {}
+func (*UpdateInvestorsTeamVestingDelayResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_4b19af806a9d832c, []int{5}
+}
+func (m *UpdateInvestorsTeamVestingDelayResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *UpdateInvestorsTeamVestingDelayResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_UpdateInvestorsTeamVestingDelayResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *UpdateInvestorsTeamVestingDelayResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_UpdateInvestorsTeamVestingDelayResponse.Merge(m, src)
+}
+func (m *UpdateInvestorsTeamVestingDelayResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *UpdateInvestorsTeamVestingDelayResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_UpdateInvestorsTeamVestingDelayResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_UpdateInvestorsTeamVestingDelayResponse proto.InternalMessageInfo
+
 func init() {
 	proto.RegisterType((*UpdateParamsRequest)(nil), "mint.v5.UpdateParamsRequest")
 	proto.RegisterType((*UpdateParamsResponse)(nil), "mint.v5.UpdateParamsResponse")
 	proto.RegisterType((*RecalculateTargetEmissionRequest)(nil), "mint.v5.RecalculateTargetEmissionRequest")
 	proto.RegisterType((*RecalculateTargetEmissionResponse)(nil), "mint.v5.RecalculateTargetEmissionResponse")
+	proto.RegisterType((*UpdateInvestorsTeamVestingDelayRequest)(nil), "mint.v5.UpdateInvestorsTeamVestingDelayRequest")
+	proto.RegisterType((*UpdateInvestorsTeamVestingDelayResponse)(nil), "mint.v5.UpdateInvestorsTeamVestingDelayResponse")
 }
 
 func init() { proto.RegisterFile("mint/v5/tx.proto", fileDescriptor_4b19af806a9d832c) }
 
 var fileDescriptor_4b19af806a9d832c = []byte{
-	// 485 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x9c, 0x53, 0x31, 0x6f, 0xd3, 0x40,
-	0x18, 0xcd, 0x95, 0x12, 0xe8, 0x81, 0xa0, 0x5c, 0x23, 0x70, 0x0c, 0x18, 0x93, 0x2e, 0x26, 0x52,
-	0x7d, 0x25, 0x51, 0x97, 0x0e, 0x08, 0x22, 0x31, 0xa1, 0x48, 0x95, 0x0b, 0x0b, 0x8b, 0x75, 0x71,
-	0x4e, 0x8e, 0x55, 0xfb, 0xce, 0xdc, 0x5d, 0x42, 0xd9, 0x10, 0x23, 0x13, 0x13, 0x03, 0xbf, 0x80,
-	0x31, 0x03, 0x3f, 0xa2, 0x63, 0x85, 0x18, 0x98, 0x10, 0x4a, 0x86, 0xfc, 0x0d, 0x64, 0xdf, 0x29,
-	0x0a, 0xa8, 0x06, 0xd4, 0xc5, 0xf6, 0xbd, 0xf7, 0xfc, 0x7d, 0xef, 0xde, 0xdd, 0x07, 0x37, 0xb3,
-	0x84, 0x29, 0x3c, 0xd9, 0xc3, 0xea, 0xd8, 0xcf, 0x05, 0x57, 0x1c, 0x5d, 0x2a, 0x10, 0x7f, 0xb2,
-	0x67, 0xdf, 0x20, 0x59, 0xc2, 0x38, 0x2e, 0x9f, 0x9a, 0xb3, 0x6f, 0x45, 0x5c, 0x66, 0x5c, 0xe2,
-	0x4c, 0xc6, 0x78, 0xf2, 0xb0, 0x78, 0x19, 0xa2, 0xa9, 0x89, 0xb0, 0x5c, 0x61, 0xbd, 0x30, 0x54,
-	0x23, 0xe6, 0x31, 0xd7, 0x78, 0xf1, 0x65, 0xd0, 0xad, 0x65, 0xdf, 0x37, 0x39, 0x35, 0xd2, 0xd6,
-	0xa7, 0x35, 0xb8, 0xf5, 0x22, 0x1f, 0x12, 0x45, 0x0f, 0x88, 0x20, 0x99, 0x0c, 0xe8, 0xab, 0x31,
-	0x95, 0x0a, 0xed, 0xc2, 0xba, 0xa4, 0x6c, 0x48, 0x85, 0x05, 0x5c, 0xe0, 0x6d, 0xf4, 0xac, 0xaf,
-	0x5f, 0x76, 0x1a, 0xa6, 0xc9, 0x93, 0xe1, 0x50, 0x50, 0x29, 0x0f, 0x95, 0x48, 0x58, 0x1c, 0x18,
-	0x1d, 0xea, 0xc0, 0x7a, 0x5e, 0x96, 0xb0, 0xd6, 0x5c, 0xe0, 0x5d, 0xe9, 0x5c, 0xf7, 0xcd, 0xae,
-	0x7c, 0x5d, 0xb9, 0xb7, 0x71, 0xf2, 0xe3, 0x5e, 0xed, 0xf3, 0x62, 0xda, 0x06, 0x81, 0x51, 0xa2,
-	0x47, 0xf0, 0xb6, 0xa0, 0x11, 0x49, 0xa3, 0x71, 0x4a, 0x14, 0x0d, 0x15, 0x11, 0x31, 0x55, 0x21,
-	0xcd, 0x12, 0x29, 0x13, 0xce, 0xac, 0x0b, 0x2e, 0xf0, 0x2e, 0x07, 0xcd, 0x15, 0xc9, 0xf3, 0x52,
-	0xf1, 0xd4, 0x08, 0x90, 0x07, 0x37, 0x07, 0x29, 0x8f, 0x8e, 0x64, 0x98, 0x53, 0x11, 0x66, 0x9c,
-	0xa9, 0x91, 0xb5, 0xee, 0x02, 0x6f, 0x3d, 0xb8, 0xa6, 0xf1, 0x03, 0x2a, 0xfa, 0x05, 0xba, 0xdf,
-	0x7d, 0xb7, 0x98, 0xb6, 0x8d, 0xd5, 0xf7, 0x8b, 0x69, 0x7b, 0x9b, 0xa4, 0x29, 0x17, 0x64, 0x27,
-	0x1a, 0x91, 0x84, 0xe1, 0x63, 0x5c, 0x66, 0xd3, 0x97, 0xf1, 0x6a, 0x16, 0xad, 0x9b, 0xb0, 0xf1,
-	0x7b, 0x36, 0x32, 0xe7, 0x4c, 0xd2, 0xd6, 0x47, 0x00, 0xdd, 0xa0, 0xca, 0xd4, 0xb9, 0x13, 0xdc,
-	0x7f, 0xfc, 0x87, 0xc7, 0xdd, 0x0a, 0x8f, 0x95, 0xad, 0x5b, 0xdb, 0xf0, 0xfe, 0x5f, 0x7c, 0x69,
-	0xf7, 0x9d, 0x6f, 0x00, 0xc2, 0xbe, 0x8c, 0x0f, 0xa9, 0x98, 0x24, 0x11, 0x45, 0xcf, 0xe0, 0xd5,
-	0xd5, 0x4d, 0xa2, 0x3b, 0xcb, 0x73, 0x3b, 0xe3, 0x5e, 0xd8, 0x77, 0x2b, 0x58, 0x5d, 0x1b, 0x09,
-	0xd8, 0xac, 0x34, 0x80, 0x1e, 0x2c, 0xff, 0xfd, 0x57, 0x78, 0x76, 0xfb, 0x7f, 0xa4, 0xba, 0xa7,
-	0x7d, 0xf1, 0x6d, 0x71, 0xa7, 0x7a, 0xfd, 0x93, 0x99, 0x03, 0x4e, 0x67, 0x0e, 0xf8, 0x39, 0x73,
-	0xc0, 0x87, 0xb9, 0x53, 0x3b, 0x9d, 0x3b, 0xb5, 0xef, 0x73, 0xa7, 0xf6, 0xb2, 0x1b, 0x27, 0x6a,
-	0x34, 0x1e, 0xf8, 0x11, 0xcf, 0xb0, 0x89, 0x94, 0x51, 0xf5, 0x9a, 0x8b, 0x23, 0x7c, 0x56, 0xc2,
-	0xe5, 0x78, 0x0c, 0xea, 0xe5, 0x7c, 0x74, 0x7f, 0x05, 0x00, 0x00, 0xff, 0xff, 0x3d, 0x60, 0xa8,
-	0x5e, 0xae, 0x03, 0x00, 0x00,
+	// 585 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x9c, 0x54, 0x41, 0x6f, 0x12, 0x41,
+	0x14, 0x66, 0x6a, 0x45, 0x19, 0x8d, 0xd6, 0x2d, 0xa9, 0xb0, 0xea, 0x16, 0x69, 0x62, 0x29, 0x49,
+	0x19, 0x84, 0xd4, 0x03, 0x07, 0xa3, 0x44, 0x0f, 0xc6, 0x90, 0x34, 0xdb, 0xea, 0xc1, 0x0b, 0x19,
+	0x96, 0xc9, 0xb2, 0xe9, 0xee, 0xcc, 0x3a, 0x33, 0x60, 0xb9, 0x19, 0xe3, 0xc9, 0x93, 0x27, 0x0f,
+	0xfe, 0x02, 0x8f, 0x1c, 0xfa, 0x23, 0x7a, 0x6c, 0x3c, 0x99, 0x98, 0x18, 0x03, 0x07, 0xfe, 0x86,
+	0xd9, 0x9d, 0x91, 0x42, 0x53, 0xa4, 0xf1, 0xb2, 0xbb, 0xef, 0xbd, 0x6f, 0xde, 0xfb, 0xbe, 0xf7,
+	0xde, 0x0e, 0x5c, 0x09, 0x3c, 0x2a, 0x51, 0x6f, 0x07, 0xc9, 0xc3, 0x52, 0xc8, 0x99, 0x64, 0xc6,
+	0x95, 0xc8, 0x53, 0xea, 0xed, 0x98, 0xb7, 0x70, 0xe0, 0x51, 0x86, 0xe2, 0xa7, 0x8a, 0x99, 0xb7,
+	0x1d, 0x26, 0x02, 0x26, 0x50, 0x20, 0x5c, 0xd4, 0x7b, 0x18, 0xbd, 0x74, 0x20, 0xab, 0x02, 0xcd,
+	0xd8, 0x42, 0xca, 0xd0, 0xa1, 0xb4, 0xcb, 0x5c, 0xa6, 0xfc, 0xd1, 0x97, 0xf6, 0xae, 0x4e, 0xea,
+	0xf6, 0x43, 0xa2, 0xa1, 0xf9, 0xaf, 0x4b, 0x70, 0xf5, 0x55, 0xd8, 0xc6, 0x92, 0xec, 0x62, 0x8e,
+	0x03, 0x61, 0x93, 0xb7, 0x5d, 0x22, 0xa4, 0x51, 0x86, 0x49, 0x41, 0x68, 0x9b, 0xf0, 0x0c, 0xc8,
+	0x81, 0x42, 0xaa, 0x9e, 0xf9, 0x7e, 0xb4, 0x9d, 0xd6, 0x45, 0x9e, 0xb6, 0xdb, 0x9c, 0x08, 0xb1,
+	0x27, 0xb9, 0x47, 0x5d, 0x5b, 0xe3, 0x8c, 0x0a, 0x4c, 0x86, 0x71, 0x8a, 0xcc, 0x52, 0x0e, 0x14,
+	0xae, 0x55, 0x6e, 0x96, 0xb4, 0xaa, 0x92, 0xca, 0x5c, 0x4f, 0x1d, 0xff, 0x5a, 0x4f, 0x7c, 0x1b,
+	0x0f, 0x8a, 0xc0, 0xd6, 0x48, 0xe3, 0x31, 0xbc, 0xc3, 0x89, 0x83, 0x7d, 0xa7, 0xeb, 0x63, 0x49,
+	0x9a, 0x12, 0x73, 0x97, 0xc8, 0x26, 0x09, 0x3c, 0x21, 0x3c, 0x46, 0x33, 0x97, 0x72, 0xa0, 0x70,
+	0xd5, 0xce, 0x4e, 0x41, 0xf6, 0x63, 0xc4, 0x73, 0x0d, 0x30, 0x0a, 0x70, 0xa5, 0xe5, 0x33, 0xe7,
+	0x40, 0x34, 0x43, 0xc2, 0x9b, 0x01, 0xa3, 0xb2, 0x93, 0x59, 0xce, 0x81, 0xc2, 0xb2, 0x7d, 0x43,
+	0xf9, 0x77, 0x09, 0x6f, 0x44, 0xde, 0x5a, 0xf5, 0xc3, 0x78, 0x50, 0xd4, 0x54, 0x3f, 0x8d, 0x07,
+	0xc5, 0x0d, 0xec, 0xfb, 0x8c, 0xe3, 0x6d, 0xa7, 0x83, 0x3d, 0x8a, 0x0e, 0x51, 0xdc, 0x9b, 0x86,
+	0x70, 0xa7, 0x7b, 0x91, 0x5f, 0x83, 0xe9, 0xd9, 0xde, 0x88, 0x90, 0x51, 0x41, 0xf2, 0x5f, 0x00,
+	0xcc, 0xd9, 0xf3, 0x48, 0xfd, 0x77, 0x07, 0x6b, 0x4f, 0xce, 0x70, 0x2c, 0xcf, 0xe1, 0x38, 0xb7,
+	0x74, 0x7e, 0x03, 0xde, 0xff, 0x07, 0x2f, 0xcd, 0xfe, 0x08, 0xc0, 0x07, 0x4a, 0xd6, 0x0b, 0xda,
+	0x23, 0x42, 0x32, 0x2e, 0xf6, 0x09, 0x0e, 0x5e, 0x13, 0x21, 0x3d, 0xea, 0x3e, 0x23, 0x3e, 0xee,
+	0xff, 0xd5, 0xf0, 0x08, 0xa6, 0x70, 0x57, 0x76, 0x18, 0xf7, 0x64, 0x7f, 0xa1, 0x8c, 0x53, 0xa8,
+	0xb1, 0x06, 0x93, 0xf1, 0x30, 0xd4, 0x2e, 0x2c, 0xdb, 0xda, 0xaa, 0xd5, 0x22, 0x85, 0xa7, 0xb8,
+	0x48, 0xe4, 0xe6, 0x8c, 0xc8, 0xd9, 0x31, 0x4c, 0x53, 0xca, 0x6f, 0xc1, 0xcd, 0x85, 0xac, 0x95,
+	0xc2, 0xca, 0xcf, 0x25, 0x08, 0x1b, 0xc2, 0xdd, 0x23, 0xbc, 0xe7, 0x39, 0xc4, 0x78, 0x09, 0xaf,
+	0x4f, 0x8f, 0xd1, 0xb8, 0x3b, 0xd9, 0xcc, 0x73, 0x36, 0xdf, 0xbc, 0x37, 0x27, 0xaa, 0x72, 0x1b,
+	0x1c, 0x66, 0xe7, 0xb6, 0xd8, 0xd8, 0x9a, 0x9c, 0x5d, 0xb4, 0x1e, 0x66, 0xf1, 0x22, 0x50, 0x5d,
+	0xf3, 0x23, 0x80, 0xeb, 0x0b, 0xb4, 0x1b, 0xe8, 0x0c, 0xed, 0x45, 0xb3, 0x35, 0xcb, 0x17, 0x3f,
+	0xa0, 0x68, 0x98, 0x97, 0xdf, 0x47, 0x3f, 0x6f, 0xbd, 0x71, 0x3c, 0xb4, 0xc0, 0xc9, 0xd0, 0x02,
+	0xbf, 0x87, 0x16, 0xf8, 0x3c, 0xb2, 0x12, 0x27, 0x23, 0x2b, 0xf1, 0x63, 0x64, 0x25, 0xde, 0x54,
+	0x5d, 0x4f, 0x76, 0xba, 0xad, 0x92, 0xc3, 0x02, 0xa4, 0xc7, 0x4a, 0x89, 0x7c, 0xc7, 0xf8, 0x01,
+	0x3a, 0x6f, 0x95, 0xe3, 0x7b, 0xa8, 0x95, 0x8c, 0x2f, 0xa2, 0xea, 0x9f, 0x00, 0x00, 0x00, 0xff,
+	0xff, 0xf0, 0xc6, 0x6f, 0xd9, 0x17, 0x05, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -283,11 +389,16 @@ const _ = grpc.SupportPackageIsVersion4
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type MsgServiceClient interface {
-	// update params. Only callable by someone on the emissions module whitelist
+	// update params. Only callable by someone on the emissions module whitelist.
+	// InvestorsTeamVestingDelayMonths cannot be changed through this message; use
+	// UpdateInvestorsTeamVestingDelay instead.
 	UpdateParams(ctx context.Context, in *UpdateParamsRequest, opts ...grpc.CallOption) (*UpdateParamsResponse, error)
 	// force a target emission calculation right now. Otherwise waits until the
 	// end of params.BlocksPerMonth
 	RecalculateTargetEmission(ctx context.Context, in *RecalculateTargetEmissionRequest, opts ...grpc.CallOption) (*RecalculateTargetEmissionResponse, error)
+	// UpdateInvestorsTeamVestingDelay sets the investors and team vesting delay.
+	// Only callable by x/gov.
+	UpdateInvestorsTeamVestingDelay(ctx context.Context, in *UpdateInvestorsTeamVestingDelayRequest, opts ...grpc.CallOption) (*UpdateInvestorsTeamVestingDelayResponse, error)
 }
 
 type msgServiceClient struct {
@@ -316,13 +427,27 @@ func (c *msgServiceClient) RecalculateTargetEmission(ctx context.Context, in *Re
 	return out, nil
 }
 
+func (c *msgServiceClient) UpdateInvestorsTeamVestingDelay(ctx context.Context, in *UpdateInvestorsTeamVestingDelayRequest, opts ...grpc.CallOption) (*UpdateInvestorsTeamVestingDelayResponse, error) {
+	out := new(UpdateInvestorsTeamVestingDelayResponse)
+	err := c.cc.Invoke(ctx, "/mint.v5.MsgService/UpdateInvestorsTeamVestingDelay", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MsgServiceServer is the server API for MsgService service.
 type MsgServiceServer interface {
-	// update params. Only callable by someone on the emissions module whitelist
+	// update params. Only callable by someone on the emissions module whitelist.
+	// InvestorsTeamVestingDelayMonths cannot be changed through this message; use
+	// UpdateInvestorsTeamVestingDelay instead.
 	UpdateParams(context.Context, *UpdateParamsRequest) (*UpdateParamsResponse, error)
 	// force a target emission calculation right now. Otherwise waits until the
 	// end of params.BlocksPerMonth
 	RecalculateTargetEmission(context.Context, *RecalculateTargetEmissionRequest) (*RecalculateTargetEmissionResponse, error)
+	// UpdateInvestorsTeamVestingDelay sets the investors and team vesting delay.
+	// Only callable by x/gov.
+	UpdateInvestorsTeamVestingDelay(context.Context, *UpdateInvestorsTeamVestingDelayRequest) (*UpdateInvestorsTeamVestingDelayResponse, error)
 }
 
 // UnimplementedMsgServiceServer can be embedded to have forward compatible implementations.
@@ -334,6 +459,9 @@ func (*UnimplementedMsgServiceServer) UpdateParams(ctx context.Context, req *Upd
 }
 func (*UnimplementedMsgServiceServer) RecalculateTargetEmission(ctx context.Context, req *RecalculateTargetEmissionRequest) (*RecalculateTargetEmissionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RecalculateTargetEmission not implemented")
+}
+func (*UnimplementedMsgServiceServer) UpdateInvestorsTeamVestingDelay(ctx context.Context, req *UpdateInvestorsTeamVestingDelayRequest) (*UpdateInvestorsTeamVestingDelayResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateInvestorsTeamVestingDelay not implemented")
 }
 
 func RegisterMsgServiceServer(s grpc1.Server, srv MsgServiceServer) {
@@ -376,6 +504,24 @@ func _MsgService_RecalculateTargetEmission_Handler(srv interface{}, ctx context.
 	return interceptor(ctx, in, info, handler)
 }
 
+func _MsgService_UpdateInvestorsTeamVestingDelay_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateInvestorsTeamVestingDelayRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServiceServer).UpdateInvestorsTeamVestingDelay(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/mint.v5.MsgService/UpdateInvestorsTeamVestingDelay",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServiceServer).UpdateInvestorsTeamVestingDelay(ctx, req.(*UpdateInvestorsTeamVestingDelayRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var MsgService_serviceDesc = _MsgService_serviceDesc
 var _MsgService_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "mint.v5.MsgService",
@@ -388,6 +534,10 @@ var _MsgService_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "RecalculateTargetEmission",
 			Handler:    _MsgService_RecalculateTargetEmission_Handler,
+		},
+		{
+			MethodName: "UpdateInvestorsTeamVestingDelay",
+			Handler:    _MsgService_UpdateInvestorsTeamVestingDelay_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
@@ -525,6 +675,64 @@ func (m *RecalculateTargetEmissionResponse) MarshalToSizedBuffer(dAtA []byte) (i
 	return len(dAtA) - i, nil
 }
 
+func (m *UpdateInvestorsTeamVestingDelayRequest) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *UpdateInvestorsTeamVestingDelayRequest) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *UpdateInvestorsTeamVestingDelayRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.Months != 0 {
+		i = encodeVarintTx(dAtA, i, uint64(m.Months))
+		i--
+		dAtA[i] = 0x10
+	}
+	if len(m.Authority) > 0 {
+		i -= len(m.Authority)
+		copy(dAtA[i:], m.Authority)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.Authority)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *UpdateInvestorsTeamVestingDelayResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *UpdateInvestorsTeamVestingDelayResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *UpdateInvestorsTeamVestingDelayResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	return len(dAtA) - i, nil
+}
+
 func encodeVarintTx(dAtA []byte, offset int, v uint64) int {
 	offset -= sovTx(v)
 	base := offset
@@ -580,6 +788,31 @@ func (m *RecalculateTargetEmissionRequest) Size() (n int) {
 }
 
 func (m *RecalculateTargetEmissionResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	return n
+}
+
+func (m *UpdateInvestorsTeamVestingDelayRequest) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Authority)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	if m.Months != 0 {
+		n += 1 + sovTx(uint64(m.Months))
+	}
+	return n
+}
+
+func (m *UpdateInvestorsTeamVestingDelayResponse) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -907,6 +1140,157 @@ func (m *RecalculateTargetEmissionResponse) Unmarshal(dAtA []byte) error {
 		}
 		if fieldNum <= 0 {
 			return fmt.Errorf("proto: RecalculateTargetEmissionResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *UpdateInvestorsTeamVestingDelayRequest) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: UpdateInvestorsTeamVestingDelayRequest: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: UpdateInvestorsTeamVestingDelayRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Authority", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Authority = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Months", wireType)
+			}
+			m.Months = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.Months |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *UpdateInvestorsTeamVestingDelayResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: UpdateInvestorsTeamVestingDelayResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: UpdateInvestorsTeamVestingDelayResponse: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		default:
