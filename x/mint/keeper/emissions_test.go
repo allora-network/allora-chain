@@ -991,4 +991,37 @@ func (s *MintKeeperTestSuite) TestGetLockedVestingTokensInvestorsTeamDelay() {
 		val := s.mintKeeper.GetMonthsAlreadyUnlocked(s.ctx)
 		s.Require().Equal(cosmosMath.NewInt(40).String(), val.String())
 	})
+
+	// Hard-coded independent expected values for the month 17→18 delayed cliff
+	// step (delay=6). Preseed is non-zero so the same formula is not reused.
+	s.Run("hardcoded cliff step with nonzero preseed", func() {
+		// Investors = 310.5%, preseed = 5% → total investors = 310.5M ALLO.
+		// Team = 17.5% → 175M ALLO.
+		// Max supply = 1e9 ALLO = 1e27 uallo.
+		// At month 18 with delay 6: effective month = 12.
+		// Linear vesting from cliff=12 to end=36: (36-12)/36 = 2/3 locked.
+		// Investors locked = 310500000 * 2/3 * 1e18 = 207000000000000000000000000 uallo
+		// Preseed locked  = 50000000  * 2/3 * 1e18 = 33333333333333333000000000  uallo
+		// Team locked     = 175000000 * 2/3 * 1e18 = 116666666666666666666666666 uallo
+
+		p := generateNewMintParams()
+		p.InvestorsTeamVestingDelayMonths = 6
+		p.InvestorsPreseedPercentOfTotalSupply = cosmosMath.LegacyMustNewDecFromStr("0.05")
+
+		// Month 17 (effective 11): everything fully locked.
+		_, preseed17, investors17, team17, _, _, _, err := keeper.GetLockedVestingTokens(
+			blocksPerMonth, cosmosMath.NewIntFromUint64(blocksPerMonth*17), p, cosmosMath.NewInt(17))
+		s.Require().NoError(err)
+		s.Require().Equal("50000000000000000000000000", preseed17.String(), "preseed month 17")
+		s.Require().Equal("310500000000000000000000000", investors17.String(), "investors month 17")
+		s.Require().Equal("175000000000000000000000000", team17.String(), "team month 17")
+
+		// Month 18 (effective 12): 2/3 locked.
+		_, preseed18, investors18, team18, _, _, _, err := keeper.GetLockedVestingTokens(
+			blocksPerMonth, cosmosMath.NewIntFromUint64(blocksPerMonth*18), p, cosmosMath.NewInt(18))
+		s.Require().NoError(err)
+		s.Require().Equal("33333333333333333333333333", preseed18.String(), "preseed month 18")
+		s.Require().Equal("207000000000000000000000000", investors18.String(), "investors month 18")
+		s.Require().Equal("116666666666666666666666666", team18.String(), "team month 18")
+	})
 }
