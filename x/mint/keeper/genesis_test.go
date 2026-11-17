@@ -55,7 +55,7 @@ func (s *GenesisTestSuite) SetupTest() {
 	emissionsKeeper := minttestutil.NewMockEmissionsKeeper(ctrl)
 	s.accountKeeper = accountKeeper
 	accountKeeper.EXPECT().GetModuleAddress(minterAcc.Name).Return(minterAcc.GetAddress())
-	accountKeeper.EXPECT().GetModuleAccount(s.sdkCtx, minterAcc.Name).Return(minterAcc)
+	accountKeeper.EXPECT().GetModuleAccount(s.sdkCtx, minterAcc.Name).Return(minterAcc).AnyTimes()
 
 	s.keeper = keeper.NewKeeper(s.cdc, runtime.NewKVStoreService(key), stakingKeeper, accountKeeper, bankKeeper, emissionsKeeper, "", authtypes.NewModuleAddress("gov").String())
 }
@@ -111,4 +111,22 @@ func (s *GenesisTestSuite) TestImportExportGenesis() {
 	s.Require().Equal(genesisState.Params, genesisState2.Params)
 	s.Require().True(genesisState.PreviousRewardEmissionPerUnitStakedToken.Equal(genesisState2.PreviousRewardEmissionPerUnitStakedToken))
 	s.Require().True(genesisState.EcosystemTokensMinted.Equal(genesisState2.EcosystemTokensMinted))
+}
+
+func (s *GenesisTestSuite) TestImportExportGenesisWithDelayAndHighMonthCounter() {
+	genesisState := types.DefaultGenesisState()
+	genesisState.Params.InvestorsTeamVestingDelayMonths = 6
+	genesisState.MonthsUnlocked = math.NewInt(40)
+
+	s.keeper.InitGenesis(s.sdkCtx, s.accountKeeper, genesisState)
+
+	exported := s.keeper.ExportGenesis(s.sdkCtx)
+	s.Require().Equal(uint64(6), exported.Params.InvestorsTeamVestingDelayMonths)
+	s.Require().True(genesisState.MonthsUnlocked.Equal(exported.MonthsUnlocked),
+		"expected %s, got %s", genesisState.MonthsUnlocked, exported.MonthsUnlocked)
+
+	// re-import
+	s.keeper.InitGenesis(s.sdkCtx, s.accountKeeper, exported)
+	reExported := s.keeper.ExportGenesis(s.sdkCtx)
+	s.Require().True(exported.MonthsUnlocked.Equal(reExported.MonthsUnlocked))
 }

@@ -52,8 +52,8 @@ func ValidateGenesis(data GenesisState) error {
 		return ErrInvalidMonthsUnlocked
 	}
 
-	thirtySix := math.NewInt(36)
-	if data.MonthsUnlocked.GT(thirtySix) {
+	maxMonths := math.NewIntFromUint64(36 + data.Params.InvestorsTeamVestingDelayMonths)
+	if data.MonthsUnlocked.GT(maxMonths) {
 		return ErrInvalidMonthsUnlocked
 	}
 

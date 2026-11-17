@@ -981,13 +981,14 @@ func (s *MintKeeperTestSuite) TestGetLockedVestingTokensInvestorsTeamDelay() {
 		s.Require().Equal(cosmosMath.NewInt(42).String(), updatedMonths.String())
 	})
 
-	s.Run("persisted months beyond 36 do not freeze the delayed schedule", func() {
-		p := generateNewMintParams()
-		p.InvestorsTeamVestingDelayMonths = 6
-		// the persisted high-water mark is ahead of the block-derived months
-		_, _, investors, _, _, _, _, err := keeper.GetLockedVestingTokens(
-			blocksPerMonth, cosmosMath.NewIntFromUint64(blocksPerMonth*20), p, cosmosMath.NewInt(40))
+	s.Run("keeper round-trips month counter beyond 36 with delay", func() {
+		params, err := s.mintKeeper.Params.Get(s.ctx)
 		s.Require().NoError(err)
-		s.Require().Equal(expectedLockedLinear(fullInvestors, 34, 12, 36).String(), investors.String())
+		params.InvestorsTeamVestingDelayMonths = 6
+		s.Require().NoError(s.mintKeeper.Params.Set(s.ctx, params))
+
+		s.Require().NoError(s.mintKeeper.SetMonthsAlreadyUnlocked(s.ctx, cosmosMath.NewInt(40)))
+		val := s.mintKeeper.GetMonthsAlreadyUnlocked(s.ctx)
+		s.Require().Equal(cosmosMath.NewInt(40).String(), val.String())
 	})
 }

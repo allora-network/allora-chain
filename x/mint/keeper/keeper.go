@@ -118,14 +118,19 @@ func (k Keeper) AddEcosystemTokensMinted(ctx context.Context, minted math.Int) e
 	return k.EcosystemTokensMinted.Set(ctx, newTotal)
 }
 
-// Setter for the number of months unlocked
-// this function coerces values to be between 0 and 36
+// SetMonthsAlreadyUnlocked stores the high-water month counter.
+// Values are clamped to [0, 36+delay].
 func (k Keeper) SetMonthsAlreadyUnlocked(ctx context.Context, months math.Int) error {
 	if months.IsNegative() {
 		months = math.ZeroInt()
 	}
-	if months.GT(math.NewInt(36)) {
-		months = math.NewInt(36)
+	params, err := k.Params.Get(ctx)
+	if err != nil {
+		return err
+	}
+	maxMonths := math.NewIntFromUint64(36 + params.InvestorsTeamVestingDelayMonths)
+	if months.GT(maxMonths) {
+		months = maxMonths
 	}
 	return k.MonthsUnlocked.Set(ctx, months)
 }
@@ -288,13 +293,9 @@ func (k Keeper) GetEmissionsKeeper() types.EmissionsKeeper {
 	return k.emissionsKeeper
 }
 
-// Getter for the number of months unlocked
-// this Getter coerces values to be between 0 and 36
-// rather than throwing errors for invalid values stored in the keeper
+// GetMonthsAlreadyUnlocked returns the stored month counter, clamped to [0, 36+delay].
+// If params cannot be read the zero value is returned.
 func (k Keeper) GetMonthsAlreadyUnlocked(ctx context.Context) math.Int {
-	// 36 months is the maximum number of months that can be unlocked,
-	// since tokens are on a three year vesting cycle
-	thirtySix := math.NewInt(36)
 	val, err := k.MonthsUnlocked.Get(ctx)
 	if err != nil {
 		return math.ZeroInt()
@@ -302,8 +303,13 @@ func (k Keeper) GetMonthsAlreadyUnlocked(ctx context.Context) math.Int {
 	if val.IsNegative() {
 		return math.ZeroInt()
 	}
-	if val.GT(thirtySix) {
-		return thirtySix
+	params, err := k.Params.Get(ctx)
+	if err != nil {
+		return math.ZeroInt()
+	}
+	maxMonths := math.NewIntFromUint64(36 + params.InvestorsTeamVestingDelayMonths)
+	if val.GT(maxMonths) {
+		return maxMonths
 	}
 	return val
 }

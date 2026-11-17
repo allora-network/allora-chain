@@ -432,3 +432,36 @@ func (s *MintKeeperTestSuite) TestUpdateParamsAllowsUnchangedDelay() {
 	s.Require().NoError(err)
 	s.Require().NotNil(resp)
 }
+
+func (s *MintKeeperTestSuite) TestSetGetMonthsAlreadyUnlockedWithDelay() {
+	// set delay to 6
+	params, err := s.mintKeeper.Params.Get(s.ctx)
+	s.Require().NoError(err)
+	params.InvestorsTeamVestingDelayMonths = 6
+	s.Require().NoError(s.mintKeeper.Params.Set(s.ctx, params))
+
+	// set months to 40 (within 36+6=42)
+	s.Require().NoError(s.mintKeeper.SetMonthsAlreadyUnlocked(s.ctx, sdkmath.NewInt(40)))
+	val := s.mintKeeper.GetMonthsAlreadyUnlocked(s.ctx)
+	s.Require().Equal(sdkmath.NewInt(40).String(), val.String())
+
+	// set months to 43 (beyond 36+6=42), should be clamped
+	s.Require().NoError(s.mintKeeper.SetMonthsAlreadyUnlocked(s.ctx, sdkmath.NewInt(43)))
+	val = s.mintKeeper.GetMonthsAlreadyUnlocked(s.ctx)
+	s.Require().Equal(sdkmath.NewInt(42).String(), val.String())
+
+	// set months to -1, should be clamped to 0
+	s.Require().NoError(s.mintKeeper.SetMonthsAlreadyUnlocked(s.ctx, sdkmath.NewInt(-1)))
+	val = s.mintKeeper.GetMonthsAlreadyUnlocked(s.ctx)
+	s.Require().Equal(sdkmath.ZeroInt().String(), val.String())
+}
+
+func (s *MintKeeperTestSuite) TestValidateGenesisAcceptsDelayedMonths() {
+	gs := types.DefaultGenesisState()
+	gs.Params.InvestorsTeamVestingDelayMonths = 6
+	gs.MonthsUnlocked = sdkmath.NewInt(42)
+	s.Require().NoError(types.ValidateGenesis(*gs))
+
+	gs.MonthsUnlocked = sdkmath.NewInt(43)
+	s.Require().Error(types.ValidateGenesis(*gs))
+}
