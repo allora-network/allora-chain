@@ -55,6 +55,13 @@ func (k *WhitelistsKeeper) InitGenesis(ctx context.Context, data *types.GenesisS
 		}
 	}
 
+	// globalForecasterWhitelist
+	for _, address := range data.GlobalForecasterWhitelist {
+		if err := k.AddToGlobalForecasterWhitelist(ctx, address); err != nil {
+			return errors.Wrap(err, "error setting globalForecasterWhitelist")
+		}
+	}
+
 	// topicCreatorWhitelist
 	for _, address := range data.TopicCreatorWhitelist {
 		if err := k.AddToTopicCreatorWhitelist(ctx, address); err != nil {
@@ -91,6 +98,22 @@ func (k *WhitelistsKeeper) InitGenesis(ctx context.Context, data *types.GenesisS
 	for _, topicId := range data.TopicReputerWhitelistEnabled {
 		if err := k.EnableTopicReputerWhitelist(ctx, topicId); err != nil {
 			return errors.Wrap(err, "error setting topicReputerWhitelistEnabled")
+		}
+	}
+
+	// topicForecasterWhitelist
+	for _, topicAndActorId := range data.TopicForecasterWhitelist {
+		if topicAndActorId != nil {
+			if err := k.AddToTopicForecasterWhitelist(ctx, topicAndActorId.TopicId, topicAndActorId.ActorId); err != nil {
+				return errors.Wrap(err, "error setting topicForecasterWhitelist")
+			}
+		}
+	}
+
+	// topicForecasterWhitelistEnabled
+	for _, topicId := range data.TopicForecasterWhitelistEnabled {
+		if err := k.EnableTopicForecasterWhitelist(ctx, topicId); err != nil {
+			return errors.Wrap(err, "error setting topicForecasterWhitelistEnabled")
 		}
 	}
 
@@ -182,6 +205,20 @@ func (k *WhitelistsKeeper) ExportGenesis(ctx context.Context, data *types.Genesi
 	}
 	data.GlobalAdminWhitelist = globalAdminWhitelist
 
+	globalForecasterWhitelist := make([]string, 0)
+	globalForecasterWhitelistIter, err := k.globalForecasterWhitelist.Iterate(ctx, nil)
+	if err != nil {
+		return errors.Wrap(err, "failed to iterate global forecaster whitelist")
+	}
+	for ; globalForecasterWhitelistIter.Valid(); globalForecasterWhitelistIter.Next() {
+		key, err := globalForecasterWhitelistIter.Key()
+		if err != nil {
+			return errors.Wrap(err, "failed to get key: globalForecasterWhitelistIter")
+		}
+		globalForecasterWhitelist = append(globalForecasterWhitelist, key)
+	}
+	data.GlobalForecasterWhitelist = globalForecasterWhitelist
+
 	topicCreatorWhitelist := make([]string, 0)
 	topicCreatorWhitelistIter, err := k.topicCreatorWhitelist.Iterate(ctx, nil)
 	if err != nil {
@@ -257,6 +294,37 @@ func (k *WhitelistsKeeper) ExportGenesis(ctx context.Context, data *types.Genesi
 		topicReputerWhitelistEnabled = append(topicReputerWhitelistEnabled, key)
 	}
 	data.TopicReputerWhitelistEnabled = topicReputerWhitelistEnabled
+
+	topicForecasterWhitelist := make([]*types.TopicAndActorId, 0)
+	topicForecasterWhitelistIter, err := k.topicForecasterWhitelist.Iterate(ctx, nil)
+	if err != nil {
+		return errors.Wrap(err, "failed to iterate topic forecaster whitelist")
+	}
+	for ; topicForecasterWhitelistIter.Valid(); topicForecasterWhitelistIter.Next() {
+		keyValue, err := topicForecasterWhitelistIter.Key()
+		if err != nil {
+			return errors.Wrap(err, "failed to get key value: topicForecasterWhitelistIter")
+		}
+		topicForecasterWhitelist = append(topicForecasterWhitelist, &types.TopicAndActorId{
+			TopicId: keyValue.K1(),
+			ActorId: keyValue.K2(),
+		})
+	}
+	data.TopicForecasterWhitelist = topicForecasterWhitelist
+
+	topicForecasterWhitelistEnabled := make([]uint64, 0)
+	topicForecasterWhitelistEnabledIter, err := k.topicForecasterWhitelistEnabled.Iterate(ctx, nil)
+	if err != nil {
+		return errors.Wrap(err, "failed to iterate topic forecaster whitelist enabled")
+	}
+	for ; topicForecasterWhitelistEnabledIter.Valid(); topicForecasterWhitelistEnabledIter.Next() {
+		key, err := topicForecasterWhitelistEnabledIter.Key()
+		if err != nil {
+			return errors.Wrap(err, "failed to get key: topicForecasterWhitelistEnabledIter")
+		}
+		topicForecasterWhitelistEnabled = append(topicForecasterWhitelistEnabled, key)
+	}
+	data.TopicForecasterWhitelistEnabled = topicForecasterWhitelistEnabled
 
 	return nil
 }
