@@ -544,14 +544,20 @@ func validateCRewardForecast(i alloraMath.Dec) error {
 }
 
 // maximum number of outstanding nonces for worker requests per topic from the chain
-// Should be zero or positive. Enforced by uint type
-func validateMaxUnfulfilledWorkerRequests(_ uint64) error {
+// Must be greater than zero: a zero cap evicts every stored nonce and each new nonce immediately.
+func validateMaxUnfulfilledWorkerRequests(i uint64) error {
+	if i == 0 {
+		return ErrValidationMustBeGreaterthanZero
+	}
 	return nil
 }
 
 // maximum number of outstanding nonces for reputer requests per topic from the chain
-// Should be zero or positive. Enforced by uint type
-func validateMaxUnfulfilledReputerRequests(_ uint64) error {
+// Must be greater than zero: a zero cap evicts every stored nonce and each new nonce immediately.
+func validateMaxUnfulfilledReputerRequests(i uint64) error {
+	if i == 0 {
+		return ErrValidationMustBeGreaterthanZero
+	}
 	return nil
 }
 
