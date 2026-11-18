@@ -1,0 +1,69 @@
+# Single-validator Allora localnet with a fresh genesis. See README.md.
+#
+#   docker compose up -d          start (first run creates the genesis)
+#   docker compose logs -f        follow the validator
+#   docker compose down           stop, keep the chain
+#   docker compose down -v        stop and wipe the chain
+#
+# Pick the image with CHAIN_IMAGE / CHAIN_VERSION (env or .env, see
+# .env.example): Docker Hub releases by default, private GHCR dev builds, or
+# an image you built locally.
+name: allora-localnet
+
+x-chain-image: &chain-image
+  image: ${CHAIN_IMAGE:-alloranetwork/allora-chain}:${CHAIN_VERSION:-v0.17.2}
+  # Published images are linux/amd64 only (Apple Silicon runs them emulated).
+  # Set CHAIN_PLATFORM=linux/arm64 for an image you built on an arm64 host.
+  platform: ${CHAIN_PLATFORM:-linux/amd64}
+
+services:
+  # One-shot: writes the genesis, keys and config into the volume, then exits.
+  # Does nothing if the volume already holds a chain.
+  init:
+    <<: *chain-image
+    entrypoint: ["bash", "/localnet/init.sh"]
+    environment:
+      HOME: /data
+      CHAIN_ID: ${CHAIN_ID:-allora-localnet-1}
+    volumes:
+      - data:/data
+      - ./init.sh:/localnet/init.sh:ro
+    restart: "no"
+
+  validator:
+    <<: *chain-image
+    depends_on:
+      init:
+        condition: service_completed_successfully
+    environment:
+      HOME: /data
+    command:
+      - start
+      - --minimum-gas-prices=10uallo
+      - --rpc.laddr=tcp://0.0.0.0:26657
+      - --grpc.address=0.0.0.0:9090
+      - --api.enable
+      - --api.address=tcp://0.0.0.0:1317
+      - --api.enabled-unsafe-cors
+      - --log_level=${LOG_LEVEL:-info}
+    volumes:
+      - data:/data
+    ports:
+      # Loopback only by default; LOCALNET_BIND=0.0.0.0 exposes it on the LAN.
+      - ${LOCALNET_BIND:-127.0.0.1}:26657:26657  # CometBFT RPC
+      - ${LOCALNET_BIND:-127.0.0.1}:1317:1317    # REST (LCD)
+      - ${LOCALNET_BIND:-127.0.0.1}:9090:9090    # gRPC (plaintext)
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - >-
+          curl -sf http://localhost:26657/status
+          | jq -e '.result.sync_info.latest_block_height | tonumber > 0'
+      interval: 5s
+      timeout: 3s
+      retries: 3
+      start_period: 30s
+    restart: unless-stopped
+
+volumes:
+  data:
