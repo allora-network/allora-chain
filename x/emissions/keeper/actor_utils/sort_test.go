@@ -129,6 +129,7 @@ func TestFindTopNByScoreDescTieBreakIsPinned(t *testing.T) {
 		{seed: 2, want: []string{"erin", "dave", "carol", "alice", "bob"}},
 		{seed: 42, want: []string{"dave", "carol", "bob", "alice", "erin"}},
 		{seed: 1000, want: []string{"alice", "carol", "bob", "dave", "erin"}},
+		{seed: -1, want: []string{"erin", "bob", "dave", "alice", "carol"}},
 	}
 	for _, tc := range tests {
 		t.Run(strconv.FormatInt(tc.seed, 10), func(t *testing.T) {
@@ -172,6 +173,54 @@ func TestFindTopNByScoreDescSeedChoosesTieWinner(t *testing.T) {
 	top1000, _, _ := actorutils.FindTopNByScoreDesc(1, tiedScores(addresses, 7), 1000)
 	require.Equal(t, "erin", top1[0].Address)
 	require.Equal(t, "alice", top1000[0].Address)
+}
+
+func TestFindTopNByScoreDescDegenerateInputs(t *testing.T) {
+	tests := []struct {
+		name      string
+		n         uint64
+		scores    []emissionstypes.Score
+		wantTop   []string
+		wantAll   []string
+		wantIsTop []string
+	}{
+		{
+			name:      "empty input",
+			n:         3,
+			scores:    []emissionstypes.Score{},
+			wantTop:   []string{},
+			wantAll:   []string{},
+			wantIsTop: []string{},
+		},
+		{
+			name:      "duplicate identical entries",
+			n:         3,
+			scores:    tiedScores([]string{"alice", "alice"}, 7),
+			wantTop:   []string{"alice", "alice"},
+			wantAll:   []string{"alice", "alice"},
+			wantIsTop: []string{"alice"},
+		},
+		{
+			name:      "zero n",
+			n:         0,
+			scores:    tiedScores([]string{"alice", "bob"}, 7),
+			wantTop:   []string{},
+			wantAll:   []string{"bob", "alice"},
+			wantIsTop: []string{},
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			top, all, isTop := actorutils.FindTopNByScoreDesc(tc.n, tc.scores, 42)
+			require.Equal(t, tc.wantTop, sortedAddresses(top))
+			require.Equal(t, tc.wantAll, sortedAddresses(all))
+			require.Len(t, isTop, len(tc.wantIsTop))
+			for _, address := range tc.wantIsTop {
+				require.Contains(t, isTop, address)
+			}
+		})
+	}
 }
 
 // helper function that handles the expected types of the top actors
