@@ -721,6 +721,13 @@ func (k *WorkerKeeper) commitEvictionInferencePlan(
 	if err := k.InsertInference(ctx, topic.Id, *inference); err != nil {
 		return errorsmod.Wrap(err, "error inserting inference")
 	}
+	types.EmitNewInferenceEvictedFromActiveSetEvent(
+		ctx,
+		topic.Id,
+		nonceBlockHeight,
+		plan.LowestEmaScore.Address,
+		inference.Inferer,
+	)
 	return nil
 }
 
@@ -852,29 +859,32 @@ func (k *WorkerKeeper) InsertActiveInferences(
 	return k.allInferences.Set(ctx, key, inferences)
 }
 
-// Append individual forecast for a topic/block
+// Append individual forecast for a topic/block. Returns the sortition outcome
+// for the forecast: ADMITTED when it was stored in the active set,
+// NOT_ADMITTED when only score/liveness side effects were recorded, and
+// UNSPECIFIED together with any error.
 func (k *WorkerKeeper) AppendForecast(
 	ctx sdk.Context,
 	topic types.Topic,
 	nonceBlockHeight BlockHeight,
 	forecast *types.Forecast,
 	maxTopForecastersToReward uint64,
-) error {
+) (types.PayloadAdmissionOutcome, error) {
 	// Check if the forecaster already submitted the forecast
 	isActive, err := k.IsActiveForecaster(ctx, topic.Id, forecast.Forecaster)
 	if err != nil {
-		return errorsmod.Wrap(err, "error checking if forecaster already submitted forecast")
+		return types.PayloadAdmissionOutcome_PAYLOAD_ADMISSION_OUTCOME_UNSPECIFIED, errorsmod.Wrap(err, "error checking if forecaster already submitted forecast")
 	} else if isActive {
-		return errors.New("forecast already submitted")
+		return types.PayloadAdmissionOutcome_PAYLOAD_ADMISSION_OUTCOME_UNSPECIFIED, errors.New("forecast already submitted")
 	}
 
 	previousEmaScore, err := k.scoresKeeper.GetForecasterScoreEma(ctx, topic.Id, forecast.Forecaster)
 	if err != nil {
-		return errorsmod.Wrapf(err, "Error getting forecaster score ema")
+		return types.PayloadAdmissionOutcome_PAYLOAD_ADMISSION_OUTCOME_UNSPECIFIED, errorsmod.Wrapf(err, "Error getting forecaster score ema")
 	}
 	// Only calc and save if there's a new update
 	if previousEmaScore.BlockHeight >= nonceBlockHeight {
-		return types.ErrCantUpdateEmaMoreThanOncePerWindow
+		return types.PayloadAdmissionOutcome_PAYLOAD_ADMISSION_OUTCOME_UNSPECIFIED, types.ErrCantUpdateEmaMoreThanOncePerWindow
 	}
 
 	// Check if the forecaster is new and set initial EMA score
@@ -883,7 +893,7 @@ func (k *WorkerKeeper) AppendForecast(
 		firstSubmission = true
 		initialEmaScore, err := k.scoresKeeper.GetTopicInitialForecasterEmaScore(ctx, topic.Id)
 		if err != nil {
-			return errorsmod.Wrap(err, "error getting topic initial ema score")
+			return types.PayloadAdmissionOutcome_PAYLOAD_ADMISSION_OUTCOME_UNSPECIFIED, errorsmod.Wrap(err, "error getting topic initial ema score")
 		}
 		err = k.scoresKeeper.SetForecasterScoreEma(ctx, topic.Id, forecast.Forecaster, types.Score{
 			TopicId:     topic.Id,
@@ -892,31 +902,31 @@ func (k *WorkerKeeper) AppendForecast(
 			Score:       initialEmaScore,
 		})
 		if err != nil {
-			return errorsmod.Wrap(err, "error setting forecaster score ema")
+			return types.PayloadAdmissionOutcome_PAYLOAD_ADMISSION_OUTCOME_UNSPECIFIED, errorsmod.Wrap(err, "error setting forecaster score ema")
 		}
 	} else {
 		// If not new: Penalise the forecaster if needed
 		previousEmaScore, err = k.actorPenaltiesKeeper.ApplyLivenessPenaltyToForecaster(ctx, topic, nonceBlockHeight, previousEmaScore)
 		if err != nil {
-			return errorsmod.Wrap(err, "error trying to penalise forecaster")
+			return types.PayloadAdmissionOutcome_PAYLOAD_ADMISSION_OUTCOME_UNSPECIFIED, errorsmod.Wrap(err, "error trying to penalise forecaster")
 		}
 
 		// Update score nonce for liveness tracking
 		previousEmaScore.BlockHeight = nonceBlockHeight
 		err = k.scoresKeeper.SetForecasterScoreEma(ctx, topic.Id, previousEmaScore.Address, previousEmaScore)
 		if err != nil {
-			return errorsmod.Wrap(err, "error setting penalised forecaster score ema")
+			return types.PayloadAdmissionOutcome_PAYLOAD_ADMISSION_OUTCOME_UNSPECIFIED, errorsmod.Wrap(err, "error setting penalised forecaster score ema")
 		}
 	}
 
 	lowestEmaScore, _, err := k.scoresKeeper.GetLowestForecasterScoreEma(ctx, topic.Id)
 	if err != nil {
-		return errorsmod.Wrap(err, "error getting lowest forecaster score ema")
+		return types.PayloadAdmissionOutcome_PAYLOAD_ADMISSION_OUTCOME_UNSPECIFIED, errorsmod.Wrap(err, "error getting lowest forecaster score ema")
 	}
 
 	forecasterAddresses, err := k.GetActiveForecastersForTopic(ctx, topic.Id)
 	if err != nil {
-		return errorsmod.Wrap(err, "error getting active forecasters for topic")
+		return types.PayloadAdmissionOutcome_PAYLOAD_ADMISSION_OUTCOME_UNSPECIFIED, errorsmod.Wrap(err, "error getting active forecasters for topic")
 	}
 
 	// If there are less than maxTopForecastersToReward, add the current forecaster
@@ -924,15 +934,18 @@ func (k *WorkerKeeper) AppendForecast(
 		if uint64(len(forecasterAddresses)) == 0 || lowestEmaScore.Score.Gt(previousEmaScore.Score) {
 			err = k.scoresKeeper.SetLowestForecasterScoreEma(ctx, topic.Id, previousEmaScore)
 			if err != nil {
-				return errorsmod.Wrap(err, "error setting lowest forecaster score ema")
+				return types.PayloadAdmissionOutcome_PAYLOAD_ADMISSION_OUTCOME_UNSPECIFIED, errorsmod.Wrap(err, "error setting lowest forecaster score ema")
 			}
 		}
 
 		err = k.AddActiveForecaster(ctx, topic.Id, forecast.Forecaster)
 		if err != nil {
-			return errorsmod.Wrap(err, "error adding active forecaster")
+			return types.PayloadAdmissionOutcome_PAYLOAD_ADMISSION_OUTCOME_UNSPECIFIED, errorsmod.Wrap(err, "error adding active forecaster")
 		}
-		return k.InsertForecast(ctx, topic.Id, *forecast)
+		if err := k.InsertForecast(ctx, topic.Id, *forecast); err != nil {
+			return types.PayloadAdmissionOutcome_PAYLOAD_ADMISSION_OUTCOME_UNSPECIFIED, errorsmod.Wrap(err, "error inserting forecast")
+		}
+		return types.PayloadAdmissionOutcome_PAYLOAD_ADMISSION_OUTCOME_ADMITTED, nil
 	}
 
 	if previousEmaScore.Score.Gt(lowestEmaScore.Score) {
@@ -944,49 +957,53 @@ func (k *WorkerKeeper) AppendForecast(
 			lowestEmaScore,
 		)
 		if err != nil {
-			return errorsmod.Wrap(err, "error calculating and saving forecaster score ema with last saved topic quantile")
+			return types.PayloadAdmissionOutcome_PAYLOAD_ADMISSION_OUTCOME_UNSPECIFIED, errorsmod.Wrap(err, "error calculating and saving forecaster score ema with last saved topic quantile")
 		}
 
 		// Check if the forecaster with lowest score is active before removing it, because remove will not fail if the forecaster is not active
 		isActive, err := k.IsActiveForecaster(ctx, topic.Id, lowestEmaScore.Address)
 		if err != nil {
-			return errorsmod.Wrap(err, "error checking if forecaster is active")
+			return types.PayloadAdmissionOutcome_PAYLOAD_ADMISSION_OUTCOME_UNSPECIFIED, errorsmod.Wrap(err, "error checking if forecaster is active")
 		}
 		if !isActive {
-			return errors.New("forecaster with lowest score is not active")
+			return types.PayloadAdmissionOutcome_PAYLOAD_ADMISSION_OUTCOME_UNSPECIFIED, errors.New("forecaster with lowest score is not active")
 		}
 
 		// Remove forecaster with lowest score
 		err = k.RemoveActiveForecaster(ctx, topic.Id, lowestEmaScore.Address)
 		if err != nil {
-			return errorsmod.Wrap(err, "error removing active forecaster")
+			return types.PayloadAdmissionOutcome_PAYLOAD_ADMISSION_OUTCOME_UNSPECIFIED, errorsmod.Wrap(err, "error removing active forecaster")
 		}
 		// Remove forecast from forecaster with lowest score
 		err = k.RemoveForecast(ctx, topic.Id, lowestEmaScore.Address)
 		if err != nil {
-			return errorsmod.Wrap(err, "error removing forecast from forecaster")
+			return types.PayloadAdmissionOutcome_PAYLOAD_ADMISSION_OUTCOME_UNSPECIFIED, errorsmod.Wrap(err, "error removing forecast from forecaster")
 		}
 		// Add new active forecaster
 		err = k.AddActiveForecaster(ctx, topic.Id, forecast.Forecaster)
 		if err != nil {
-			return errorsmod.Wrap(err, "error adding active forecaster")
+			return types.PayloadAdmissionOutcome_PAYLOAD_ADMISSION_OUTCOME_UNSPECIFIED, errorsmod.Wrap(err, "error adding active forecaster")
 		}
 		// Calculate new lowest score with updated forecasterAddresses
 		err = k.scoresKeeper.UpdateLowestScoreFromForecasterAddresses(ctx, topic.Id, forecasterAddresses, forecast.Forecaster, lowestEmaScore.Address)
 		if err != nil {
-			return errorsmod.Wrap(err, "error getting low score from all forecasts")
+			return types.PayloadAdmissionOutcome_PAYLOAD_ADMISSION_OUTCOME_UNSPECIFIED, errorsmod.Wrap(err, "error getting low score from all forecasts")
 		}
-		return k.InsertForecast(ctx, topic.Id, *forecast)
-	} else {
-		// Update EMA score for the current forecaster, who is the lowest score forecaster
-		if !firstSubmission {
-			err = k.scoresKeeper.CalcAndSaveForecasterScoreEmaWithLastSavedTopicQuantile(ctx, topic, nonceBlockHeight, previousEmaScore)
-			if err != nil {
-				return errorsmod.Wrap(err, "error calculating and saving forecaster score ema with last saved topic quantile")
-			}
+		if err := k.InsertForecast(ctx, topic.Id, *forecast); err != nil {
+			return types.PayloadAdmissionOutcome_PAYLOAD_ADMISSION_OUTCOME_UNSPECIFIED, errorsmod.Wrap(err, "error inserting forecast")
+		}
+		types.EmitNewForecastEvictedFromActiveSetEvent(ctx, topic.Id, nonceBlockHeight, lowestEmaScore.Address, forecast.Forecaster)
+		return types.PayloadAdmissionOutcome_PAYLOAD_ADMISSION_OUTCOME_ADMITTED, nil
+	}
+
+	// Update EMA score for the current forecaster, who is the lowest score forecaster
+	if !firstSubmission {
+		err = k.scoresKeeper.CalcAndSaveForecasterScoreEmaWithLastSavedTopicQuantile(ctx, topic, nonceBlockHeight, previousEmaScore)
+		if err != nil {
+			return types.PayloadAdmissionOutcome_PAYLOAD_ADMISSION_OUTCOME_UNSPECIFIED, errorsmod.Wrap(err, "error calculating and saving forecaster score ema with last saved topic quantile")
 		}
 	}
-	return nil
+	return types.PayloadAdmissionOutcome_PAYLOAD_ADMISSION_OUTCOME_NOT_ADMITTED, nil
 }
 
 // InsertForecast inserts a forecast for a specific topic

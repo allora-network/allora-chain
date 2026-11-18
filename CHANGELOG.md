@@ -67,6 +67,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+* [#1011](https://github.com/allora-network/allora-chain/pull/1011) `admission_outcome` (`PAYLOAD_ADMISSION_OUTCOME_*`) on the three insert-payload events; new `EventInferenceEvictedFromActiveSet`, `EventForecastEvictedFromActiveSet`, `EventReputerLossEvictedFromActiveSet` and `EventReputerSubmissionRetired` events.
 * [#968](https://github.com/allora-network/allora-chain/pull/968) Per-topic `max_top_inferers_to_reward`, required within the global range, with migration v16
 * [#969](https://github.com/allora-network/allora-chain/pull/969) New global `min_top_inferers_to_reward` as the floor for the per-topic inferer cap (default `5`)
 * [#1005](https://github.com/allora-network/allora-chain/pull/1005) `nonce`, the epoch nonce, on every `emissions.v10` event that carries the epoch under `block_height` or `nonce_block_height` (listed under Deprecated), and on the `Get{Worker,Reputer}SubmissionWindowStatus` responses
@@ -83,6 +84,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * [#1009](https://github.com/allora-network/allora-chain/pull/1009) `EventNonceExpired`, emitted per unfulfilled nonce that leaves state without being fulfilled, carrying `topic_id`, the expired `nonce`, `actor_type` and the `reason` (`EVICTED_BY_CAP` when a new nonce pushes the list past the unfulfilled-request cap, `PRUNED_BY_AGE` when it ages past the retention threshold, `CLOSE_FAILED` when settlement of the nonce fails and the nonce is cleared in the close path)
 * [#1007](https://github.com/allora-network/allora-chain/pull/1007) `labels` on `EventEpochLabelRegistryFrozen`: the frozen registry's label names in compact-id order (`labels[i]` has id `i+1`)
 * [#1026](https://github.com/allora-network/allora-chain/pull/1026) `discarded_addresses` on `EventActiveForecastersSet`: the epoch's active forecasters whose forecasts the worker nonce close discarded
+* [#1025](https://github.com/allora-network/allora-chain/pull/1025) Split the worker whitelist into sibling inferer (existing worker lists) and forecaster whitelists: global/topic lists, enable/disable msgs, queries, events, `create-topic` flag `enable_forecaster_whitelist`, and param `global_forecaster_whitelist_enabled` (default `true` for newly generated genesis).
 * [#1031](https://github.com/allora-network/allora-chain/pull/1031) `investors_team_vesting_delay_months` param on `x/mint`: delays the investors and team vesting schedules by a governable number of months (0–120). The v0.18.0 upgrade sets it to 6. New `MsgUpdateInvestorsTeamVestingDelay` gated on x/gov authority; `UpdateParams` rejects any change to this field.
 
 ### Changed
@@ -90,9 +92,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * [#968](https://github.com/allora-network/allora-chain/pull/968) The global `max_top_inferers_to_reward` now rejects zero and serves as the live ceiling for the per-topic cap; score-history retention still uses the global value.
 * [#1004](https://github.com/allora-network/allora-chain/pull/1004) `EmitNewActorScoresSetEvent` no longer takes a height: `EventScoresSet` always carried the epoch nonce from the scores, and two callers passed the current block height, which was ignored.
 * [#1026](https://github.com/allora-network/allora-chain/pull/1026) `addresses` on `EventActiveForecastersSet` lists only the forecasters whose forecasts were stored for the epoch; it used to list every active forecaster, including those whose forecasts the close discarded.
+* [#1011](https://github.com/allora-network/allora-chain/pull/1011) Additive API change: `types.EmitNewInsert{Inferer,Forecaster,Reputer}PayloadEvent` and their `New*EventBase` constructors take a `PayloadAdmissionOutcome`; `AppendForecast` and `AppendReputerLoss` return it.
+* [#1025](https://github.com/allora-network/allora-chain/pull/1025) `InsertWorkerPayload` now gates inferences via the worker (inferer) whitelist and forecasts via the forecaster whitelist; a bundle that carries both is rejected unless the actor holds both permissions. `enable_forecaster_whitelist` is an independent opt-in on `CreateNewTopic` (default `false`, like `enable_worker_whitelist`/`enable_reputer_whitelist`), so new topics created without the flag have ungated forecasts even when `enable_worker_whitelist` is set. The `create-topic` CLI gains a new required positional arg for the flag.
 
 ### Deprecated
 
+* [#1025](https://github.com/allora-network/allora-chain/pull/1025) The `CanSubmitWorkerPayload` query and keeper check are deprecated in favor of `CanSubmitInferencePayload`, which runs the same topic-worker → global-worker → global-actor chain. The `can-submit-worker-payload` command and RPC remain functional.
 * [#1005](https://github.com/allora-network/allora-chain/pull/1005) Epoch-nonce fields superseded by `nonce`, still emitted with the same value: `block_height` on `EventScoresSet`, `EventRewardsSettled`, `EventListeningCoefficientsSet`, `Event{Inferer,Forecaster,NaiveInferer}NetworkRegretSet`, `EventTopicInitialRegretSet`, `EventTopicInitialEmaScoreSet`, `EventRegretStdNormSet` and `Event{Inferer,Forecaster}WeightsSet`, where the name collides with the inclusion height other events report; `nonce_block_height` on `EventForecastTaskScoreSet`, `EventActive{Reputers,Inferers,Forecasters}Set`, `EventNetworkInference{Inferer,Forecaster}{Weights,RegretsUsed}Set`, `Event{Worker,Reputer}SubmissionWindow{Opened,Closed}` and `EventEpochLabelRegistryFrozen`; `current_nonce_block_height` on the `Get{Worker,Reputer}SubmissionWindowStatus` responses
 * [#1005](https://github.com/allora-network/allora-chain/pull/1005) `block_height` on `EventWorkerLastCommitSet`, `EventReputerLastCommitSet`, `EventEcosystemTokenMintSet` and `EventRewardCurrentBlockEmission`, which only repeats the height of the block the event is emitted in; still emitted
 * [#1009](https://github.com/allora-network/allora-chain/pull/1009) `block_height` on `EventPreviousPercentageRewardToStakedReputersSet`, which only repeats the height of the block the event is emitted in; still emitted
@@ -109,10 +114,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * [#993](https://github.com/allora-network/allora-chain/pull/993) Open the reputer submission window at the end of the reveal epoch, and retire only the closing nonce's reputer submissions when closing it, fixing a permanent loss of network losses and rewards on fractional-lag topics.
 * [#1003](https://github.com/allora-network/allora-chain/pull/1003) Topic creation now emits its events in order — create, whitelist gates, fee — with the creation fee reported as `EventFundTopic` (creator as funder). Gate enable/disable emits once per state transition, and zero-fee payments skip no-op bank writes but still attempt activation.
 * [#1012](https://github.com/allora-network/allora-chain/pull/1012) When the worker nonce closes, drop a forecast left with fewer than two inferers in the active set. A new forecast that names the same inferer twice is rejected. A forecast already stored is still accepted.
+* [#1011](https://github.com/allora-network/allora-chain/pull/1011) Restore `EventInsertInfererPayload` for not-admitted submissions and `EventInsertForecasterPayload` for fully-filtered forecasts (regression from #942 in v0.17.0).
 
 ### Security
 
 * [#980](https://github.com/allora-network/allora-chain/pull/980) Patch a fast-node cache/commit race in `iavl` that caused `AppHash` divergence: the ecosystem treasury account is deleted every block at zero balance, and a concurrent balance query during commit could read its value one block stale, minting the wrong amount and forking the node. Points `iavl` at `github.com/allora-network/iavl` (`v1.2.6` + backport of [cosmos/iavl#1142](https://github.com/cosmos/iavl/pull/1142)). Not consensus-breaking; no migration required.
+* [#1013](https://github.com/allora-network/allora-chain/pull/1013) Reject duplicate actor entries in reputer value bundles at submission, and keep the first one-out-inferer row per forecaster at nonce close and before reputer scoring, so the order of the values extracted for scoring no longer depends on the sort implementation.
 
 ### API Breaking Changes
 

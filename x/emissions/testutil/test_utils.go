@@ -1069,6 +1069,7 @@ func NetworkInferenceBundleToLossBundleSkeleton(b *types.NetworkInferenceBundle)
 	}
 
 	ooif := make([]*types.OneOutInfererForecasterValues, 0, len(b.OneOutInfererForecasterValues))
+	forecasterRows := make(map[string]*types.OneOutInfererForecasterValues)
 	for _, x := range b.OneOutInfererForecasterValues {
 		if x == nil {
 			continue
@@ -1077,14 +1078,15 @@ func NetworkInferenceBundleToLossBundleSkeleton(b *types.NetworkInferenceBundle)
 		if len(x.CombinedInference) > 0 {
 			val = x.CombinedInference[0].Value
 		}
-		ooif = append(ooif, &types.OneOutInfererForecasterValues{
-			Forecaster: x.Forecaster,
-			OneOutInfererValues: []*types.WithheldWorkerAttributedValue{
-				{
-					Worker: x.WithheldInferer,
-					Value:  val,
-				},
-			},
+		row, ok := forecasterRows[x.Forecaster]
+		if !ok {
+			row = &types.OneOutInfererForecasterValues{Forecaster: x.Forecaster}
+			forecasterRows[x.Forecaster] = row
+			ooif = append(ooif, row)
+		}
+		row.OneOutInfererValues = append(row.OneOutInfererValues, &types.WithheldWorkerAttributedValue{
+			Worker: x.WithheldInferer,
+			Value:  val,
 		})
 	}
 	combVal := alloraMath.ZeroDec()
@@ -1234,31 +1236,32 @@ func (s *TestSuite) MockTopicMsg() *types.CreateNewTopicRequest {
 	params, err := s.ParamsKeeper().GetParams(s.Ctx())
 	s.Require().NoError(err)
 	return &types.CreateNewTopicRequest{
-		Creator:                  topic.Creator,
-		Metadata:                 topic.Metadata,
-		LossMethod:               topic.LossMethod,
-		EpochLength:              topic.EpochLength,
-		GroundTruthLag:           topic.GroundTruthLag,
-		PNorm:                    topic.PNorm,
-		AlphaRegret:              topic.AlphaRegret,
-		AllowNegative:            topic.AllowNegative,
-		Epsilon:                  topic.Epsilon,
-		WorkerSubmissionWindow:   topic.WorkerSubmissionWindow,
-		MeritSortitionAlpha:      topic.MeritSortitionAlpha,
-		ActiveInfererQuantile:    topic.ActiveInfererQuantile,
-		ActiveForecasterQuantile: topic.ActiveForecasterQuantile,
-		ActiveReputerQuantile:    topic.ActiveReputerQuantile,
-		EnableWorkerWhitelist:    true,
-		EnableReputerWhitelist:   true,
-		CNorm:                    topic.CNorm,
-		TopicType:                topic.TopicType,
-		OutputArity:              topic.OutputArity,
-		RequireUnity:             topic.RequireUnity,
-		UnityTolerance:           topic.UnityTolerance,
-		MaxLabelsPerSubmission:   topic.MaxLabelsPerSubmission,
-		LabelWhitelist:           topic.LabelWhitelist,
-		LabelDefaultValue:        topic.LabelDefaultValue,
-		MaxTopInferersToReward:   params.MaxTopInferersToReward,
+		Creator:                   topic.Creator,
+		Metadata:                  topic.Metadata,
+		LossMethod:                topic.LossMethod,
+		EpochLength:               topic.EpochLength,
+		GroundTruthLag:            topic.GroundTruthLag,
+		PNorm:                     topic.PNorm,
+		AlphaRegret:               topic.AlphaRegret,
+		AllowNegative:             topic.AllowNegative,
+		Epsilon:                   topic.Epsilon,
+		WorkerSubmissionWindow:    topic.WorkerSubmissionWindow,
+		MeritSortitionAlpha:       topic.MeritSortitionAlpha,
+		ActiveInfererQuantile:     topic.ActiveInfererQuantile,
+		ActiveForecasterQuantile:  topic.ActiveForecasterQuantile,
+		ActiveReputerQuantile:     topic.ActiveReputerQuantile,
+		EnableWorkerWhitelist:     true,
+		EnableReputerWhitelist:    true,
+		EnableForecasterWhitelist: true,
+		CNorm:                     topic.CNorm,
+		TopicType:                 topic.TopicType,
+		OutputArity:               topic.OutputArity,
+		RequireUnity:              topic.RequireUnity,
+		UnityTolerance:            topic.UnityTolerance,
+		MaxLabelsPerSubmission:    topic.MaxLabelsPerSubmission,
+		LabelWhitelist:            topic.LabelWhitelist,
+		LabelDefaultValue:         topic.LabelDefaultValue,
+		MaxTopInferersToReward:    params.MaxTopInferersToReward,
 	}
 }
 

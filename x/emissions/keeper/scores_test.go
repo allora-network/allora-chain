@@ -707,7 +707,7 @@ func (s *KeeperTestSuite) TestInitialEmaScoreSettingInAppendForecast() {
 	s.Require().NoError(err)
 
 	// Append the forecast
-	err = s.WorkerKeeper().AppendForecast(ctx, topic, blockHeight, forecast, 4)
+	_, err = s.WorkerKeeper().AppendForecast(ctx, topic, blockHeight, forecast, 4)
 	s.Require().NoError(err)
 
 	// Verify the worker received the initial EMA score
@@ -755,7 +755,7 @@ func (s *KeeperTestSuite) TestInitialEmaScoreSettingInAppendReputer() {
 
 	params := types.DefaultParams()
 	// Append the reputer value bundle
-	err = s.ReputerLossKeeper().AppendReputerLoss(ctx, topic, params, blockHeight, reputerValueBundle)
+	_, err = s.ReputerLossKeeper().AppendReputerLoss(ctx, topic, params, blockHeight, reputerValueBundle)
 	s.Require().NoError(err)
 
 	// Verify the reputer received the initial EMA score
@@ -929,7 +929,7 @@ func (s *KeeperTestSuite) TestLivenessPenaltyAppliedInAppendForecast() {
 	s.Require().NoError(err)
 
 	// Append the forecast
-	err = s.WorkerKeeper().AppendForecast(ctx, topic, blockHeight, forecast, 4)
+	_, err = s.WorkerKeeper().AppendForecast(ctx, topic, blockHeight, forecast, 4)
 	s.Require().NoError(err)
 	s.Require().NoError(err)
 
@@ -995,7 +995,7 @@ func (s *KeeperTestSuite) TestLivenessPenaltyAppliedInAppendReputerLoss() {
 	s.Require().NoError(err)
 
 	// Append the reputer loss
-	err = s.ReputerLossKeeper().AppendReputerLoss(ctx, topic, types.DefaultParams(), blockHeight, &reputerValueBundle)
+	_, err = s.ReputerLossKeeper().AppendReputerLoss(ctx, topic, types.DefaultParams(), blockHeight, &reputerValueBundle)
 	s.Require().NoError(err)
 
 	// Verify the reputer's EMA score trended toward the topic initial score especially when there is a lapse in their

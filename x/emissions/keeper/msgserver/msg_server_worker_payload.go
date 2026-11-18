@@ -29,11 +29,26 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.InsertWo
 	if err != nil {
 		return nil, errorsmod.Wrapf(err, "Error validating worker address")
 	}
-	canSubmit, err := ms.wlk.CanSubmitWorkerPayload(ctx, msg.WorkerDataBundle.TopicId, msg.WorkerDataBundle.Worker)
-	if err != nil {
-		return nil, errorsmod.Wrapf(err, "Error checking if worker can submit payload")
-	} else if !canSubmit {
-		return nil, errorsmod.Wrapf(types.ErrNotPermittedToSubmitWorkerPayload, "Worker is not permitted to submit payload")
+
+	// Per-artifact whitelist: an inference requires the worker (inferer) gate,
+	// a forecast requires the forecaster gate. A bundle that carries both is
+	// rejected unless the actor holds both permissions.
+	inferenceForecastsBundle := msg.WorkerDataBundle.GetInferenceForecastsBundle()
+	if inferenceForecastsBundle != nil && inferenceForecastsBundle.GetInference() != nil {
+		canSubmit, err := ms.wlk.CanSubmitInferencePayload(ctx, msg.WorkerDataBundle.TopicId, msg.WorkerDataBundle.Worker)
+		if err != nil {
+			return nil, errorsmod.Wrapf(err, "Error checking if worker can submit inference payload")
+		} else if !canSubmit {
+			return nil, errorsmod.Wrapf(types.ErrNotPermittedToSubmitWorkerPayload, "Worker is not permitted to submit inference payload")
+		}
+	}
+	if inferenceForecastsBundle != nil && inferenceForecastsBundle.GetForecast() != nil {
+		canSubmit, err := ms.wlk.CanSubmitForecasterPayload(ctx, msg.WorkerDataBundle.TopicId, msg.WorkerDataBundle.Worker)
+		if err != nil {
+			return nil, errorsmod.Wrapf(err, "Error checking if worker can submit forecaster payload")
+		} else if !canSubmit {
+			return nil, errorsmod.Wrapf(types.ErrNotPermittedToSubmitForecasterPayload, "Worker is not permitted to submit forecaster payload")
+		}
 	}
 
 	moduleParams, err := ms.pk.GetParams(ctx)
@@ -89,7 +104,6 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.InsertWo
 	}
 
 	inputBundle := msg.WorkerDataBundle
-	inferenceForecastsBundle := inputBundle.GetInferenceForecastsBundle()
 	// Convert (and validate) the forecast up front so a malformed forecast fails
 	// the tx before any inference state is written; it is processed after inferences.
 	var forecast *types.Forecast
@@ -152,6 +166,9 @@ func (ms msgServer) processWorkerInferencePayload(
 		if err := ms.wk.CommitNonAdmittedInference(sdkCtx, topic, nonceBlockHeight, plan); err != nil {
 			return errorsmod.Wrap(err, "Error committing non-admitted inference")
 		}
+		// The submission passed validation, so it is visible to indexers even
+		// though its inference was not stored.
+		types.EmitNewInsertInfererPayloadEvent(ctx, msg.WorkerDataBundle, types.PayloadAdmissionOutcome_PAYLOAD_ADMISSION_OUTCOME_NOT_ADMITTED)
 		return nil
 	}
 
@@ -170,8 +187,9 @@ func (ms msgServer) processWorkerInferencePayload(
 	if err := ms.wk.CommitAdmittedInference(sdkCtx, topic, nonceBlockHeight, inference, plan); err != nil {
 		return errorsmod.Wrap(err, "Error committing admitted inference")
 	}
-	// Emitted only on admission: a not-admitted inferer returns above without an event.
-	types.EmitNewInsertInfererPayloadEvent(ctx, msg.WorkerDataBundle)
+	// Emitted for every inference submission that passes validation, admitted
+	// or not; admission_outcome distinguishes the cases for indexers.
+	types.EmitNewInsertInfererPayloadEvent(ctx, msg.WorkerDataBundle, types.PayloadAdmissionOutcome_PAYLOAD_ADMISSION_OUTCOME_ADMITTED)
 	return nil
 }
 
@@ -252,25 +270,30 @@ func (ms msgServer) processWorkerForecastPayload(
 		}
 	}
 
+	admissionOutcome := types.PayloadAdmissionOutcome_PAYLOAD_ADMISSION_OUTCOME_NO_ELEMENTS_ACCEPTED
 	if len(acceptedForecastElements) > 0 {
 		forecast.ForecastElements = acceptedForecastElements
-		if err := ms.wk.AppendForecast(sdkCtx, topic, nonceBlockHeight, forecast, moduleParams.MaxTopForecastersToReward); err != nil {
+		var err error
+		admissionOutcome, err = ms.wk.AppendForecast(sdkCtx, topic, nonceBlockHeight, forecast, moduleParams.MaxTopForecastersToReward)
+		if err != nil {
 			return errorsmod.Wrapf(err, "Error appending forecast")
 		}
-
-		// Emitted only when forecast elements were actually stored: a fully
-		// filtered-out forecast returns without an event, mirroring the
-		// admission-gated inference path in processWorkerInferencePayload.
-		eventBundle := &types.WorkerDataBundle{
-			Worker:  inputBundle.Worker,
-			Nonce:   inputBundle.Nonce,
-			TopicId: inputBundle.TopicId,
-			InferenceForecastsBundle: &types.InferenceForecastBundle{
-				Inference: nil,
-				Forecast:  forecast,
-			},
-		}
-		types.EmitNewInsertForecasterPayloadEvent(ctx, eventBundle)
 	}
+
+	// Emitted for every forecast that passes validation, whether or not any
+	// element survived filtering or the forecast was admitted by sortition;
+	// admission_outcome distinguishes the cases for indexers. With
+	// NO_ELEMENTS_ACCEPTED the event still carries the submitted elements;
+	// none of them was accepted.
+	eventBundle := &types.WorkerDataBundle{
+		Worker:  inputBundle.Worker,
+		Nonce:   inputBundle.Nonce,
+		TopicId: inputBundle.TopicId,
+		InferenceForecastsBundle: &types.InferenceForecastBundle{
+			Inference: nil,
+			Forecast:  forecast,
+		},
+	}
+	types.EmitNewInsertForecasterPayloadEvent(ctx, eventBundle, admissionOutcome)
 	return nil
 }

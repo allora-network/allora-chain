@@ -140,6 +140,8 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayload() {
 
 	err := s.WhitelistsKeeper().AddToTopicWorkerWhitelist(s.Ctx(), topicId, workerMsg.WorkerDataBundle.Worker)
 	require.NoError(err)
+	err = s.WhitelistsKeeper().AddToTopicForecasterWhitelist(s.Ctx(), topicId, workerMsg.WorkerDataBundle.Worker)
+	require.NoError(err)
 
 	_, err = s.EmissionsMsgServer().InsertWorkerPayload(s.Ctx(), &workerMsg)
 	require.NoError(err, "InsertWorkerPayload should not return an error")
@@ -162,11 +164,11 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadNotFailsWithNilInference(
 	s.WithBlockHeight(blockHeight)
 
 	_, err := s.EmissionsMsgServer().InsertWorkerPayload(s.Ctx(), &workerMsg)
-	require.ErrorIs(err, types.ErrNotPermittedToSubmitWorkerPayload)
+	require.ErrorIs(err, types.ErrNotPermittedToSubmitForecasterPayload)
 
-	// Add worker to topic whitelist
-	err = s.WhitelistsKeeper().AddToTopicWorkerWhitelist(s.Ctx(), workerMsg.WorkerDataBundle.TopicId, workerMsg.WorkerDataBundle.Worker)
-	require.NoError(err, "InsertWorkerPayload should not return an error after adding worker to whitelist")
+	// Add worker to topic forecaster whitelist
+	err = s.WhitelistsKeeper().AddToTopicForecasterWhitelist(s.Ctx(), workerMsg.WorkerDataBundle.TopicId, workerMsg.WorkerDataBundle.Worker)
+	require.NoError(err, "InsertWorkerPayload should not return an error after adding worker to forecaster whitelist")
 
 	_, err = s.EmissionsMsgServer().InsertWorkerPayload(s.Ctx(), &workerMsg)
 	require.NoError(err)
@@ -191,6 +193,8 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadNotFailsWithNilForecast()
 	// Add worker to topic whitelist
 	err := s.WhitelistsKeeper().AddToTopicWorkerWhitelist(s.Ctx(), workerMsg.WorkerDataBundle.TopicId, workerMsg.WorkerDataBundle.Worker)
 	require.NoError(err)
+	err = s.WhitelistsKeeper().AddToTopicForecasterWhitelist(s.Ctx(), workerMsg.WorkerDataBundle.TopicId, workerMsg.WorkerDataBundle.Worker)
+	require.NoError(err)
 
 	_, err = s.EmissionsMsgServer().InsertWorkerPayload(s.Ctx(), &workerMsg)
 	require.NoError(err)
@@ -198,6 +202,70 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadNotFailsWithNilForecast()
 	inferences, err := s.WorkerKeeper().GetWorkerLatestInferenceByTopicId(s.Ctx(), topicId, workerMsg.WorkerDataBundle.Worker)
 	require.NoError(err)
 	require.NotNil(inferences)
+}
+
+// TestMsgInsertWorkerPayloadPerArtifactWhitelist pins whole-tx rejection when
+// a bundle carries both artifacts but the actor only holds one permission, and
+// success only when every present artifact is permitted.
+func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadPerArtifactWhitelist() {
+	require := s.Require()
+
+	type caseSpec struct {
+		name            string
+		keepInference   bool
+		keepForecast    bool
+		addWorkerWL     bool
+		addForecasterWL bool
+		wantErr         error
+	}
+	cases := []caseSpec{
+		{name: "both artifacts, both permissions", keepInference: true, keepForecast: true, addWorkerWL: true, addForecasterWL: true, wantErr: nil},
+		{name: "both artifacts, worker only", keepInference: true, keepForecast: true, addWorkerWL: true, addForecasterWL: false, wantErr: types.ErrNotPermittedToSubmitForecasterPayload},
+		{name: "both artifacts, forecaster only", keepInference: true, keepForecast: true, addWorkerWL: false, addForecasterWL: true, wantErr: types.ErrNotPermittedToSubmitWorkerPayload},
+		{name: "both artifacts, neither", keepInference: true, keepForecast: true, addWorkerWL: false, addForecasterWL: false, wantErr: types.ErrNotPermittedToSubmitWorkerPayload},
+		{name: "inference only, worker only", keepInference: true, keepForecast: false, addWorkerWL: true, addForecasterWL: false, wantErr: nil},
+		{name: "inference only, neither", keepInference: true, keepForecast: false, addWorkerWL: false, addForecasterWL: false, wantErr: types.ErrNotPermittedToSubmitWorkerPayload},
+		{name: "forecast only, forecaster only", keepInference: false, keepForecast: true, addWorkerWL: false, addForecasterWL: true, wantErr: nil},
+		{name: "forecast only, neither", keepInference: false, keepForecast: true, addWorkerWL: false, addForecasterWL: false, wantErr: types.ErrNotPermittedToSubmitForecasterPayload},
+	}
+
+	for _, tc := range cases {
+		s.Run(tc.name, func() {
+			workerPrivateKey := secp256k1.GenPrivKey()
+			workerMsg, topicId := s.setUpMsgInsertWorkerPayload(workerPrivateKey)
+
+			if !tc.keepInference {
+				workerMsg.WorkerDataBundle.InferenceForecastsBundle.Inference = nil
+			}
+			if !tc.keepForecast {
+				workerMsg.WorkerDataBundle.InferenceForecastsBundle.Forecast = nil
+			}
+			workerMsg = s.signMsgInsertWorkerPayload(workerMsg, workerPrivateKey)
+
+			blockHeight := int64(1)
+			if tc.keepForecast {
+				blockHeight = workerMsg.WorkerDataBundle.InferenceForecastsBundle.Forecast.BlockHeight
+			} else if tc.keepInference {
+				blockHeight = workerMsg.WorkerDataBundle.InferenceForecastsBundle.Inference.BlockHeight
+			}
+			s.WithBlockHeight(blockHeight)
+
+			worker := workerMsg.WorkerDataBundle.Worker
+			if tc.addWorkerWL {
+				require.NoError(s.WhitelistsKeeper().AddToTopicWorkerWhitelist(s.Ctx(), topicId, worker))
+			}
+			if tc.addForecasterWL {
+				require.NoError(s.WhitelistsKeeper().AddToTopicForecasterWhitelist(s.Ctx(), topicId, worker))
+			}
+
+			_, err := s.EmissionsMsgServer().InsertWorkerPayload(s.Ctx(), &workerMsg)
+			if tc.wantErr != nil {
+				require.ErrorIs(err, tc.wantErr)
+				return
+			}
+			require.NoError(err)
+		})
+	}
 }
 
 func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadFailsWithNilInferenceAndForecast() {
@@ -215,6 +283,8 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadFailsWithNilInferenceAndF
 
 	// Add worker to topic whitelist
 	err := s.WhitelistsKeeper().AddToTopicWorkerWhitelist(s.Ctx(), workerMsg.WorkerDataBundle.TopicId, workerMsg.WorkerDataBundle.Worker)
+	require.NoError(err)
+	err = s.WhitelistsKeeper().AddToTopicForecasterWhitelist(s.Ctx(), workerMsg.WorkerDataBundle.TopicId, workerMsg.WorkerDataBundle.Worker)
 	require.NoError(err)
 
 	_, err = s.EmissionsMsgServer().InsertWorkerPayload(s.Ctx(), &workerMsg)
@@ -235,6 +305,8 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadFailsWithoutSignature() {
 	// Add worker to topic whitelist
 	err := s.WhitelistsKeeper().AddToTopicWorkerWhitelist(ctx, workerMsg.WorkerDataBundle.TopicId, workerMsg.WorkerDataBundle.Worker)
 	require.NoError(err)
+	err = s.WhitelistsKeeper().AddToTopicForecasterWhitelist(ctx, workerMsg.WorkerDataBundle.TopicId, workerMsg.WorkerDataBundle.Worker)
+	require.NoError(err)
 
 	_, err = msgServer.InsertWorkerPayload(ctx, &workerMsg)
 	require.ErrorIs(err, sdkerrors.ErrInvalidRequest)
@@ -250,7 +322,11 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadFailsWithMismatchedTopicI
 	// Add worker to topic whitelist
 	err := s.WhitelistsKeeper().AddToTopicWorkerWhitelist(s.Ctx(), topicId, workerMsg.WorkerDataBundle.Worker)
 	require.NoError(err)
+	err = s.WhitelistsKeeper().AddToTopicForecasterWhitelist(s.Ctx(), topicId, workerMsg.WorkerDataBundle.Worker)
+	require.NoError(err)
 	err = s.WhitelistsKeeper().AddToTopicWorkerWhitelist(s.Ctx(), workerMsg.WorkerDataBundle.TopicId, workerMsg.WorkerDataBundle.Worker)
+	require.NoError(err)
+	err = s.WhitelistsKeeper().AddToTopicForecasterWhitelist(s.Ctx(), workerMsg.WorkerDataBundle.TopicId, workerMsg.WorkerDataBundle.Worker)
 	require.NoError(err)
 
 	// BEGIN MODIFICATION
@@ -286,6 +362,8 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadFailsWithUnregisteredInfe
 
 	// Add worker to topic whitelist
 	err = s.WhitelistsKeeper().AddToTopicWorkerWhitelist(s.Ctx(), workerMsg.WorkerDataBundle.TopicId, workerMsg.WorkerDataBundle.Worker)
+	require.NoError(err)
+	err = s.WhitelistsKeeper().AddToTopicForecasterWhitelist(s.Ctx(), workerMsg.WorkerDataBundle.TopicId, workerMsg.WorkerDataBundle.Worker)
 	require.NoError(err)
 
 	workerMsg = s.signMsgInsertWorkerPayload(workerMsg, workerPrivateKey)
@@ -343,6 +421,8 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadWithFewTopElementsPerFore
 	// Add worker to topic whitelist
 	err = s.WhitelistsKeeper().AddToTopicWorkerWhitelist(s.Ctx(), workerMsg.WorkerDataBundle.TopicId, workerMsg.WorkerDataBundle.Worker)
 	require.NoError(err)
+	err = s.WhitelistsKeeper().AddToTopicForecasterWhitelist(s.Ctx(), workerMsg.WorkerDataBundle.TopicId, workerMsg.WorkerDataBundle.Worker)
+	require.NoError(err)
 
 	_, err = s.EmissionsMsgServer().InsertWorkerPayload(s.Ctx(), &workerMsg)
 	require.NoError(err, "InsertWorkerPayload should not return an error")
@@ -354,6 +434,24 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadWithFewTopElementsPerFore
 	require.Equal(forecasts.ForecastElements[0].Inferer, inferer1)
 	require.Equal(forecasts.ForecastElements[1].Inferer, inferer2)
 	require.Equal(forecasts.ForecastElements[2].Inferer, inferer4)
+}
+
+// infererPayloadEvents returns all EventInsertInfererPayload typed events
+// currently on the SDK context's event manager, reconstructed via
+// sdk.ParseTypedEvent so the assertion stays agnostic to the proto package
+// version.
+func infererPayloadEvents(ctx sdk.Context) []*types.EventInsertInfererPayload {
+	out := make([]*types.EventInsertInfererPayload, 0)
+	for _, ev := range ctx.EventManager().Events() {
+		msg, err := sdk.ParseTypedEvent(abci.Event(ev))
+		if err != nil {
+			continue
+		}
+		if e, ok := msg.(*types.EventInsertInfererPayload); ok {
+			out = append(out, e)
+		}
+	}
+	return out
 }
 
 // forecasterPayloadEvents returns all EventInsertForecasterPayload typed events
@@ -374,12 +472,14 @@ func forecasterPayloadEvents(ctx sdk.Context) []*types.EventInsertForecasterPayl
 	return out
 }
 
-// TestMsgInsertWorkerPayloadNoForecasterEventWhenAllFiltered pins the contract
-// that a forecaster payload event is emitted only when forecast elements were
-// actually stored. With MaxElementsPerForecast == 0, FindTopNByScoreDesc selects
-// no inferers, every element is filtered out, AppendForecast is skipped, and no
-// event must be emitted - mirroring the admission-gated inference path.
-func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadNoForecasterEventWhenAllFiltered() {
+// TestMsgInsertWorkerPayloadForecasterEventNoElementsAccepted pins the
+// contract that a forecaster payload event is emitted for every forecast that
+// passes validation, even when nothing is stored. With
+// MaxElementsPerForecast == 0, FindTopNByScoreDesc selects no inferers, every
+// element is filtered out, AppendForecast is skipped, and the single emitted
+// event carries NO_ELEMENTS_ACCEPTED while still reporting the submitted
+// (un-filtered) elements, so indexers still see the submission.
+func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadForecasterEventNoElementsAccepted() {
 	require := s.Require()
 
 	workerPrivateKey := secp256k1.GenPrivKey()
@@ -405,6 +505,8 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadNoForecasterEventWhenAllF
 
 	err = s.WhitelistsKeeper().AddToTopicWorkerWhitelist(s.Ctx(), topicId, workerMsg.WorkerDataBundle.Worker)
 	require.NoError(err)
+	err = s.WhitelistsKeeper().AddToTopicForecasterWhitelist(s.Ctx(), topicId, workerMsg.WorkerDataBundle.Worker)
+	require.NoError(err)
 
 	_, err = s.EmissionsMsgServer().InsertWorkerPayload(s.Ctx(), &workerMsg)
 	require.NoError(err, "InsertWorkerPayload should not return an error")
@@ -412,9 +514,23 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadNoForecasterEventWhenAllF
 	// Nothing was stored...
 	require.Equal(0, s.getCountForecastsAtBlock(topicId, workerBlockHeight),
 		"no forecast should be stored when all elements are filtered out")
-	// ...so no forecaster payload event should have been emitted.
-	require.Empty(forecasterPayloadEvents(s.Ctx()),
-		"no forecaster payload event should be emitted when nothing is stored")
+	// ...but the submission is still announced with NO_ELEMENTS_ACCEPTED.
+	events := forecasterPayloadEvents(s.Ctx())
+	require.Len(events, 1, "exactly one forecaster payload event should be emitted")
+	require.Equal(types.PayloadAdmissionOutcome_PAYLOAD_ADMISSION_OUTCOME_NO_ELEMENTS_ACCEPTED,
+		events[0].AdmissionOutcome)
+
+	// The outcome says nothing was accepted, yet the event still carries the
+	// submitted (un-filtered) elements for indexers.
+	submitted := workerMsg.WorkerDataBundle.InferenceForecastsBundle.Forecast.ForecastElements
+	submittedInferers := make([]string, 0, len(submitted))
+	for _, el := range submitted {
+		submittedInferers = append(submittedInferers, el.Inferer)
+	}
+	require.Equal(submittedInferers, events[0].InfererAddresses,
+		"the fully-filtered event should carry the submitted elements")
+	require.Len(events[0].InfererValues, len(submittedInferers),
+		"the fully-filtered event should carry the submitted element values")
 }
 
 // TestMsgInsertWorkerPayloadEmitsForecasterEventReflectingStoredElements guards
@@ -432,6 +548,8 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadEmitsForecasterEventRefle
 
 	err := s.WhitelistsKeeper().AddToTopicWorkerWhitelist(s.Ctx(), topicId, workerMsg.WorkerDataBundle.Worker)
 	require.NoError(err)
+	err = s.WhitelistsKeeper().AddToTopicForecasterWhitelist(s.Ctx(), topicId, workerMsg.WorkerDataBundle.Worker)
+	require.NoError(err)
 
 	_, err = s.EmissionsMsgServer().InsertWorkerPayload(s.Ctx(), &workerMsg)
 	require.NoError(err, "InsertWorkerPayload should not return an error")
@@ -442,6 +560,8 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadEmitsForecasterEventRefle
 
 	events := forecasterPayloadEvents(s.Ctx())
 	require.Len(events, 1, "exactly one forecaster payload event should be emitted on a successful store")
+	require.Equal(types.PayloadAdmissionOutcome_PAYLOAD_ADMISSION_OUTCOME_ADMITTED,
+		events[0].AdmissionOutcome)
 
 	storedInferers := make([]string, 0, len(stored.ForecastElements))
 	for _, el := range stored.ForecastElements {
@@ -479,7 +599,11 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadFailsWithMismatchedForeca
 	// Enable topic whitelists
 	err := s.WhitelistsKeeper().AddToTopicWorkerWhitelist(s.Ctx(), originalTopicId, workerMsg.WorkerDataBundle.Worker)
 	require.NoError(err)
+	err = s.WhitelistsKeeper().AddToTopicForecasterWhitelist(s.Ctx(), originalTopicId, workerMsg.WorkerDataBundle.Worker)
+	require.NoError(err)
 	err = s.WhitelistsKeeper().AddToTopicWorkerWhitelist(s.Ctx(), newTopicId, workerMsg.WorkerDataBundle.Worker)
+	require.NoError(err)
+	err = s.WhitelistsKeeper().AddToTopicForecasterWhitelist(s.Ctx(), newTopicId, workerMsg.WorkerDataBundle.Worker)
 	require.NoError(err)
 
 	s.WithBlockHeight(blockHeight)
@@ -519,6 +643,8 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadFailsWithUnregisteredFore
 	// Add worker to topic whitelist
 	err = s.WhitelistsKeeper().AddToTopicWorkerWhitelist(s.Ctx(), workerMsg.WorkerDataBundle.TopicId, workerMsg.WorkerDataBundle.Worker)
 	require.NoError(err)
+	err = s.WhitelistsKeeper().AddToTopicForecasterWhitelist(s.Ctx(), workerMsg.WorkerDataBundle.TopicId, workerMsg.WorkerDataBundle.Worker)
+	require.NoError(err)
 
 	forecastsCount0 := s.getCountForecastsAtBlock(topicId, blockHeight)
 	require.Equal(forecastsCount0, 0)
@@ -548,6 +674,8 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadRejectsDuplicateForecastE
 	forecast.ForecastElements = append(forecast.ForecastElements, duplicateElement)
 
 	err := s.WhitelistsKeeper().AddToTopicWorkerWhitelist(s.Ctx(), workerMsg.WorkerDataBundle.TopicId, workerMsg.WorkerDataBundle.Worker)
+	require.NoError(err)
+	err = s.WhitelistsKeeper().AddToTopicForecasterWhitelist(s.Ctx(), workerMsg.WorkerDataBundle.TopicId, workerMsg.WorkerDataBundle.Worker)
 	require.NoError(err)
 
 	workerMsg = s.signMsgInsertWorkerPayload(workerMsg, workerPrivateKey)
@@ -719,6 +847,8 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadWithLowScoreForecastsAreR
 	// Add worker to topic whitelist
 	err = s.WhitelistsKeeper().AddToTopicWorkerWhitelist(s.Ctx(), workerMsg.WorkerDataBundle.TopicId, workerMsg.WorkerDataBundle.Worker)
 	require.NoError(err)
+	err = s.WhitelistsKeeper().AddToTopicForecasterWhitelist(s.Ctx(), workerMsg.WorkerDataBundle.TopicId, workerMsg.WorkerDataBundle.Worker)
+	require.NoError(err)
 
 	_, err = s.EmissionsMsgServer().InsertWorkerPayload(s.Ctx(), &workerMsg)
 	require.NoError(err, "InsertWorkerPayload should not return an error even if the forecast elements are below the threshold")
@@ -743,6 +873,8 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadInfererNotMatchSignature(
 	// Add worker to topic whitelist
 	err := s.WhitelistsKeeper().AddToTopicWorkerWhitelist(s.Ctx(), workerMsg.WorkerDataBundle.TopicId, workerMsg.WorkerDataBundle.Worker)
 	require.NoError(err)
+	err = s.WhitelistsKeeper().AddToTopicForecasterWhitelist(s.Ctx(), workerMsg.WorkerDataBundle.TopicId, workerMsg.WorkerDataBundle.Worker)
+	require.NoError(err)
 
 	workerMsg = s.signMsgInsertWorkerPayload(workerMsg, workerPrivateKey)
 	blockHeight := workerMsg.WorkerDataBundle.InferenceForecastsBundle.Forecast.BlockHeight
@@ -761,6 +893,8 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadForecasterNotMatchSignatu
 
 	// Add worker to topic whitelist
 	err := s.WhitelistsKeeper().AddToTopicWorkerWhitelist(s.Ctx(), workerMsg.WorkerDataBundle.TopicId, workerMsg.WorkerDataBundle.Worker)
+	require.NoError(err)
+	err = s.WhitelistsKeeper().AddToTopicForecasterWhitelist(s.Ctx(), workerMsg.WorkerDataBundle.TopicId, workerMsg.WorkerDataBundle.Worker)
 	require.NoError(err)
 
 	workerMsg = s.signMsgInsertWorkerPayload(workerMsg, workerPrivateKey)
@@ -847,6 +981,8 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadForecastIncludesSelf() {
 	// Add worker to topic whitelist
 	err = s.WhitelistsKeeper().AddToTopicWorkerWhitelist(s.Ctx(), workerMsg.WorkerDataBundle.TopicId, workerMsg.WorkerDataBundle.Worker)
 	require.NoError(err)
+	err = s.WhitelistsKeeper().AddToTopicForecasterWhitelist(s.Ctx(), workerMsg.WorkerDataBundle.TopicId, workerMsg.WorkerDataBundle.Worker)
+	require.NoError(err)
 
 	// Submit and verify the payload
 	_, err = s.EmissionsMsgServer().InsertWorkerPayload(s.Ctx(), &workerMsg)
@@ -878,6 +1014,8 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadSucceedsWithUnregisteredF
 
 	// Whitelist the worker for the topic so they can submit forecasts
 	err := s.WhitelistsKeeper().AddToTopicWorkerWhitelist(s.Ctx(), workerMsg.WorkerDataBundle.TopicId, workerMsg.WorkerDataBundle.Worker)
+	require.NoError(err)
+	err = s.WhitelistsKeeper().AddToTopicForecasterWhitelist(s.Ctx(), workerMsg.WorkerDataBundle.TopicId, workerMsg.WorkerDataBundle.Worker)
 	require.NoError(err)
 
 	// Unregister the inferer
@@ -1100,6 +1238,8 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayload_NormalizeInference() {
 
 			err := s.WhitelistsKeeper().AddToTopicWorkerWhitelist(s.Ctx(), topicId, msg.WorkerDataBundle.Worker)
 			s.Require().NoError(err)
+			err = s.WhitelistsKeeper().AddToTopicForecasterWhitelist(s.Ctx(), topicId, msg.WorkerDataBundle.Worker)
+			s.Require().NoError(err)
 
 			_, err = s.EmissionsMsgServer().InsertWorkerPayload(s.Ctx(), &msg)
 			if c.wantErr {
@@ -1171,6 +1311,8 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayload_Multi_EmptyWhitelistAdmi
 
 	err = s.WhitelistsKeeper().AddToTopicWorkerWhitelist(s.Ctx(), topicId, msg.WorkerDataBundle.Worker)
 	s.Require().NoError(err)
+	err = s.WhitelistsKeeper().AddToTopicForecasterWhitelist(s.Ctx(), topicId, msg.WorkerDataBundle.Worker)
+	s.Require().NoError(err)
 
 	_, err = s.EmissionsMsgServer().InsertWorkerPayload(s.Ctx(), &msg)
 	s.Require().NoError(err)
@@ -1227,7 +1369,11 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayload_Multi_TwoWorkersSameNonc
 
 	err := s.WhitelistsKeeper().AddToTopicWorkerWhitelist(s.Ctx(), topicId, msg1.WorkerDataBundle.Worker)
 	s.Require().NoError(err)
+	err = s.WhitelistsKeeper().AddToTopicForecasterWhitelist(s.Ctx(), topicId, msg1.WorkerDataBundle.Worker)
+	s.Require().NoError(err)
 	err = s.WhitelistsKeeper().AddToTopicWorkerWhitelist(s.Ctx(), topicId, msg2.WorkerDataBundle.Worker)
+	s.Require().NoError(err)
+	err = s.WhitelistsKeeper().AddToTopicForecasterWhitelist(s.Ctx(), topicId, msg2.WorkerDataBundle.Worker)
 	s.Require().NoError(err)
 
 	_, err = s.EmissionsMsgServer().InsertWorkerPayload(s.Ctx(), &msg1)
@@ -1323,7 +1469,11 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayload_Multi_NoCrossEpochRegist
 	// whitelist both workers
 	err = s.WhitelistsKeeper().AddToTopicWorkerWhitelist(s.Ctx(), topicId, msg1.WorkerDataBundle.Worker)
 	s.Require().NoError(err)
+	err = s.WhitelistsKeeper().AddToTopicForecasterWhitelist(s.Ctx(), topicId, msg1.WorkerDataBundle.Worker)
+	s.Require().NoError(err)
 	err = s.WhitelistsKeeper().AddToTopicWorkerWhitelist(s.Ctx(), topicId, msg2.WorkerDataBundle.Worker)
+	s.Require().NoError(err)
+	err = s.WhitelistsKeeper().AddToTopicForecasterWhitelist(s.Ctx(), topicId, msg2.WorkerDataBundle.Worker)
 	s.Require().NoError(err)
 
 	// submit worker1 @ nonce1
@@ -1406,6 +1556,7 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayload_NotAdmittedDoesNotStageI
 	s.Require().NoError(s.ScoresKeeper().SetLowestInfererScoreEma(s.Ctx(), topicId, activeScore))
 	s.Require().NoError(s.WorkerKeeper().AddActiveInferer(s.Ctx(), topicId, activeInferer))
 	s.Require().NoError(s.WhitelistsKeeper().AddToTopicWorkerWhitelist(s.Ctx(), topicId, msg.WorkerDataBundle.Worker))
+	s.Require().NoError(s.WhitelistsKeeper().AddToTopicForecasterWhitelist(s.Ctx(), topicId, msg.WorkerDataBundle.Worker))
 
 	_, err := s.EmissionsMsgServer().InsertWorkerPayload(s.Ctx(), &msg)
 	s.Require().NoError(err)
@@ -1416,6 +1567,13 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayload_NotAdmittedDoesNotStageI
 	isActive, err := s.WorkerKeeper().IsActiveInferer(s.Ctx(), topicId, msg.WorkerDataBundle.Worker)
 	s.Require().NoError(err)
 	s.Require().False(isActive)
+
+	// The submission passed validation, so indexers still see it - with an
+	// explicit not-admitted outcome.
+	events := infererPayloadEvents(s.Ctx())
+	s.Require().Len(events, 1)
+	s.Require().Equal(types.PayloadAdmissionOutcome_PAYLOAD_ADMISSION_OUTCOME_NOT_ADMITTED,
+		events[0].AdmissionOutcome)
 }
 
 //nolint:exhaustruct
@@ -1517,6 +1675,7 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayload_SingleArityValidationBef
 
 			msg = s.signMsgInsertWorkerPayload(msg, workerPrivateKey)
 			s.Require().NoError(s.WhitelistsKeeper().AddToTopicWorkerWhitelist(s.Ctx(), topicId, msg.WorkerDataBundle.Worker))
+			s.Require().NoError(s.WhitelistsKeeper().AddToTopicForecasterWhitelist(s.Ctx(), topicId, msg.WorkerDataBundle.Worker))
 
 			_, err := s.EmissionsMsgServer().InsertWorkerPayload(s.Ctx(), &msg)
 			if c.wantErrIs != nil {
@@ -1764,6 +1923,7 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayload_LabelRegistryAdmissionPl
 			}
 			msg = s.signMsgInsertWorkerPayload(msg, workerPrivateKey)
 			s.Require().NoError(s.WhitelistsKeeper().AddToTopicWorkerWhitelist(s.Ctx(), topicId, msg.WorkerDataBundle.Worker))
+			s.Require().NoError(s.WhitelistsKeeper().AddToTopicForecasterWhitelist(s.Ctx(), topicId, msg.WorkerDataBundle.Worker))
 
 			registryBefore, err := s.TopicKeeper().GetEpochLabelRegistry(s.Ctx(), topicId, nonce)
 			s.Require().NoError(err)
@@ -1863,7 +2023,11 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayload_Multi_RegistrySaturation
 
 	err := s.WhitelistsKeeper().AddToTopicWorkerWhitelist(s.Ctx(), topicId, msg1.WorkerDataBundle.Worker)
 	s.Require().NoError(err)
+	err = s.WhitelistsKeeper().AddToTopicForecasterWhitelist(s.Ctx(), topicId, msg1.WorkerDataBundle.Worker)
+	s.Require().NoError(err)
 	err = s.WhitelistsKeeper().AddToTopicWorkerWhitelist(s.Ctx(), topicId, msg2.WorkerDataBundle.Worker)
+	s.Require().NoError(err)
+	err = s.WhitelistsKeeper().AddToTopicForecasterWhitelist(s.Ctx(), topicId, msg2.WorkerDataBundle.Worker)
 	s.Require().NoError(err)
 
 	// First payload succeeds; registry sits at the cap.

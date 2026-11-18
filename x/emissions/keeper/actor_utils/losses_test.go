@@ -158,3 +158,113 @@ func (a *ActorUtilsTestSuite) TestFilterUnacceptedWorkersFromReputerValueBundle(
 	a.Require().Len(acceptedBundle.OneOutInfererForecasterValues[0].OneOutInfererValues, 1)
 	a.Require().Len(acceptedBundle.OneInForecasterValues, 1)
 }
+
+func (a *ActorUtilsTestSuite) TestFilterUnacceptedWorkersFromReputerValueBundleKeepsFirstForecasterRow() {
+	workerNonce := emissionstypes.Nonce{
+		BlockHeight: 1,
+	}
+
+	inferer1 := a.AddrsStr(0)
+	inferer2 := a.AddrsStr(1)
+	unacceptedInferer := a.AddrsStr(2)
+	forecaster1 := a.AddrsStr(5)
+
+	err := a.WorkerKeeper().InsertActiveInferences(a.Ctx(), 1, workerNonce.BlockHeight, emissionstypes.Inferences{
+		Inferences: []*emissionstypes.Inference{
+			{
+				TopicId:     1,
+				BlockHeight: 1,
+				Inferer:     inferer1,
+				Values:      []alloraMath.Dec{alloraMath.NewDecFromInt64(1)},
+			},
+			{
+				TopicId:     1,
+				BlockHeight: 1,
+				Inferer:     inferer2,
+				Values:      []alloraMath.Dec{alloraMath.NewDecFromInt64(2)},
+			},
+		},
+	})
+	a.Require().NoError(err)
+
+	err = a.WorkerKeeper().InsertActiveForecasts(a.Ctx(), 1, workerNonce.BlockHeight, emissionstypes.Forecasts{
+		Forecasts: []*emissionstypes.Forecast{
+			{
+				TopicId:     1,
+				BlockHeight: 1,
+				Forecaster:  forecaster1,
+				ForecastElements: []*emissionstypes.ForecastElement{
+					{Inferer: inferer1, Value: alloraMath.NewDecFromInt64(1)},
+				},
+			},
+		},
+	})
+	a.Require().NoError(err)
+
+	topic, err := a.TopicKeeper().GetTopic(a.Ctx(), 1)
+	a.Require().NoError(err)
+
+	row := func(worker string, value int64) *emissionstypes.OneOutInfererForecasterValues {
+		return &emissionstypes.OneOutInfererForecasterValues{
+			Forecaster: forecaster1,
+			OneOutInfererValues: []*emissionstypes.WithheldWorkerAttributedValue{
+				{Worker: worker, Value: alloraMath.NewDecFromInt64(value)},
+			},
+		}
+	}
+
+	tests := []struct {
+		name      string
+		rows      []*emissionstypes.OneOutInfererForecasterValues
+		wantValue int64
+	}{
+		{
+			name:      "first row wins for distinct workers",
+			rows:      []*emissionstypes.OneOutInfererForecasterValues{row(inferer1, 900), row(inferer2, 1000)},
+			wantValue: 900,
+		},
+		{
+			name:      "first-seen order follows the submitted order",
+			rows:      []*emissionstypes.OneOutInfererForecasterValues{row(inferer2, 1000), row(inferer1, 900)},
+			wantValue: 1000,
+		},
+		{
+			name:      "a row filtered to no accepted workers does not shadow a later row",
+			rows:      []*emissionstypes.OneOutInfererForecasterValues{row(unacceptedInferer, 800), row(inferer2, 1000)},
+			wantValue: 1000,
+		},
+		{
+			name:      "duplicate worker keeps the first value",
+			rows:      []*emissionstypes.OneOutInfererForecasterValues{row(inferer1, 900), row(inferer1, 1000)},
+			wantValue: 900,
+		},
+	}
+
+	for _, tt := range tests {
+		a.Run(tt.name, func() {
+			valueBundle := &emissionstypes.ValueBundle{ //nolint:exhaustruct // only the fields under test are set
+				TopicId: 1,
+				ReputerRequestNonce: &emissionstypes.ReputerRequestNonce{
+					ReputerNonce: &workerNonce,
+				},
+				Reputer:       a.AddrsStr(40),
+				CombinedValue: alloraMath.NewDecFromInt64(1000),
+				InfererValues: []*emissionstypes.WorkerAttributedValue{
+					{Worker: inferer1, Value: alloraMath.NewDecFromInt64(100)},
+					{Worker: inferer2, Value: alloraMath.NewDecFromInt64(100)},
+				},
+				NaiveValue:                    alloraMath.NewDecFromInt64(1000),
+				OneOutInfererForecasterValues: tt.rows,
+			}
+
+			acceptedBundle, err := actorutils.FilterUnacceptedWorkersFromReputerValueBundle(
+				a.EmissionsKeeper(), a.Ctx(), topic,
+				emissionstypes.ReputerRequestNonce{ReputerNonce: &workerNonce}, valueBundle)
+			a.Require().NoError(err)
+
+			a.Require().Len(acceptedBundle.OneOutInfererForecasterValues, 1)
+			a.Require().Len(acceptedBundle.OneOutInfererForecasterValues[0].OneOutInfererValues, 1)
+			a.Require().True(alloraMath.NewDecFromInt64(tt.wantValue).Equal(acceptedBundle.OneOutInfererForecasterValues[0].OneOutInfererValues[0].Value))
+		})
+	}
+}
