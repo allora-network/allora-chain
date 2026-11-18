@@ -5,14 +5,47 @@ FROM golang:1.26.10-bookworm AS builder
 # anyone with pull access. If a private Go module is ever needed, use a
 # BuildKit secret (`RUN --mount=type=secret,id=...`). See DEVOP-586.
 
-ADD . /src
-WORKDIR /src
+ENV GOTOOLCHAIN=local
+ENV GOMODCACHE=/gocache
 
-RUN make install
+WORKDIR /src
+COPY go.mod .
+COPY go.sum .
+RUN mkdir -p $GOMODCACHE
+
+# Retries network-dependent commands with backoff, showing output only on failure.
+# The project build runs outside it with GOPROXY=off, so a build error fails on its first attempt.
+COPY --chmod=755 <<'EOF' /usr/local/bin/retry-fetch
+#!/bin/sh
+max_attempts=4
+log=$(mktemp)
+trap 'rm -f "$log"' EXIT
+attempt=1
+until "$@" >"$log" 2>&1; do
+    status=$?
+    tail -n 20 "$log" >&2
+    if [ "$attempt" -ge "$max_attempts" ]; then
+        echo "retry-fetch: giving up after $attempt attempts (exit $status): $*" >&2
+        exit "$status"
+    fi
+    delay=$((attempt * attempt * 5))
+    echo "retry-fetch: attempt $attempt/$max_attempts failed (exit $status), retrying in ${delay}s: $*" >&2
+    sleep "$delay"
+    attempt=$((attempt + 1))
+done
+EOF
+
+RUN --mount=type=cache,target=/gocache retry-fetch go mod download
+
+ADD . /src
+
+RUN --mount=type=cache,target=/gocache \
+    --mount=type=cache,target=/root/.cache/go-build \
+    GOPROXY=off make install
 
 #==============================================================
 
-FROM debian:bookworm-slim as execution
+FROM debian:bookworm-slim AS execution
 
 ENV DEBIAN_FRONTEND=noninteractive \
     USERNAME=appuser \
