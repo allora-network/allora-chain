@@ -398,9 +398,10 @@ func (s *MintKeeperTestSuite) TestUpdateParamsRejectsDelayChange() {
 	newParams := params
 	newParams.InvestorsTeamVestingDelayMonths = 12
 	request := &types.UpdateParamsRequest{
-		Sender:         s.adminAddr,
-		Params:         newParams,
-		BlocksPerMonth: 525590,
+		Sender:                    s.adminAddr,
+		Params:                    newParams,
+		BlocksPerMonth:            525590,
+		RecalculateTargetEmission: false,
 	}
 	s.emissionsKeeper.EXPECT().IsWhitelistAdmin(s.ctx, s.adminAddr).Return(true, nil)
 	resp, err := s.msgServer.UpdateParams(s.ctx, request)
@@ -419,9 +420,10 @@ func (s *MintKeeperTestSuite) TestUpdateParamsAllowsUnchangedDelay() {
 	// same delay in the request should succeed
 	newParams := params
 	request := &types.UpdateParamsRequest{
-		Sender:         s.adminAddr,
-		Params:         newParams,
-		BlocksPerMonth: 525590,
+		Sender:                    s.adminAddr,
+		Params:                    newParams,
+		BlocksPerMonth:            525590,
+		RecalculateTargetEmission: false,
 	}
 	expectedEmissionsParams := emissionstypes.DefaultParams()
 	s.emissionsKeeper.EXPECT().IsWhitelistAdmin(s.ctx, s.adminAddr).Return(true, nil)
