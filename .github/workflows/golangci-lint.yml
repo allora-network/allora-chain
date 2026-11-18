@@ -29,7 +29,7 @@ jobs:
           # realigns composite literals this toolchain leaves alone.
           # goinstall builds the linter with the Go from setup-go.
           install-mode: goinstall
-          args: --timeout=10m
+          args: --timeout=20m
 
   custom-linters:
     name: custom-linters
