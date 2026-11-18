@@ -66,6 +66,7 @@ func DefaultParams() Params {
 		GlobalWorkerWhitelistEnabled:        true,                                        // global worker whitelist enabled => the global worker whitelist determines which workers can participate in all topics
 		GlobalReputerWhitelistEnabled:       true,                                        // global reputer whitelist enabled => the global reputer whitelist determines which reputers can participate in all topics
 		GlobalAdminWhitelistAppended:        true,                                        // global admins enabled => the global admins whitelist determines which admins can create topics and participate in all topics as workers and reputers
+		GlobalForecasterWhitelistEnabled:    true,                                        // global forecaster whitelist enabled => the global forecaster whitelist determines which forecasters can participate in all topics
 		MaxWhitelistInputArrayLength:        uint64(2000),                                // maximum length of input arrays for whitelist operations
 		MinWeightThresholdForStdnorm:        alloraMath.MustNewDecFromString("0.000001"), // retained for compatibility; currently unused
 		MaxCanonicalLabelByteLength:         64,                                          // cap on canonical label name byte length after NFC + trim; bounded by [Min,Max]MaxCanonicalLabelByteLength
@@ -320,6 +321,9 @@ func (p Params) Validate() error {
 	}
 	if err := validateGlobalAdminWhitelistAppended(p.GlobalAdminWhitelistAppended); err != nil {
 		return errorsmod.Wrap(err, "params validation failure: global admin whitelist appended")
+	}
+	if err := validateGlobalForecasterWhitelistEnabled(p.GlobalForecasterWhitelistEnabled); err != nil {
+		return errorsmod.Wrap(err, "params validation failure: global forecaster whitelist enabled")
 	}
 	if err := validateMaxWhitelistInputArrayLength(p.MaxWhitelistInputArrayLength); err != nil {
 		return errorsmod.Wrap(err, "params validation failure: max whitelist input array length")
@@ -821,6 +825,10 @@ func validateGlobalReputerWhitelistEnabled(_ bool) error {
 }
 
 func validateGlobalAdminWhitelistAppended(_ bool) error {
+	return nil
+}
+
+func validateGlobalForecasterWhitelistEnabled(_ bool) error {
 	return nil
 }
 

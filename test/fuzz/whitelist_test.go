@@ -715,3 +715,257 @@ func bulkRemoveFromTopicReputerWhitelist(
 	}
 	return false
 }
+
+func enableTopicForecasterWhitelist(
+	m *testcommon.TestConfig,
+	sender Actor,
+	_ Actor,
+	_ *cosmossdk_io_math.Int,
+	topicId uint64,
+	data *SimulationData,
+	iteration int,
+) bool {
+	if broadcastTxAndWait(m, iteration, data.failOnErr, sender,
+		&emissionstypes.EnableTopicForecasterWhitelistRequest{
+			Sender:  sender.addr,
+			TopicId: topicId,
+		},
+		&emissionstypes.EnableTopicForecasterWhitelistResponse{},
+		fmt.Sprintf("enabling topic '%d' forecaster whitelist", topicId),
+		fmt.Sprintf("failed to enable topic '%d' forecaster whitelist", topicId),
+		fmt.Sprintf("enabled topic '%d' forecaster whitelist", topicId),
+	) {
+		data.enableTopicForecastersWhitelist(topicId)
+		return true
+	}
+	return false
+}
+
+func disableTopicForecasterWhitelist(
+	m *testcommon.TestConfig,
+	sender Actor,
+	_ Actor,
+	_ *cosmossdk_io_math.Int,
+	topicId uint64,
+	data *SimulationData,
+	iteration int,
+) bool {
+	if broadcastTxAndWait(m, iteration, data.failOnErr, sender,
+		&emissionstypes.DisableTopicForecasterWhitelistRequest{
+			Sender:  sender.addr,
+			TopicId: topicId,
+		},
+		&emissionstypes.DisableTopicForecasterWhitelistResponse{},
+		fmt.Sprintf("disabling topic '%d' forecaster whitelist", topicId),
+		fmt.Sprintf("failed to disable topic '%d' forecaster whitelist", topicId),
+		fmt.Sprintf("disabled topic '%d' forecaster whitelist", topicId),
+	) {
+		data.disableTopicForecastersWhitelist(topicId)
+		return true
+	}
+	return false
+}
+
+func addToTopicForecasterWhitelist(
+	m *testcommon.TestConfig,
+	sender Actor,
+	subject Actor,
+	_ *cosmossdk_io_math.Int,
+	topicId uint64,
+	data *SimulationData,
+	iteration int,
+) bool {
+	if broadcastTxAndWait(m, iteration, data.failOnErr, sender,
+		&emissionstypes.AddToTopicForecasterWhitelistRequest{
+			Sender:  sender.addr,
+			Address: subject.addr,
+			TopicId: topicId,
+		},
+		&emissionstypes.AddToTopicForecasterWhitelistResponse{},
+		fmt.Sprintf("adding '%s' to topic '%d' forecaster whitelist", subject, topicId),
+		fmt.Sprintf("failed to add '%s' to topic '%d' forecaster whitelist", subject, topicId),
+		fmt.Sprintf("added '%s' to topic '%d' forecaster whitelist", subject, topicId),
+	) {
+		data.addTopicForecasterWhitelist(topicId, subject)
+		return true
+	}
+	return false
+}
+
+func removeFromTopicForecasterWhitelist(
+	m *testcommon.TestConfig,
+	sender Actor,
+	subject Actor,
+	_ *cosmossdk_io_math.Int,
+	topicId uint64,
+	data *SimulationData,
+	iteration int,
+) bool {
+	if broadcastTxAndWait(m, iteration, data.failOnErr, sender,
+		&emissionstypes.RemoveFromTopicForecasterWhitelistRequest{
+			Sender:  sender.addr,
+			Address: subject.addr,
+			TopicId: topicId,
+		},
+		&emissionstypes.RemoveFromTopicForecasterWhitelistResponse{},
+		fmt.Sprintf("removing '%s' from topic '%d' forecaster whitelist", subject, topicId),
+		fmt.Sprintf("failed to remove '%s' from topic '%d' forecaster whitelist", subject, topicId),
+		fmt.Sprintf("removed '%s' from topic '%d' forecaster whitelist", subject, topicId),
+	) {
+		data.removeTopicForecasterWhitelist(topicId, subject)
+		return true
+	}
+	return false
+}
+
+func addToGlobalForecasterWhitelist(
+	m *testcommon.TestConfig,
+	sender Actor,
+	subject Actor,
+	_ *cosmossdk_io_math.Int,
+	_ uint64,
+	data *SimulationData,
+	iteration int,
+) bool {
+	if broadcastTxAndWait(m, iteration, data.failOnErr, sender,
+		&emissionstypes.AddToGlobalForecasterWhitelistRequest{
+			Sender:  sender.addr,
+			Address: subject.addr,
+		},
+		&emissionstypes.AddToGlobalForecasterWhitelistResponse{},
+		fmt.Sprintf("adding '%s' to global forecaster whitelist", subject),
+		fmt.Sprintf("failed to add '%s' to global forecaster whitelist", subject),
+		fmt.Sprintf("added '%s' to global forecaster whitelist", subject),
+	) {
+		data.addGlobalForecasterWhitelist(subject)
+		return true
+	}
+	return false
+}
+
+func removeFromGlobalForecasterWhitelist(
+	m *testcommon.TestConfig,
+	sender Actor,
+	subject Actor,
+	_ *cosmossdk_io_math.Int,
+	_ uint64,
+	data *SimulationData,
+	iteration int,
+) bool {
+	if broadcastTxAndWait(m, iteration, data.failOnErr, sender,
+		&emissionstypes.RemoveFromGlobalForecasterWhitelistRequest{
+			Sender:  sender.addr,
+			Address: subject.addr,
+		},
+		&emissionstypes.RemoveFromGlobalForecasterWhitelistResponse{},
+		fmt.Sprintf("removing '%s' from global forecaster whitelist", subject),
+		fmt.Sprintf("failed to remove '%s' from global forecaster whitelist", subject),
+		fmt.Sprintf("removed '%s' from global forecaster whitelist", subject),
+	) {
+		data.removeGlobalForecasterWhitelist(subject)
+		return true
+	}
+	return false
+}
+
+func bulkAddToGlobalForecasterWhitelist(
+	m *testcommon.TestConfig,
+	sender Actor,
+	subject Actor,
+	_ *cosmossdk_io_math.Int,
+	_ uint64,
+	data *SimulationData,
+	iteration int,
+) bool {
+	if broadcastTxAndWait(m, iteration, data.failOnErr, sender,
+		&emissionstypes.BulkAddToGlobalForecasterWhitelistRequest{
+			Sender:    sender.addr,
+			Addresses: []string{subject.addr},
+		},
+		&emissionstypes.BulkAddToGlobalForecasterWhitelistResponse{},
+		fmt.Sprintf("bulk adding '%s' to global forecaster whitelist", subject),
+		fmt.Sprintf("failed to bulk add '%s' to global forecaster whitelist", subject),
+		fmt.Sprintf("bulk added '%s' to global forecaster whitelist", subject),
+	) {
+		data.addGlobalForecasterWhitelist(subject)
+		return true
+	}
+	return false
+}
+
+func bulkRemoveFromGlobalForecasterWhitelist(
+	m *testcommon.TestConfig,
+	sender Actor,
+	subject Actor,
+	_ *cosmossdk_io_math.Int,
+	_ uint64,
+	data *SimulationData,
+	iteration int,
+) bool {
+	if broadcastTxAndWait(m, iteration, data.failOnErr, sender,
+		&emissionstypes.BulkRemoveFromGlobalForecasterWhitelistRequest{
+			Sender:    sender.addr,
+			Addresses: []string{subject.addr},
+		},
+		&emissionstypes.BulkRemoveFromGlobalForecasterWhitelistResponse{},
+		fmt.Sprintf("bulk removing '%s' from global forecaster whitelist", subject),
+		fmt.Sprintf("failed to bulk remove '%s' from global forecaster whitelist", subject),
+		fmt.Sprintf("bulk removed '%s' from global forecaster whitelist", subject),
+	) {
+		data.removeGlobalForecasterWhitelist(subject)
+		return true
+	}
+	return false
+}
+
+func bulkAddToTopicForecasterWhitelist(
+	m *testcommon.TestConfig,
+	sender Actor,
+	subject Actor,
+	_ *cosmossdk_io_math.Int,
+	topicId uint64,
+	data *SimulationData,
+	iteration int,
+) bool {
+	if broadcastTxAndWait(m, iteration, data.failOnErr, sender,
+		&emissionstypes.BulkAddToTopicForecasterWhitelistRequest{
+			Sender:    sender.addr,
+			Addresses: []string{subject.addr},
+			TopicId:   topicId,
+		},
+		&emissionstypes.BulkAddToTopicForecasterWhitelistResponse{},
+		fmt.Sprintf("bulk adding '%s' from topic '%d' forecaster whitelist", subject, topicId),
+		fmt.Sprintf("failed to bulk add '%s' from topic '%d' forecaster whitelist", subject, topicId),
+		fmt.Sprintf("bulk added '%s' from topic '%d' forecaster whitelist", subject, topicId),
+	) {
+		data.addTopicForecasterWhitelist(topicId, subject)
+		return true
+	}
+	return false
+}
+
+func bulkRemoveFromTopicForecasterWhitelist(
+	m *testcommon.TestConfig,
+	sender Actor,
+	subject Actor,
+	_ *cosmossdk_io_math.Int,
+	topicId uint64,
+	data *SimulationData,
+	iteration int,
+) bool {
+	if broadcastTxAndWait(m, iteration, data.failOnErr, sender,
+		&emissionstypes.BulkRemoveFromTopicForecasterWhitelistRequest{
+			Sender:    sender.addr,
+			Addresses: []string{subject.addr},
+			TopicId:   topicId,
+		},
+		&emissionstypes.BulkRemoveFromTopicForecasterWhitelistResponse{},
+		fmt.Sprintf("bulk removing '%s' from topic '%d' forecaster whitelist", subject, topicId),
+		fmt.Sprintf("failed to bulk remove '%s' from topic '%d' forecaster whitelist", subject, topicId),
+		fmt.Sprintf("bulk removed '%s' from topic '%d' forecaster whitelist", subject, topicId),
+	) {
+		data.removeTopicForecasterWhitelist(topicId, subject)
+		return true
+	}
+	return false
+}

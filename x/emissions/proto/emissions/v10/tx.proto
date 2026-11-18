@@ -102,6 +102,26 @@ service MsgService {
   rpc RemoveFromTopicReputerWhitelist(RemoveFromTopicReputerWhitelistRequest) returns (RemoveFromTopicReputerWhitelistResponse);
 
   rpc TransferActorOwnership(TransferActorOwnershipRequest) returns (TransferActorOwnershipResponse);
+
+  rpc AddToGlobalForecasterWhitelist(AddToGlobalForecasterWhitelistRequest) returns (AddToGlobalForecasterWhitelistResponse);
+
+  rpc RemoveFromGlobalForecasterWhitelist(RemoveFromGlobalForecasterWhitelistRequest) returns (RemoveFromGlobalForecasterWhitelistResponse);
+
+  rpc BulkAddToGlobalForecasterWhitelist(BulkAddToGlobalForecasterWhitelistRequest) returns (BulkAddToGlobalForecasterWhitelistResponse);
+
+  rpc BulkRemoveFromGlobalForecasterWhitelist(BulkRemoveFromGlobalForecasterWhitelistRequest) returns (BulkRemoveFromGlobalForecasterWhitelistResponse);
+
+  rpc AddToTopicForecasterWhitelist(AddToTopicForecasterWhitelistRequest) returns (AddToTopicForecasterWhitelistResponse);
+
+  rpc RemoveFromTopicForecasterWhitelist(RemoveFromTopicForecasterWhitelistRequest) returns (RemoveFromTopicForecasterWhitelistResponse);
+
+  rpc BulkAddToTopicForecasterWhitelist(BulkAddToTopicForecasterWhitelistRequest) returns (BulkAddToTopicForecasterWhitelistResponse);
+
+  rpc BulkRemoveFromTopicForecasterWhitelist(BulkRemoveFromTopicForecasterWhitelistRequest) returns (BulkRemoveFromTopicForecasterWhitelistResponse);
+
+  rpc EnableTopicForecasterWhitelist(EnableTopicForecasterWhitelistRequest) returns (EnableTopicForecasterWhitelistResponse);
+
+  rpc DisableTopicForecasterWhitelist(DisableTopicForecasterWhitelistRequest) returns (DisableTopicForecasterWhitelistResponse);
 }
 
 /// PARAMS
@@ -273,6 +293,7 @@ message OptionalParams {
   repeated uint64 max_epoch_label_registry_size = 63;
   // Floor for the per-topic inferer admission cap; zero means no floor.
   repeated uint64 min_top_inferers_to_reward = 64;
+  repeated bool global_forecaster_whitelist_enabled = 65 [(amino.dont_omitempty) = true];
 }
 
 message UpdateParamsRequest {
@@ -360,6 +381,7 @@ message CreateNewTopicRequest {
   // Per-topic cap on inferers admitted to the active set. Must be within the
   // global [min_top_inferers_to_reward, max_top_inferers_to_reward] range.
   uint64 max_top_inferers_to_reward = 30;
+  bool enable_forecaster_whitelist = 31;
 }
 
 message CreateNewTopicResponse {
@@ -816,3 +838,87 @@ message RemoveFromTopicReputerWhitelistRequest {
 }
 
 message RemoveFromTopicReputerWhitelistResponse {}
+
+message AddToGlobalForecasterWhitelistRequest {
+  option (cosmos.msg.v1.signer) = "sender";
+  string sender = 1;
+  string address = 2;
+}
+
+message AddToGlobalForecasterWhitelistResponse {}
+
+message RemoveFromGlobalForecasterWhitelistRequest {
+  option (cosmos.msg.v1.signer) = "sender";
+  string sender = 1;
+  string address = 2;
+}
+
+message RemoveFromGlobalForecasterWhitelistResponse {}
+
+message BulkAddToGlobalForecasterWhitelistRequest {
+  option (cosmos.msg.v1.signer) = "sender";
+  string sender = 1;
+  repeated string addresses = 2;
+}
+
+message BulkAddToGlobalForecasterWhitelistResponse {}
+
+message BulkRemoveFromGlobalForecasterWhitelistRequest {
+  option (cosmos.msg.v1.signer) = "sender";
+  string sender = 1;
+  repeated string addresses = 2;
+}
+
+message BulkRemoveFromGlobalForecasterWhitelistResponse {}
+
+message AddToTopicForecasterWhitelistRequest {
+  option (cosmos.msg.v1.signer) = "sender";
+  string sender = 1;
+  string address = 2;
+  uint64 topic_id = 3;
+}
+
+message AddToTopicForecasterWhitelistResponse {}
+
+message RemoveFromTopicForecasterWhitelistRequest {
+  option (cosmos.msg.v1.signer) = "sender";
+  string sender = 1;
+  string address = 2;
+  uint64 topic_id = 3;
+}
+
+message RemoveFromTopicForecasterWhitelistResponse {}
+
+message BulkAddToTopicForecasterWhitelistRequest {
+  option (cosmos.msg.v1.signer) = "sender";
+  string sender = 1;
+  repeated string addresses = 2;
+  uint64 topic_id = 3;
+}
+
+message BulkAddToTopicForecasterWhitelistResponse {}
+
+message BulkRemoveFromTopicForecasterWhitelistRequest {
+  option (cosmos.msg.v1.signer) = "sender";
+  string sender = 1;
+  repeated string addresses = 2;
+  uint64 topic_id = 3;
+}
+
+message BulkRemoveFromTopicForecasterWhitelistResponse {}
+
+message EnableTopicForecasterWhitelistRequest {
+  option (cosmos.msg.v1.signer) = "sender";
+  string sender = 1;
+  uint64 topic_id = 2;
+}
+
+message EnableTopicForecasterWhitelistResponse {}
+
+message DisableTopicForecasterWhitelistRequest {
+  option (cosmos.msg.v1.signer) = "sender";
+  string sender = 1;
+  uint64 topic_id = 2;
+}
+
+message DisableTopicForecasterWhitelistResponse {}

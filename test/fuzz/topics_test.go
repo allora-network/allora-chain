@@ -31,32 +31,33 @@ func createTopic(
 	}
 
 	createTopicRequest := &emissionstypes.CreateNewTopicRequest{
-		MaxTopInferersToReward:   paramsResp.Params.MaxTopInferersToReward,
-		Creator:                  actor.addr,
-		Metadata:                 fmt.Sprintf("Created topic iteration %d", iteration),
-		LossMethod:               "mse",
-		EpochLength:              data.epochLength,
-		GroundTruthLag:           data.epochLength,
-		PNorm:                    alloraMath.NewDecFromInt64(3),
-		AlphaRegret:              alloraMath.MustNewDecFromString("0.1"),
-		AllowNegative:            true,
-		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
-		WorkerSubmissionWindow:   10,
-		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.1"),
-		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.05"),
-		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.05"),
-		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.05"),
-		EnableWorkerWhitelist:    true,
-		EnableReputerWhitelist:   true,
-		CNorm:                    alloraMath.MustNewDecFromString("0.75"),
-		TopicType:                emissionstypes.TopicType_TOPIC_TYPE_REGRESSION,
-		OutputArity:              emissionstypes.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
-		RequireUnity:             false,
-		UnityTolerance:           alloraMath.Dec{},
-		MaxLabelsPerSubmission:   emissionstypes.DefaultMaxLabelsPerSubmission,
-		LabelWhitelist:           nil,
-		LabelDefaultValue:        alloraMath.ZeroDec(),
-		LabelCaseSensitive:       true,
+		MaxTopInferersToReward:    paramsResp.Params.MaxTopInferersToReward,
+		Creator:                   actor.addr,
+		Metadata:                  fmt.Sprintf("Created topic iteration %d", iteration),
+		LossMethod:                "mse",
+		EpochLength:               data.epochLength,
+		GroundTruthLag:            data.epochLength,
+		PNorm:                     alloraMath.NewDecFromInt64(3),
+		AlphaRegret:               alloraMath.MustNewDecFromString("0.1"),
+		AllowNegative:             true,
+		Epsilon:                   alloraMath.MustNewDecFromString("0.01"),
+		WorkerSubmissionWindow:    10,
+		MeritSortitionAlpha:       alloraMath.MustNewDecFromString("0.1"),
+		ActiveInfererQuantile:     alloraMath.MustNewDecFromString("0.05"),
+		ActiveForecasterQuantile:  alloraMath.MustNewDecFromString("0.05"),
+		ActiveReputerQuantile:     alloraMath.MustNewDecFromString("0.05"),
+		EnableWorkerWhitelist:     true,
+		EnableReputerWhitelist:    true,
+		EnableForecasterWhitelist: true,
+		CNorm:                     alloraMath.MustNewDecFromString("0.75"),
+		TopicType:                 emissionstypes.TopicType_TOPIC_TYPE_REGRESSION,
+		OutputArity:               emissionstypes.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
+		RequireUnity:              false,
+		UnityTolerance:            alloraMath.Dec{},
+		MaxLabelsPerSubmission:    emissionstypes.DefaultMaxLabelsPerSubmission,
+		LabelWhitelist:            nil,
+		LabelDefaultValue:         alloraMath.ZeroDec(),
+		LabelCaseSensitive:        true,
 	}
 
 	txResp, err := m.Client.BroadcastTx(ctx, actor.acc, createTopicRequest)
@@ -85,6 +86,7 @@ func createTopic(
 	data.setTopicCreator(createTopicResponse.TopicId, actor)
 	data.enableTopicWorkersWhitelist(createTopicResponse.TopicId)
 	data.enableTopicReputersWhitelist(createTopicResponse.TopicId)
+	data.enableTopicForecastersWhitelist(createTopicResponse.TopicId)
 	iterSuccessLog(m.T, iteration, actor, "created topic", createTopicResponse.TopicId)
 	return true
 }
