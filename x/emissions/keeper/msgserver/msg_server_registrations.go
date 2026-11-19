@@ -5,6 +5,7 @@ import (
 	"time"
 
 	errorsmod "cosmossdk.io/errors"
+	cosmosMath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/allora-network/allora-chain/app/params"
@@ -51,9 +52,13 @@ func (ms msgServer) Register(ctx context.Context, msg *types.RegisterRequest) (_
 	if err != nil {
 		return nil, err
 	}
-	err = sendEffectiveRevenueActivateTopicIfWeightSufficient(ctx, ms, msg.Sender, msg.TopicId, params.RegistrationFee)
-	if err != nil {
-		return nil, err
+
+	var newRevenue cosmosMath.Int
+	if !params.RegistrationFee.IsZero() {
+		newRevenue, err = ms.sendEffectiveRevenue(ctx, msg.Sender, msg.TopicId, params.RegistrationFee)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	nodeInfo := types.OffchainNode{
@@ -61,11 +66,13 @@ func (ms msgServer) Register(ctx context.Context, msg *types.RegisterRequest) (_
 		Owner:       msg.Owner,
 	}
 
+	source := types.TopicFundSource_TOPIC_FUND_SOURCE_WORKER_REGISTRATION
 	if msg.IsReputer {
 		err = ms.rlk.InsertReputer(ctx, msg.TopicId, msg.Sender, nodeInfo)
 		if err != nil {
 			return nil, err
 		}
+		source = types.TopicFundSource_TOPIC_FUND_SOURCE_REPUTER_REGISTRATION
 		types.EmitNewReputerRegisteredEvent(ctx, msg.TopicId, msg.Sender, msg.Owner)
 	} else {
 		err = ms.wk.InsertWorker(ctx, msg.TopicId, msg.Sender, nodeInfo)
@@ -73,6 +80,17 @@ func (ms msgServer) Register(ctx context.Context, msg *types.RegisterRequest) (_
 			return nil, err
 		}
 		types.EmitNewWorkerRegisteredEvent(ctx, msg.TopicId, msg.Sender, msg.Owner)
+	}
+
+	// A zero registration fee adds nothing and emits nothing. A nonzero fee was
+	// credited above; emit that credit before activation.
+	if !params.RegistrationFee.IsZero() {
+		types.EmitNewFundTopicEvent(ctx, msg.TopicId, msg.Sender, params.RegistrationFee, newRevenue, source)
+	}
+
+	if err = ms.activateTopicIfWeightAtLeastGlobalMin(ctx, msg.TopicId); err != nil {
+		sdk.UnwrapSDKContext(ctx).Logger().Error("Failed to activate topic", err)
+		return nil, err
 	}
 
 	return &types.RegisterResponse{}, nil //nolint:exhaustruct // due to deprecated fields

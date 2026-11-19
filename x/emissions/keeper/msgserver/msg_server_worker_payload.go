@@ -5,6 +5,7 @@ import (
 	"time"
 
 	errorsmod "cosmossdk.io/errors"
+	cosmosMath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
@@ -98,9 +99,12 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.InsertWo
 		return nil, errorsmod.Wrapf(types.ErrAddressNotRegistered, "worker is not registered in this topic")
 	}
 
-	err = sendEffectiveRevenueActivateTopicIfWeightSufficient(ctx, ms, msg.Sender, topicId, moduleParams.DataSendingFee)
-	if err != nil {
-		return nil, err
+	var newRevenue cosmosMath.Int
+	if !moduleParams.DataSendingFee.IsZero() {
+		newRevenue, err = ms.sendEffectiveRevenue(ctx, msg.Sender, topicId, moduleParams.DataSendingFee)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	inputBundle := msg.WorkerDataBundle
@@ -124,6 +128,17 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.InsertWo
 		if err != nil {
 			return nil, err
 		}
+	}
+
+	// A zero data-sending fee adds nothing and emits nothing. A nonzero fee was
+	// credited above; emit that credit before activation.
+	if !moduleParams.DataSendingFee.IsZero() {
+		types.EmitNewFundTopicEvent(ctx, topicId, msg.Sender, moduleParams.DataSendingFee, newRevenue, types.TopicFundSource_TOPIC_FUND_SOURCE_WORKER_SUBMISSION)
+	}
+
+	if err = ms.activateTopicIfWeightAtLeastGlobalMin(ctx, topicId); err != nil {
+		sdk.UnwrapSDKContext(ctx).Logger().Error("Failed to activate topic", err)
+		return nil, err
 	}
 
 	return &types.InsertWorkerPayloadResponse{}, nil

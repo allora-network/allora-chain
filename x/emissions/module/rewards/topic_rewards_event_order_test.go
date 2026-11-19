@@ -110,7 +110,8 @@ func (s *RewardsTestSuite) TestGetAndUpdateActiveTopicWeightsEmitsOnlyReactivati
 	s.Require().NoError(s.ParamsKeeper().SetParams(s.Ctx(), params))
 
 	s.WithBlockHeight(0)
-	s.Require().NoError(s.TopicKeeper().AddTopicFeeRevenue(s.Ctx(), topic.Id, cosmosMath.NewInt(1000)))
+	_, err := s.TopicKeeper().AddTopicFeeRevenue(s.Ctx(), topic.Id, cosmosMath.NewInt(1000))
+	s.Require().NoError(err)
 	s.Require().NoError(s.StakingKeeper().SetTopicStake(s.Ctx(), topic.Id, cosmosMath.NewInt(1000)))
 	s.Require().NoError(s.TopicKeeper().SetTopic(s.Ctx(), topic.Id, topic))
 	s.Require().NoError(s.TopicKeeper().ActivateTopic(

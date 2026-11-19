@@ -250,11 +250,11 @@ func (s *EmissionsV3MigrationTestSuite) TestMigrateTopicsWithWeightSameEpoch() {
 			WorkerSubmissionWindow: 130,
 		},
 	}
-	err := s.TopicKeeper().AddTopicFeeRevenue(s.Ctx(), 1, cosmosMath.NewInt(40000))
+	_, err := s.TopicKeeper().AddTopicFeeRevenue(s.Ctx(), 1, cosmosMath.NewInt(40000))
 	s.Require().NoError(err)
-	err = s.TopicKeeper().AddTopicFeeRevenue(s.Ctx(), 2, cosmosMath.NewInt(70000))
+	_, err = s.TopicKeeper().AddTopicFeeRevenue(s.Ctx(), 2, cosmosMath.NewInt(70000))
 	s.Require().NoError(err)
-	err = s.TopicKeeper().AddTopicFeeRevenue(s.Ctx(), 3, cosmosMath.NewInt(60000))
+	_, err = s.TopicKeeper().AddTopicFeeRevenue(s.Ctx(), 3, cosmosMath.NewInt(60000))
 	s.Require().NoError(err)
 
 	err = s.StakingKeeper().SetTopicStake(s.Ctx(), 1, cosmosMath.NewInt(40000))
@@ -368,11 +368,11 @@ func (s *EmissionsV3MigrationTestSuite) TestMigrateTopicsWithWeightDifferentEpoc
 			WorkerSubmissionWindow: 130,
 		},
 	}
-	err := s.TopicKeeper().AddTopicFeeRevenue(s.Ctx(), 1, cosmosMath.NewInt(20000))
+	_, err := s.TopicKeeper().AddTopicFeeRevenue(s.Ctx(), 1, cosmosMath.NewInt(20000))
 	s.Require().NoError(err)
-	err = s.TopicKeeper().AddTopicFeeRevenue(s.Ctx(), 2, cosmosMath.NewInt(40000))
+	_, err = s.TopicKeeper().AddTopicFeeRevenue(s.Ctx(), 2, cosmosMath.NewInt(40000))
 	s.Require().NoError(err)
-	err = s.TopicKeeper().AddTopicFeeRevenue(s.Ctx(), 3, cosmosMath.NewInt(60000))
+	_, err = s.TopicKeeper().AddTopicFeeRevenue(s.Ctx(), 3, cosmosMath.NewInt(60000))
 	s.Require().NoError(err)
 
 	err = s.StakingKeeper().SetTopicStake(s.Ctx(), 1, cosmosMath.NewInt(20000))

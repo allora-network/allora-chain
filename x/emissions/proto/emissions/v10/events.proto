@@ -446,6 +446,23 @@ message EventFundTopic {
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];
+  string new_revenue = 4 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+  TopicFundSource source = 5;
+}
+
+enum TopicFundSource {
+  TOPIC_FUND_SOURCE_TOPIC_UNSPECIFIED = 0;
+  TOPIC_FUND_SOURCE_TOPIC_CREATION = 1;
+  TOPIC_FUND_SOURCE_TOPIC_FUNDING = 2;
+  TOPIC_FUND_SOURCE_WORKER_REGISTRATION = 3;
+  TOPIC_FUND_SOURCE_REPUTER_REGISTRATION = 4;
+  TOPIC_FUND_SOURCE_WORKER_SUBMISSION = 5;
+  TOPIC_FUND_SOURCE_REPUTER_SUBMISSION = 6;
 }
 
 message EventParamsSet {
