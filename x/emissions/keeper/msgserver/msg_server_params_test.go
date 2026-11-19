@@ -152,6 +152,51 @@ func (s *MsgServerTestSuite) TestUpdateAllParams() {
 	require.Equal(newParams.MaxEpochLabelRegistrySize[0], updatedParams.MaxEpochLabelRegistrySize)
 }
 
+func (s *MsgServerTestSuite) TestUpdateParamsRejectsZeroMaxUnfulfilledRequests() {
+	ctx, msgServer := s.Ctx(), s.EmissionsMsgServer()
+	require := s.Require()
+
+	adminPrivateKey := secp256k1.GenPrivKey()
+	adminAddr := sdk.AccAddress(adminPrivateKey.PubKey().Address())
+	require.NoError(s.WhitelistsKeeper().AddWhitelistAdmin(ctx, adminAddr.String()))
+
+	before, err := s.ParamsKeeper().GetParams(ctx)
+	require.NoError(err)
+
+	testCases := []struct {
+		name   string
+		params *types.OptionalParams
+	}{
+		{
+			name: "worker cap",
+			params: &types.OptionalParams{ //nolint:exhaustruct
+				MaxUnfulfilledWorkerRequests: []uint64{0},
+			},
+		},
+		{
+			name: "reputer cap",
+			params: &types.OptionalParams{ //nolint:exhaustruct
+				MaxUnfulfilledReputerRequests: []uint64{0},
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		s.Run(tc.name, func() {
+			response, err := msgServer.UpdateParams(ctx, &types.UpdateParamsRequest{
+				Sender: adminAddr.String(),
+				Params: tc.params,
+			})
+			require.ErrorIs(err, types.ErrValidationMustBeGreaterthanZero)
+			require.Nil(response)
+
+			after, err := s.ParamsKeeper().GetParams(ctx)
+			require.NoError(err)
+			require.Equal(before, after)
+		})
+	}
+}
+
 // TestUpdateGlobalForecasterWhitelistEnabled covers both transitions while
 // ensuring that updating only this field leaves every other parameter unchanged.
 func (s *MsgServerTestSuite) TestUpdateGlobalForecasterWhitelistEnabled() {
