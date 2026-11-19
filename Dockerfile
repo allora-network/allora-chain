@@ -17,12 +17,13 @@ RUN mkdir -p $GOMODCACHE
 # The project build runs outside it with GOPROXY=off, so a build error fails on its first attempt.
 COPY --chmod=755 scripts/retry-fetch.sh /usr/local/bin/retry-fetch
 
-RUN --mount=type=cache,target=/gocache retry-fetch go mod download
+# The module cache stays in the image. A cache mount is not part of the layer,
+# so a later offline build misses the modules when that mount is empty.
+RUN retry-fetch go mod download
 
 ADD . /src
 
-RUN --mount=type=cache,target=/gocache \
-    --mount=type=cache,target=/root/.cache/go-build \
+RUN --mount=type=cache,target=/root/.cache/go-build \
     GOPROXY=off make install
 
 #==============================================================

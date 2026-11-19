@@ -24,17 +24,17 @@ RUN git clone --quiet --shared --no-checkout /src /baseline && \
     git -C /baseline checkout --quiet "$BASELINE_VERSION_TAG"
 
 WORKDIR /baseline
-RUN --mount=type=cache,target=/gocache retry-fetch go mod download
-RUN --mount=type=cache,target=/gocache \
-    --mount=type=cache,target=/root/.cache/go-build \
+# The module cache stays in the image. A cache mount is not part of the layer,
+# so a later offline build misses the modules when that mount is empty.
+RUN retry-fetch go mod download
+RUN --mount=type=cache,target=/root/.cache/go-build \
     GOPROXY=off make install && \
     cd /src && rm -rf /baseline
 
 # Build the current working tree, including any uncommitted changes.
 WORKDIR /src
-RUN --mount=type=cache,target=/gocache retry-fetch go mod download
-RUN --mount=type=cache,target=/gocache \
-    --mount=type=cache,target=/root/.cache/go-build \
+RUN retry-fetch go mod download
+RUN --mount=type=cache,target=/root/.cache/go-build \
     GOPROXY=off make build-local-edits BUILDDIR=/tmp/allora-upgrade && \
     mv /tmp/allora-upgrade/allorad "/go/bin/allorad-$UPGRADE_VERSION_TAG" && \
     rmdir /tmp/allora-upgrade
