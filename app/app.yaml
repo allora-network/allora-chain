@@ -78,11 +78,11 @@ modules:
           permissions: [burner, staking]
         - account: not_bonded_tokens_pool
           permissions: [burner, staking]
-        - account : allorastaking
-        - account : distribution
-        - account : allorarewards
-        - account : allorapendingrewards
-        - account : ecosystem
+        - account: allorastaking
+        - account: distribution
+        - account: allorarewards
+        - account: allorapendingrewards
+        - account: ecosystem
         - account: transfer
           permissions: [minter, burner]
         - account: feeibc

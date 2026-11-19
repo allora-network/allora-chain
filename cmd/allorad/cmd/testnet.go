@@ -144,7 +144,7 @@ func initAppForTestnet(app *app.AlloraApp, args valArgs) *app.AlloraApp {
 	}
 	validatorsPowerStoreIterator.Close()
 
-	// Remove all valdiators from last validators store
+	// Remove all validators from last validators store
 	lastValidatorsIterator, err := app.StakingKeeper.LastValidatorsIterator(ctx)
 	if err != nil {
 		tmos.Exit(errors.Wrap(err, "initAppForTestnet(): failed to get last validators iterator").Error())
