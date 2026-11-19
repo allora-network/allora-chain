@@ -25,6 +25,20 @@ func fundTopicEvents(ctx sdk.Context) []*types.EventFundTopic {
 	return out
 }
 
+func topicStatusEvents(ctx sdk.Context) []*types.EventTopicStatusChanged {
+	out := make([]*types.EventTopicStatusChanged, 0)
+	for _, ev := range ctx.EventManager().Events() {
+		msg, err := sdk.ParseTypedEvent(abci.Event(ev))
+		if err != nil {
+			continue
+		}
+		if e, ok := msg.(*types.EventTopicStatusChanged); ok {
+			out = append(out, e)
+		}
+	}
+	return out
+}
+
 // firstFundAndStatus indexes the first fund event and the first status event
 // in emission order. A zero index means that event was absent.
 func firstFundAndStatus(ctx sdk.Context) (fund *types.EventFundTopic, fundAt int, status *types.EventTopicStatusChanged, statusAt int) {
@@ -306,6 +320,7 @@ func (s *MsgServerTestSuite) TestFundTopicZeroAmountStillActivatesWeightSufficie
 	s.Require().True(fund.Amount.IsZero())
 	s.Require().True(feeRevenueBefore.Equal(fund.NewRevenue))
 	s.Require().Equal(types.TopicFundSource_TOPIC_FUND_SOURCE_TOPIC_FUNDING, fund.Source)
+	s.Require().Len(topicStatusEvents(callCtx), 1)
 	s.Require().NotNil(status)
 	s.Require().Less(fundAt, statusAt, "the credit event precedes activation")
 
@@ -349,6 +364,7 @@ func (s *MsgServerTestSuite) TestFundTopicActivationEmitsActivatedByFunding() {
 	s.Require().True(amount.Equal(fund.Amount))
 	s.Require().True(revenueBefore.Add(amount).Equal(fund.NewRevenue))
 	s.Require().Equal(types.TopicFundSource_TOPIC_FUND_SOURCE_TOPIC_FUNDING, fund.Source)
+	s.Require().Len(topicStatusEvents(callCtx), 1)
 	s.Require().NotNil(event)
 	s.Require().Less(fundAt, statusAt, "the credit event precedes activation")
 
