@@ -1,5 +1,10 @@
 # Build an allora-chain image from any branch, tag or commit and push it to
-# the private GHCR package ghcr.io/allora-network/allora-chain.
+# the GHCR package ghcr.io/allora-network/allora-chain.
+#
+# The package is meant to be private, but that is a GHCR package setting this
+# file cannot enforce (the repo itself is public). The push uses GITHUB_TOKEN,
+# so the package must be linked to this repository with Actions write access;
+# otherwise the push fails with 403.
 #
 # For development only: devnets (allora-network/flux-gcp-devnet, "devnet up"
 # with chain_image=ghcr.io/allora-network/allora-chain) and local testing.
@@ -15,6 +20,9 @@
 #            practice, so use this one in devnets.
 #   <tag>    optional, from the `tag` input (for example a branch nickname);
 #            moves every time it is pushed again.
+#
+# The binary is stamped with VERSION=<ref>-<sha8> (just <sha8> when `ref` is a
+# commit SHA), passed to `make install` through the Dockerfile's VERSION arg.
 name: Build and Push dev docker image to GHCR
 
 on:  # yamllint disable-line rule:truthy
@@ -26,7 +34,7 @@ on:  # yamllint disable-line rule:truthy
         type: string
         default: ''
       tag:
-        description: 'Optional extra image tag, e.g. alek-prtcl-29 (lowercase letters, digits, . _ -; not v*/latest/dev-latest)'
+        description: 'Optional extra image tag, e.g. alek-prtcl-29 (lowercase letters, digits, . _ -; not v<digit>..., latest, dev-latest or 8 hex chars)'
         required: false
         type: string
         default: ''
@@ -35,7 +43,9 @@ permissions:
   contents: read
 
 concurrency:
-  group: ${{ github.workflow }}-${{ inputs.ref || github.ref }}
+  # Keyed on the extra tag when set, so runs that move the same tag are
+  # serialized and the last dispatch wins.
+  group: ${{ github.workflow }}-${{ inputs.tag || inputs.ref || github.ref }}
   cancel-in-progress: false
 
 env:
@@ -56,15 +66,18 @@ jobs:
         run: |
           set -euo pipefail
           if [ -n "${EXTRA_TAG}" ]; then
-            # Docker tag grammar, lowercase only, and never a name that looks
-            # like a release or the Docker Hub moving tags: those belong to
-            # build_push_docker_hub.yml.
+            # Docker tag grammar, lowercase only. Release-looking names
+            # (v<digit>...) and the moving release tags (latest, dev-latest)
+            # are kept out of this GHCR package so a dev build is never
+            # mistaken for a release. This is naming hygiene only: release
+            # images live on Docker Hub (build_push_docker_hub.yml, triggered
+            # by git tags), and nothing pushed here can reach or trigger them.
             if ! [[ "${EXTRA_TAG}" =~ ^[a-z0-9][a-z0-9._-]{0,63}$ ]]; then
               echo "::error::invalid tag '${EXTRA_TAG}'"; exit 1
             fi
             if [[ "${EXTRA_TAG}" =~ ^v[0-9] ]] || [ "${EXTRA_TAG}" = latest ] \
               || [ "${EXTRA_TAG}" = dev-latest ]; then
-              echo "::error::tag '${EXTRA_TAG}' is reserved for release images"; exit 1
+              echo "::error::tag '${EXTRA_TAG}' looks like a release tag; not allowed for dev images"; exit 1
             fi
             # 8 hex chars would shadow a commit tag of another build.
             if [[ "${EXTRA_TAG}" =~ ^[0-9a-f]{8}$ ]]; then
@@ -76,19 +89,29 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           ref: ${{ inputs.ref || github.ref }}
-          # Tags and history let `make install` stamp a meaningful version
-          # (git describe) into the binary.
-          fetch-depth: 0
+          # VERSION is passed explicitly (see Compute tags), so no history
+          # is needed. The checkout's .git is still copied into the build
+          # context, where the Makefile's git calls expect it.
+          fetch-depth: 1
           persist-credentials: false
 
       - name: Compute tags
         id: meta
         env:
           EXTRA_TAG: ${{ inputs.tag }}
+          REF: ${{ inputs.ref || github.ref_name }}
         run: |
           set -euo pipefail
           SHA="$(git rev-parse HEAD)"
           SHORT="${SHA:0:8}"
+          # <ref>-<sha8>; a SHA ref would just repeat the commit, so use <sha8>.
+          if [[ "${REF}" =~ ^[0-9a-f]{7,40}$ ]]; then
+            VERSION="${SHORT}"
+          else
+            VERSION="${REF#refs/heads/}"
+            VERSION="${VERSION#refs/tags/}"
+            VERSION="${VERSION//\//-}-${SHORT}"
+          fi
           TAGS="${IMAGE}:${SHORT}"
           if [ -n "${EXTRA_TAG}" ]; then
             TAGS="${TAGS},${IMAGE}:${EXTRA_TAG}"
@@ -96,6 +119,7 @@ jobs:
           {
             printf 'sha=%s\n' "${SHA}"
             printf 'short=%s\n' "${SHORT}"
+            printf 'version=%s\n' "${VERSION}"
             printf 'tags=%s\n' "${TAGS}"
           } >> "${GITHUB_OUTPUT}"
 
@@ -118,9 +142,12 @@ jobs:
           pull: true
           push: true
           tags: ${{ steps.meta.outputs.tags }}
+          build-args: |
+            VERSION=${{ steps.meta.outputs.version }}
           labels: |
             org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
             org.opencontainers.image.revision=${{ steps.meta.outputs.sha }}
+            org.opencontainers.image.version=${{ steps.meta.outputs.version }}
             org.opencontainers.image.title=allora-chain
             org.opencontainers.image.description=allora-chain development build (not a release)
           cache-from: type=gha,scope=allora-chain-ghcr
@@ -131,6 +158,7 @@ jobs:
           REF: ${{ inputs.ref || github.ref_name }}
           SHA: ${{ steps.meta.outputs.sha }}
           SHORT: ${{ steps.meta.outputs.short }}
+          VERSION: ${{ steps.meta.outputs.version }}
           TAGS: ${{ steps.meta.outputs.tags }}
         run: |
           set -euo pipefail
@@ -139,6 +167,7 @@ jobs:
             printf '| | |\n|---|---|\n'
             printf '| Ref | `%s` |\n' "${REF}"
             printf '| Commit | `%s` |\n' "${SHA}"
+            printf '| Binary version | `%s` |\n' "${VERSION}"
             printf '| Tags | `%s` |\n\n' "${TAGS//,/\`, \`}"
             printf 'Use it in a devnet (flux-gcp-devnet, **devnet up**):\n\n'
             printf -- '- `chain_image`: `%s`\n' "${IMAGE}"

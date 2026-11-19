@@ -8,6 +8,10 @@ FROM golang:1.22-bookworm AS builder
 ADD . /src
 WORKDIR /src
 
+# Optional version stamped into the binary (not a secret). When unset, the
+# Makefile derives it from git (tag, or <branch>-<commit>).
+ARG VERSION
+
 RUN make install
 
 #==============================================================
