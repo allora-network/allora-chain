@@ -89,6 +89,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 * [#1046](https://github.com/allora-network/allora-chain/pull/1046) The module, CI, release builds, and chain images pin Go 1.26.10. The language line is 1.26.0 and the toolchain floor is 1.26.10. `golangci-lint` moves to v2.15.0, which can load that toolchain.
+* [#1045](https://github.com/allora-network/allora-chain/pull/1045) Investors, preseed, and team stay fully locked for 18 emissions months. Month 18 unlocks half of each bucket, then one thirty-sixth of the bucket unlocks each month, and the buckets are fully unlocked at month 36.
 * [#968](https://github.com/allora-network/allora-chain/pull/968) The global `max_top_inferers_to_reward` now rejects zero and serves as the live ceiling for the per-topic cap; score-history retention still uses the global value.
 * [#1004](https://github.com/allora-network/allora-chain/pull/1004) `EmitNewActorScoresSetEvent` no longer takes a height: `EventScoresSet` always carried the epoch nonce from the scores, and two callers passed the current block height, which was ignored.
 * [#1026](https://github.com/allora-network/allora-chain/pull/1026) `addresses` on `EventActiveForecastersSet` lists only the forecasters whose forecasts were stored for the epoch; it used to list every active forecaster, including those whose forecasts the close discarded.
