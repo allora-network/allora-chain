@@ -1,39 +1,43 @@
-FROM golang:1.22-bookworm AS builder
+FROM golang:1.26.10-bookworm AS builder
 
-ENV GO111MODULE=on
-ENV GOMODCACHE=/gocache
-ENV BASELINE_VERSION_TAG=v0.17.0
-ENV UPGRADE_VERSION_TAG=v0.18.0
-ENV GIT_STASH_MESSAGE="Docker build"
+ENV GO111MODULE=on \
+    GOMODCACHE=/gocache \
+    GOTOOLCHAIN=local \
+    BASELINE_VERSION_TAG=v0.17.0 \
+    UPGRADE_VERSION_TAG=v0.18.0
 
-
-ADD . /src
 WORKDIR /src
 
-# Save the uncommited changes
-RUN git stash -u -m "$GIT_STASH_MESSAGE"
-# Switch to the baseline version
-RUN git checkout $BASELINE_VERSION_TAG
+# Retries network-dependent commands with backoff, showing output only on failure.
+# The project builds run outside it with GOPROXY=off, so a build error fails on its first attempt.
+COPY --chmod=755 scripts/retry-fetch.sh /usr/local/bin/retry-fetch
 
-# Build the baseline version
-RUN mkdir -p $GOMODCACHE
 RUN --mount=type=cache,target=/gocache \
     --mount=type=cache,target=/root/.cache/go-build \
-    go install cosmossdk.io/tools/cosmovisor/cmd/cosmovisor@v1.6.0
-RUN --mount=type=cache,target=/gocache \
-    --mount=type=cache,target=/root/.cache/go-build \
-    make install
+    retry-fetch go install cosmossdk.io/tools/cosmovisor/cmd/cosmovisor@v1.6.0
 
-# Restore the current version
-RUN git switch -
-RUN sh -c 'git stash list | grep "$GIT_STASH_MESSAGE" && git stash pop'; true
+ADD . /src
 
-# Build the current version
-RUN --mount=type=cache,target=/gocache \
-    --mount=type=cache,target=/root/.cache/go-build \
-    make build-local-edits
+# Build the baseline tag without modifying the current working tree.
+# A shared local clone keeps repository objects in /src instead of duplicating them.
+RUN git clone --quiet --shared --no-checkout /src /baseline && \
+    git -C /baseline checkout --quiet "$BASELINE_VERSION_TAG"
 
-RUN cp build/allorad /go/bin/allorad-$UPGRADE_VERSION_TAG
+WORKDIR /baseline
+# The module cache stays in the image. A cache mount is not part of the layer,
+# so a later offline build misses the modules when that mount is empty.
+RUN retry-fetch go mod download
+RUN --mount=type=cache,target=/root/.cache/go-build \
+    GOPROXY=off make install && \
+    cd /src && rm -rf /baseline
+
+# Build the current working tree, including any uncommitted changes.
+WORKDIR /src
+RUN retry-fetch go mod download
+RUN --mount=type=cache,target=/root/.cache/go-build \
+    GOPROXY=off make build-local-edits BUILDDIR=/tmp/allora-upgrade && \
+    mv /tmp/allora-upgrade/allorad "/go/bin/allorad-$UPGRADE_VERSION_TAG" && \
+    rmdir /tmp/allora-upgrade
 
 #==============================================================
 
@@ -45,30 +49,28 @@ ENV DEBIAN_FRONTEND=noninteractive \
 
 #* curl jq - required for readiness probe and to download genesis
 #* bc - required for generate_genesis.sh
-RUN apt update && \
-    apt -y dist-upgrade && \
-    apt install -y --no-install-recommends \
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
         curl jq \
         tzdata \
         bc \
         ca-certificates && \
-    echo "deb http://deb.debian.org/debian testing main" >> /etc/apt/sources.list && \
-    apt update && \
-    apt install -y --no-install-recommends -t testing \
-      zlib1g \
-      libgnutls30 \
-      perl-base && \
-    rm -rf /var/cache/apt/*
+    rm -rf /var/cache/apt/* /var/lib/apt/lists/*
 
 #* Install dasel to work with json/yaml/toml configs
 ENV DASEL_VERSION="v2.8.1"
-ADD https://github.com/TomWright/dasel/releases/download/${DASEL_VERSION}/dasel_linux_amd64 /usr/local/bin/dasel
-RUN chmod a+x /usr/local/bin/dasel
+ENV DASEL_SHA256="21fda0a4dc3c779c42737eca4b37e4f187d7ab91ba6301eed97b801af84a9ea2"
+RUN curl --fail --silent --show-error --location \
+        --connect-timeout 20 --max-time 300 --retry 5 --retry-all-errors \
+        --output /usr/local/bin/dasel \
+        "https://github.com/TomWright/dasel/releases/download/${DASEL_VERSION}/dasel_linux_amd64" && \
+    echo "${DASEL_SHA256}  /usr/local/bin/dasel" | sha256sum --check --strict - && \
+    chmod a+x /usr/local/bin/dasel
 
 COPY --from=builder /go/bin/* /usr/local/bin/
 
 RUN groupadd -g 1001 ${USERNAME} \
-    && useradd -m -d ${APP_PATH} -u 1001 -g 1001 ${USERNAME}
+    && useradd -m -d ${APP_PATH} -u 1001 -g 1001 appuser
 
 EXPOSE 1317 26656 26657
 VOLUME ${APP_PATH}
@@ -79,4 +81,4 @@ USER ${USERNAME}
 ENV DAEMON_NAME="allorad"
 ENV DAEMON_HOME="/data"
 
-ENTRYPOINT ["cosmovisor" "run" "start"]
+ENTRYPOINT ["cosmovisor", "run", "start"]
