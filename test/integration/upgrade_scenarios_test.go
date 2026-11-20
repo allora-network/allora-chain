@@ -28,6 +28,10 @@ type UpgradeScenario struct {
 	UpgradeName     string
 	PlanHeightDelta int64
 	ModuleChecks    []ModuleCheck
+	// BaselineAppVersion is the version every validator must report before the upgrade. Empty skips the check.
+	BaselineAppVersion string
+	// BaselineModuleVersions are the consensus versions the chain must report before the upgrade.
+	BaselineModuleVersions map[string]uint64
 }
 
 const DefaultPlanHeightDelta = int64(50)
@@ -36,8 +40,10 @@ var DefaultUpgradeTarget = v0_18_0.UpgradeName
 
 var UpgradeScenarios = map[string]UpgradeScenario{
 	v0_15_0.UpgradeName: {
-		UpgradeName:     v0_15_0.UpgradeName,
-		PlanHeightDelta: DefaultPlanHeightDelta,
+		UpgradeName:            v0_15_0.UpgradeName,
+		PlanHeightDelta:        DefaultPlanHeightDelta,
+		BaselineAppVersion:     "",
+		BaselineModuleVersions: nil,
 		ModuleChecks: []ModuleCheck{
 			{
 				ModuleName: "scheduler",
@@ -66,8 +72,10 @@ var UpgradeScenarios = map[string]UpgradeScenario{
 		},
 	},
 	v0_16_0.UpgradeName: {
-		UpgradeName:     v0_16_0.UpgradeName,
-		PlanHeightDelta: DefaultPlanHeightDelta,
+		UpgradeName:            v0_16_0.UpgradeName,
+		PlanHeightDelta:        DefaultPlanHeightDelta,
+		BaselineAppVersion:     "",
+		BaselineModuleVersions: nil,
 		ModuleChecks: []ModuleCheck{
 			{
 				ModuleName: "scheduler",
@@ -96,8 +104,10 @@ var UpgradeScenarios = map[string]UpgradeScenario{
 		},
 	},
 	v0_17_0.UpgradeName: {
-		UpgradeName:     v0_17_0.UpgradeName,
-		PlanHeightDelta: DefaultPlanHeightDelta,
+		UpgradeName:            v0_17_0.UpgradeName,
+		PlanHeightDelta:        DefaultPlanHeightDelta,
+		BaselineAppVersion:     "",
+		BaselineModuleVersions: nil,
 		ModuleChecks: []ModuleCheck{
 			{
 				ModuleName: "scheduler",
@@ -126,8 +136,14 @@ var UpgradeScenarios = map[string]UpgradeScenario{
 		},
 	},
 	v0_18_0.UpgradeName: {
-		UpgradeName:     v0_18_0.UpgradeName,
-		PlanHeightDelta: DefaultPlanHeightDelta,
+		UpgradeName:        v0_18_0.UpgradeName,
+		PlanHeightDelta:    DefaultPlanHeightDelta,
+		BaselineAppVersion: "v0.17.2",
+		BaselineModuleVersions: map[string]uint64{
+			"scheduler": 1,
+			"emissions": 15,
+			"mint":      6,
+		},
 		ModuleChecks: []ModuleCheck{
 			{
 				ModuleName: "scheduler",
