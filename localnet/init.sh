@@ -5,8 +5,10 @@
 # Run by the `init` service of localnet/docker-compose.yaml before the
 # validator starts. Idempotent: once a run has finished (it writes
 # $ALLORA_HOME/.localnet-initialized last) it does nothing, so `docker compose
-# up` after `docker compose stop` keeps the chain. A home left by a failed run
-# (no marker) is wiped and initialised again.
+# up` after `docker compose stop` keeps the chain. A home with a complete
+# genesis but no marker (made before the marker existed) is kept. A home left
+# by a failed run (incomplete genesis, no chain data) is wiped and initialised
+# again; anything else with chain data is refused, never deleted.
 # `docker compose down -v` wipes the volume and the next `up` makes a fresh
 # genesis.
 #
@@ -56,6 +58,22 @@ if [ -f "${MARKER}" ]; then
   exit 0
 fi
 if [ -e "${ALLORA_HOME}" ] && [ -n "$(ls -A "${ALLORA_HOME}")" ]; then
+  # collect-gentxs is the last step that changes the genesis, so collected
+  # gentxs mean a finished home: one made before the marker existed, or a
+  # chain supplied through ALLORA_HOME. Keep it and record the marker.
+  if [ -f "${GENESIS}" ] \
+    && jq -e '(.app_state.genutil.gen_txs // []) | length > 0' "${GENESIS}" > /dev/null 2>&1; then
+    echo "localnet: ${ALLORA_HOME} holds a complete genesis, keeping it (docker compose down -v to reset)"
+    touch "${MARKER}"
+    exit 0
+  fi
+  # The validator only starts after init succeeds, so a home init left
+  # unfinished has never run a node. Block data means it is not ours to wipe.
+  if [ -e "${ALLORA_HOME}/data/blockstore.db" ] || [ -e "${ALLORA_HOME}/data/application.db" ]; then
+    echo "localnet: ${ALLORA_HOME} has chain data but no complete genesis; not touching it." >&2
+    echo "localnet: run 'docker compose down -v' to reset, or point ALLORA_HOME elsewhere." >&2
+    exit 1
+  fi
   echo "localnet: ${ALLORA_HOME} is left over from an unfinished init, removing it and starting over" >&2
   rm -rf "${ALLORA_HOME:?}"
 fi
