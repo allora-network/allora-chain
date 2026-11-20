@@ -71,7 +71,7 @@ func NewClient(
 	nodeRpcAddresses []string,
 	alloraHomeDir string,
 	seed int64,
-) Client {
+) *Client {
 	t.Helper()
 	ctx := context.Background()
 
@@ -121,7 +121,7 @@ func NewClient(
 	)
 	require.NoError(t, err)
 
-	return Client{
+	return &Client{
 		RpcConnectionType:    rpcConnectionType,
 		Clients:              clients,
 		QueryAuths:           queryAuths,
