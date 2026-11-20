@@ -170,7 +170,7 @@ func (a *eventAudit) checkInfererStored(height int64, event *emissionstypes.Even
 	if sameBlockCleared(rest, "inferer", event.Inferer, event.TopicId) {
 		return
 	}
-	response, err := a.m.Client.QueryEmissions().GetWorkerLatestInputInferenceByTopicId(atHeight(a.ctx, height), &emissionstypes.GetWorkerLatestInputInferenceByTopicIdRequest{TopicId: event.TopicId, WorkerAddress: event.Inferer})
+	response, err := queryEmissions(a, height, emissionstypes.QueryServiceClient.GetWorkerLatestInputInferenceByTopicId, &emissionstypes.GetWorkerLatestInputInferenceByTopicIdRequest{TopicId: event.TopicId, WorkerAddress: event.Inferer})
 	stored := err == nil && response.LatestInputInference != nil
 	if !stored && !isNotFound(err) {
 		a.failf(height, "GetWorkerLatestInputInferenceByTopicId topic %d inferer %s: %v", event.TopicId, event.Inferer, err)
@@ -225,7 +225,7 @@ func (a *eventAudit) checkInfererStored(height int64, event *emissionstypes.Even
 // for an open nonce the response is empty. The close-time rule then compares
 // the two lists against the accepted payloads since the previous close.
 func (a *eventAudit) checkForecasterStored(height int64, event *emissionstypes.EventInsertForecasterPayload) {
-	response, err := a.m.Client.QueryEmissions().GetForecastsAtBlock(atHeight(a.ctx, height), &emissionstypes.GetForecastsAtBlockRequest{TopicId: event.TopicId, BlockHeight: event.Nonce})
+	response, err := queryEmissions(a, height, emissionstypes.QueryServiceClient.GetForecastsAtBlock, &emissionstypes.GetForecastsAtBlockRequest{TopicId: event.TopicId, BlockHeight: event.Nonce})
 	if err != nil {
 		a.failf(height, "GetForecastsAtBlock topic %d nonce %d: %v", event.TopicId, event.Nonce, err)
 		return
@@ -280,7 +280,7 @@ func (a *eventAudit) checkReputerStored(height int64, event *emissionstypes.Even
 	if sameBlockCleared(rest, "reputer", event.Reputer, event.TopicId) {
 		return
 	}
-	response, err := a.m.Client.QueryEmissions().GetReputerLossBundlesAtBlock(atHeight(a.ctx, height), &emissionstypes.GetReputerLossBundlesAtBlockRequest{TopicId: event.TopicId, BlockHeight: event.Nonce})
+	response, err := queryEmissions(a, height, emissionstypes.QueryServiceClient.GetReputerLossBundlesAtBlock, &emissionstypes.GetReputerLossBundlesAtBlockRequest{TopicId: event.TopicId, BlockHeight: event.Nonce})
 	if err != nil {
 		if isNotFound(err) {
 			return
