@@ -536,6 +536,32 @@ message EventTopicReputerWhitelistRemoved {
   string address = 2;
 }
 
+message EventGlobalForecasterWhitelistAdded {
+  string address = 1;
+}
+
+message EventGlobalForecasterWhitelistRemoved {
+  string address = 1;
+}
+
+message EventTopicForecasterWhitelistEnabled {
+  uint64 topic_id = 1;
+}
+
+message EventTopicForecasterWhitelistDisabled {
+  uint64 topic_id = 1;
+}
+
+message EventTopicForecasterWhitelistAdded {
+  uint64 topic_id = 1;
+  string address = 2;
+}
+
+message EventTopicForecasterWhitelistRemoved {
+  uint64 topic_id = 1;
+  string address = 2;
+}
+
 message EventForecastTaskScoreSet {
   uint64 topic_id = 1;
   string score = 2 [

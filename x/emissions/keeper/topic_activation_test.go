@@ -27,6 +27,22 @@ func lastTopicStatusChangedEvent(em *sdk.EventManager) *types.EventTopicStatusCh
 	return out
 }
 
+// topicStatusChangedEvents returns every EventTopicStatusChanged the event
+// manager recorded, in emission order.
+func topicStatusChangedEvents(em *sdk.EventManager) []*types.EventTopicStatusChanged {
+	events := make([]*types.EventTopicStatusChanged, 0)
+	for _, event := range em.Events() {
+		message, err := sdk.ParseTypedEvent(abci.Event(event))
+		if err != nil {
+			continue
+		}
+		if statusEvent, ok := message.(*types.EventTopicStatusChanged); ok {
+			events = append(events, statusEvent)
+		}
+	}
+	return events
+}
+
 // Deactivations carry the reason the caller passed, plus the weight, minimum
 // and threshold the caller decided on.
 func (s *KeeperTestSuite) TestInactivateTopicEmitsReasonAndWeights() {
@@ -81,14 +97,32 @@ func (s *KeeperTestSuite) TestActivateTopicEmitsReasonAndWeights() {
 	err = k.ActivateTopic(ctx.WithEventManager(em), topicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_ACTIVATED_BY_FUNDING, weight, params.MinTopicWeight)
 	s.Require().NoError(err)
 
-	event := lastTopicStatusChangedEvent(em)
-	s.Require().NotNil(event)
+	statusEvents := topicStatusChangedEvents(em)
+	s.Require().Len(statusEvents, 1)
+	event := statusEvents[0]
 	s.Require().Equal(topicId, event.TopicId)
 	s.Require().True(event.IsActive)
 	s.Require().Equal(types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_ACTIVATED_BY_FUNDING, event.Reason)
 	s.Require().Equal(params.MinTopicWeight, event.MinWeight)
 	s.Require().True(weight.Equal(event.Weight), "expected weight %s, got %s", weight.String(), event.Weight.String())
 	s.Require().True(params.MinTopicWeight.Equal(event.ThresholdWeight), "expected threshold %s, got %s", params.MinTopicWeight.String(), event.ThresholdWeight.String())
+
+	topic, err := k.GetTopic(ctx, topicId)
+	s.Require().NoError(err)
+	epochEndBlock := ctx.BlockHeight() + topic.EpochLength
+	schedule, err := k.GetTopicSchedule(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().Equal(epochEndBlock, schedule)
+	activeAtBlock, err := k.GetActiveTopicIdsAtBlock(ctx, epochEndBlock)
+	s.Require().NoError(err)
+	s.Require().Equal([]uint64{topicId}, activeAtBlock.TopicIds)
+	lowest, noPrior, err := k.GetLowestActiveTopicWeightAtBlock(ctx, epochEndBlock)
+	s.Require().NoError(err)
+	s.Require().False(noPrior)
+	s.Require().Equal(topicId, lowest.TopicId)
+	active, err := k.IsTopicActive(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().True(active)
 }
 
 // When a full active set admits a higher-weight topic, the displaced topic's
@@ -133,38 +167,45 @@ func (s *KeeperTestSuite) TestEvictedTopicEmitsEvictedByHigherWeight() {
 	err = k.ActivateTopic(ctx.WithEventManager(em), highTopicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_ACTIVATED_BY_FUNDING, highWeight, params.MinTopicWeight)
 	s.Require().NoError(err)
 
-	var evicted, activated *types.EventTopicStatusChanged
-	for _, ev := range em.Events() {
-		msg, err := sdk.ParseTypedEvent(abci.Event(ev))
-		if err != nil {
-			continue
-		}
-		event, ok := msg.(*types.EventTopicStatusChanged)
-		if !ok {
-			continue
-		}
-		switch event.TopicId {
-		case lowTopicId:
-			evicted = event
-		case highTopicId:
-			activated = event
-		}
-	}
-	s.Require().NotNil(evicted)
+	statusEvents := topicStatusChangedEvents(em)
+	s.Require().Len(statusEvents, 2)
+	evicted, activated := statusEvents[0], statusEvents[1]
+	s.Require().Equal(lowTopicId, evicted.TopicId)
+	s.Require().Equal(highTopicId, activated.TopicId)
 	s.Require().False(evicted.IsActive)
+	s.Require().True(activated.IsActive)
 	s.Require().Equal(types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_EVICTED_BY_HIGHER_WEIGHT, evicted.Reason)
 	s.Require().Equal(params.MinTopicWeight, evicted.MinWeight)
 	// The evicted topic's event carries the stored lowest-weight snapshot the
 	// eviction read, not a recompute.
 	s.Require().True(storedLowest.Weight.Equal(evicted.Weight), "expected weight %s, got %s", storedLowest.Weight.String(), evicted.Weight.String())
 	s.Require().True(highWeight.Equal(evicted.ThresholdWeight), "expected threshold %s, got %s", highWeight.String(), evicted.ThresholdWeight.String())
-	s.Require().NotNil(activated)
-	s.Require().True(activated.IsActive)
 	s.Require().Equal(types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_ACTIVATED_BY_FUNDING, activated.Reason)
 	s.Require().Equal(params.MinTopicWeight, activated.MinWeight)
 	s.Require().True(highWeight.Equal(activated.Weight), "expected weight %s, got %s", highWeight.String(), activated.Weight.String())
 	s.Require().True(storedLowest.Weight.Equal(activated.ThresholdWeight), "expected threshold %s, got %s", storedLowest.Weight.String(), activated.ThresholdWeight.String())
 	s.Require().False(storedLowest.Weight.Equal(highWeight), "the weights must differ for the assertions to tell them apart")
+
+	activeAtBlock, err := k.GetActiveTopicIdsAtBlock(ctx, lowEpochEndBlock)
+	s.Require().NoError(err)
+	s.Require().Equal([]uint64{highTopicId}, activeAtBlock.TopicIds)
+	highSchedule, err := k.GetTopicSchedule(ctx, highTopicId)
+	s.Require().NoError(err)
+	s.Require().Equal(lowEpochEndBlock, highSchedule)
+	lowScheduled, err := k.IsTopicScheduled(ctx, lowTopicId)
+	s.Require().NoError(err)
+	s.Require().False(lowScheduled)
+	lowest, noPrior, err := k.GetLowestActiveTopicWeightAtBlock(ctx, lowEpochEndBlock)
+	s.Require().NoError(err)
+	s.Require().False(noPrior)
+	s.Require().Equal(highTopicId, lowest.TopicId)
+	s.Require().True(highWeight.Equal(lowest.Weight))
+	lowActive, err := k.IsTopicActive(ctx, lowTopicId)
+	s.Require().NoError(err)
+	s.Require().False(lowActive)
+	highActive, err := k.IsTopicActive(ctx, highTopicId)
+	s.Require().NoError(err)
+	s.Require().True(highActive)
 }
 
 // A challenger with the same weight as the lowest topic in a full active set is
@@ -199,20 +240,18 @@ func (s *KeeperTestSuite) TestEvictedTopicEmitsEvictedByEqualWeightOnTie() {
 	em := sdk.NewEventManager()
 	s.Require().NoError(k.ActivateTopic(ctx.WithEventManager(em), challengerId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_ACTIVATED_BY_FUNDING, challengerWeight, params.MinTopicWeight))
 
-	var evicted *types.EventTopicStatusChanged
-	for _, ev := range em.Events() {
-		msg, err := sdk.ParseTypedEvent(abci.Event(ev))
-		if err != nil {
-			continue
-		}
-		if event, ok := msg.(*types.EventTopicStatusChanged); ok && event.TopicId == incumbentId {
-			evicted = event
-		}
-	}
-	s.Require().NotNil(evicted)
+	statusEvents := topicStatusChangedEvents(em)
+	s.Require().Len(statusEvents, 2)
+	evicted, activated := statusEvents[0], statusEvents[1]
+	s.Require().Equal(incumbentId, evicted.TopicId)
 	s.Require().False(evicted.IsActive)
 	s.Require().Equal(types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_EVICTED_BY_EQUAL_WEIGHT, evicted.Reason)
 	s.Require().True(evicted.Weight.Equal(evicted.ThresholdWeight), "a tie reports equal weight and threshold")
+	s.Require().Equal(challengerId, activated.TopicId)
+	s.Require().True(activated.IsActive)
+	s.Require().Equal(types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_ACTIVATED_BY_FUNDING, activated.Reason)
+	s.Require().True(challengerWeight.Equal(activated.Weight))
+	s.Require().True(storedLowest.Weight.Equal(activated.ThresholdWeight))
 
 	active, err := k.IsTopicActive(ctx, challengerId)
 	s.Require().NoError(err)

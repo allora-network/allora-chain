@@ -62,6 +62,7 @@ func TestDefaultParams(t *testing.T) {
 		LambdaInitialScore:                  alloraMath.MustNewDecFromString("2"),
 		GlobalWorkerWhitelistEnabled:        true,
 		GlobalReputerWhitelistEnabled:       true,
+		GlobalForecasterWhitelistEnabled:    true,
 		GlobalAdminWhitelistAppended:        true,
 		MaxWhitelistInputArrayLength:        uint64(2000),
 		MinWeightThresholdForStdnorm:        alloraMath.MustNewDecFromString("0.000001"),
@@ -73,6 +74,54 @@ func TestDefaultParams(t *testing.T) {
 	params := DefaultParams()
 
 	require.Equal(t, expectedParams, params)
+	require.NoError(t, params.Validate())
+}
+
+func TestParamsValidateMaxUnfulfilledRequests(t *testing.T) {
+	fields := []struct {
+		name string
+		set  func(*Params, uint64)
+	}{
+		{
+			name: "worker",
+			set: func(p *Params, value uint64) {
+				p.MaxUnfulfilledWorkerRequests = value
+			},
+		},
+		{
+			name: "reputer",
+			set: func(p *Params, value uint64) {
+				p.MaxUnfulfilledReputerRequests = value
+			},
+		},
+	}
+	values := []struct {
+		name    string
+		value   uint64
+		wantErr bool
+	}{
+		{name: "zero rejected", value: 0, wantErr: true},
+		{name: "one accepted", value: 1, wantErr: false},
+		{name: "default accepted", value: 100, wantErr: false},
+	}
+
+	for _, field := range fields {
+		t.Run(field.name, func(t *testing.T) {
+			for _, value := range values {
+				t.Run(value.name, func(t *testing.T) {
+					params := DefaultParams()
+					field.set(&params, value.value)
+
+					err := params.Validate()
+					if value.wantErr {
+						require.ErrorIs(t, err, ErrValidationMustBeGreaterthanZero)
+					} else {
+						require.NoError(t, err)
+					}
+				})
+			}
+		})
+	}
 }
 
 // TestValidateMaxLabelsPerSubmission exercises the explicit bound on the

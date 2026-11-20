@@ -25,6 +25,12 @@ import (
 // Params.MinTopInferersToReward floor, reconciles topic activity state and
 // recomputes totalSumPreviousTopicWeights from valid scheduled topics so any
 // drift accumulated by the incremental bookkeeping is cleared.
+//
+// Forecaster whitelist params, memberships, and topic gates are deliberately
+// left untouched. A legacy params object does not contain the new forecaster
+// bool, so it decodes as false; the fresh-genesis default in DefaultParams is
+// not applied to that existing object. Forecaster restrictions are configured
+// independently through the normal whitelist and params messages.
 func MigrateStore(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 	ctx.Logger().Info("STARTING EMISSIONS MODULE MIGRATION FROM VERSION 15 TO VERSION 16")
 	storageService := emissionsKeeper.GetStorageService()
