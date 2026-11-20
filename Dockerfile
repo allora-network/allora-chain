@@ -23,6 +23,11 @@ RUN retry-fetch go mod download
 
 ADD . /src
 
+# Optional version stamped into the binary (not a secret). When unset, the
+# Makefile derives it from git (tag, or <branch>-<commit>). Declared after the
+# module download so a new VERSION does not invalidate that layer.
+ARG VERSION
+
 RUN --mount=type=cache,target=/root/.cache/go-build \
     GOPROXY=off make install
 
