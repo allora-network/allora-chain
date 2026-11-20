@@ -444,6 +444,60 @@ func EmitNewTopicReputerWhitelistRemovedEvent(ctx context.Context, topicId Topic
 	}
 }
 
+func EmitNewGlobalForecasterWhitelistAddedEvent(ctx context.Context, address string) {
+	metrics.IncrProducerEventCount(metrics.GLOBAL_FORECASTER_WHITELIST_ADDED_EVENT)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	err := sdkCtx.EventManager().EmitTypedEvent(NewGlobalForecasterWhitelistAddedEventBase(address))
+	if err != nil {
+		sdkCtx.Logger().Warn("Error emitting NewGlobalForecasterWhitelistAddedEvent", "error", err)
+	}
+}
+
+func EmitNewGlobalForecasterWhitelistRemovedEvent(ctx context.Context, address string) {
+	metrics.IncrProducerEventCount(metrics.GLOBAL_FORECASTER_WHITELIST_REMOVED_EVENT)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	err := sdkCtx.EventManager().EmitTypedEvent(NewGlobalForecasterWhitelistRemovedEventBase(address))
+	if err != nil {
+		sdkCtx.Logger().Warn("Error emitting NewGlobalForecasterWhitelistRemovedEvent", "error", err)
+	}
+}
+
+func EmitNewTopicForecasterWhitelistEnabledEvent(ctx context.Context, topicId TopicId) {
+	metrics.IncrProducerEventCount(metrics.TOPIC_FORECASTER_WHITELIST_ENABLED_EVENT)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	err := sdkCtx.EventManager().EmitTypedEvent(NewTopicForecasterWhitelistEnabledEventBase(topicId))
+	if err != nil {
+		sdkCtx.Logger().Warn("Error emitting NewTopicForecasterWhitelistEnabledEvent", "error", err)
+	}
+}
+
+func EmitNewTopicForecasterWhitelistDisabledEvent(ctx context.Context, topicId TopicId) {
+	metrics.IncrProducerEventCount(metrics.TOPIC_FORECASTER_WHITELIST_DISABLED_EVENT)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	err := sdkCtx.EventManager().EmitTypedEvent(NewTopicForecasterWhitelistDisabledEventBase(topicId))
+	if err != nil {
+		sdkCtx.Logger().Warn("Error emitting NewTopicForecasterWhitelistDisabledEvent", "error", err)
+	}
+}
+
+func EmitNewTopicForecasterWhitelistAddedEvent(ctx context.Context, topicId TopicId, address string) {
+	metrics.IncrProducerEventCount(metrics.TOPIC_FORECASTER_WHITELIST_ADDED_EVENT)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	err := sdkCtx.EventManager().EmitTypedEvent(NewTopicForecasterWhitelistAddedEventBase(topicId, address))
+	if err != nil {
+		sdkCtx.Logger().Warn("Error emitting NewTopicForecasterWhitelistAddedEvent", "error", err)
+	}
+}
+
+func EmitNewTopicForecasterWhitelistRemovedEvent(ctx context.Context, topicId TopicId, address string) {
+	metrics.IncrProducerEventCount(metrics.TOPIC_FORECASTER_WHITELIST_REMOVED_EVENT)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	err := sdkCtx.EventManager().EmitTypedEvent(NewTopicForecasterWhitelistRemovedEventBase(topicId, address))
+	if err != nil {
+		sdkCtx.Logger().Warn("Error emitting NewTopicForecasterWhitelistRemovedEvent", "error", err)
+	}
+}
+
 func EmitNewActorEMAScoresSetEvent(ctx context.Context, actorType ActorType, nonceBlockHeight BlockHeight, scores []Score, activations map[string]bool) {
 	if len(scores) < 1 {
 		return

@@ -15,18 +15,21 @@ func NewWhitelistsKeeper(
 	topicKeeper *TopicKeeper,
 ) *WhitelistsKeeper {
 	return &WhitelistsKeeper{
-		whitelistAdmins:              collections.NewKeySet(sb, types.WhitelistAdminsKey, "whitelist_admins", collections.StringKey),
-		globalWhitelist:              collections.NewKeySet(sb, types.GlobalWhitelistKey, "global_whitelist", collections.StringKey),
-		globalWorkerWhitelist:        collections.NewKeySet(sb, types.GlobalWorkerWhitelistKey, "global_worker_whitelist", collections.StringKey),
-		globalReputerWhitelist:       collections.NewKeySet(sb, types.GlobalReputerWhitelistKey, "global_reputer_whitelist", collections.StringKey),
-		globalAdminWhitelist:         collections.NewKeySet(sb, types.GlobalAdminWhitelistKey, "global_admin_whitelist", collections.StringKey),
-		topicCreatorWhitelist:        collections.NewKeySet(sb, types.TopicCreatorWhitelistKey, "topic_creator_whitelist", collections.StringKey),
-		topicWorkerWhitelist:         collections.NewKeySet(sb, types.TopicWorkerWhitelistKey, "topic_worker_whitelist", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey)),
-		topicReputerWhitelist:        collections.NewKeySet(sb, types.TopicReputerWhitelistKey, "topic_reputer_whitelist", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey)),
-		topicWorkerWhitelistEnabled:  collections.NewKeySet(sb, types.TopicWorkerWhitelistEnabledKey, "topic_worker_whitelist_enabled", collections.Uint64Key),
-		topicReputerWhitelistEnabled: collections.NewKeySet(sb, types.TopicReputerWhitelistEnabledKey, "topic_reputer_whitelist_enabled", collections.Uint64Key),
-		paramsKeeper:                 paramsKeeper,
-		topicKeeper:                  topicKeeper,
+		whitelistAdmins:                 collections.NewKeySet(sb, types.WhitelistAdminsKey, "whitelist_admins", collections.StringKey),
+		globalWhitelist:                 collections.NewKeySet(sb, types.GlobalWhitelistKey, "global_whitelist", collections.StringKey),
+		globalWorkerWhitelist:           collections.NewKeySet(sb, types.GlobalWorkerWhitelistKey, "global_worker_whitelist", collections.StringKey),
+		globalReputerWhitelist:          collections.NewKeySet(sb, types.GlobalReputerWhitelistKey, "global_reputer_whitelist", collections.StringKey),
+		globalAdminWhitelist:            collections.NewKeySet(sb, types.GlobalAdminWhitelistKey, "global_admin_whitelist", collections.StringKey),
+		globalForecasterWhitelist:       collections.NewKeySet(sb, types.GlobalForecasterWhitelistKey, "global_forecaster_whitelist", collections.StringKey),
+		topicForecasterWhitelist:        collections.NewKeySet(sb, types.TopicForecasterWhitelistKey, "topic_forecaster_whitelist", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey)),
+		topicForecasterWhitelistEnabled: collections.NewKeySet(sb, types.TopicForecasterWhitelistEnabledKey, "topic_forecaster_whitelist_enabled", collections.Uint64Key),
+		topicCreatorWhitelist:           collections.NewKeySet(sb, types.TopicCreatorWhitelistKey, "topic_creator_whitelist", collections.StringKey),
+		topicWorkerWhitelist:            collections.NewKeySet(sb, types.TopicWorkerWhitelistKey, "topic_worker_whitelist", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey)),
+		topicReputerWhitelist:           collections.NewKeySet(sb, types.TopicReputerWhitelistKey, "topic_reputer_whitelist", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey)),
+		topicWorkerWhitelistEnabled:     collections.NewKeySet(sb, types.TopicWorkerWhitelistEnabledKey, "topic_worker_whitelist_enabled", collections.Uint64Key),
+		topicReputerWhitelistEnabled:    collections.NewKeySet(sb, types.TopicReputerWhitelistEnabledKey, "topic_reputer_whitelist_enabled", collections.Uint64Key),
+		paramsKeeper:                    paramsKeeper,
+		topicKeeper:                     topicKeeper,
 	}
 }
 
@@ -41,6 +44,12 @@ type WhitelistsKeeper struct {
 	globalReputerWhitelist collections.KeySet[ActorId]
 	// global admins can add global workers, global reputers, topic actors, topic reputers
 	globalAdminWhitelist collections.KeySet[ActorId]
+	// global forecasters can participate in all topics as forecasters
+	globalForecasterWhitelist collections.KeySet[ActorId]
+	// map from topic id to whitelist of forecasters
+	topicForecasterWhitelist collections.KeySet[collections.Pair[TopicId, ActorId]]
+	// map from topic id to whether the whitelist is enabled for topic forecasters
+	topicForecasterWhitelistEnabled collections.KeySet[TopicId]
 	// whitelist of actors who can create topics
 	topicCreatorWhitelist collections.KeySet[ActorId]
 	// map from topic id to whitelist of workers
@@ -141,6 +150,40 @@ func (k *WhitelistsKeeper) DisableTopicReputerWhitelist(ctx context.Context, top
 	return nil
 }
 
+// EnableTopicForecasterWhitelist turns on the forecaster gate and emits an
+// Enabled event only when the gate actually changes state.
+func (k *WhitelistsKeeper) EnableTopicForecasterWhitelist(ctx context.Context, topicId TopicId) error {
+	enabled, err := k.topicForecasterWhitelistEnabled.Has(ctx, topicId)
+	if err != nil {
+		return errorsmod.Wrap(err, "error checking topic forecaster whitelist enabled")
+	}
+	if enabled {
+		return nil
+	}
+	if err := k.topicForecasterWhitelistEnabled.Set(ctx, topicId); err != nil {
+		return err
+	}
+	types.EmitNewTopicForecasterWhitelistEnabledEvent(ctx, topicId)
+	return nil
+}
+
+// DisableTopicForecasterWhitelist turns off the forecaster gate and emits a
+// Disabled event only when the gate actually changes state.
+func (k *WhitelistsKeeper) DisableTopicForecasterWhitelist(ctx context.Context, topicId TopicId) error {
+	enabled, err := k.topicForecasterWhitelistEnabled.Has(ctx, topicId)
+	if err != nil {
+		return errorsmod.Wrap(err, "error checking topic forecaster whitelist enabled")
+	}
+	if !enabled {
+		return nil
+	}
+	if err := k.topicForecasterWhitelistEnabled.Remove(ctx, topicId); err != nil {
+		return err
+	}
+	types.EmitNewTopicForecasterWhitelistDisabledEvent(ctx, topicId)
+	return nil
+}
+
 func (k *WhitelistsKeeper) AddToGlobalWhitelist(ctx context.Context, actor ActorId) error {
 	if err := types.ValidateBech32(actor); err != nil {
 		return errorsmod.Wrap(err, "error validating actor address")
@@ -197,6 +240,20 @@ func (k *WhitelistsKeeper) RemoveFromGlobalAdminWhitelist(ctx context.Context, a
 	return k.globalAdminWhitelist.Remove(ctx, actor)
 }
 
+func (k *WhitelistsKeeper) AddToGlobalForecasterWhitelist(ctx context.Context, actor ActorId) error {
+	if err := types.ValidateBech32(actor); err != nil {
+		return errorsmod.Wrap(err, "error validating actor address")
+	}
+	return k.globalForecasterWhitelist.Set(ctx, actor)
+}
+
+func (k *WhitelistsKeeper) RemoveFromGlobalForecasterWhitelist(ctx context.Context, actor ActorId) error {
+	if err := types.ValidateBech32(actor); err != nil {
+		return errorsmod.Wrap(err, "error validating actor address")
+	}
+	return k.globalForecasterWhitelist.Remove(ctx, actor)
+}
+
 func (k *WhitelistsKeeper) AddToTopicCreatorWhitelist(ctx context.Context, actor ActorId) error {
 	if err := types.ValidateBech32(actor); err != nil {
 		return errorsmod.Wrap(err, "error validating actor address")
@@ -243,6 +300,22 @@ func (k *WhitelistsKeeper) RemoveFromTopicReputerWhitelist(ctx context.Context, 
 	return k.topicReputerWhitelist.Remove(ctx, key)
 }
 
+func (k *WhitelistsKeeper) AddToTopicForecasterWhitelist(ctx context.Context, topicId TopicId, actor ActorId) error {
+	if err := types.ValidateBech32(actor); err != nil {
+		return errorsmod.Wrap(err, "error validating actor address")
+	}
+	key := collections.Join(topicId, actor)
+	return k.topicForecasterWhitelist.Set(ctx, key)
+}
+
+func (k *WhitelistsKeeper) RemoveFromTopicForecasterWhitelist(ctx context.Context, topicId TopicId, actor ActorId) error {
+	if err := types.ValidateBech32(actor); err != nil {
+		return errorsmod.Wrap(err, "error validating actor address")
+	}
+	key := collections.Join(topicId, actor)
+	return k.topicForecasterWhitelist.Remove(ctx, key)
+}
+
 // GETTERS - Functions that retrieve information about whitelists
 
 // An actor is a whitelist admin if they are in the whitelistAdmins keyset
@@ -258,6 +331,10 @@ func (k *WhitelistsKeeper) IsTopicWorkerWhitelistEnabled(ctx context.Context, to
 // A topic is whitelist enabled if the topicWhitelistEnabled keyset has the topicId
 func (k *WhitelistsKeeper) IsTopicReputerWhitelistEnabled(ctx context.Context, topicId TopicId) (bool, error) {
 	return k.topicReputerWhitelistEnabled.Has(ctx, topicId)
+}
+
+func (k *WhitelistsKeeper) IsTopicForecasterWhitelistEnabled(ctx context.Context, topicId TopicId) (bool, error) {
+	return k.topicForecasterWhitelistEnabled.Has(ctx, topicId)
 }
 
 func (k *WhitelistsKeeper) IsWhitelistedTopicCreator(ctx context.Context, actor ActorId) (bool, error) {
@@ -276,6 +353,10 @@ func (k *WhitelistsKeeper) IsWhitelistedGlobalReputer(ctx context.Context, actor
 	return k.globalReputerWhitelist.Has(ctx, actor)
 }
 
+func (k *WhitelistsKeeper) IsWhitelistedGlobalForecaster(ctx context.Context, actor ActorId) (bool, error) {
+	return k.globalForecasterWhitelist.Has(ctx, actor)
+}
+
 func (k *WhitelistsKeeper) IsWhitelistedGlobalAdmin(ctx context.Context, actor ActorId) (bool, error) {
 	return k.globalAdminWhitelist.Has(ctx, actor)
 }
@@ -288,6 +369,11 @@ func (k *WhitelistsKeeper) IsWhitelistedTopicWorker(ctx context.Context, topicId
 func (k *WhitelistsKeeper) IsWhitelistedTopicReputer(ctx context.Context, topicId TopicId, actor ActorId) (bool, error) {
 	key := collections.Join(topicId, actor)
 	return k.topicReputerWhitelist.Has(ctx, key)
+}
+
+func (k *WhitelistsKeeper) IsWhitelistedTopicForecaster(ctx context.Context, topicId TopicId, actor ActorId) (bool, error) {
+	key := collections.Join(topicId, actor)
+	return k.topicForecasterWhitelist.Has(ctx, key)
 }
 
 // QUALIFIERS - Helper functions that are part of the same layer of abstraction as PERMISSIONS
@@ -342,6 +428,21 @@ func (k *WhitelistsKeeper) IsEnabledGlobalAdmin(ctx context.Context, actor Actor
 	return true, nil
 }
 
+// An actor is globally forecaster-whitelisted if the GlobalForecasterWhitelistEnabled
+// parameter is false, or (the parameter is true and the globalForecasterWhitelist
+// keyset has the actor)
+func (k *WhitelistsKeeper) IsEnabledGlobalForecaster(ctx context.Context, actor ActorId) (bool, error) {
+	params, err := k.paramsKeeper.GetParams(ctx)
+	if err != nil {
+		return false, err
+	}
+	if params.GlobalForecasterWhitelistEnabled {
+		// If whitelist enabled check to see if actor is whitelisted
+		return k.IsWhitelistedGlobalForecaster(ctx, actor)
+	}
+	return true, nil
+}
+
 // An actor is topic creator whitelisted if the TopicCreatorWhitelistEnabled global parameter is false
 // or (the parameter is true and the topicCreatorWhitelist keyset has the actor)
 func (k *WhitelistsKeeper) IsEnabledWhitelistedTopicCreator(ctx context.Context, actor ActorId) (bool, error) {
@@ -384,6 +485,21 @@ func (k *WhitelistsKeeper) IsEnabledTopicReputer(ctx context.Context, topicId To
 	return true, nil
 }
 
+// An actor is topic forecaster whitelisted if the topic forecaster gate is
+// disabled or (the gate is enabled and the topic forecaster whitelist keyset
+// has the (topicId, actor) key)
+func (k *WhitelistsKeeper) IsEnabledTopicForecaster(ctx context.Context, topicId TopicId, actor ActorId) (bool, error) {
+	topicWhitelistEnabled, err := k.IsTopicForecasterWhitelistEnabled(ctx, topicId)
+	if err != nil {
+		return false, err
+	}
+	if topicWhitelistEnabled {
+		// If whitelist enabled check to see if actor is whitelisted
+		return k.IsWhitelistedTopicForecaster(ctx, topicId, actor)
+	}
+	return true, nil
+}
+
 // PERMISSIONS - Functions that determine if an actor has the ability to perform an action
 
 // Whitelist admins can update global whitelists including adding/removing from the global actor and whitelist admin lists
@@ -405,6 +521,18 @@ func (k *WhitelistsKeeper) CanUpdateGlobalWorkerWhitelist(ctx context.Context, a
 
 // Whitelist admins and global admins can update global reputer whitelist
 func (k *WhitelistsKeeper) CanUpdateGlobalReputerWhitelist(ctx context.Context, actor ActorId) (bool, error) {
+	isWhitelistAdmin, err := k.IsEnabledGlobalAdmin(ctx, actor)
+	if err != nil {
+		return false, err
+	}
+	if isWhitelistAdmin {
+		return true, nil
+	}
+	return k.IsWhitelistAdmin(ctx, actor)
+}
+
+// Whitelist admins and global admins can update global forecaster whitelist
+func (k *WhitelistsKeeper) CanUpdateGlobalForecasterWhitelist(ctx context.Context, actor ActorId) (bool, error) {
 	isWhitelistAdmin, err := k.IsEnabledGlobalAdmin(ctx, actor)
 	if err != nil {
 		return false, err
@@ -455,8 +583,10 @@ func (k *WhitelistsKeeper) CanCreateTopic(ctx context.Context, actor ActorId) (b
 	return k.IsEnabledGlobalActor(ctx, actor)
 }
 
-// An actor can submit a worker payload if they are topic worker whitelisted, global actor, or global worker
-func (k *WhitelistsKeeper) CanSubmitWorkerPayload(ctx context.Context, topicId TopicId, actor ActorId) (bool, error) {
+// CanSubmitInferencePayload returns true if the actor may submit an inference
+// for the topic: topic worker (inferer) whitelisted, global worker whitelisted,
+// or global actor.
+func (k *WhitelistsKeeper) CanSubmitInferencePayload(ctx context.Context, topicId TopicId, actor ActorId) (bool, error) {
 	isEnabledTopicWorker, err := k.IsEnabledTopicWorker(ctx, topicId, actor)
 	if err != nil {
 		return false, err
@@ -469,6 +599,34 @@ func (k *WhitelistsKeeper) CanSubmitWorkerPayload(ctx context.Context, topicId T
 		return false, err
 	}
 	if isEnabledGlobalWorker {
+		return true, nil
+	}
+	return k.IsEnabledGlobalActor(ctx, actor)
+}
+
+// CanSubmitWorkerPayload is the previous name for CanSubmitInferencePayload and
+// keeps the same authorization chain.
+//
+// Deprecated: use CanSubmitInferencePayload.
+func (k *WhitelistsKeeper) CanSubmitWorkerPayload(ctx context.Context, topicId TopicId, actor ActorId) (bool, error) {
+	return k.CanSubmitInferencePayload(ctx, topicId, actor)
+}
+
+// CanSubmitForecasterPayload returns true if the actor may submit a forecast
+// for the topic: topic forecaster whitelisted, global forecaster whitelisted, or global actor.
+func (k *WhitelistsKeeper) CanSubmitForecasterPayload(ctx context.Context, topicId TopicId, actor ActorId) (bool, error) {
+	isEnabledTopicForecaster, err := k.IsEnabledTopicForecaster(ctx, topicId, actor)
+	if err != nil {
+		return false, err
+	}
+	if isEnabledTopicForecaster {
+		return true, nil
+	}
+	isEnabledGlobalForecaster, err := k.IsEnabledGlobalForecaster(ctx, actor)
+	if err != nil {
+		return false, err
+	}
+	if isEnabledGlobalForecaster {
 		return true, nil
 	}
 	return k.IsEnabledGlobalActor(ctx, actor)
