@@ -28,8 +28,6 @@ type RewardsTestSuite struct {
 	testutil.TestSuite
 }
 
-// typedEvents collects every typed event of type T the manager holds, in
-// emission order.
 // forfeitEvents returns the EventTopicRewardForfeited events with the given reason.
 func forfeitEvents(em sdk.EventManagerI, reason types.TopicRewardForfeitReason) []*types.EventTopicRewardForfeited {
 	out := make([]*types.EventTopicRewardForfeited, 0)
@@ -41,6 +39,8 @@ func forfeitEvents(em sdk.EventManagerI, reason types.TopicRewardForfeitReason) 
 	return out
 }
 
+// typedEvents collects every typed event of type T the manager holds, in
+// emission order.
 func typedEvents[T any](em sdk.EventManagerI) []T {
 	out := make([]T, 0)
 	for _, ev := range em.Events() {
