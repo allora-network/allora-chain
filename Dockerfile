@@ -1,22 +1,39 @@
-FROM golang:1.22-bookworm AS builder
+FROM golang:1.26.10-bookworm AS builder
 
 # SECURITY: Do not pass credentials via `--build-arg` / `ARG` -- they are
 # embedded in image metadata (`docker history`, OCI provenance) and leak to
 # anyone with pull access. If a private Go module is ever needed, use a
 # BuildKit secret (`RUN --mount=type=secret,id=...`). See DEVOP-586.
 
-ADD . /src
+ENV GOTOOLCHAIN=local
+ENV GOMODCACHE=/gocache
+
 WORKDIR /src
+COPY go.mod .
+COPY go.sum .
+RUN mkdir -p $GOMODCACHE
+
+# Retries network-dependent commands with backoff, showing output only on failure.
+# The project build runs outside it with GOPROXY=off, so a build error fails on its first attempt.
+COPY --chmod=755 scripts/retry-fetch.sh /usr/local/bin/retry-fetch
+
+# The module cache stays in the image. A cache mount is not part of the layer,
+# so a later offline build misses the modules when that mount is empty.
+RUN retry-fetch go mod download
+
+ADD . /src
 
 # Optional version stamped into the binary (not a secret). When unset, the
-# Makefile derives it from git (tag, or <branch>-<commit>).
+# Makefile derives it from git (tag, or <branch>-<commit>). Declared after the
+# module download so a new VERSION does not invalidate that layer.
 ARG VERSION
 
-RUN make install
+RUN --mount=type=cache,target=/root/.cache/go-build \
+    GOPROXY=off make install
 
 #==============================================================
 
-FROM debian:bookworm-slim as execution
+FROM debian:bookworm-slim AS execution
 
 ENV DEBIAN_FRONTEND=noninteractive \
     USERNAME=appuser \

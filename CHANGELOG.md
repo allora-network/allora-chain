@@ -88,6 +88,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+* [#1046](https://github.com/allora-network/allora-chain/pull/1046) The module, CI, release builds, and chain images pin Go 1.26.10. The language line is 1.26.0 and the toolchain floor is 1.26.10. `golangci-lint` moves to v2.15.0, which can load that toolchain.
 * [#968](https://github.com/allora-network/allora-chain/pull/968) The global `max_top_inferers_to_reward` now rejects zero and serves as the live ceiling for the per-topic cap; score-history retention still uses the global value.
 * [#1004](https://github.com/allora-network/allora-chain/pull/1004) `EmitNewActorScoresSetEvent` no longer takes a height: `EventScoresSet` always carried the epoch nonce from the scores, and two callers passed the current block height, which was ignored.
 * [#1026](https://github.com/allora-network/allora-chain/pull/1026) `addresses` on `EventActiveForecastersSet` lists only the forecasters whose forecasts were stored for the epoch; it used to list every active forecaster, including those whose forecasts the close discarded.
@@ -117,6 +118,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+* [#1035](https://github.com/allora-network/allora-chain/pull/1035) `FindTopNByScoreDesc` orders equal scores by `sha256(seed || address)` under a stable sort. It drew random numbers inside the sort comparator, so the winner of a tie depended on the order in which Go's sort algorithm compares elements, which can differ between Go releases and split validators built with different Go versions. State-machine breaking: a tie can resolve to a different inferer.
 * [#980](https://github.com/allora-network/allora-chain/pull/980) Patch a fast-node cache/commit race in `iavl` that caused `AppHash` divergence: the ecosystem treasury account is deleted every block at zero balance, and a concurrent balance query during commit could read its value one block stale, minting the wrong amount and forking the node. Points `iavl` at `github.com/allora-network/iavl` (`v1.2.6` + backport of [cosmos/iavl#1142](https://github.com/cosmos/iavl/pull/1142)). Not consensus-breaking; no migration required.
 * [#1013](https://github.com/allora-network/allora-chain/pull/1013) Reject duplicate actor entries in reputer value bundles at submission, and keep the first one-out-inferer row per forecaster at nonce close and before reputer scoring, so the order of the values extracted for scoring no longer depends on the sort implementation.
 
