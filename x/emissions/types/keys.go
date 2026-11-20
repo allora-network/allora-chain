@@ -129,4 +129,5 @@ var (
 	TopicLabelRegistryKey                     = collections.NewPrefix(106)
 	NetworkInferenceBundleKey                 = collections.NewPrefix(107)
 	OutlierResistantNetworkInferenceBundleKey = collections.NewPrefix(108)
+	BlockRewardsByTotalWeightKey              = collections.NewPrefix(109)
 )
