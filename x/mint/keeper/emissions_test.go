@@ -292,7 +292,7 @@ func (s *MintKeeperTestSuite) TestGetLockedVestingTokensNewBasicFunctionality() 
 	blockHeight = cosmosMath.NewIntFromUint64(blocksPerMonth * 18)
 	monthsUnlocked = cosmosMath.NewInt(18)
 
-	totalLocked, preseedLocked, investorsLocked, teamLocked, foundationLocked, participantsLocked, updatedMonths, err =
+	_, preseedLocked, investorsLocked, teamLocked, foundationLocked, participantsLocked, updatedMonths, err =
 		keeper.GetLockedVestingTokens(blocksPerMonth, blockHeight, params, monthsUnlocked)
 	s.Require().NoError(err)
 
