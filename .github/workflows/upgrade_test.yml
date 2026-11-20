@@ -48,7 +48,7 @@ jobs:
 
     - uses: actions/setup-go@v5
       with:
-        go-version: 1.22.x
+        go-version: 1.26.10
 
     - name: Free Disk Space (Ubuntu)
       uses: insightsengineering/disk-space-reclaimer@v1
