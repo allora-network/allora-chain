@@ -957,7 +957,13 @@ func NewReputerSubmissionWindowClosedEventBase(topicId TopicId, nonceBlockHeight
 	}
 }
 
+// NewTopicRewardForfeitedEventBase builds the forfeit event. rewardNonce is kept
+// only for TOPIC_REWARD_FORFEIT_REASON_DISTRIBUTION_FAILED and is zero for every
+// other reason.
 func NewTopicRewardForfeitedEventBase(topicId TopicId, epoch int64, reason TopicRewardForfeitReason, rewardNonce int64, amount math.Int) proto.Message {
+	if reason != TopicRewardForfeitReason_TOPIC_REWARD_FORFEIT_REASON_DISTRIBUTION_FAILED {
+		rewardNonce = 0
+	}
 	return &EventTopicRewardForfeited{
 		TopicId:     topicId,
 		Epoch:       epoch,

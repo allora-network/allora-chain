@@ -2250,6 +2250,29 @@ func TestTopicRewardForfeitEventsEmitZeroAmount(t *testing.T) {
 	}
 }
 
+// The reward nonce is part of the forfeit event only for a failed distribution;
+// the constructor drops it for every other reason.
+func TestNewTopicRewardForfeitedEventBaseKeepsRewardNonceOnlyForDistributionFailed(t *testing.T) {
+	tests := []struct {
+		reason types.TopicRewardForfeitReason
+		want   int64
+	}{
+		{types.TopicRewardForfeitReason_TOPIC_REWARD_FORFEIT_REASON_UNSPECIFIED, 0},
+		{types.TopicRewardForfeitReason_TOPIC_REWARD_FORFEIT_REASON_NO_REWARD_NONCE, 0},
+		{types.TopicRewardForfeitReason_TOPIC_REWARD_FORFEIT_REASON_NONCE_READ_FAILED, 0},
+		{types.TopicRewardForfeitReason_TOPIC_REWARD_FORFEIT_REASON_DISTRIBUTION_FAILED, 930},
+	}
+	for _, tt := range tests {
+		t.Run(tt.reason.String(), func(t *testing.T) {
+			event, ok := types.NewTopicRewardForfeitedEventBase(1, 940, tt.reason, 930, cosmosMath.NewInt(5)).(*types.EventTopicRewardForfeited)
+			require.True(t, ok)
+			require.Equal(t, tt.want, event.RewardNonce)
+			require.Equal(t, tt.reason, event.Reason)
+			require.Equal(t, int64(940), event.Epoch)
+		})
+	}
+}
+
 func TestEmitNewInsertInfererPayloadEventWithAdmissionOutcome(t *testing.T) {
 	ctx := sdk.Context{}.WithEventManager(sdk.NewEventManager())
 	// Only the fields read by the insert-payload event helper are populated.
