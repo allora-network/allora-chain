@@ -362,6 +362,8 @@ func (s *MsgServerTestSuite) TestCreateNewTopicEmitsGateAndFeeEvents() {
 					s.Require().Equal(topicId, e.TopicId)
 					s.Require().Equal(creator, e.Funder)
 					s.Require().Equal(params.CreateTopicFee, e.Amount)
+					s.Require().True(params.CreateTopicFee.Equal(e.NewRevenue))
+					s.Require().Equal(types.TopicFundSource_TOPIC_FUND_SOURCE_TOPIC_CREATION, e.Source)
 					funded++
 					fundedAt = seq
 				case *types.EventTopicWorkerWhitelistEnabled:
@@ -403,7 +405,7 @@ func (s *MsgServerTestSuite) TestCreateNewTopicEmitsGateAndFeeEvents() {
 }
 
 // TestCreateNewTopicZeroFeeEmitsNoFundEvent pins that a zero create-topic fee
-// performs no payment, credits no fee revenue, and emits no funding event.
+// skips the bank transfer, leaves fee revenue unchanged, and emits no funding event.
 func (s *MsgServerTestSuite) TestCreateNewTopicZeroFeeEmitsNoFundEvent() {
 	msgServer := s.EmissionsMsgServer()
 
@@ -447,7 +449,7 @@ func (s *MsgServerTestSuite) TestCreateNewTopicZeroFeeEmitsNoFundEvent() {
 
 	feeRevenue, err := s.TopicKeeper().GetTopicFeeRevenue(ctx, res.TopicId)
 	s.Require().NoError(err)
-	s.Require().True(feeRevenue.IsZero(), "a zero create fee must not credit fee revenue")
+	s.Require().True(feeRevenue.IsZero(), "a zero create fee must leave fee revenue unchanged")
 
 	balanceAfter := s.BankKeeper().GetBalance(ctx, creator, params.DefaultBondDenom)
 	s.Require().True(balanceBefore.Equal(balanceAfter), "a zero create fee must not move coins")

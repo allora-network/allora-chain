@@ -5,6 +5,7 @@ import (
 	"time"
 
 	errorsmod "cosmossdk.io/errors"
+	cosmosMath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
@@ -103,10 +104,14 @@ func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.InsertR
 		return nil, errorsmod.Wrapf(types.ErrInsufficientStake, "reputer does not have sufficient stake in the topic")
 	}
 
-	// Before accepting data, transfer the fee to the ecosystem bucket
-	err = sendEffectiveRevenueActivateTopicIfWeightSufficient(ctx, ms, msg.Sender, topicId, moduleParams.DataSendingFee)
-	if err != nil {
-		return nil, err
+	// A zero fee is not charged. A nonzero fee is transferred and added to the
+	// topic's fee revenue before the payload is stored.
+	var newRevenue cosmosMath.Int
+	if !moduleParams.DataSendingFee.IsZero() {
+		newRevenue, err = ms.sendEffectiveRevenue(ctx, msg.Sender, topicId, moduleParams.DataSendingFee)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	admissionOutcome, err := ms.rlk.AppendReputerLoss(sdkCtx, topic, moduleParams, nonce.ReputerNonce.BlockHeight, rvb)
@@ -115,5 +120,17 @@ func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.InsertR
 	}
 
 	types.EmitNewInsertReputerPayloadEvent(ctx, vb, admissionOutcome)
+
+	// A zero data-sending fee adds nothing and emits nothing. A nonzero fee was
+	// credited above; emit that credit before activation.
+	if !moduleParams.DataSendingFee.IsZero() {
+		types.EmitNewFundTopicEvent(ctx, topicId, msg.Sender, moduleParams.DataSendingFee, newRevenue, types.TopicFundSource_TOPIC_FUND_SOURCE_REPUTER_SUBMISSION)
+	}
+
+	if err = ms.activateTopicIfWeightAtLeastGlobalMin(ctx, topicId); err != nil {
+		sdk.UnwrapSDKContext(ctx).Logger().Error("Failed to activate topic", err)
+		return nil, err
+	}
+
 	return &types.InsertReputerPayloadResponse{}, nil
 }

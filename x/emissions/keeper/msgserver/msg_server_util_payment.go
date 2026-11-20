@@ -16,9 +16,8 @@ import (
 type TopicId = uint64
 type Allo = cosmosMath.Int
 
-func activateTopicIfWeightAtLeastGlobalMin(
+func (ms msgServer) activateTopicIfWeightAtLeastGlobalMin(
 	ctx context.Context,
-	ms msgServer,
 	topicId TopicId,
 ) error {
 	isActivated, err := ms.tk.IsTopicActive(ctx, topicId)
@@ -59,13 +58,29 @@ func activateTopicIfWeightAtLeastGlobalMin(
 	return nil
 }
 
-// Check if user has enough balance to send the fee, then send the fee to EcoSystem bucket
-func checkBalanceAndSendFee(
+// Sends the fee to the ecosystem bucket and adds it to the topic's fee revenue.
+// A zero amount skips the bank transfer. Adding zero leaves the stored total
+// unchanged and returns that total.
+func (ms msgServer) sendEffectiveRevenue(
 	ctx context.Context,
-	ms msgServer,
 	sender string,
+	topicId TopicId,
 	amount Allo,
-) error {
+) (cosmosMath.Int, error) {
+	err := ms.checkBalanceAndSendFee(ctx, sender, amount)
+	if err != nil {
+		return cosmosMath.Int{}, err
+	}
+
+	return ms.tk.AddTopicFeeRevenue(ctx, topicId, amount)
+}
+
+// Check if user has enough balance to send the fee, then send the fee to EcoSystem bucket
+func (ms msgServer) checkBalanceAndSendFee(ctx context.Context, sender string, amount Allo) error {
+	if amount.IsZero() {
+		return nil
+	}
+
 	accAddress, err := sdk.AccAddressFromBech32(sender)
 	if err != nil {
 		return err
@@ -82,43 +97,5 @@ func checkBalanceAndSendFee(
 		return err
 	}
 
-	return nil
-}
-
-// Does 4 things:
-// 1. Checks if sender has enough balance to send the fee
-// 2. Sends coins from sender to mint module Ecosystem bucket
-// 3. Adds the amount to the topic's effective revenue
-// 4. Activates the topic if the weight is at least the global minimum for active topics
-// A zero amount skips steps 1-3: there is nothing to transfer or credit, and the
-// bank and fee-revenue writes would be no-ops. Activation is still attempted
-// because it depends on the topic's current weight, not on the amount.
-// insufficientBalanceErrorMsg is appended to error message if sender has insufficient balance
-// Assumes the topic already exists
-func sendEffectiveRevenueActivateTopicIfWeightSufficient(
-	ctx context.Context,
-	ms msgServer,
-	sender string,
-	topicId TopicId,
-	amount Allo,
-) error {
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	if !amount.IsZero() {
-		err := checkBalanceAndSendFee(ctx, ms, sender, amount)
-		if err != nil {
-			return err
-		}
-
-		err = ms.tk.AddTopicFeeRevenue(ctx, topicId, amount)
-		if err != nil {
-			return err
-		}
-	}
-
-	err := activateTopicIfWeightAtLeastGlobalMin(ctx, ms, topicId)
-	if err != nil {
-		sdkCtx.Logger().Error("Failed to activate topic", err)
-		return err
-	}
 	return nil
 }

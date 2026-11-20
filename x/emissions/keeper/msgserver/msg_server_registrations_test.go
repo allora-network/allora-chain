@@ -68,6 +68,99 @@ func (s *MsgServerTestSuite) TestRegistration() {
 	}
 }
 
+func (s *MsgServerTestSuite) TestRegisterEmitsFundTopicEvent() {
+	ctx, msgServer := s.Ctx(), s.EmissionsMsgServer()
+	topicId := uint64(1)
+
+	err := s.TopicKeeper().ActivateTopic(ctx, topicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec())
+	s.Require().NoError(err)
+
+	moduleParams, err := s.ParamsKeeper().GetParams(ctx)
+	s.Require().NoError(err)
+
+	testCases := []struct {
+		name      string
+		isReputer bool
+		source    types.TopicFundSource
+	}{
+		{
+			name:      "worker",
+			isReputer: false,
+			source:    types.TopicFundSource_TOPIC_FUND_SOURCE_WORKER_REGISTRATION,
+		},
+		{
+			name:      "reputer",
+			isReputer: true,
+			source:    types.TopicFundSource_TOPIC_FUND_SOURCE_REPUTER_REGISTRATION,
+		},
+	}
+
+	for i, tc := range testCases {
+		s.Run(tc.name, func() {
+			addr := s.Addrs(i)
+			s.FundAccount(moduleParams.RegistrationFee.Int64(), addr)
+
+			revenueBefore, err := s.TopicKeeper().GetTopicFeeRevenue(ctx, topicId)
+			s.Require().NoError(err)
+
+			callCtx := ctx.WithEventManager(sdk.NewEventManager())
+			_, err = msgServer.Register(callCtx, &types.RegisterRequest{
+				Sender:    addr.String(),
+				TopicId:   topicId,
+				IsReputer: tc.isReputer,
+				Owner:     addr.String(),
+			})
+			s.Require().NoError(err)
+
+			events := fundTopicEvents(callCtx)
+			s.Require().Len(events, 1)
+			s.Require().Equal(topicId, events[0].TopicId)
+			s.Require().Equal(addr.String(), events[0].Funder)
+			s.Require().True(moduleParams.RegistrationFee.Equal(events[0].Amount))
+			s.Require().True(revenueBefore.Add(moduleParams.RegistrationFee).Equal(events[0].NewRevenue))
+			s.Require().Equal(tc.source, events[0].Source)
+		})
+	}
+}
+
+func (s *MsgServerTestSuite) TestRegisterZeroFeeEmitsNoFundEvent() {
+	ctx, msgServer := s.Ctx(), s.EmissionsMsgServer()
+	topicId := uint64(1)
+
+	err := s.TopicKeeper().ActivateTopic(ctx, topicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec())
+	s.Require().NoError(err)
+
+	_, err = msgServer.UpdateParams(ctx, &types.UpdateParamsRequest{
+		Sender: s.AddrsStr(0),
+		Params: &types.OptionalParams{ //nolint:exhaustruct
+			RegistrationFee: []cosmosMath.Int{cosmosMath.ZeroInt()},
+		},
+	})
+	s.Require().NoError(err)
+
+	addr := s.Addrs(1)
+	revenueBefore, err := s.TopicKeeper().GetTopicFeeRevenue(ctx, topicId)
+	s.Require().NoError(err)
+
+	callCtx := ctx.WithEventManager(sdk.NewEventManager())
+	_, err = msgServer.Register(callCtx, &types.RegisterRequest{
+		Sender:    addr.String(),
+		TopicId:   topicId,
+		IsReputer: false,
+		Owner:     addr.String(),
+	})
+	s.Require().NoError(err)
+	s.Require().Empty(fundTopicEvents(callCtx))
+
+	revenueAfter, err := s.TopicKeeper().GetTopicFeeRevenue(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().True(revenueBefore.Equal(revenueAfter))
+
+	registered, err := s.WorkerKeeper().IsWorkerRegisteredInTopic(ctx, topicId, addr.String())
+	s.Require().NoError(err)
+	s.Require().True(registered)
+}
+
 func (s *MsgServerTestSuite) TestRemoveRegistration() {
 	ctx, msgServer := s.Ctx(), s.EmissionsMsgServer()
 	topicId := uint64(1)

@@ -151,6 +151,63 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayload() {
 	require.NotNil(inference)
 }
 
+func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadEmitsFundTopicEvent() {
+	workerPrivateKey := secp256k1.GenPrivKey()
+	workerMsg, topicId := s.setUpMsgInsertWorkerPayload(workerPrivateKey)
+	workerMsg = s.signMsgInsertWorkerPayload(workerMsg, workerPrivateKey)
+	s.WithBlockHeight(workerMsg.WorkerDataBundle.InferenceForecastsBundle.Forecast.BlockHeight)
+
+	s.Require().NoError(s.WhitelistsKeeper().AddToTopicWorkerWhitelist(s.Ctx(), topicId, workerMsg.WorkerDataBundle.Worker))
+	s.Require().NoError(s.WhitelistsKeeper().AddToTopicForecasterWhitelist(s.Ctx(), topicId, workerMsg.WorkerDataBundle.Worker))
+
+	moduleParams, err := s.ParamsKeeper().GetParams(s.Ctx())
+	s.Require().NoError(err)
+	revenueBefore, err := s.TopicKeeper().GetTopicFeeRevenue(s.Ctx(), topicId)
+	s.Require().NoError(err)
+
+	callCtx := s.Ctx().WithEventManager(sdk.NewEventManager())
+	_, err = s.EmissionsMsgServer().InsertWorkerPayload(callCtx, &workerMsg)
+	s.Require().NoError(err)
+
+	events := fundTopicEvents(callCtx)
+	s.Require().Len(events, 1)
+	s.Require().Equal(topicId, events[0].TopicId)
+	s.Require().Equal(workerMsg.Sender, events[0].Funder)
+	s.Require().True(moduleParams.DataSendingFee.Equal(events[0].Amount))
+	s.Require().True(revenueBefore.Add(moduleParams.DataSendingFee).Equal(events[0].NewRevenue))
+	s.Require().Equal(types.TopicFundSource_TOPIC_FUND_SOURCE_WORKER_SUBMISSION, events[0].Source)
+}
+
+func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadZeroFeeEmitsNoFundEvent() {
+	workerPrivateKey := secp256k1.GenPrivKey()
+	workerMsg, topicId := s.setUpMsgInsertWorkerPayload(workerPrivateKey)
+	workerMsg = s.signMsgInsertWorkerPayload(workerMsg, workerPrivateKey)
+	s.WithBlockHeight(workerMsg.WorkerDataBundle.InferenceForecastsBundle.Forecast.BlockHeight)
+
+	s.Require().NoError(s.WhitelistsKeeper().AddToTopicWorkerWhitelist(s.Ctx(), topicId, workerMsg.WorkerDataBundle.Worker))
+	s.Require().NoError(s.WhitelistsKeeper().AddToTopicForecasterWhitelist(s.Ctx(), topicId, workerMsg.WorkerDataBundle.Worker))
+
+	_, err := s.EmissionsMsgServer().UpdateParams(s.Ctx(), &types.UpdateParamsRequest{
+		Sender: s.AddrsStr(0),
+		Params: &types.OptionalParams{ //nolint:exhaustruct
+			DataSendingFee: []cosmosMath.Int{cosmosMath.ZeroInt()},
+		},
+	})
+	s.Require().NoError(err)
+
+	revenueBefore, err := s.TopicKeeper().GetTopicFeeRevenue(s.Ctx(), topicId)
+	s.Require().NoError(err)
+
+	callCtx := s.Ctx().WithEventManager(sdk.NewEventManager())
+	_, err = s.EmissionsMsgServer().InsertWorkerPayload(callCtx, &workerMsg)
+	s.Require().NoError(err)
+	s.Require().Empty(fundTopicEvents(callCtx))
+
+	revenueAfter, err := s.TopicKeeper().GetTopicFeeRevenue(s.Ctx(), topicId)
+	s.Require().NoError(err)
+	s.Require().True(revenueBefore.Equal(revenueAfter))
+}
+
 func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadNotFailsWithNilInference() {
 	require := s.Require()
 
