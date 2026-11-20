@@ -10,6 +10,7 @@ import (
 	"slices"
 	"testing"
 
+	cosmosMath "cosmossdk.io/math"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -144,4 +145,17 @@ func TestEventAuditUsesNoSingleNodeQueries(t *testing.T) {
 			return true
 		})
 	}
+}
+
+// Equal numbers decoded from the wire and built in memory differ under proto.Equal,
+// representation, so the comparison must look at the encoded data.
+func TestSameResponseIgnoresGoRepresentationOfNumbers(t *testing.T) {
+	built := &emissionstypes.GetTopicStakeResponse{Amount: cosmosMath.NewInt(1_000_000)}
+	encoded, err := built.Marshal()
+	require.NoError(t, err)
+	var decoded emissionstypes.GetTopicStakeResponse
+	require.NoError(t, decoded.Unmarshal(encoded))
+
+	require.True(t, sameResponse(built, &decoded))
+	require.False(t, sameResponse(built, &emissionstypes.GetTopicStakeResponse{Amount: cosmosMath.NewInt(1_000_001)}))
 }

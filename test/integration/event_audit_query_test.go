@@ -1,6 +1,7 @@
 package integration_test
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"strings"
@@ -56,7 +57,7 @@ func queryBank[Req, Resp proto.Message](
 
 // queryEveryNode calls method with req on each client at height, concurrently, and
 // records a violation through fail when the nodes do not give the same answer:
-// responses that differ under proto.Equal, an error on some nodes but not on
+// responses whose wire encodings differ, an error on some nodes but not on
 // others, or errors with different gRPC status codes. It returns node 0's
 // response and error so the caller's comparison is unchanged.
 func queryEveryNode[C any, Req, Resp proto.Message](
@@ -105,7 +106,7 @@ func nodesDisagreeing[Resp proto.Message](responses []Resp, errs []error) []int 
 			if status.Code(errs[0]) != status.Code(errs[node]) {
 				differing = append(differing, node)
 			}
-		case !proto.Equal(responses[0], responses[node]):
+		case !sameResponse(responses[0], responses[node]):
 			differing = append(differing, node)
 		}
 	}
@@ -133,4 +134,14 @@ func describeAnswers[Resp proto.Message](responses []Resp, errs []error, differi
 		parts = append(parts, render(node))
 	}
 	return strings.Join(parts, "; ")
+}
+
+// sameResponse reports whether two responses hold the same data. It compares the
+// wire encodings because proto.Equal cannot compare the custom Int and Dec
+// field types and reports a difference between responses that agree.
+// A response that cannot be encoded counts as different.
+func sameResponse(a, b proto.Message) bool {
+	encodedA, errA := proto.Marshal(a)
+	encodedB, errB := proto.Marshal(b)
+	return errA == nil && errB == nil && bytes.Equal(encodedA, encodedB)
 }
