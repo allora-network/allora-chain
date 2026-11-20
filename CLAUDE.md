@@ -8,7 +8,7 @@ Short, high-signal guidance for working in the `allora-chain` repo. Keep context
 - State access: keepers are the only state access point; no IO, goroutines, or non-determinism inside keepers.
 - Validation: `ValidateBasic` + keeper stateful checks; use `sdkerrors/errorsmod` for typed errors.
 - Events: emit events for all state transitions with consistent type/attribute keys.
-- Event audit: a new or changed event needs a rule in `test/integration/event_audit_test.go` or a `notAuditedEvents` entry with a reason in `test/integration/event_audit_completeness_test.go`; `TestEveryRegisteredEventIsAuditedOrExempt` fails until it has one.
+- Event audit: a new event needs a rule in `test/integration/event_audit_test.go` or `test/integration/event_payload_audit_test.go`, or a `notAuditedEvents` entry with a reason in `test/integration/event_audit_completeness_test.go`; `TestEveryRegisteredEventIsAuditedOrExempt` enforces this. Changing an existing event also means updating its rule; that test does not catch it.
 - Protos: never change field numbers; add new optional fields; use `Request/Response` for list queries; new versions for breaking changes.
 - State layout: define keys/prefixes in `types/keys.go`; keep prefix types stable; add indexes for query-heavy data.
 - Params/genesis: validate every param change + authority checks; genesis is deterministic with round-trip tests.
