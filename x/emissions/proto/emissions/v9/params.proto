@@ -193,4 +193,5 @@ message Params {
   // max_top_inferers_to_reward it bounds what a topic may request, and the range
   // the stored cap is clamped into at admission. Zero means no floor.
   uint64 min_top_inferers_to_reward = 64;
+  bool global_forecaster_whitelist_enabled = 65 [(amino.dont_omitempty) = true];
 }
