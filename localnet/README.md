@@ -34,7 +34,8 @@ addresses (`docker compose logs init` shows them again). The validator then
 starts and produces a block every few seconds.
 
 ```sh
-curl -s localhost:26657/status | jq .result.sync_info.latest_block_height
+# runs inside the container, so the host needs nothing but Docker
+docker compose exec validator sh -c 'allorad status | jq .sync_info.latest_block_height'
 ```
 
 ## Choosing the image
@@ -160,7 +161,7 @@ voting periods and unbonding time. Any other genesis field goes into the
 |---|---|
 | `denied` / `unauthorized` pulling from `ghcr.io` | Not logged in, or the token lacks `read:packages`. See [Choosing the image](#choosing-the-image). |
 | `manifest unknown` | The tag does not exist: releases are `v*` on Docker Hub, GHCR has commit tags only for commits someone built. |
-| `init` exits non-zero | `docker compose logs init`. Usually a genesis field the image's version does not know; check `init.sh` against that release. |
+| `init` exits non-zero | `docker compose logs init`. Usually a genesis field the image's version does not know; check `init.sh` against that release. The next `up` discards the unfinished home and runs `init` again. |
 | Validator restarts, `wrong Block.Header.AppHash` or a panic after changing the image | The new binary is not state-compatible. Reset. |
 | `insufficient fee` | Add `--gas-prices 10uallo` (or `--fees`). |
 | Port already in use | Another node or devnet port-forward holds 26657/1317/9090; stop it or change the host side of `ports:`. |

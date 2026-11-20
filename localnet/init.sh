@@ -3,8 +3,10 @@
 # (default $HOME/.allorad, i.e. /data/.allorad in the container).
 #
 # Run by the `init` service of localnet/docker-compose.yaml before the
-# validator starts. Idempotent: if the home already has a genesis it does
-# nothing, so `docker compose up` after `docker compose stop` keeps the chain.
+# validator starts. Idempotent: once a run has finished (it writes
+# $ALLORA_HOME/.localnet-initialized last) it does nothing, so `docker compose
+# up` after `docker compose stop` keeps the chain. A home left by a failed run
+# (no marker) is wiped and initialised again.
 # `docker compose down -v` wipes the volume and the next `up` makes a fresh
 # genesis.
 #
@@ -46,13 +48,21 @@ UNBONDING_TIME="${UNBONDING_TIME:-60s}"
 a() { "${ALLORAD}" --home "${ALLORA_HOME}" "$@"; }
 
 GENESIS="${ALLORA_HOME}/config/genesis.json"
-if [ -f "${GENESIS}" ]; then
-  echo "localnet: ${GENESIS} exists, keeping the existing chain (docker compose down -v to reset)"
+# Written as the very last step: `allorad init` creates genesis.json first, so
+# its presence alone does not mean the genesis is complete.
+MARKER="${ALLORA_HOME}/.localnet-initialized"
+if [ -f "${MARKER}" ]; then
+  echo "localnet: ${ALLORA_HOME} is initialised, keeping the existing chain (docker compose down -v to reset)"
   exit 0
+fi
+if [ -e "${ALLORA_HOME}" ] && [ -n "$(ls -A "${ALLORA_HOME}")" ]; then
+  echo "localnet: ${ALLORA_HOME} is left over from an unfinished init, removing it and starting over" >&2
+  rm -rf "${ALLORA_HOME:?}"
 fi
 
 echo "localnet: initialising ${CHAIN_ID} in ${ALLORA_HOME}"
-a init "${MONIKER}" --chain-id "${CHAIN_ID}" --default-denom "${DENOM}" > /dev/null 2>&1
+# stdout only: on failure allorad's error must reach `docker compose logs init`.
+a init "${MONIKER}" --chain-id "${CHAIN_ID}" --default-denom "${DENOM}" > /dev/null
 
 # Client defaults, so `allorad <cmd>` in the container needs no extra flags.
 a config set client chain-id "${CHAIN_ID}"
@@ -103,9 +113,10 @@ mv "${tmp}" "${GENESIS}"
 
 a genesis gentx "${MONIKER}" "${VALIDATOR_STAKE}${DENOM}" \
   --chain-id "${CHAIN_ID}" --keyring-backend "${KEYRING}" --moniker "${MONIKER}" \
-  > /dev/null 2>&1
-a genesis collect-gentxs > /dev/null 2>&1
+  > /dev/null
+a genesis collect-gentxs > /dev/null
 a genesis validate-genesis
+touch "${MARKER}"
 
 echo
 echo "localnet: genesis ready. Accounts (test keyring, keys in ${ALLORA_HOME}/<name>.key.json):"

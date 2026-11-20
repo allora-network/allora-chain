@@ -18,7 +18,7 @@ x-chain-image: &chain-image
 
 services:
   # One-shot: writes the genesis, keys and config into the volume, then exits.
-  # Does nothing if the volume already holds a chain.
+  # Does nothing if a previous init finished; redoes an unfinished one.
   init:
     <<: *chain-image
     entrypoint: ["bash", "/localnet/init.sh"]
