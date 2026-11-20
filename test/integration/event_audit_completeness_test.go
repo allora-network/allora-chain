@@ -16,13 +16,25 @@ import (
 	minttypes "github.com/allora-network/allora-chain/x/mint/types"
 )
 
-// auditSourceFiles are the files whose code holds the audit rules.
-var auditSourceFiles = []string{"event_audit_test.go", "event_payload_audit_test.go"}
+// ruleFunction names a function of the audit sources that checks events.
+type ruleFunction struct {
+	file string
+	name string
+}
 
-// lengthGuardFunc is the audit function that only guards parallel list lengths
-// so the rules can index them together. Mentioning an event there does not make
-// a rule for it.
-const lengthGuardFunc = "parallelLengthMismatch"
+// auditRuleFunctions are the only functions whose event-type switch cases and
+// type assertions make an event "audited": the auditEvent dispatch, the rule
+// functions that take events outside it, and the block-level ledger rules.
+// Helpers that only order, locate or length-check events do not belong here.
+// TestAuditRuleFunctionsExist fails when a listed function is gone.
+var auditRuleFunctions = []ruleFunction{
+	{"event_audit_test.go", "auditEvent"},
+	{"event_audit_test.go", "auditTopicLifecycle"},
+	{"event_audit_test.go", "auditStakeLedger"},
+	{"event_audit_test.go", "expectedLedgerEvents"},
+	{"event_audit_test.go", "auditTopicWeights"},
+	{"event_payload_audit_test.go", "auditRewardPayouts"},
+}
 
 // eventPackages maps the Go package alias used in the audit sources to the
 // proto package of its events, taken from a registered message of that package.
@@ -92,16 +104,52 @@ func buildNotAuditedEvents() map[string]string {
 	exempt("only the parallel-list length guard inspects it; no rule checks its values",
 		(*emissionstypes.EventEMAScoresSet)(nil), (*emissionstypes.EventTopicRewardsSet)(nil),
 	)
+	exempt("used only to order topic status events within a block; no rule checks its payload",
+		(*emissionstypes.EventFundTopic)(nil),
+	)
 	exempt("nested payload message embedded in other events, not emitted on its own",
 		(*emissionstypes.EventValueBundle)(nil),
 	)
 	return out
 }
 
-// auditedEventTypes returns the proto names of the event types the audit
-// reads: every type a type-switch case or a type assertion in the audit
-// sources names, outside the length guard. Because the audit's own dispatch is
-// where these names come from, the set cannot drift from what the audit does.
+// parseRuleFunctions parses the audit sources and returns the declaration of
+// each function in auditRuleFunctions. A listed function that does not exist is
+// missing from the result.
+func parseRuleFunctions(t *testing.T) (found map[ruleFunction]*ast.FuncDecl) {
+	t.Helper()
+	fset := token.NewFileSet()
+	found = make(map[ruleFunction]*ast.FuncDecl)
+	files := make(map[string]*ast.File)
+	for _, rule := range auditRuleFunctions {
+		file, parsed := files[rule.file]
+		if !parsed {
+			var err error
+			file, err = parser.ParseFile(fset, rule.file, nil, 0)
+			require.NoError(t, err)
+			files[rule.file] = file
+		}
+		for _, decl := range file.Decls {
+			if fn, isFunc := decl.(*ast.FuncDecl); isFunc && fn.Body != nil && fn.Name.Name == rule.name {
+				found[rule] = fn
+			}
+		}
+	}
+	return found
+}
+
+// Every function the scan relies on exists, so the list cannot go stale.
+func TestAuditRuleFunctionsExist(t *testing.T) {
+	found := parseRuleFunctions(t)
+	for _, rule := range auditRuleFunctions {
+		require.Contains(t, found, rule, "rule function %s is not declared in %s", rule.name, rule.file)
+	}
+}
+
+// auditedEventTypes returns the proto names of the event types the rule
+// functions check: every type a type-switch case or a type assertion in them
+// names. The names come from the audit's own code, so the set cannot drift from
+// what the audit does.
 func auditedEventTypes(t *testing.T) map[string]bool {
 	t.Helper()
 	packages := eventPackages()
@@ -123,29 +171,20 @@ func auditedEventTypes(t *testing.T) map[string]bool {
 			audited[pkg+"."+selector.Sel.Name] = true
 		}
 	}
-	fset := token.NewFileSet()
-	for _, path := range auditSourceFiles {
-		file, err := parser.ParseFile(fset, path, nil, 0)
-		require.NoError(t, err)
-		for _, decl := range file.Decls {
-			fn, isFunc := decl.(*ast.FuncDecl)
-			if !isFunc || fn.Body == nil || fn.Name.Name == lengthGuardFunc {
-				continue
-			}
-			ast.Inspect(fn.Body, func(node ast.Node) bool {
-				switch n := node.(type) {
-				case *ast.CaseClause:
-					for _, expr := range n.List {
-						record(expr)
-					}
-				case *ast.TypeAssertExpr:
-					if n.Type != nil {
-						record(n.Type)
-					}
+	for _, fn := range parseRuleFunctions(t) { //nolint:maprange // the result is a set, so order does not matter
+		ast.Inspect(fn.Body, func(node ast.Node) bool {
+			switch n := node.(type) {
+			case *ast.CaseClause:
+				for _, expr := range n.List {
+					record(expr)
 				}
-				return true
-			})
-		}
+			case *ast.TypeAssertExpr:
+				if n.Type != nil {
+					record(n.Type)
+				}
+			}
+			return true
+		})
 	}
 	return audited
 }

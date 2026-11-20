@@ -268,18 +268,30 @@ func (a *eventAudit) auditBlock(block chainBlock) {
 			continue
 		}
 		a.auditEpochNonceFields(block.height, event.typed)
-		if created, ok := event.typed.(*emissionstypes.EventCreateNewTopic); ok && created.Topic != nil {
-			if _, tracked := a.topicStatus[created.Topic.Id]; !tracked {
-				a.topicStatus[created.Topic.Id] = false
-			}
-		}
-		if status, ok := event.typed.(*emissionstypes.EventTopicStatusChanged); ok {
-			a.auditTopicStatus(block.height, facts, event.phase, status, topicTouchedAfter(block, i, status.TopicId))
-			a.topicStatus[status.TopicId] = status.IsActive
+		if a.auditTopicLifecycle(block, facts, i, event) {
 			continue
 		}
 		a.auditEvent(block.height, facts, event)
 	}
+}
+
+// auditTopicLifecycle applies the rules for the events that track a topic's
+// status: EventCreateNewTopic seeds the tracked status, and
+// EventTopicStatusChanged is checked against the topic's weight and recorded
+// for the final status check. It reports whether the event was a status change,
+// which auditEvent has no rule for.
+func (a *eventAudit) auditTopicLifecycle(block chainBlock, facts blockContext, index int, event chainEvent) bool {
+	if created, ok := event.typed.(*emissionstypes.EventCreateNewTopic); ok && created.Topic != nil {
+		if _, tracked := a.topicStatus[created.Topic.Id]; !tracked {
+			a.topicStatus[created.Topic.Id] = false
+		}
+	}
+	if status, ok := event.typed.(*emissionstypes.EventTopicStatusChanged); ok {
+		a.auditTopicStatus(block.height, facts, event.phase, status, topicTouchedAfter(block, index, status.TopicId))
+		a.topicStatus[status.TopicId] = status.IsActive
+		return true
+	}
+	return false
 }
 
 // parallelLengthMismatch describes an event whose parallel lists differ in length,
