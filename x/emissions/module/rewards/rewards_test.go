@@ -6,6 +6,7 @@ import (
 	"strings"
 	"testing"
 
+	"cosmossdk.io/collections"
 	cosmosMath "cosmossdk.io/math"
 	abci "github.com/cometbft/cometbft/abci/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
@@ -25,6 +26,17 @@ import (
 
 type RewardsTestSuite struct {
 	testutil.TestSuite
+}
+
+// forfeitEvents returns the EventTopicRewardForfeited events with the given reason.
+func forfeitEvents(em sdk.EventManagerI, reason types.TopicRewardForfeitReason) []*types.EventTopicRewardForfeited {
+	out := make([]*types.EventTopicRewardForfeited, 0)
+	for _, event := range typedEvents[*types.EventTopicRewardForfeited](em) {
+		if event.Reason == reason {
+			out = append(out, event)
+		}
+	}
+	return out
 }
 
 // typedEvents collects every typed event of type T the manager holds, in
@@ -53,7 +65,7 @@ func TestRewardsTestSuite(t *testing.T) {
 // loss bundles, so distribution fails and the reward goes back to the ecosystem account. The
 // reward is emission*3/7: a weight of 1 out of 7 over the topic's epoch length of 3. Returns the
 // event and the ecosystem balance delta.
-func (s *RewardsTestSuite) runDistributionFailedForfeit(emission int64) (*types.EventTopicRewardForfeitedDistributionFailed, cosmosMath.Int) {
+func (s *RewardsTestSuite) runDistributionFailedForfeit(emission int64) (*types.EventTopicRewardForfeited, cosmosMath.Int) {
 	s.SetParamsForTest()
 
 	reputerIndexes := testutil.ReturnIndexes(0, 5)
@@ -93,7 +105,7 @@ func (s *RewardsTestSuite) runDistributionFailedForfeit(emission int64) (*types.
 	})
 	s.Require().NoError(err)
 
-	distEvents := typedEvents[*types.EventTopicRewardForfeitedDistributionFailed](em)
+	distEvents := forfeitEvents(em, types.TopicRewardForfeitReason_TOPIC_REWARD_FORFEIT_REASON_DISTRIBUTION_FAILED)
 	s.Require().Len(distEvents, 1)
 	event := distEvents[0]
 	s.Require().Equal(topicId, event.TopicId)
@@ -121,7 +133,7 @@ func (s *RewardsTestSuite) TestEmitRewardsDistributionFailedForfeitUnderOneUnitR
 // runNoRewardNonceForfeit drives EmitRewards for a topic with no reward nonce. The reward is
 // emission/3: a weight of 1 out of 3 over an epoch length of 1. Returns the event and the
 // ecosystem balance delta.
-func (s *RewardsTestSuite) runNoRewardNonceForfeit(emission int64) (*types.EventTopicRewardForfeitedNoRewardNonce, cosmosMath.Int) {
+func (s *RewardsTestSuite) runNoRewardNonceForfeit(emission int64) (*types.EventTopicRewardForfeited, cosmosMath.Int) {
 	s.SetParamsForTest()
 
 	topic := s.MockTopic()
@@ -153,7 +165,7 @@ func (s *RewardsTestSuite) runNoRewardNonceForfeit(emission int64) (*types.Event
 	})
 	s.Require().NoError(err)
 
-	noNonceEvents := typedEvents[*types.EventTopicRewardForfeitedNoRewardNonce](em)
+	noNonceEvents := forfeitEvents(em, types.TopicRewardForfeitReason_TOPIC_REWARD_FORFEIT_REASON_NO_REWARD_NONCE)
 	s.Require().Len(noNonceEvents, 1)
 	event := noNonceEvents[0]
 	s.Require().Equal(topic.Id, event.TopicId)
@@ -218,7 +230,7 @@ func (s *RewardsTestSuite) TestEmitRewardsMultipleForfeitsSumToCoinsMoved() {
 		TotalRevenue: cosmosMath.NewInt(1000),
 	}))
 
-	events := typedEvents[*types.EventTopicRewardForfeitedNoRewardNonce](em)
+	events := forfeitEvents(em, types.TopicRewardForfeitReason_TOPIC_REWARD_FORFEIT_REASON_NO_REWARD_NONCE)
 	s.Require().Len(events, 2)
 	total := cosmosMath.ZeroInt()
 	for _, event := range events {
@@ -230,7 +242,7 @@ func (s *RewardsTestSuite) TestEmitRewardsMultipleForfeitsSumToCoinsMoved() {
 	s.Require().Equal(total.String(), ecosystemAfter.Amount.Sub(ecosystemBefore.Amount).String())
 }
 
-// EmitRewards emits one EventTopicRewardForfeitedNoRewardNonce per topic
+// EmitRewards emits one EventTopicRewardForfeited with reason NO_REWARD_NONCE per topic
 // whose reward goes back to the ecosystem account for lack of a reward nonce,
 // and no distribution-failure forfeiture while another topic settles.
 func (s *RewardsTestSuite) TestEmitRewardsEmitsForfeitureForTopicsWithoutRewardNonce() {
@@ -250,7 +262,7 @@ func (s *RewardsTestSuite) TestEmitRewardsEmitsForfeitureForTopicsWithoutRewardN
 	s.FullTopicPass(workerIndexes2, reputerIndexes2, testutil.WithTopicID(topic2Id), testutil.WithEpochLength(3))
 
 	em := s.Ctx().EventManager()
-	noNonceEvents := typedEvents[*types.EventTopicRewardForfeitedNoRewardNonce](em)
+	noNonceEvents := forfeitEvents(em, types.TopicRewardForfeitReason_TOPIC_REWARD_FORFEIT_REASON_NO_REWARD_NONCE)
 	s.Require().NotEmpty(noNonceEvents)
 
 	// Every topic forfeits once at each churn block where it has no reward nonce, and
@@ -281,7 +293,7 @@ func (s *RewardsTestSuite) TestEmitRewardsEmitsForfeitureForTopicsWithoutRewardN
 		"the emitted epoch is the topic's last-ended epoch")
 
 	// No distribution ever fails in this scenario.
-	s.Require().Empty(typedEvents[*types.EventTopicRewardForfeitedDistributionFailed](em))
+	s.Require().Empty(forfeitEvents(em, types.TopicRewardForfeitReason_TOPIC_REWARD_FORFEIT_REASON_DISTRIBUTION_FAILED))
 }
 
 func (s *RewardsTestSuite) GenerateRewards(topicId uint64, block int64) ([]types.TaskReward, alloraMath.Dec) {
@@ -1819,4 +1831,62 @@ func (s *RewardsTestSuite) printRewardsDistributionTable(rewardsDistributions [2
 
 	// Log the entire table in one statement to preserve formatting
 	s.Ctx().Logger().Info(sb.String())
+}
+
+// A failed reward-nonce read forfeits the same coins but reports the read
+// failure, not "no reward nonce".
+func (s *RewardsTestSuite) TestEmitRewardsNonceReadFailedForfeitsAndReportsReadFailure() {
+	s.SetParamsForTest()
+
+	topic := s.MockTopic()
+	topic.Id = 2
+	topic.EpochLength = 1
+	topic.GroundTruthLag = topic.EpochLength
+	topic.WorkerSubmissionWindow = topic.EpochLength
+	topic.EpochLastEnded = 50
+	s.Require().NoError(s.TopicKeeper().SetTopic(s.Ctx(), topic.Id, topic))
+	s.Require().NoError(s.TopicKeeper().SetTotalSumPreviousTopicWeights(s.Ctx(), alloraMath.NewDecFromInt64(3)))
+	s.Require().NoError(s.EmissionsKeeper().SetRewardCurrentBlockEmission(s.Ctx(), cosmosMath.NewInt(100)))
+	s.MintTokensToModule(types.AlloraRewardsAccountName, cosmosMath.NewInt(1000))
+
+	// Corrupt this topic's stored nonce so GetTopicRewardNonce fails to decode it
+	// rather than returning (0, nil) for a missing nonce. The key format matches
+	// the keeper's collections.Map[uint64]int64: prefix 49, big-endian topic id.
+	encoded, err := collections.EncodeKeyWithPrefix(types.TopicRewardNonceKey.Bytes(), collections.Uint64Key, topic.Id)
+	s.Require().NoError(err)
+	s.Require().NoError(s.StoreServiceEmissions().OpenKVStore(s.Ctx()).Set(encoded, []byte{0xff}))
+
+	nonce, readErr := s.TopicKeeper().GetTopicRewardNonce(s.Ctx(), topic.Id)
+	s.Require().Error(readErr, "the setup must produce a real read error, not (0, nil)")
+	s.Require().Zero(nonce)
+
+	ecosystemAddr := authtypes.NewModuleAddress(minttypes.EcosystemModuleName)
+	ecosystemBefore := s.BankKeeper().GetBalance(s.Ctx(), ecosystemAddr, params.DefaultBondDenom)
+
+	moduleParams, err := s.ParamsKeeper().GetParams(s.Ctx())
+	s.Require().NoError(err)
+	weight := alloraMath.NewDecFromInt64(1)
+	em := sdk.NewEventManager()
+	s.Require().NoError(rewards.EmitRewards(rewards.EmitRewardsArgs{
+		Ctx:          s.Ctx().WithEventManager(em),
+		K:            *s.EmissionsKeeper(),
+		ModuleParams: moduleParams,
+		BlockHeight:  topic.EpochLastEnded,
+		Weights:      map[uint64]*alloraMath.Dec{topic.Id: &weight},
+		SumWeight:    weight,
+		TotalRevenue: cosmosMath.NewInt(1000),
+	}))
+
+	s.Require().Empty(forfeitEvents(em, types.TopicRewardForfeitReason_TOPIC_REWARD_FORFEIT_REASON_NO_REWARD_NONCE),
+		"a read error is not 'no reward nonce'")
+	readFailed := forfeitEvents(em, types.TopicRewardForfeitReason_TOPIC_REWARD_FORFEIT_REASON_NONCE_READ_FAILED)
+	s.Require().Len(readFailed, 1)
+	s.Require().Equal(topic.Id, readFailed[0].TopicId)
+	s.Require().Equal(topic.EpochLastEnded, readFailed[0].Epoch)
+
+	ecosystemAfter := s.BankKeeper().GetBalance(s.Ctx(), ecosystemAddr, params.DefaultBondDenom)
+	delta := ecosystemAfter.Amount.Sub(ecosystemBefore.Amount)
+	s.Require().Equal("33", readFailed[0].Amount.String())
+	s.Require().Equal(readFailed[0].Amount.String(), delta.String(),
+		"the coins move exactly as they do for a missing nonce")
 }
