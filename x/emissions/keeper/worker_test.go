@@ -1353,7 +1353,7 @@ func mockUninitializedParams() types.Params {
 		HalfMaxProcessStakeRemovalsEndBlock: uint64(1),
 		DataSendingFee:                      cosmosMath.NewInt(0),
 		MaxElementsPerForecast:              uint64(0),
-		MaxActiveTopicsPerBlock:             uint64(0),
+		MaxActiveTopicsPerBlock:             uint64(1),
 		MaxStringLength:                     uint64(0),
 		InitialRegretQuantile:               alloraMath.ZeroDec(),
 		PNormSafeDiv:                        alloraMath.ZeroDec(),

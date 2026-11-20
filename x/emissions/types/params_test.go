@@ -310,3 +310,36 @@ func TestValidateTopInferersToRewardRange(t *testing.T) {
 	require.NoError(t, validateTopInferersToRewardRange(32, 32))
 	require.Error(t, validateTopInferersToRewardRange(33, 32))
 }
+
+func TestParamsValidateMaxActiveTopicsPerBlock(t *testing.T) {
+	testCases := []struct {
+		name    string
+		value   uint64
+		wantErr bool
+	}{
+		{name: "zero rejected", value: 0, wantErr: true},
+		{name: "one accepted", value: 1, wantErr: false},
+		{name: "default accepted", value: DefaultParams().MaxActiveTopicsPerBlock, wantErr: false},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			params := DefaultParams()
+			params.MaxActiveTopicsPerBlock = tc.value
+
+			err := params.Validate()
+			if tc.wantErr {
+				require.ErrorIs(t, err, ErrValidationMustBeGreaterthanZero)
+			} else {
+				require.NoError(t, err)
+			}
+		})
+	}
+}
+
+func TestGenesisValidateRejectsZeroMaxActiveTopicsPerBlock(t *testing.T) {
+	genesis := NewGenesisState()
+	genesis.Params.MaxActiveTopicsPerBlock = 0
+
+	require.ErrorIs(t, genesis.Validate(), ErrValidationMustBeGreaterthanZero)
+}
