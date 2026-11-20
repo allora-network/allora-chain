@@ -1108,6 +1108,8 @@ func (a *eventAudit) auditTopicRewardForfeited(height int64, facts blockContext,
 		a.requireRewardNonce(height, facts, name, event.TopicId, event.RewardNonce)
 	case emissionstypes.TopicRewardForfeitReason_TOPIC_REWARD_FORFEIT_REASON_UNSPECIFIED:
 		a.failf(height, "%s topic %d has no reason", name, event.TopicId)
+	default:
+		a.failf(height, "%s topic %d has unknown reason %d", name, event.TopicId, int32(event.Reason))
 	}
 }
 
