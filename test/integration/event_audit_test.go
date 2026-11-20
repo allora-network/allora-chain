@@ -86,6 +86,7 @@ var requiredMultiLabelEventCoverage = []string{
 type eventAudit struct {
 	ctx        context.Context
 	m          testCommon.TestConfig
+	nodes      auditNodes
 	violations []string
 	coverage   map[string]int
 	skipped    map[string]int
@@ -134,9 +135,12 @@ func EventAuditStart(m testCommon.TestConfig) int64 {
 	return height
 }
 
-// EventLiveChecks audits every block since fromHeight on every node and fails on
-// any event that disagrees with chain state, between nodes, or between endpoints.
-// requiredCoverage names the events and reasons the suite's flows must produce.
+// EventLiveChecks audits every block since fromHeight and fails on any event that
+// disagrees with chain state. Two things run on every node: readChainBlock reads
+// each block's results and txs from every node and requires identical events, and
+// every state query the rules make runs on every node at the event's height and
+// requires identical responses (or the same error status code). A rule then
+// compares the event with the agreed answer. requiredCoverage names the events and reasons the suite's flows must produce.
 func EventLiveChecks(m testCommon.TestConfig, fromHeight int64, requiredCoverage []string) {
 	ctx := context.Background()
 	require.NoError(m.T, m.Client.WaitForNextBlock(ctx))
@@ -174,6 +178,7 @@ func newEventAudit(ctx context.Context, m testCommon.TestConfig) *eventAudit {
 	return &eventAudit{
 		ctx:           ctx,
 		m:             m,
+		nodes:         newAuditNodes(&m.Client),
 		violations:    nil,
 		coverage:      make(map[string]int),
 		skipped:       make(map[string]int),
@@ -511,7 +516,7 @@ func (a *eventAudit) auditStakeLedger(block chainBlock) {
 }
 
 func (a *eventAudit) topicStake(height int64, topicId uint64) cosmosMath.Int {
-	response, err := a.m.Client.QueryEmissions().GetTopicStake(atHeight(a.ctx, height), &emissionstypes.GetTopicStakeRequest{TopicId: topicId})
+	response, err := queryEmissions(a, height, emissionstypes.QueryServiceClient.GetTopicStake, &emissionstypes.GetTopicStakeRequest{TopicId: topicId})
 	if err != nil {
 		a.failf(height, "GetTopicStake topic %d: %v", topicId, err)
 		return cosmosMath.ZeroInt()
@@ -520,7 +525,7 @@ func (a *eventAudit) topicStake(height int64, topicId uint64) cosmosMath.Int {
 }
 
 func (a *eventAudit) balance(height int64, address string) cosmosMath.Int {
-	response, err := a.m.Client.QueryBank().Balance(atHeight(a.ctx, height), &banktypes.QueryBalanceRequest{Address: address, Denom: params.BaseCoinUnit})
+	response, err := queryBank(a, height, banktypes.QueryClient.Balance, &banktypes.QueryBalanceRequest{Address: address, Denom: params.BaseCoinUnit})
 	if err != nil {
 		a.failf(height, "Balance of %s: %v", address, err)
 		return cosmosMath.ZeroInt()
@@ -649,7 +654,7 @@ func (a *eventAudit) auditTopicWeights(block chainBlock, facts blockContext) {
 		}
 		revenue, dripped := facts.dripOldRevenue[topicId]
 		if !dripped {
-			response, err := a.m.Client.QueryEmissions().GetTopicFeeRevenue(atHeight(a.ctx, block.height), &emissionstypes.GetTopicFeeRevenueRequest{TopicId: topicId})
+			response, err := queryEmissions(a, block.height, emissionstypes.QueryServiceClient.GetTopicFeeRevenue, &emissionstypes.GetTopicFeeRevenueRequest{TopicId: topicId})
 			if err != nil {
 				a.failf(block.height, "GetTopicFeeRevenue topic %d: %v", topicId, err)
 				return
@@ -669,7 +674,7 @@ func (a *eventAudit) auditTopicWeights(block chainBlock, facts blockContext) {
 			checkPayload("EventTopicWeightUpdatedAfterStakeChange", event.phase, typed.TopicId, typed.TopicFeeRevenue)
 			record(typed.TopicId, typed.NewWeight)
 		case *emissionstypes.EventTopicFeeRevenueDripped:
-			response, err := a.m.Client.QueryEmissions().GetTopicFeeRevenue(atHeight(a.ctx, block.height), &emissionstypes.GetTopicFeeRevenueRequest{TopicId: typed.TopicId})
+			response, err := queryEmissions(a, block.height, emissionstypes.QueryServiceClient.GetTopicFeeRevenue, &emissionstypes.GetTopicFeeRevenueRequest{TopicId: typed.TopicId})
 			if err != nil {
 				a.failf(block.height, "GetTopicFeeRevenue topic %d: %v", typed.TopicId, err)
 				continue
@@ -680,7 +685,7 @@ func (a *eventAudit) auditTopicWeights(block chainBlock, facts blockContext) {
 		}
 	}
 	for _, topicId := range order {
-		response, err := a.m.Client.QueryEmissions().GetPreviousTopicWeight(atHeight(a.ctx, block.height), &emissionstypes.GetPreviousTopicWeightRequest{TopicId: topicId})
+		response, err := queryEmissions(a, block.height, emissionstypes.QueryServiceClient.GetPreviousTopicWeight, &emissionstypes.GetPreviousTopicWeightRequest{TopicId: topicId})
 		if err != nil {
 			a.failf(block.height, "GetPreviousTopicWeight topic %d: %v", topicId, err)
 			continue
@@ -703,7 +708,7 @@ func (a *eventAudit) expectedRewardNonce(height int64, facts blockContext, topic
 	if nonce, closed := facts.lastReputerCommit[topicId]; closed {
 		return nonce
 	}
-	response, err := a.m.Client.QueryEmissions().GetTopicRewardNonce(atHeight(a.ctx, height-1), &emissionstypes.GetTopicRewardNonceRequest{TopicId: topicId})
+	response, err := queryEmissions(a, height-1, emissionstypes.QueryServiceClient.GetTopicRewardNonce, &emissionstypes.GetTopicRewardNonceRequest{TopicId: topicId})
 	if err != nil {
 		a.failf(height, "GetTopicRewardNonce topic %d: %v", topicId, err)
 		return 0
@@ -718,7 +723,7 @@ func (a *eventAudit) requireRewardNonce(height int64, facts blockContext, name s
 }
 
 func (a *eventAudit) getTopic(height int64, topicId uint64) (*emissionstypes.GetTopicResponse, bool) {
-	response, err := a.m.Client.QueryEmissions().GetTopic(atHeight(a.ctx, height), &emissionstypes.GetTopicRequest{TopicId: topicId})
+	response, err := queryEmissions(a, height, emissionstypes.QueryServiceClient.GetTopic, &emissionstypes.GetTopicRequest{TopicId: topicId})
 	if err != nil {
 		a.failf(height, "GetTopic %d: %v", topicId, err)
 		return nil, false
@@ -729,8 +734,7 @@ func (a *eventAudit) getTopic(height int64, topicId uint64) (*emissionstypes.Get
 // isTopicActive reports the topic's status at height. A topic that does not exist
 // yet is inactive; any other query failure is a violation.
 func (a *eventAudit) isTopicActive(height int64, topicId uint64) bool {
-	queryCtx := atHeight(a.ctx, height)
-	exists, err := a.m.Client.QueryEmissions().TopicExists(queryCtx, &emissionstypes.TopicExistsRequest{TopicId: topicId})
+	exists, err := queryEmissions(a, height, emissionstypes.QueryServiceClient.TopicExists, &emissionstypes.TopicExistsRequest{TopicId: topicId})
 	if err != nil {
 		a.failf(height, "TopicExists %d: %v", topicId, err)
 		return false
@@ -738,7 +742,7 @@ func (a *eventAudit) isTopicActive(height int64, topicId uint64) bool {
 	if !exists.Exists {
 		return false
 	}
-	response, err := a.m.Client.QueryEmissions().IsTopicActive(queryCtx, &emissionstypes.IsTopicActiveRequest{TopicId: topicId})
+	response, err := queryEmissions(a, height, emissionstypes.QueryServiceClient.IsTopicActive, &emissionstypes.IsTopicActiveRequest{TopicId: topicId})
 	if err != nil {
 		a.failf(height, "IsTopicActive %d: %v", topicId, err)
 		return false
@@ -749,7 +753,7 @@ func (a *eventAudit) isTopicActive(height int64, topicId uint64) bool {
 func (a *eventAudit) minTopicWeights(height int64) []alloraMath.Dec {
 	weights := make([]alloraMath.Dec, 0, 2)
 	for _, h := range []int64{height - 1, height} {
-		response, err := a.m.Client.QueryEmissions().GetParams(atHeight(a.ctx, h), &emissionstypes.GetParamsRequest{})
+		response, err := queryEmissions(a, h, emissionstypes.QueryServiceClient.GetParams, &emissionstypes.GetParamsRequest{})
 		if err != nil {
 			a.failf(height, "GetParams at %d: %v", h, err)
 			continue
@@ -819,7 +823,7 @@ func (a *eventAudit) auditTopicStatus(height int64, facts blockContext, phase ev
 			a.failf(height, "%s topic %d was not active at the previous height", event.Reason, event.TopicId)
 		}
 		if topic, ok := a.getTopic(height, event.TopicId); ok {
-			churn, err := a.m.Client.QueryEmissions().GetNextChurningBlockByTopicId(atHeight(a.ctx, height), &emissionstypes.GetNextChurningBlockByTopicIdRequest{TopicId: event.TopicId})
+			churn, err := queryEmissions(a, height, emissionstypes.QueryServiceClient.GetNextChurningBlockByTopicId, &emissionstypes.GetNextChurningBlockByTopicIdRequest{TopicId: event.TopicId})
 			if err != nil {
 				a.failf(height, "GetNextChurningBlockByTopicId %d: %v", event.TopicId, err)
 			} else if expected := height + topic.Topic.EpochLength; churn.BlockHeight != expected {
@@ -876,7 +880,7 @@ func (a *eventAudit) requireFreeSlotThreshold(height int64, event *emissionstype
 // seedTopicStatus records every topic's status before the audited range, so the
 // final comparison covers topics that emit no status event.
 func (a *eventAudit) seedTopicStatus(height int64) {
-	next, err := a.m.Client.QueryEmissions().GetNextTopicId(atHeight(a.ctx, height), &emissionstypes.GetNextTopicIdRequest{})
+	next, err := queryEmissions(a, height, emissionstypes.QueryServiceClient.GetNextTopicId, &emissionstypes.GetNextTopicIdRequest{})
 	if err != nil {
 		a.failf(height, "GetNextTopicId: %v", err)
 		return
@@ -944,7 +948,7 @@ func (a *eventAudit) auditEvent(height int64, facts blockContext, event chainEve
 		a.requireRewardNonce(height, facts, "EventForecastTaskScoreSet", typed.TopicId, typed.Nonce)
 	case *emissionstypes.EventDelegateRewardShareUpdated:
 		a.requireRewardNonce(height, facts, "EventDelegateRewardShareUpdated", typed.TopicId, typed.Nonce)
-		response, err := a.m.Client.QueryEmissions().GetDelegateRewardPerShare(atHeight(a.ctx, height), &emissionstypes.GetDelegateRewardPerShareRequest{TopicId: typed.TopicId, Reputer: typed.Reputer})
+		response, err := queryEmissions(a, height, emissionstypes.QueryServiceClient.GetDelegateRewardPerShare, &emissionstypes.GetDelegateRewardPerShareRequest{TopicId: typed.TopicId, Reputer: typed.Reputer})
 		if err != nil {
 			a.failf(height, "GetDelegateRewardPerShare topic %d: %v", typed.TopicId, err)
 		} else {
@@ -959,14 +963,14 @@ func (a *eventAudit) auditEvent(height int64, facts blockContext, event chainEve
 	case *emissionstypes.EventNetworkLossSet:
 		a.auditNetworkLoss(height, typed)
 	case *emissionstypes.EventWorkerLastCommitSet:
-		response, err := a.m.Client.QueryEmissions().GetTopicLastWorkerCommitInfo(atHeight(a.ctx, height), &emissionstypes.GetTopicLastWorkerCommitInfoRequest{TopicId: typed.TopicId})
+		response, err := queryEmissions(a, height, emissionstypes.QueryServiceClient.GetTopicLastWorkerCommitInfo, &emissionstypes.GetTopicLastWorkerCommitInfoRequest{TopicId: typed.TopicId})
 		if err != nil {
 			a.failf(height, "GetTopicLastWorkerCommitInfo topic %d: %v", typed.TopicId, err)
 		} else {
 			a.requireLastCommit(height, "EventWorkerLastCommitSet", typed.TopicId, typed.BlockHeight, typed.Nonce.BlockHeight, response.LastCommit.BlockHeight, response.LastCommit.Nonce.BlockHeight)
 		}
 	case *emissionstypes.EventReputerLastCommitSet:
-		response, err := a.m.Client.QueryEmissions().GetTopicLastReputerCommitInfo(atHeight(a.ctx, height), &emissionstypes.GetTopicLastReputerCommitInfoRequest{TopicId: typed.TopicId})
+		response, err := queryEmissions(a, height, emissionstypes.QueryServiceClient.GetTopicLastReputerCommitInfo, &emissionstypes.GetTopicLastReputerCommitInfoRequest{TopicId: typed.TopicId})
 		if err != nil {
 			a.failf(height, "GetTopicLastReputerCommitInfo topic %d: %v", typed.TopicId, err)
 		} else {
@@ -976,7 +980,7 @@ func (a *eventAudit) auditEvent(height int64, facts blockContext, event chainEve
 		if typed.BlockHeight != height {
 			a.failf(height, "EventPreviousPercentageRewardToStakedReputersSet block_height %d", typed.BlockHeight)
 		}
-		response, err := a.m.Client.QueryEmissions().GetPreviousPercentageRewardToStakedReputers(atHeight(a.ctx, height), &emissionstypes.GetPreviousPercentageRewardToStakedReputersRequest{})
+		response, err := queryEmissions(a, height, emissionstypes.QueryServiceClient.GetPreviousPercentageRewardToStakedReputers, &emissionstypes.GetPreviousPercentageRewardToStakedReputersRequest{})
 		if err != nil {
 			a.failf(height, "GetPreviousPercentageRewardToStakedReputers: %v", err)
 		} else {
@@ -994,7 +998,7 @@ func (a *eventAudit) auditEvent(height int64, facts blockContext, event chainEve
 		a.auditListeningCoefficients(height, facts, typed)
 	case *emissionstypes.EventInfererNetworkRegretSet:
 		a.auditRegrets(height, "EventInfererNetworkRegretSet", typed.TopicId, typed.Nonce, typed.Addresses, typed.Regrets, func(actor string) (*emissionstypes.TimestampedValue, error) {
-			response, err := a.m.Client.QueryEmissions().GetInfererNetworkRegret(atHeight(a.ctx, height), &emissionstypes.GetInfererNetworkRegretRequest{TopicId: typed.TopicId, ActorId: actor})
+			response, err := queryEmissions(a, height, emissionstypes.QueryServiceClient.GetInfererNetworkRegret, &emissionstypes.GetInfererNetworkRegretRequest{TopicId: typed.TopicId, ActorId: actor})
 			if err != nil {
 				return nil, err
 			}
@@ -1002,7 +1006,7 @@ func (a *eventAudit) auditEvent(height int64, facts blockContext, event chainEve
 		})
 	case *emissionstypes.EventForecasterNetworkRegretSet:
 		a.auditRegrets(height, "EventForecasterNetworkRegretSet", typed.TopicId, typed.Nonce, typed.Addresses, typed.Regrets, func(actor string) (*emissionstypes.TimestampedValue, error) {
-			response, err := a.m.Client.QueryEmissions().GetForecasterNetworkRegret(atHeight(a.ctx, height), &emissionstypes.GetForecasterNetworkRegretRequest{TopicId: typed.TopicId, Worker: actor})
+			response, err := queryEmissions(a, height, emissionstypes.QueryServiceClient.GetForecasterNetworkRegret, &emissionstypes.GetForecasterNetworkRegretRequest{TopicId: typed.TopicId, Worker: actor})
 			if err != nil {
 				return nil, err
 			}
@@ -1010,7 +1014,7 @@ func (a *eventAudit) auditEvent(height int64, facts blockContext, event chainEve
 		})
 	case *emissionstypes.EventNaiveInfererNetworkRegretSet:
 		a.auditRegrets(height, "EventNaiveInfererNetworkRegretSet", typed.TopicId, typed.Nonce, typed.Addresses, typed.Regrets, func(actor string) (*emissionstypes.TimestampedValue, error) {
-			response, err := a.m.Client.QueryEmissions().GetNaiveInfererNetworkRegret(atHeight(a.ctx, height), &emissionstypes.GetNaiveInfererNetworkRegretRequest{TopicId: typed.TopicId, Inferer: actor})
+			response, err := queryEmissions(a, height, emissionstypes.QueryServiceClient.GetNaiveInfererNetworkRegret, &emissionstypes.GetNaiveInfererNetworkRegretRequest{TopicId: typed.TopicId, Inferer: actor})
 			if err != nil {
 				return nil, err
 			}
@@ -1018,7 +1022,7 @@ func (a *eventAudit) auditEvent(height int64, facts blockContext, event chainEve
 		})
 	case *emissionstypes.EventRegretStdNormSet:
 		a.requireReputerNonceOpen(height, "EventRegretStdNormSet", typed.TopicId, typed.Nonce)
-		response, err := a.m.Client.QueryEmissions().GetLatestRegretStdNorm(atHeight(a.ctx, height), &emissionstypes.GetLatestRegretStdNormRequest{TopicId: typed.TopicId})
+		response, err := queryEmissions(a, height, emissionstypes.QueryServiceClient.GetLatestRegretStdNorm, &emissionstypes.GetLatestRegretStdNormRequest{TopicId: typed.TopicId})
 		if err != nil {
 			a.failf(height, "GetLatestRegretStdNorm topic %d: %v", typed.TopicId, err)
 		} else {
@@ -1027,7 +1031,7 @@ func (a *eventAudit) auditEvent(height int64, facts blockContext, event chainEve
 	case *emissionstypes.EventInfererWeightsSet:
 		a.requireReputerNonceOpen(height, "EventInfererWeightsSet", typed.TopicId, typed.Nonce)
 		for i, actor := range typed.Addresses {
-			response, err := a.m.Client.QueryEmissions().GetLatestInfererWeight(atHeight(a.ctx, height), &emissionstypes.GetLatestInfererWeightRequest{TopicId: typed.TopicId, ActorId: actor})
+			response, err := queryEmissions(a, height, emissionstypes.QueryServiceClient.GetLatestInfererWeight, &emissionstypes.GetLatestInfererWeightRequest{TopicId: typed.TopicId, ActorId: actor})
 			if err != nil {
 				a.failf(height, "GetLatestInfererWeight topic %d: %v", typed.TopicId, err)
 				continue
@@ -1037,7 +1041,7 @@ func (a *eventAudit) auditEvent(height int64, facts blockContext, event chainEve
 	case *emissionstypes.EventForecasterWeightsSet:
 		a.requireReputerNonceOpen(height, "EventForecasterWeightsSet", typed.TopicId, typed.Nonce)
 		for i, actor := range typed.Addresses {
-			response, err := a.m.Client.QueryEmissions().GetLatestForecasterWeight(atHeight(a.ctx, height), &emissionstypes.GetLatestForecasterWeightRequest{TopicId: typed.TopicId, ActorId: actor})
+			response, err := queryEmissions(a, height, emissionstypes.QueryServiceClient.GetLatestForecasterWeight, &emissionstypes.GetLatestForecasterWeightRequest{TopicId: typed.TopicId, ActorId: actor})
 			if err != nil {
 				a.failf(height, "GetLatestForecasterWeight topic %d: %v", typed.TopicId, err)
 				continue
@@ -1065,7 +1069,7 @@ func (a *eventAudit) auditEvent(height int64, facts blockContext, event chainEve
 	case *emissionstypes.EventNetworkInferenceInfererRegretsUsedSet:
 		a.requireWorkerNonceOpen(height, "EventNetworkInferenceInfererRegretsUsedSet", typed.TopicId, typed.Nonce)
 		a.auditRegretsUsed(height, "EventNetworkInferenceInfererRegretsUsedSet", typed.TopicId, typed.Addresses, typed.Regrets, func(actor string) (*emissionstypes.TimestampedValue, error) {
-			response, err := a.m.Client.QueryEmissions().GetInfererNetworkRegret(atHeight(a.ctx, height), &emissionstypes.GetInfererNetworkRegretRequest{TopicId: typed.TopicId, ActorId: actor})
+			response, err := queryEmissions(a, height, emissionstypes.QueryServiceClient.GetInfererNetworkRegret, &emissionstypes.GetInfererNetworkRegretRequest{TopicId: typed.TopicId, ActorId: actor})
 			if err != nil {
 				return nil, err
 			}
@@ -1074,7 +1078,7 @@ func (a *eventAudit) auditEvent(height int64, facts blockContext, event chainEve
 	case *emissionstypes.EventNetworkInferenceForecasterRegretsUsedSet:
 		a.requireWorkerNonceOpen(height, "EventNetworkInferenceForecasterRegretsUsedSet", typed.TopicId, typed.Nonce)
 		a.auditRegretsUsed(height, "EventNetworkInferenceForecasterRegretsUsedSet", typed.TopicId, typed.Addresses, typed.Regrets, func(actor string) (*emissionstypes.TimestampedValue, error) {
-			response, err := a.m.Client.QueryEmissions().GetForecasterNetworkRegret(atHeight(a.ctx, height), &emissionstypes.GetForecasterNetworkRegretRequest{TopicId: typed.TopicId, Worker: actor})
+			response, err := queryEmissions(a, height, emissionstypes.QueryServiceClient.GetForecasterNetworkRegret, &emissionstypes.GetForecasterNetworkRegretRequest{TopicId: typed.TopicId, Worker: actor})
 			if err != nil {
 				return nil, err
 			}
@@ -1143,7 +1147,7 @@ func (a *eventAudit) auditForfeit(height int64, name string, topicId uint64, epo
 }
 
 func (a *eventAudit) isWorkerNonceUnfulfilled(height int64, topicId uint64, nonce int64) bool {
-	response, err := a.m.Client.QueryEmissions().IsWorkerNonceUnfulfilled(atHeight(a.ctx, height), &emissionstypes.IsWorkerNonceUnfulfilledRequest{TopicId: topicId, BlockHeight: nonce})
+	response, err := queryEmissions(a, height, emissionstypes.QueryServiceClient.IsWorkerNonceUnfulfilled, &emissionstypes.IsWorkerNonceUnfulfilledRequest{TopicId: topicId, BlockHeight: nonce})
 	if err != nil {
 		a.failf(height, "IsWorkerNonceUnfulfilled topic %d nonce %d: %v", topicId, nonce, err)
 		return false
@@ -1152,7 +1156,7 @@ func (a *eventAudit) isWorkerNonceUnfulfilled(height int64, topicId uint64, nonc
 }
 
 func (a *eventAudit) isReputerNonceUnfulfilled(height int64, topicId uint64, nonce int64) bool {
-	response, err := a.m.Client.QueryEmissions().IsReputerNonceUnfulfilled(atHeight(a.ctx, height), &emissionstypes.IsReputerNonceUnfulfilledRequest{TopicId: topicId, BlockHeight: nonce})
+	response, err := queryEmissions(a, height, emissionstypes.QueryServiceClient.IsReputerNonceUnfulfilled, &emissionstypes.IsReputerNonceUnfulfilledRequest{TopicId: topicId, BlockHeight: nonce})
 	if err != nil {
 		a.failf(height, "IsReputerNonceUnfulfilled topic %d nonce %d: %v", topicId, nonce, err)
 		return false
@@ -1200,24 +1204,23 @@ func (a *eventAudit) auditNonceExpired(height int64, event *emissionstypes.Event
 func (a *eventAudit) auditScores(height int64, facts blockContext, event *emissionstypes.EventScoresSet) {
 	a.coverage["EventScoresSet/"+event.ActorType.String()]++
 	a.requireRewardNonce(height, facts, "EventScoresSet", event.TopicId, event.Nonce)
-	queryCtx := atHeight(a.ctx, height)
 	var stored *emissionstypes.Scores
 	var err error
 	switch event.ActorType {
 	case emissionstypes.ActorType_ACTOR_TYPE_INFERER_UNSPECIFIED:
-		response, queryErr := a.m.Client.QueryEmissions().GetWorkerInferenceScoresAtBlock(queryCtx, &emissionstypes.GetWorkerInferenceScoresAtBlockRequest{TopicId: event.TopicId, BlockHeight: event.Nonce})
+		response, queryErr := queryEmissions(a, height, emissionstypes.QueryServiceClient.GetWorkerInferenceScoresAtBlock, &emissionstypes.GetWorkerInferenceScoresAtBlockRequest{TopicId: event.TopicId, BlockHeight: event.Nonce})
 		err = queryErr
 		if queryErr == nil {
 			stored = response.Scores
 		}
 	case emissionstypes.ActorType_ACTOR_TYPE_FORECASTER:
-		response, queryErr := a.m.Client.QueryEmissions().GetWorkerForecastScoresAtBlock(queryCtx, &emissionstypes.GetWorkerForecastScoresAtBlockRequest{TopicId: event.TopicId, BlockHeight: event.Nonce})
+		response, queryErr := queryEmissions(a, height, emissionstypes.QueryServiceClient.GetWorkerForecastScoresAtBlock, &emissionstypes.GetWorkerForecastScoresAtBlockRequest{TopicId: event.TopicId, BlockHeight: event.Nonce})
 		err = queryErr
 		if queryErr == nil {
 			stored = response.Scores
 		}
 	case emissionstypes.ActorType_ACTOR_TYPE_REPUTER:
-		response, queryErr := a.m.Client.QueryEmissions().GetReputersScoresAtBlock(queryCtx, &emissionstypes.GetReputersScoresAtBlockRequest{TopicId: event.TopicId, BlockHeight: event.Nonce})
+		response, queryErr := queryEmissions(a, height, emissionstypes.QueryServiceClient.GetReputersScoresAtBlock, &emissionstypes.GetReputersScoresAtBlockRequest{TopicId: event.TopicId, BlockHeight: event.Nonce})
 		err = queryErr
 		if queryErr == nil {
 			stored = response.Scores
@@ -1282,7 +1285,7 @@ func (a *eventAudit) auditLabelRegistry(height int64, facts blockContext, event 
 		a.skipped["label registry vs network inferences: close failed"]++
 		return
 	}
-	response, err := a.m.Client.QueryEmissions().GetNetworkInferencesAtBlock(atHeight(a.ctx, height), &emissionstypes.GetNetworkInferencesAtBlockRequest{TopicId: event.TopicId, BlockHeightLastInference: event.Nonce})
+	response, err := queryEmissions(a, height, emissionstypes.QueryServiceClient.GetNetworkInferencesAtBlock, &emissionstypes.GetNetworkInferencesAtBlockRequest{TopicId: event.TopicId, BlockHeightLastInference: event.Nonce})
 	if err != nil {
 		a.failf(height, "GetNetworkInferencesAtBlock topic %d nonce %d: %v", event.TopicId, event.Nonce, err)
 		return
@@ -1308,7 +1311,7 @@ func (a *eventAudit) requireLastCommit(height int64, name string, topicId uint64
 func (a *eventAudit) auditListeningCoefficients(height int64, facts blockContext, event *emissionstypes.EventListeningCoefficientsSet) {
 	a.requireRewardNonce(height, facts, "EventListeningCoefficientsSet", event.TopicId, event.Nonce)
 	for i, reputer := range event.Addresses {
-		response, err := a.m.Client.QueryEmissions().GetListeningCoefficient(atHeight(a.ctx, height), &emissionstypes.GetListeningCoefficientRequest{TopicId: event.TopicId, Reputer: reputer})
+		response, err := queryEmissions(a, height, emissionstypes.QueryServiceClient.GetListeningCoefficient, &emissionstypes.GetListeningCoefficientRequest{TopicId: event.TopicId, Reputer: reputer})
 		if err != nil {
 			a.failf(height, "GetListeningCoefficient topic %d: %v", event.TopicId, err)
 			continue
@@ -1334,24 +1337,23 @@ func (a *eventAudit) auditRegrets(height int64, name string, topicId uint64, non
 }
 
 func (a *eventAudit) auditInitialEmaScore(height int64, event *emissionstypes.EventTopicInitialEmaScoreSet) {
-	queryCtx := atHeight(a.ctx, height)
 	var stored alloraMath.Dec
 	var err error
 	switch event.ActorType {
 	case emissionstypes.ActorType_ACTOR_TYPE_INFERER_UNSPECIFIED:
-		response, queryErr := a.m.Client.QueryEmissions().GetTopicInitialInfererEmaScore(queryCtx, &emissionstypes.GetTopicInitialInfererEmaScoreRequest{TopicId: event.TopicId})
+		response, queryErr := queryEmissions(a, height, emissionstypes.QueryServiceClient.GetTopicInitialInfererEmaScore, &emissionstypes.GetTopicInitialInfererEmaScoreRequest{TopicId: event.TopicId})
 		err = queryErr
 		if queryErr == nil {
 			stored = response.Score
 		}
 	case emissionstypes.ActorType_ACTOR_TYPE_FORECASTER:
-		response, queryErr := a.m.Client.QueryEmissions().GetTopicInitialForecasterEmaScore(queryCtx, &emissionstypes.GetTopicInitialForecasterEmaScoreRequest{TopicId: event.TopicId})
+		response, queryErr := queryEmissions(a, height, emissionstypes.QueryServiceClient.GetTopicInitialForecasterEmaScore, &emissionstypes.GetTopicInitialForecasterEmaScoreRequest{TopicId: event.TopicId})
 		err = queryErr
 		if queryErr == nil {
 			stored = response.Score
 		}
 	case emissionstypes.ActorType_ACTOR_TYPE_REPUTER:
-		response, queryErr := a.m.Client.QueryEmissions().GetTopicInitialReputerEmaScore(queryCtx, &emissionstypes.GetTopicInitialReputerEmaScoreRequest{TopicId: event.TopicId})
+		response, queryErr := queryEmissions(a, height, emissionstypes.QueryServiceClient.GetTopicInitialReputerEmaScore, &emissionstypes.GetTopicInitialReputerEmaScoreRequest{TopicId: event.TopicId})
 		err = queryErr
 		if queryErr == nil {
 			stored = response.Score
@@ -1383,7 +1385,7 @@ func (a *eventAudit) auditActiveReputers(height int64, facts blockContext, event
 		a.skipped["active reputers vs stored bundles: close failed"]++
 		return
 	}
-	response, err := a.m.Client.QueryEmissions().GetReputerLossBundlesAtBlock(atHeight(a.ctx, height), &emissionstypes.GetReputerLossBundlesAtBlockRequest{TopicId: event.TopicId, BlockHeight: event.Nonce})
+	response, err := queryEmissions(a, height, emissionstypes.QueryServiceClient.GetReputerLossBundlesAtBlock, &emissionstypes.GetReputerLossBundlesAtBlockRequest{TopicId: event.TopicId, BlockHeight: event.Nonce})
 	if err != nil {
 		a.failf(height, "GetReputerLossBundlesAtBlock topic %d nonce %d: %v", event.TopicId, event.Nonce, err)
 		return
@@ -1396,7 +1398,7 @@ func (a *eventAudit) auditActiveReputers(height int64, facts blockContext, event
 }
 
 func (a *eventAudit) auditActiveInferers(height int64, event *emissionstypes.EventActiveInferersSet) {
-	response, err := a.m.Client.QueryEmissions().GetInferencesAtBlock(atHeight(a.ctx, height), &emissionstypes.GetInferencesAtBlockRequest{TopicId: event.TopicId, BlockHeight: event.Nonce})
+	response, err := queryEmissions(a, height, emissionstypes.QueryServiceClient.GetInferencesAtBlock, &emissionstypes.GetInferencesAtBlockRequest{TopicId: event.TopicId, BlockHeight: event.Nonce})
 	if err != nil {
 		a.failf(height, "GetInferencesAtBlock topic %d nonce %d: %v", event.TopicId, event.Nonce, err)
 		return
@@ -1409,7 +1411,7 @@ func (a *eventAudit) auditActiveInferers(height int64, event *emissionstypes.Eve
 }
 
 func (a *eventAudit) auditActiveForecasters(height int64, event *emissionstypes.EventActiveForecastersSet) {
-	response, err := a.m.Client.QueryEmissions().GetForecastsAtBlock(atHeight(a.ctx, height), &emissionstypes.GetForecastsAtBlockRequest{TopicId: event.TopicId, BlockHeight: event.Nonce})
+	response, err := queryEmissions(a, height, emissionstypes.QueryServiceClient.GetForecastsAtBlock, &emissionstypes.GetForecastsAtBlockRequest{TopicId: event.TopicId, BlockHeight: event.Nonce})
 	if err != nil {
 		a.failf(height, "GetForecastsAtBlock topic %d nonce %d: %v", event.TopicId, event.Nonce, err)
 		return
