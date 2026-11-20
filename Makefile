@@ -104,7 +104,7 @@ build-all-platforms:
 
 lint:
 	@echo "--> Running linter"
-	@go run github.com/golangci/golangci-lint/cmd/golangci-lint@v1.60.3 run --timeout=10m
+	@go run github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.15.0 run --timeout=10m
 	@go run ./linter/check-defer-close .
 	@go run ./linter/fuzz-transitions
 	@go run ./linter/duplicate_routes $(PROTO_LINT_PATHS)
@@ -115,7 +115,7 @@ build-maprange-linter:
 
 maprange: build-maprange-linter
 	@echo "--> Running maprange linter"
-	@go run github.com/golangci/golangci-lint/cmd/golangci-lint@v1.60.3 run --timeout=10m --config linter/maprange/.golangci-maprange.yml
+	@go run github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.15.0 run --timeout=10m --config linter/maprange/.golangci-maprange.yml
 
 duplicate-routes:
 	@echo "--> Running duplicate route linter"

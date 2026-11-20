@@ -1,33 +1,37 @@
-FROM golang:1.22-bookworm AS builder
+FROM golang:1.26.10-bookworm AS builder
 
 ENV GO111MODULE=on
 ENV GOMODCACHE=/gocache
-ADD . /src
-WORKDIR /src
+ENV GOTOOLCHAIN=local
 
+WORKDIR /src
 COPY go.mod .
 COPY go.sum .
 RUN mkdir -p $GOMODCACHE
 
-# Compiles run outside retry-fetch with GOPROXY=off, so a build error fails on its first attempt.
+# Retries network-dependent commands with backoff, showing output only on failure.
+# The project build runs outside it with GOPROXY=off, so a build error fails on its first attempt.
 COPY --chmod=755 scripts/retry-fetch.sh /usr/local/bin/retry-fetch
 
-RUN --mount=type=cache,target=/gocache retry-fetch go mod download
+# The module cache stays in the image. A cache mount is not part of the layer,
+# so a later offline build misses the modules when that mount is empty.
+RUN retry-fetch go mod download
 
-# `go install -n` resolves, downloads and verifies every module without compiling.
+# Install Cosmovisor with network access. Go resolves module deprecation
+# metadata during install, so this cannot run with GOPROXY=off.
 ENV COSMOVISOR_PKG=cosmossdk.io/tools/cosmovisor/cmd/cosmovisor@v1.6.0
 RUN --mount=type=cache,target=/gocache \
     --mount=type=cache,target=/root/.cache/go-build \
-    retry-fetch go install -n "$COSMOVISOR_PKG" && \
-    GOPROXY=off go install "$COSMOVISOR_PKG"
+    retry-fetch go install "$COSMOVISOR_PKG"
 
-RUN --mount=type=cache,target=/gocache \
-    --mount=type=cache,target=/root/.cache/go-build \
+ADD . /src
+
+RUN --mount=type=cache,target=/root/.cache/go-build \
     GOPROXY=off make install
 
 #==============================================================
 
-FROM debian:bookworm-slim as execution
+FROM debian:bookworm-slim AS execution
 
 ENV DEBIAN_FRONTEND=noninteractive \
     USERNAME=appuser \

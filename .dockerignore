@@ -1,0 +1,20 @@
+# Build outputs and local chain data are not needed to compile the images.
+/build/
+/bin/
+/dist/
+/data/
+/data_head/
+/data_validator/
+/test/localnet/
+/test/testnet/
+/test/devnet/
+/coverage/
+/coverage_raw.lcov
+/coverage.lcov
+/coverage.out
+/.reports/
+/.worktrees/
+/go.work
+/go.work.sum
+/vendor/
+**/.DS_Store

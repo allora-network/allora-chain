@@ -1,5 +1,11 @@
 #!/bin/sh
-# Retries a fetch-only command with backoff, showing its output only on failure.
+# SPDX-License-Identifier: Apache-2.0
+
+# Retries a command with backoff. Output is shown only when the command fails.
+if [ "$#" -eq 0 ]; then
+    echo "usage: retry-fetch command [args...]" >&2
+    exit 2
+fi
 max_attempts=4
 log=$(mktemp) || exit 1
 trap 'rm -f "$log"' EXIT

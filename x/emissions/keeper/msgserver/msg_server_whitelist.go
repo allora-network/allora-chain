@@ -327,7 +327,71 @@ func (ms msgServer) RemoveFromGlobalAdminWhitelist(ctx context.Context, msg *typ
 	}
 
 	types.EmitNewGlobalAdminWhitelistRemovedEvent(ctx, msg.Address)
-	return &types.RemoveFromGlobalAdminWhitelistResponse{}, err
+	return &types.RemoveFromGlobalAdminWhitelistResponse{}, nil
+}
+
+func (ms msgServer) AddToGlobalForecasterWhitelist(ctx context.Context, msg *types.AddToGlobalForecasterWhitelistRequest) (_ *types.AddToGlobalForecasterWhitelistResponse, err error) {
+	defer metrics.RecordMetrics("AddToGlobalForecasterWhitelist", time.Now(), &err)
+
+	// Validate the sender address
+	err = types.ValidateStringIsBech32(msg.Sender)
+	if err != nil {
+		return nil, err
+	}
+
+	// Validate the address
+	err = types.ValidateStringIsBech32(msg.Address)
+	if err != nil {
+		return nil, err
+	}
+
+	// Check that sender is permitted to update global whitelists
+	canUpdate, err := ms.wlk.CanUpdateGlobalForecasterWhitelist(ctx, msg.Sender)
+	if err != nil {
+		return nil, err
+	} else if !canUpdate {
+		return nil, types.ErrNotPermittedToUpdateGlobalWhitelist
+	}
+
+	// Add the address to the whitelist
+	if err = ms.wlk.AddToGlobalForecasterWhitelist(ctx, msg.Address); err != nil {
+		return nil, errorsmod.Wrap(err, "error adding to global forecaster whitelist")
+	}
+
+	types.EmitNewGlobalForecasterWhitelistAddedEvent(ctx, msg.Address)
+	return &types.AddToGlobalForecasterWhitelistResponse{}, nil
+}
+
+func (ms msgServer) RemoveFromGlobalForecasterWhitelist(ctx context.Context, msg *types.RemoveFromGlobalForecasterWhitelistRequest) (_ *types.RemoveFromGlobalForecasterWhitelistResponse, err error) {
+	defer metrics.RecordMetrics("RemoveFromGlobalForecasterWhitelist", time.Now(), &err)
+
+	// Validate the sender address
+	err = types.ValidateStringIsBech32(msg.Sender)
+	if err != nil {
+		return nil, err
+	}
+
+	// Validate the address
+	err = types.ValidateStringIsBech32(msg.Address)
+	if err != nil {
+		return nil, err
+	}
+
+	// Check that sender is permitted to update global whitelists
+	canUpdate, err := ms.wlk.CanUpdateGlobalForecasterWhitelist(ctx, msg.Sender)
+	if err != nil {
+		return nil, err
+	} else if !canUpdate {
+		return nil, types.ErrNotPermittedToUpdateGlobalWhitelist
+	}
+
+	// Remove the address from the whitelist
+	if err = ms.wlk.RemoveFromGlobalForecasterWhitelist(ctx, msg.Address); err != nil {
+		return nil, errorsmod.Wrap(err, "error removing from global forecaster whitelist")
+	}
+
+	types.EmitNewGlobalForecasterWhitelistRemovedEvent(ctx, msg.Address)
+	return &types.RemoveFromGlobalForecasterWhitelistResponse{}, nil
 }
 
 func (ms msgServer) BulkAddToGlobalWorkerWhitelist(ctx context.Context, msg *types.BulkAddToGlobalWorkerWhitelistRequest) (_ *types.BulkAddToGlobalWorkerWhitelistResponse, err error) {
@@ -400,6 +464,78 @@ func (ms msgServer) BulkRemoveFromGlobalWorkerWhitelist(ctx context.Context, msg
 	}
 
 	return &types.BulkRemoveFromGlobalWorkerWhitelistResponse{}, nil
+}
+
+func (ms msgServer) BulkAddToGlobalForecasterWhitelist(ctx context.Context, msg *types.BulkAddToGlobalForecasterWhitelistRequest) (_ *types.BulkAddToGlobalForecasterWhitelistResponse, err error) {
+	defer metrics.RecordMetrics("BulkAddToGlobalForecasterWhitelist", time.Now(), &err)
+
+	// Validate the sender address
+	err = types.ValidateStringIsBech32(msg.Sender)
+	if err != nil {
+		return nil, err
+	}
+
+	// Check that sender is permitted to update global whitelists
+	canUpdate, err := ms.wlk.CanUpdateGlobalForecasterWhitelist(ctx, msg.Sender)
+	if err != nil {
+		return nil, err
+	} else if !canUpdate {
+		return nil, types.ErrNotPermittedToUpdateGlobalWhitelist
+	}
+
+	// Check length of addresses to add using global max_whitelist_input_array_length
+	params, err := ms.pk.GetParams(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if uint64(len(msg.Addresses)) > params.MaxWhitelistInputArrayLength {
+		return nil, types.ErrMaxWhitelistInputArrayLengthExceeded
+	}
+
+	for _, address := range msg.Addresses {
+		if err = ms.wlk.AddToGlobalForecasterWhitelist(ctx, address); err != nil {
+			return nil, err
+		}
+		types.EmitNewGlobalForecasterWhitelistAddedEvent(ctx, address)
+	}
+
+	return &types.BulkAddToGlobalForecasterWhitelistResponse{}, nil
+}
+
+func (ms msgServer) BulkRemoveFromGlobalForecasterWhitelist(ctx context.Context, msg *types.BulkRemoveFromGlobalForecasterWhitelistRequest) (_ *types.BulkRemoveFromGlobalForecasterWhitelistResponse, err error) {
+	defer metrics.RecordMetrics("BulkRemoveFromGlobalForecasterWhitelist", time.Now(), &err)
+
+	// Validate the sender address
+	err = types.ValidateStringIsBech32(msg.Sender)
+	if err != nil {
+		return nil, err
+	}
+
+	// Check that sender is permitted to update global whitelists
+	canUpdate, err := ms.wlk.CanUpdateGlobalForecasterWhitelist(ctx, msg.Sender)
+	if err != nil {
+		return nil, err
+	} else if !canUpdate {
+		return nil, types.ErrNotPermittedToUpdateGlobalWhitelist
+	}
+
+	// Check length of addresses to add using global max_whitelist_input_array_length
+	params, err := ms.pk.GetParams(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if uint64(len(msg.Addresses)) > params.MaxWhitelistInputArrayLength {
+		return nil, types.ErrMaxWhitelistInputArrayLengthExceeded
+	}
+
+	for _, address := range msg.Addresses {
+		if err = ms.wlk.RemoveFromGlobalForecasterWhitelist(ctx, address); err != nil {
+			return nil, err
+		}
+		types.EmitNewGlobalForecasterWhitelistRemovedEvent(ctx, address)
+	}
+
+	return &types.BulkRemoveFromGlobalForecasterWhitelistResponse{}, nil
 }
 
 func (ms msgServer) BulkAddToGlobalReputerWhitelist(ctx context.Context, msg *types.BulkAddToGlobalReputerWhitelistRequest) (_ *types.BulkAddToGlobalReputerWhitelistResponse, err error) {
@@ -615,6 +751,100 @@ func (ms msgServer) BulkAddToTopicReputerWhitelist(ctx context.Context, msg *typ
 	return &types.BulkAddToTopicReputerWhitelistResponse{}, nil
 }
 
+func (ms msgServer) BulkAddToTopicForecasterWhitelist(ctx context.Context, msg *types.BulkAddToTopicForecasterWhitelistRequest) (_ *types.BulkAddToTopicForecasterWhitelistResponse, err error) {
+	defer metrics.RecordMetrics("BulkAddToTopicForecasterWhitelist", time.Now(), &err)
+
+	// Validate the sender address
+	err = types.ValidateStringIsBech32(msg.Sender)
+	if err != nil {
+		return nil, err
+	}
+
+	// Check that topic exists
+	exists, err := ms.tk.TopicExists(ctx, msg.TopicId)
+	if err != nil {
+		return nil, err
+	} else if !exists {
+		return nil, types.ErrTopicDoesNotExist
+	}
+
+	// Check that sender is permitted to update topic whitelists
+	canUpdate, err := ms.wlk.CanUpdateTopicWhitelist(ctx, msg.TopicId, msg.Sender)
+	if err != nil {
+		return nil, err
+	} else if !canUpdate {
+		return nil, types.ErrNotPermittedToUpdateTopicWhitelist
+	}
+
+	// Check length of addresses to add using global max_whitelist_input_array_length
+	params, err := ms.pk.GetParams(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if uint64(len(msg.Addresses)) > params.MaxWhitelistInputArrayLength {
+		return nil, types.ErrMaxWhitelistInputArrayLengthExceeded
+	}
+
+	for _, address := range msg.Addresses {
+		// The main benefits of bulk operations are defeated if we do too much in-loop compute, and we validate addresses in layer below anyway
+		// => no need to validate address here.
+
+		if err = ms.wlk.AddToTopicForecasterWhitelist(ctx, msg.TopicId, address); err != nil {
+			return nil, err
+		}
+		types.EmitNewTopicForecasterWhitelistAddedEvent(ctx, msg.TopicId, address)
+	}
+
+	return &types.BulkAddToTopicForecasterWhitelistResponse{}, nil
+}
+
+func (ms msgServer) BulkRemoveFromTopicForecasterWhitelist(ctx context.Context, msg *types.BulkRemoveFromTopicForecasterWhitelistRequest) (_ *types.BulkRemoveFromTopicForecasterWhitelistResponse, err error) {
+	defer metrics.RecordMetrics("BulkRemoveFromTopicForecasterWhitelist", time.Now(), &err)
+
+	// Validate the sender address
+	err = types.ValidateStringIsBech32(msg.Sender)
+	if err != nil {
+		return nil, err
+	}
+
+	// Check that topic exists
+	exists, err := ms.tk.TopicExists(ctx, msg.TopicId)
+	if err != nil {
+		return nil, err
+	} else if !exists {
+		return nil, types.ErrTopicDoesNotExist
+	}
+
+	// Check that sender is permitted to update topic whitelists
+	canUpdate, err := ms.wlk.CanUpdateTopicWhitelist(ctx, msg.TopicId, msg.Sender)
+	if err != nil {
+		return nil, err
+	} else if !canUpdate {
+		return nil, types.ErrNotPermittedToUpdateTopicWhitelist
+	}
+
+	// Check length of addresses to add using global max_whitelist_input_array_length
+	params, err := ms.pk.GetParams(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if uint64(len(msg.Addresses)) > params.MaxWhitelistInputArrayLength {
+		return nil, types.ErrMaxWhitelistInputArrayLengthExceeded
+	}
+
+	for _, address := range msg.Addresses {
+		// The main benefits of bulk operations are defeated if we do too much in-loop compute, and we validate addresses in layer below anyway
+		// => no need to validate address here.
+
+		if err = ms.wlk.RemoveFromTopicForecasterWhitelist(ctx, msg.TopicId, address); err != nil {
+			return nil, err
+		}
+		types.EmitNewTopicForecasterWhitelistRemovedEvent(ctx, msg.TopicId, address)
+	}
+
+	return &types.BulkRemoveFromTopicForecasterWhitelistResponse{}, nil
+}
+
 func (ms msgServer) BulkRemoveFromTopicReputerWhitelist(ctx context.Context, msg *types.BulkRemoveFromTopicReputerWhitelistRequest) (_ *types.BulkRemoveFromTopicReputerWhitelistResponse, err error) {
 	defer metrics.RecordMetrics("BulkRemoveFromTopicReputerWhitelist", time.Now(), &err)
 
@@ -729,6 +959,52 @@ func (ms msgServer) EnableTopicReputerWhitelist(ctx context.Context, msg *types.
 	}
 
 	return &types.EnableTopicReputerWhitelistResponse{}, nil
+}
+
+func (ms msgServer) EnableTopicForecasterWhitelist(ctx context.Context, msg *types.EnableTopicForecasterWhitelistRequest) (_ *types.EnableTopicForecasterWhitelistResponse, err error) {
+	defer metrics.RecordMetrics("EnableTopicForecasterWhitelist", time.Now(), &err)
+
+	// Validate the address
+	err = types.ValidateStringIsBech32(msg.Sender)
+	if err != nil {
+		return nil, err
+	}
+
+	canUpdate, err := ms.wlk.CanUpdateTopicWhitelist(ctx, msg.TopicId, msg.Sender)
+	if err != nil {
+		return nil, err
+	} else if !canUpdate {
+		return nil, types.ErrNotPermittedToUpdateTopicWhitelist
+	}
+
+	if err = ms.wlk.EnableTopicForecasterWhitelist(ctx, msg.TopicId); err != nil {
+		return nil, errorsmod.Wrap(err, "unable to enable topic forecaster whitelist")
+	}
+
+	return &types.EnableTopicForecasterWhitelistResponse{}, nil
+}
+
+func (ms msgServer) DisableTopicForecasterWhitelist(ctx context.Context, msg *types.DisableTopicForecasterWhitelistRequest) (_ *types.DisableTopicForecasterWhitelistResponse, err error) {
+	defer metrics.RecordMetrics("DisableTopicForecasterWhitelist", time.Now(), &err)
+
+	// Validate the address
+	err = types.ValidateStringIsBech32(msg.Sender)
+	if err != nil {
+		return nil, err
+	}
+
+	canUpdate, err := ms.wlk.CanUpdateTopicWhitelist(ctx, msg.TopicId, msg.Sender)
+	if err != nil {
+		return nil, err
+	} else if !canUpdate {
+		return nil, types.ErrNotPermittedToUpdateTopicWhitelist
+	}
+
+	if err = ms.wlk.DisableTopicForecasterWhitelist(ctx, msg.TopicId); err != nil {
+		return nil, errorsmod.Wrap(err, "unable to disable topic forecaster whitelist")
+	}
+
+	return &types.DisableTopicForecasterWhitelistResponse{}, nil
 }
 
 func (ms msgServer) DisableTopicReputerWhitelist(ctx context.Context, msg *types.DisableTopicReputerWhitelistRequest) (_ *types.DisableTopicReputerWhitelistResponse, err error) {
@@ -902,6 +1178,66 @@ func (ms msgServer) AddToTopicReputerWhitelist(ctx context.Context, msg *types.A
 
 	types.EmitNewTopicReputerWhitelistAddedEvent(ctx, msg.TopicId, msg.Address)
 	return &types.AddToTopicReputerWhitelistResponse{}, nil
+}
+
+func (ms msgServer) AddToTopicForecasterWhitelist(ctx context.Context, msg *types.AddToTopicForecasterWhitelistRequest) (_ *types.AddToTopicForecasterWhitelistResponse, err error) {
+	defer metrics.RecordMetrics("AddToTopicForecasterWhitelist", time.Now(), &err)
+
+	// Validate the sender
+	err = types.ValidateStringIsBech32(msg.Sender)
+	if err != nil {
+		return nil, err
+	}
+
+	// Validate the address
+	err = types.ValidateStringIsBech32(msg.Address)
+	if err != nil {
+		return nil, err
+	}
+
+	canUpdate, err := ms.wlk.CanUpdateTopicWhitelist(ctx, msg.TopicId, msg.Sender)
+	if err != nil {
+		return nil, err
+	} else if !canUpdate {
+		return nil, types.ErrNotPermittedToUpdateTopicForecasterWhitelist
+	}
+
+	if err = ms.wlk.AddToTopicForecasterWhitelist(ctx, msg.TopicId, msg.Address); err != nil {
+		return nil, errorsmod.Wrap(err, "unable to add to topic whitelist")
+	}
+
+	types.EmitNewTopicForecasterWhitelistAddedEvent(ctx, msg.TopicId, msg.Address)
+	return &types.AddToTopicForecasterWhitelistResponse{}, nil
+}
+
+func (ms msgServer) RemoveFromTopicForecasterWhitelist(ctx context.Context, msg *types.RemoveFromTopicForecasterWhitelistRequest) (_ *types.RemoveFromTopicForecasterWhitelistResponse, err error) {
+	defer metrics.RecordMetrics("RemoveFromTopicForecasterWhitelist", time.Now(), &err)
+
+	// Validate the sender
+	err = types.ValidateStringIsBech32(msg.Sender)
+	if err != nil {
+		return nil, err
+	}
+
+	// Validate the address
+	err = types.ValidateStringIsBech32(msg.Address)
+	if err != nil {
+		return nil, err
+	}
+
+	canUpdate, err := ms.wlk.CanUpdateTopicWhitelist(ctx, msg.TopicId, msg.Sender)
+	if err != nil {
+		return nil, err
+	} else if !canUpdate {
+		return nil, types.ErrNotPermittedToUpdateTopicForecasterWhitelist
+	}
+
+	if err = ms.wlk.RemoveFromTopicForecasterWhitelist(ctx, msg.TopicId, msg.Address); err != nil {
+		return nil, errorsmod.Wrap(err, "unable to remove from topic whitelist")
+	}
+
+	types.EmitNewTopicForecasterWhitelistRemovedEvent(ctx, msg.TopicId, msg.Address)
+	return &types.RemoveFromTopicForecasterWhitelistResponse{}, nil
 }
 
 func (ms msgServer) RemoveFromTopicReputerWhitelist(ctx context.Context, msg *types.RemoveFromTopicReputerWhitelistRequest) (_ *types.RemoveFromTopicReputerWhitelistResponse, err error) {

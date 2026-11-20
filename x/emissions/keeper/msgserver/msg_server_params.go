@@ -174,6 +174,9 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.UpdateParamsReq
 	if len(newParams.GlobalWorkerWhitelistEnabled) == 1 {
 		existingParams.GlobalWorkerWhitelistEnabled = newParams.GlobalWorkerWhitelistEnabled[0]
 	}
+	if len(newParams.GlobalForecasterWhitelistEnabled) == 1 {
+		existingParams.GlobalForecasterWhitelistEnabled = newParams.GlobalForecasterWhitelistEnabled[0]
+	}
 	if len(newParams.GlobalReputerWhitelistEnabled) == 1 {
 		existingParams.GlobalReputerWhitelistEnabled = newParams.GlobalReputerWhitelistEnabled[0]
 	}
