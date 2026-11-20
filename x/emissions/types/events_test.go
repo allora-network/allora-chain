@@ -2234,8 +2234,8 @@ func TestTopicRewardForfeitEventsEmitZeroAmount(t *testing.T) {
 		name  string
 		event proto.Message
 	}{
-		{"no reward nonce", types.NewTopicRewardForfeitedNoRewardNonceEventBase(1, 940, cosmosMath.ZeroInt())},
-		{"distribution failed", types.NewTopicRewardForfeitedDistributionFailedEventBase(1, 940, 930, cosmosMath.ZeroInt())},
+		{"no reward nonce", types.NewTopicRewardForfeitedEventBase(1, 940, types.TopicRewardForfeitReason_TOPIC_REWARD_FORFEIT_REASON_NO_REWARD_NONCE, 0, cosmosMath.ZeroInt())},
+		{"distribution failed", types.NewTopicRewardForfeitedEventBase(1, 940, types.TopicRewardForfeitReason_TOPIC_REWARD_FORFEIT_REASON_DISTRIBUTION_FAILED, 930, cosmosMath.ZeroInt())},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

@@ -27,17 +27,18 @@ func endBlockEvent(t *testing.T, base interface {
 }
 
 func TestDecodeTypedEventHandlesEndBlockMode(t *testing.T) {
-	event := endBlockEvent(t, emissionstypes.NewTopicRewardForfeitedNoRewardNonceEventBase(7, 100, cosmosMath.NewInt(42)))
+	event := endBlockEvent(t, emissionstypes.NewTopicRewardForfeitedEventBase(7, 100, emissionstypes.TopicRewardForfeitReason_TOPIC_REWARD_FORFEIT_REASON_NO_REWARD_NONCE, 0, cosmosMath.NewInt(42)))
 
 	_, err := sdk.ParseTypedEvent(event)
 	require.Error(t, err, "the SDK parser rejects the mode attribute it appends itself")
 
 	decoded, err := decodeTypedEvent(event)
 	require.NoError(t, err)
-	forfeit, ok := decoded.(*emissionstypes.EventTopicRewardForfeitedNoRewardNonce)
+	forfeit, ok := decoded.(*emissionstypes.EventTopicRewardForfeited)
 	require.True(t, ok)
 	require.Equal(t, uint64(7), forfeit.TopicId)
 	require.Equal(t, int64(100), forfeit.Epoch)
+	require.Equal(t, emissionstypes.TopicRewardForfeitReason_TOPIC_REWARD_FORFEIT_REASON_NO_REWARD_NONCE, forfeit.Reason)
 	require.True(t, forfeit.Amount.Equal(cosmosMath.NewInt(42)))
 }
 

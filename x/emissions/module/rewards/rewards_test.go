@@ -30,6 +30,17 @@ type RewardsTestSuite struct {
 
 // typedEvents collects every typed event of type T the manager holds, in
 // emission order.
+// forfeitEvents returns the EventTopicRewardForfeited events with the given reason.
+func forfeitEvents(em sdk.EventManagerI, reason types.TopicRewardForfeitReason) []*types.EventTopicRewardForfeited {
+	out := make([]*types.EventTopicRewardForfeited, 0)
+	for _, event := range typedEvents[*types.EventTopicRewardForfeited](em) {
+		if event.Reason == reason {
+			out = append(out, event)
+		}
+	}
+	return out
+}
+
 func typedEvents[T any](em sdk.EventManagerI) []T {
 	out := make([]T, 0)
 	for _, ev := range em.Events() {
@@ -54,7 +65,7 @@ func TestRewardsTestSuite(t *testing.T) {
 // loss bundles, so distribution fails and the reward goes back to the ecosystem account. The
 // reward is emission*3/7: a weight of 1 out of 7 over the topic's epoch length of 3. Returns the
 // event and the ecosystem balance delta.
-func (s *RewardsTestSuite) runDistributionFailedForfeit(emission int64) (*types.EventTopicRewardForfeitedDistributionFailed, cosmosMath.Int) {
+func (s *RewardsTestSuite) runDistributionFailedForfeit(emission int64) (*types.EventTopicRewardForfeited, cosmosMath.Int) {
 	s.SetParamsForTest()
 
 	reputerIndexes := testutil.ReturnIndexes(0, 5)
@@ -94,7 +105,7 @@ func (s *RewardsTestSuite) runDistributionFailedForfeit(emission int64) (*types.
 	})
 	s.Require().NoError(err)
 
-	distEvents := typedEvents[*types.EventTopicRewardForfeitedDistributionFailed](em)
+	distEvents := forfeitEvents(em, types.TopicRewardForfeitReason_TOPIC_REWARD_FORFEIT_REASON_DISTRIBUTION_FAILED)
 	s.Require().Len(distEvents, 1)
 	event := distEvents[0]
 	s.Require().Equal(topicId, event.TopicId)
@@ -122,7 +133,7 @@ func (s *RewardsTestSuite) TestEmitRewardsDistributionFailedForfeitUnderOneUnitR
 // runNoRewardNonceForfeit drives EmitRewards for a topic with no reward nonce. The reward is
 // emission/3: a weight of 1 out of 3 over an epoch length of 1. Returns the event and the
 // ecosystem balance delta.
-func (s *RewardsTestSuite) runNoRewardNonceForfeit(emission int64) (*types.EventTopicRewardForfeitedNoRewardNonce, cosmosMath.Int) {
+func (s *RewardsTestSuite) runNoRewardNonceForfeit(emission int64) (*types.EventTopicRewardForfeited, cosmosMath.Int) {
 	s.SetParamsForTest()
 
 	topic := s.MockTopic()
@@ -154,7 +165,7 @@ func (s *RewardsTestSuite) runNoRewardNonceForfeit(emission int64) (*types.Event
 	})
 	s.Require().NoError(err)
 
-	noNonceEvents := typedEvents[*types.EventTopicRewardForfeitedNoRewardNonce](em)
+	noNonceEvents := forfeitEvents(em, types.TopicRewardForfeitReason_TOPIC_REWARD_FORFEIT_REASON_NO_REWARD_NONCE)
 	s.Require().Len(noNonceEvents, 1)
 	event := noNonceEvents[0]
 	s.Require().Equal(topic.Id, event.TopicId)
@@ -219,7 +230,7 @@ func (s *RewardsTestSuite) TestEmitRewardsMultipleForfeitsSumToCoinsMoved() {
 		TotalRevenue: cosmosMath.NewInt(1000),
 	}))
 
-	events := typedEvents[*types.EventTopicRewardForfeitedNoRewardNonce](em)
+	events := forfeitEvents(em, types.TopicRewardForfeitReason_TOPIC_REWARD_FORFEIT_REASON_NO_REWARD_NONCE)
 	s.Require().Len(events, 2)
 	total := cosmosMath.ZeroInt()
 	for _, event := range events {
@@ -231,7 +242,7 @@ func (s *RewardsTestSuite) TestEmitRewardsMultipleForfeitsSumToCoinsMoved() {
 	s.Require().Equal(total.String(), ecosystemAfter.Amount.Sub(ecosystemBefore.Amount).String())
 }
 
-// EmitRewards emits one EventTopicRewardForfeitedNoRewardNonce per topic
+// EmitRewards emits one EventTopicRewardForfeited with reason NO_REWARD_NONCE per topic
 // whose reward goes back to the ecosystem account for lack of a reward nonce,
 // and no distribution-failure forfeiture while another topic settles.
 func (s *RewardsTestSuite) TestEmitRewardsEmitsForfeitureForTopicsWithoutRewardNonce() {
@@ -251,7 +262,7 @@ func (s *RewardsTestSuite) TestEmitRewardsEmitsForfeitureForTopicsWithoutRewardN
 	s.FullTopicPass(workerIndexes2, reputerIndexes2, testutil.WithTopicID(topic2Id), testutil.WithEpochLength(3))
 
 	em := s.Ctx().EventManager()
-	noNonceEvents := typedEvents[*types.EventTopicRewardForfeitedNoRewardNonce](em)
+	noNonceEvents := forfeitEvents(em, types.TopicRewardForfeitReason_TOPIC_REWARD_FORFEIT_REASON_NO_REWARD_NONCE)
 	s.Require().NotEmpty(noNonceEvents)
 
 	// Every topic forfeits once at each churn block where it has no reward nonce, and
@@ -282,7 +293,7 @@ func (s *RewardsTestSuite) TestEmitRewardsEmitsForfeitureForTopicsWithoutRewardN
 		"the emitted epoch is the topic's last-ended epoch")
 
 	// No distribution ever fails in this scenario.
-	s.Require().Empty(typedEvents[*types.EventTopicRewardForfeitedDistributionFailed](em))
+	s.Require().Empty(forfeitEvents(em, types.TopicRewardForfeitReason_TOPIC_REWARD_FORFEIT_REASON_DISTRIBUTION_FAILED))
 }
 
 func (s *RewardsTestSuite) GenerateRewards(topicId uint64, block int64) ([]types.TaskReward, alloraMath.Dec) {
@@ -1866,9 +1877,9 @@ func (s *RewardsTestSuite) TestEmitRewardsNonceReadFailedForfeitsAndReportsReadF
 		TotalRevenue: cosmosMath.NewInt(1000),
 	}))
 
-	s.Require().Empty(typedEvents[*types.EventTopicRewardForfeitedNoRewardNonce](em),
+	s.Require().Empty(forfeitEvents(em, types.TopicRewardForfeitReason_TOPIC_REWARD_FORFEIT_REASON_NO_REWARD_NONCE),
 		"a read error is not 'no reward nonce'")
-	readFailed := typedEvents[*types.EventTopicRewardForfeitedNonceReadFailed](em)
+	readFailed := forfeitEvents(em, types.TopicRewardForfeitReason_TOPIC_REWARD_FORFEIT_REASON_NONCE_READ_FAILED)
 	s.Require().Len(readFailed, 1)
 	s.Require().Equal(topic.Id, readFailed[0].TopicId)
 	s.Require().Equal(topic.EpochLastEnded, readFailed[0].Epoch)

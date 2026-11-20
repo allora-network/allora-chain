@@ -42,7 +42,7 @@ var requiredEventCoverage = []string{
 	"emissions.v10.EventTopicWeightUpdatedAfterStakeChange",
 	"TOPIC_STATUS_CHANGE_REASON_ACTIVATED_BY_FUNDING",
 	"TOPIC_STATUS_CHANGE_REASON_REACTIVATED",
-	"emissions.v10.EventTopicRewardForfeitedNoRewardNonce",
+	"EventTopicRewardForfeited/TOPIC_REWARD_FORFEIT_REASON_NO_REWARD_NONCE",
 	"EventNonceExpired/ACTOR_TYPE_INFERER_UNSPECIFIED/NONCE_EXPIRED_REASON_CLOSE_FAILED",
 	"EventScoresSet/ACTOR_TYPE_INFERER_UNSPECIFIED",
 	"EventScoresSet/ACTOR_TYPE_FORECASTER",
@@ -557,11 +557,7 @@ func expectedLedgerEvents(block chainBlock) (forfeited, delegateDistributed, min
 	minted, emitted = cosmosMath.ZeroInt(), cosmosMath.ZeroInt()
 	for _, event := range block.events {
 		switch typed := event.typed.(type) {
-		case *emissionstypes.EventTopicRewardForfeitedNoRewardNonce:
-			forfeited = forfeited.Add(typed.Amount)
-		case *emissionstypes.EventTopicRewardForfeitedNonceReadFailed:
-			forfeited = forfeited.Add(typed.Amount)
-		case *emissionstypes.EventTopicRewardForfeitedDistributionFailed:
+		case *emissionstypes.EventTopicRewardForfeited:
 			forfeited = forfeited.Add(typed.Amount)
 		case *emissionstypes.EventDelegateRewardDistributed:
 			delegateDistributed = delegateDistributed.Add(typed.Amount)
@@ -893,19 +889,8 @@ func (a *eventAudit) auditFinalTopicStatus(toHeight int64) {
 // auditEvent applies the rule for one typed event.
 func (a *eventAudit) auditEvent(height int64, facts blockContext, event chainEvent) {
 	switch typed := event.typed.(type) {
-	case *emissionstypes.EventTopicRewardForfeitedNoRewardNonce:
-		a.auditForfeit(height, "EventTopicRewardForfeitedNoRewardNonce", typed.TopicId, typed.Epoch)
-		if nonce := a.expectedRewardNonce(height, facts, typed.TopicId); nonce != 0 {
-			a.failf(height, "EventTopicRewardForfeitedNoRewardNonce topic %d has reward nonce %d", typed.TopicId, nonce)
-		}
-	case *emissionstypes.EventTopicRewardForfeitedNonceReadFailed:
-		// The keeper's reward-nonce store is in-memory and cannot fail a read on
-		// a live chain, so this event is pinned by the unit test instead; the
-		// ledger rule counts it here in case it ever appears.
-		a.auditForfeit(height, "EventTopicRewardForfeitedNonceReadFailed", typed.TopicId, typed.Epoch)
-	case *emissionstypes.EventTopicRewardForfeitedDistributionFailed:
-		a.auditForfeit(height, "EventTopicRewardForfeitedDistributionFailed", typed.TopicId, typed.Epoch)
-		a.requireRewardNonce(height, facts, "EventTopicRewardForfeitedDistributionFailed", typed.TopicId, typed.RewardNonce)
+	case *emissionstypes.EventTopicRewardForfeited:
+		a.auditTopicRewardForfeited(height, facts, typed)
 	case *emissionstypes.EventRewardPayoutFailed:
 		a.coverage[typed.Reason.String()]++
 		a.requireRewardNonce(height, facts, "EventRewardPayoutFailed", typed.TopicId, typed.Nonce)
@@ -1103,6 +1088,37 @@ func (a *eventAudit) auditEvent(height int64, facts blockContext, event chainEve
 }
 
 // auditForfeit checks a forfeit's epoch. The amount is checked by auditModuleLedgers.
+// auditTopicRewardForfeited applies the rule for each forfeit reason. The
+// keeper's reward-nonce store is in-memory and cannot fail a read on a live
+// chain, so NONCE_READ_FAILED is pinned by the unit test instead; the ledger
+// rule counts it here in case it ever appears.
+func (a *eventAudit) auditTopicRewardForfeited(height int64, facts blockContext, event *emissionstypes.EventTopicRewardForfeited) {
+	name := "EventTopicRewardForfeited/" + event.Reason.String()
+	a.coverage[name]++
+	a.auditForfeit(height, name, event.TopicId, event.Epoch)
+	switch event.Reason {
+	case emissionstypes.TopicRewardForfeitReason_TOPIC_REWARD_FORFEIT_REASON_NO_REWARD_NONCE:
+		if nonce := a.expectedRewardNonce(height, facts, event.TopicId); nonce != 0 {
+			a.failf(height, "%s topic %d has reward nonce %d", name, event.TopicId, nonce)
+		}
+		a.requireNoRewardNonceField(height, name, event)
+	case emissionstypes.TopicRewardForfeitReason_TOPIC_REWARD_FORFEIT_REASON_NONCE_READ_FAILED:
+		a.requireNoRewardNonceField(height, name, event)
+	case emissionstypes.TopicRewardForfeitReason_TOPIC_REWARD_FORFEIT_REASON_DISTRIBUTION_FAILED:
+		a.requireRewardNonce(height, facts, name, event.TopicId, event.RewardNonce)
+	case emissionstypes.TopicRewardForfeitReason_TOPIC_REWARD_FORFEIT_REASON_UNSPECIFIED:
+		a.failf(height, "%s topic %d has no reason", name, event.TopicId)
+	}
+}
+
+// requireNoRewardNonceField fails when a forfeit whose reason carries no reward
+// nonce sets one.
+func (a *eventAudit) requireNoRewardNonceField(height int64, name string, event *emissionstypes.EventTopicRewardForfeited) {
+	if event.RewardNonce != 0 {
+		a.failf(height, "%s topic %d carries reward nonce %d", name, event.TopicId, event.RewardNonce)
+	}
+}
+
 func (a *eventAudit) auditForfeit(height int64, name string, topicId uint64, epoch int64) {
 	if topic, ok := a.getTopic(height, topicId); ok && topic.Topic.EpochLastEnded != epoch {
 		a.failf(height, "%s topic %d epoch %d, EpochLastEnded is %d", name, topicId, epoch, topic.Topic.EpochLastEnded)
