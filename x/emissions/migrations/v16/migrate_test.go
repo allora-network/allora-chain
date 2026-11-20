@@ -1,6 +1,7 @@
 package v16_test
 
 import (
+	"encoding/json"
 	"testing"
 
 	"cosmossdk.io/store/prefix"
@@ -9,6 +10,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/runtime"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	moduletestutil "github.com/cosmos/cosmos-sdk/types/module/testutil"
 	"github.com/stretchr/testify/suite"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
@@ -544,4 +546,143 @@ func (s *EmissionsV16MigrationTestSuite) TestMigrateTotalSumPreviousTopicWeights
 	// The stored weight survives and counts exactly once on re-activation.
 	s.Require().NoError(topicKeeper.ActivateTopic(ctx, topicId, emissionstypes.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec()))
 	s.Require().Equal(weight.String(), s.totalSum().String())
+}
+
+// TestMigrateStoreLeavesForecasterStateUninitialized verifies that worker
+// memberships do not seed the independent forecaster role. With no topic
+// forecaster gate, an actor still denied as an inferer is allowed to forecast.
+func (s *EmissionsV16MigrationTestSuite) TestMigrateStoreLeavesForecasterStateUninitialized() {
+	ctx := s.Ctx()
+	store, cdc := s.storeAndCodec()
+	wlk := s.WhitelistsKeeper()
+	worker := s.AddrsStr(0)
+	outsider := s.AddrsStr(1)
+	topicId := uint64(2)
+
+	// Reproduce the zero bool decoded from a legacy Params object that lacks
+	// the new field. Global actors are removed from the fallback under test.
+	params := emissionstypes.DefaultParams()
+	params.GlobalForecasterWhitelistEnabled = false
+	params.GlobalWorkerWhitelistEnabled = true
+	store.Set(emissionstypes.ParamsKey, cdc.MustMarshal(&params))
+	s.Require().NoError(wlk.RemoveFromGlobalWhitelist(ctx, outsider))
+	s.Require().NoError(wlk.AddToGlobalWorkerWhitelist(ctx, worker))
+	s.Require().NoError(wlk.AddToTopicWorkerWhitelist(ctx, topicId, worker))
+	s.Require().NoError(wlk.EnableTopicWorkerWhitelist(ctx, topicId))
+
+	canInfer, err := wlk.CanSubmitInferencePayload(ctx, topicId, outsider)
+	s.Require().NoError(err)
+	s.Require().False(canInfer)
+
+	s.Require().NoError(v16.MigrateStore(ctx, *s.EmissionsKeeper()))
+
+	migratedParams, err := s.EmissionsKeeper().GetParams(ctx)
+	s.Require().NoError(err)
+	s.Require().False(migratedParams.GlobalForecasterWhitelistEnabled)
+	s.Require().True(migratedParams.GlobalWorkerWhitelistEnabled)
+
+	globalWorker, err := wlk.IsWhitelistedGlobalWorker(ctx, worker)
+	s.Require().NoError(err)
+	s.Require().True(globalWorker)
+	topicWorker, err := wlk.IsWhitelistedTopicWorker(ctx, topicId, worker)
+	s.Require().NoError(err)
+	s.Require().True(topicWorker)
+	workerGate, err := wlk.IsTopicWorkerWhitelistEnabled(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().True(workerGate)
+
+	globalForecaster, err := wlk.IsWhitelistedGlobalForecaster(ctx, worker)
+	s.Require().NoError(err)
+	s.Require().False(globalForecaster)
+	topicForecaster, err := wlk.IsWhitelistedTopicForecaster(ctx, topicId, worker)
+	s.Require().NoError(err)
+	s.Require().False(topicForecaster)
+	forecasterGate, err := wlk.IsTopicForecasterWhitelistEnabled(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().False(forecasterGate)
+
+	canInfer, err = wlk.CanSubmitInferencePayload(ctx, topicId, outsider)
+	s.Require().NoError(err)
+	s.Require().False(canInfer)
+	canForecast, err := wlk.CanSubmitForecasterPayload(ctx, topicId, outsider)
+	s.Require().NoError(err)
+	s.Require().True(canForecast)
+}
+
+// TestMigrateStorePreservesIndependentForecasterState verifies that opting out
+// of automatic backfill does not erase or override explicitly configured state.
+func (s *EmissionsV16MigrationTestSuite) TestMigrateStorePreservesIndependentForecasterState() {
+	ctx := s.Ctx()
+	store, cdc := s.storeAndCodec()
+	wlk := s.WhitelistsKeeper()
+	globalActor := s.AddrsStr(0)
+	topicActor := s.AddrsStr(1)
+	topicId := uint64(2)
+
+	params := emissionstypes.DefaultParams()
+	params.GlobalForecasterWhitelistEnabled = true
+	store.Set(emissionstypes.ParamsKey, cdc.MustMarshal(&params))
+	s.Require().NoError(wlk.AddToGlobalForecasterWhitelist(ctx, globalActor))
+	s.Require().NoError(wlk.AddToTopicForecasterWhitelist(ctx, topicId, topicActor))
+	s.Require().NoError(wlk.EnableTopicForecasterWhitelist(ctx, topicId))
+
+	s.Require().NoError(v16.MigrateStore(ctx, *s.EmissionsKeeper()))
+
+	migratedParams, err := s.EmissionsKeeper().GetParams(ctx)
+	s.Require().NoError(err)
+	s.Require().True(migratedParams.GlobalForecasterWhitelistEnabled)
+	globalForecaster, err := wlk.IsWhitelistedGlobalForecaster(ctx, globalActor)
+	s.Require().NoError(err)
+	s.Require().True(globalForecaster)
+	topicForecaster, err := wlk.IsWhitelistedTopicForecaster(ctx, topicId, topicActor)
+	s.Require().NoError(err)
+	s.Require().True(topicForecaster)
+	forecasterGate, err := wlk.IsTopicForecasterWhitelistEnabled(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().True(forecasterGate)
+}
+
+// TestLegacyGenesisUsesZeroForecasterDefaults verifies the same absent-field
+// semantics as v16: old-shape JSON does not gain values from DefaultParams(),
+// while explicit current-genesis values would still go through InitGenesis.
+func (s *EmissionsV16MigrationTestSuite) TestLegacyGenesisUsesZeroForecasterDefaults() {
+	cdc := moduletestutil.MakeTestEncodingConfig().Codec
+	var document map[string]interface{}
+	bz := cdc.MustMarshalJSON(emissionstypes.NewGenesisState())
+	s.Require().NoError(json.Unmarshal(bz, &document))
+
+	params, ok := document["params"].(map[string]interface{})
+	s.Require().True(ok)
+	for _, key := range []string{"global_forecaster_whitelist_enabled", "globalForecasterWhitelistEnabled"} {
+		delete(params, key)
+	}
+	for _, key := range []string{
+		"global_forecaster_whitelist", "globalForecasterWhitelist",
+		"topic_forecaster_whitelist", "topicForecasterWhitelist",
+		"topic_forecaster_whitelist_enabled", "topicForecasterWhitelistEnabled",
+	} {
+		delete(document, key)
+	}
+	legacyJSON, err := json.Marshal(document)
+	s.Require().NoError(err)
+
+	fresh := &EmissionsV16MigrationTestSuite{
+		testutil.NewTestSuite("emissions_V16MigrationsLegacyGenesis"),
+	}
+	fresh.SetT(s.T())
+	fresh.SetupTest()
+	fresh.EmissionsAppModule().InitGenesis(fresh.Ctx(), cdc, legacyJSON)
+
+	gotParams, err := fresh.EmissionsKeeper().GetParams(fresh.Ctx())
+	fresh.Require().NoError(err)
+	fresh.Require().False(gotParams.GlobalForecasterWhitelistEnabled)
+	global, err := fresh.WhitelistsKeeper().IsWhitelistedGlobalForecaster(fresh.Ctx(), fresh.AddrsStr(0))
+	fresh.Require().NoError(err)
+	fresh.Require().False(global)
+	topicMember, err := fresh.WhitelistsKeeper().IsWhitelistedTopicForecaster(fresh.Ctx(), 2, fresh.AddrsStr(0))
+	fresh.Require().NoError(err)
+	fresh.Require().False(topicMember)
+	enabled, err := fresh.WhitelistsKeeper().IsTopicForecasterWhitelistEnabled(fresh.Ctx(), 2)
+	fresh.Require().NoError(err)
+	fresh.Require().False(enabled)
 }
