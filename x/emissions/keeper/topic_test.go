@@ -540,6 +540,22 @@ func (s *KeeperTestSuite) TestDripTopicFeeRevenue() {
 	blocksPerWeek, err := alloraMath.CalculateBlocksPerWeek(params.BlocksPerMonth)
 	require.NoError(err, "error calculating blocks per week")
 
+	// The drip is fractional for these inputs, so its floor and its ceiling
+	// differ: a drip_amount truncated from the drip itself cannot reconcile
+	// with the revenue the drip removed.
+	revenueDec, err := alloraMath.NewDecFromSdkInt(initialRevenue)
+	require.NoError(err)
+	epochsPerWeek, err := blocksPerWeek.Quo(alloraMath.NewDecFromInt64(topic.EpochLength))
+	require.NoError(err)
+	dripPerEpoch, err := revenueDec.Quo(epochsPerWeek)
+	require.NoError(err)
+	floorDrip, err := dripPerEpoch.SdkIntTrim()
+	require.NoError(err)
+	require.True(dripPerEpoch.Gt(alloraMath.NewDecFromInt64(floorDrip.Int64())),
+		"the drip must have a fractional part for this test to be meaningful")
+
+	eventStart := len(ctx.EventManager().Events())
+
 	// Call the function under test
 	err = k.DripTopicFeeRevenue(ctx, topic, blocksPerWeek, block)
 	require.NoError(err, "DripTopicFeeRevenue should not return an error")
@@ -556,6 +572,75 @@ func (s *KeeperTestSuite) TestDripTopicFeeRevenue() {
 	expectedRevenue := initialRevenue.Sub(expectedDrip)
 	require.Equal(expectedRevenue.String(), updatedTopicFeeRevenue.String(),
 		"The topic fee revenue should match the expected value after dripping")
+
+	// The event's three numbers must agree: drip_amount is the revenue the drip
+	// removed, old_revenue - new_revenue.
+	dripEvents := make([]*types.EventTopicFeeRevenueDripped, 0)
+	for _, ev := range ctx.EventManager().Events()[eventStart:] {
+		msg, err := sdk.ParseTypedEvent(abci.Event(ev))
+		if err != nil {
+			continue
+		}
+		if e, ok := msg.(*types.EventTopicFeeRevenueDripped); ok {
+			dripEvents = append(dripEvents, e)
+		}
+	}
+	require.Len(dripEvents, 1)
+	require.Equal(initialRevenue, dripEvents[0].OldRevenue)
+	require.Equal(updatedTopicFeeRevenue, dripEvents[0].NewRevenue)
+	require.Equal(dripEvents[0].OldRevenue.Sub(dripEvents[0].NewRevenue), dripEvents[0].DripAmount,
+		"drip_amount must equal the revenue the drip removed")
+}
+
+// TestDripTopicFeeRevenueEventReconcilesWhenDripExceedsRevenue covers a topic
+// whose epoch is longer than a week, so the drip per epoch exceeds the whole
+// revenue and the new revenue is clamped to zero. The event must still report
+// the revenue actually removed, not the larger drip that was computed.
+func (s *KeeperTestSuite) TestDripTopicFeeRevenueEventReconcilesWhenDripExceedsRevenue() {
+	ctx := s.Ctx()
+	k := s.TopicKeeper()
+	require := s.Require()
+
+	params := types.DefaultParams()
+	params.MinEpochLength = 1
+	require.NoError(s.ParamsKeeper().SetParams(ctx, params))
+
+	topic := s.MockTopic()
+	topic.Id = 2
+	topic.EpochLength = 1_000_000
+	topic.WorkerSubmissionWindow = 1_000_000
+	topic.GroundTruthLag = 1_000_000
+	require.NoError(k.SetTopic(ctx, topic.Id, topic))
+	require.NoError(k.ActivateTopic(ctx, topic.Id, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec()))
+
+	initialRevenue := cosmosMath.NewInt(1000000)
+	require.NoError(k.AddTopicFeeRevenue(ctx, topic.Id, initialRevenue))
+
+	blocksPerWeek, err := alloraMath.CalculateBlocksPerWeek(params.BlocksPerMonth)
+	require.NoError(err)
+	require.True(blocksPerWeek.Lt(alloraMath.NewDecFromInt64(topic.EpochLength)),
+		"the epoch must be longer than a week for the drip to exceed the revenue")
+
+	eventStart := len(ctx.EventManager().Events())
+	require.NoError(k.DripTopicFeeRevenue(ctx, topic, blocksPerWeek, 100))
+
+	updatedTopicFeeRevenue, err := k.GetTopicFeeRevenue(ctx, topic.Id)
+	require.NoError(err)
+	require.True(updatedTopicFeeRevenue.IsZero(), "the revenue is clamped to zero")
+
+	dripEvents := make([]*types.EventTopicFeeRevenueDripped, 0)
+	for _, ev := range ctx.EventManager().Events()[eventStart:] {
+		msg, err := sdk.ParseTypedEvent(abci.Event(ev))
+		if err != nil {
+			continue
+		}
+		if e, ok := msg.(*types.EventTopicFeeRevenueDripped); ok {
+			dripEvents = append(dripEvents, e)
+		}
+	}
+	require.Len(dripEvents, 1)
+	require.Equal(initialRevenue, dripEvents[0].DripAmount,
+		"drip_amount must be the revenue removed, which the clamp caps at the whole revenue")
 }
 
 func (s *KeeperTestSuite) TestDripTopicFeeRevenueWithTwoTopicsDifferentEpochLengths() {

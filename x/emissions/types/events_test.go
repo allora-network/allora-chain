@@ -2145,9 +2145,8 @@ func TestEmitNewTopicFeeRevenueDrippedEvent(t *testing.T) {
 	topicId := uint64(1)
 	oldRevenue := cosmosMath.NewInt(1000)
 	newRevenue := cosmosMath.NewInt(950)
-	dripAmount := cosmosMath.NewInt(50)
 
-	types.EmitNewTopicFeeRevenueDrippedEvent(ctx, topicId, oldRevenue, newRevenue, dripAmount)
+	types.EmitNewTopicFeeRevenueDrippedEvent(ctx, topicId, oldRevenue, newRevenue)
 
 	events := ctx.EventManager().Events()
 	require.Len(t, events, 1)
