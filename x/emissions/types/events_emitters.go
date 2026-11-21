@@ -694,10 +694,10 @@ func EmitNewTopicWeightUpdatedAfterStakeChangeEvent(ctx context.Context, topicId
 	}
 }
 
-func EmitNewTopicFeeRevenueDrippedEvent(ctx context.Context, topicId TopicId, oldRevenue cosmosMath.Int, newRevenue cosmosMath.Int, dripAmount cosmosMath.Int) {
+func EmitNewTopicFeeRevenueDrippedEvent(ctx context.Context, topicId TopicId, oldRevenue cosmosMath.Int, newRevenue cosmosMath.Int) {
 	metrics.IncrProducerEventCount(metrics.TOPIC_FEE_REVENUE_DRIPPED_EVENT)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	err := sdkCtx.EventManager().EmitTypedEvent(NewTopicFeeRevenueDrippedEventBase(topicId, oldRevenue, newRevenue, dripAmount))
+	err := sdkCtx.EventManager().EmitTypedEvent(NewTopicFeeRevenueDrippedEventBase(topicId, oldRevenue, newRevenue))
 	if err != nil {
 		sdkCtx.Logger().Warn("Error emitting TopicFeeRevenueDrippedEvent", "error", err)
 	}
