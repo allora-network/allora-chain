@@ -21,6 +21,8 @@ on:
       - 'test/integration/integration_test.go'
       - 'test/integration/upgrade_test.go'
       - 'test/integration/upgrade_scenarios_test.go'
+      - 'test/integration/upgrade_populated_state_test.go'
+      - 'test/fuzz/invariants.patch'
       - '.github/workflows/upgrade_test.yml'
 
 permissions:
@@ -29,7 +31,13 @@ permissions:
 jobs:
   upgrade-test:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 90
+    # Each ceiling selects a different migration outcome: a backfill from the live
+    # value, the repair of a zero ceiling, and a floor clamped to a low ceiling.
+    strategy:
+      fail-fast: false
+      matrix:
+        seed-max-top-inferers: ["17", "0", "3"]
 
     steps:
     # Dockerfile.upgrade builds the baseline binary from a tag, so the build context needs the tags.
@@ -53,8 +61,21 @@ jobs:
         docker-images: true
         tools-cache: false
 
+    # Dockerfile.upgrade builds the upgrade binary from the build context, so the patch
+    # makes that binary run the emissions invariants in every end blocker.
+    - name: Apply emissions invariants patch
+      run: git apply ./test/fuzz/invariants.patch
+
     - name: Run allora l1 chain on the baseline binary
       run: DO_UPGRADE=true bash ./test/local_testnet_l1.sh
+
+    - name: Require the invariants in the installed upgrade binary
+      shell: bash
+      run: |
+        for node in validator0 validator1 validator2; do
+          binary="test/localnet/$node/cosmovisor/upgrades/v0.18.0/bin/allorad"
+          grep -aq 'Invariants broken' "$binary" || { echo "$binary lacks the invariants patch"; exit 1; }
+        done
 
     # go test reports success when the suite skips or -run matches nothing, so the
     # job also requires the suite's own PASS line.
@@ -65,9 +86,21 @@ jobs:
         UPGRADE_TARGET: v0.18.0
         RPC_MODE: SingleRpc
         RPC_URLS: http://localhost:26657
+        UPGRADE_SEED_MAX_TOP_INFERERS: ${{ matrix.seed-max-top-inferers }}
       run: |
-        go test -count=1 -timeout 30m -run '^TestUpgradeTestSuite$' -v ./test/integration | tee "$RUNNER_TEMP/upgrade-test.out"
+        go test -count=1 -timeout 60m -run '^TestUpgradeTestSuite$' -v ./test/integration | tee "$RUNNER_TEMP/upgrade-test.out"
         grep -q '^--- PASS: TestUpgradeTestSuite' "$RUNNER_TEMP/upgrade-test.out"
+
+    # The seed leaves one refused-reactivation topic in the active set, and the migration
+    # reports removing it. An invariant failure in any block halts the chain and fails above.
+    - name: Require the migration to reconcile the seeded topic
+      shell: bash
+      run: |
+        for node in validator0 validator1 validator2; do
+          line=$(docker logs "$node" 2>&1 | sed 's/\x1b\[[0-9;]*m//g' | grep -a 'topic activity state reconciled')
+          echo "$node: $line"
+          grep -Eq '(^| )removedActiveTopics=1( |$)' <<< "$line"
+        done
 
     # The diagnostic steps below never affect the job result.
     - name: Report validator state
@@ -129,7 +162,7 @@ jobs:
       timeout-minutes: 2
       uses: actions/upload-artifact@v7
       with:
-        name: validator-logs-${{ github.run_id }}-${{ github.run_attempt }}
+        name: validator-logs-${{ matrix.seed-max-top-inferers }}-${{ github.run_id }}-${{ github.run_attempt }}
         path: ${{ runner.temp }}/validator-logs/*.log
         if-no-files-found: warn
         retention-days: 14
