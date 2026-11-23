@@ -37,14 +37,14 @@ func GetLockedVestingTokens(
 
 	// ---- 1. Extract percentage allocations from params ----
 	maxSupply := params.MaxSupply.ToLegacyDec()
-	percentInvestors := params.InvestorsPercentOfTotalSupply
 	percentPreseedInvestors := params.InvestorsPreseedPercentOfTotalSupply
+	percentInvestors := params.InvestorsPercentOfTotalSupply
 	percentTeam := params.TeamPercentOfTotalSupply
 	percentFoundation := params.FoundationTreasuryPercentOfTotalSupply
 	lockedFoundationPercentage := percentFoundation.Mul(FoundationInitialLockedPercentage)
 	// Full amounts
-	fullInvestors := percentInvestors.MulTruncate(maxSupply).TruncateInt()
 	fullPreseedInvestors := percentPreseedInvestors.MulTruncate(maxSupply).TruncateInt()
+	fullInvestors := percentInvestors.MulTruncate(maxSupply).TruncateInt()
 	fullTeam := percentTeam.MulTruncate(maxSupply).TruncateInt()
 
 	// Locked sub-amounts
@@ -75,17 +75,17 @@ func GetLockedVestingTokens(
 	// month on the linear schedule, which locks (36-month)/36 of each bucket,
 	// so half unlocks at the cliff. The buckets are fully unlocked at month 36.
 	if monthsAlreadyUnlocked.LT(investorsTeamCliff) {
-		investorsLocked = fullInvestors
 		preseedInvestorsLocked = fullPreseedInvestors
+		investorsLocked = fullInvestors
 		teamLocked = fullTeam
 	} else if monthsAlreadyUnlocked.LT(thirtySix) {
 		remainingMonths := thirtySix.Sub(monthsAlreadyUnlocked)
-		investorsLocked = fullInvestors.Mul(remainingMonths).Quo(thirtySix)
 		preseedInvestorsLocked = fullPreseedInvestors.Mul(remainingMonths).Quo(thirtySix)
+		investorsLocked = fullInvestors.Mul(remainingMonths).Quo(thirtySix)
 		teamLocked = fullTeam.Mul(remainingMonths).Quo(thirtySix)
 	} else {
-		investorsLocked = math.ZeroInt()
 		preseedInvestorsLocked = math.ZeroInt()
+		investorsLocked = math.ZeroInt()
 		teamLocked = math.ZeroInt()
 	}
 	// participants are unlocked from start
