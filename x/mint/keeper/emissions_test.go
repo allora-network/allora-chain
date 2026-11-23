@@ -240,7 +240,7 @@ func (s *MintKeeperTestSuite) TestGetLockedVestingTokensNewBasicFunctionality() 
 	s.Require().Equal(participantsLocked, expectedParticipants, "Participants should be unlocked at genesis")
 	s.Require().Equal(cosmosMath.ZeroInt(), updatedMonths, "Months unlocked should be 0 at genesis")
 
-	// Test after 11 months (month 11) - preseed, investors, team should start vesting
+	// Test after 11 months (month 11) - preseed, investors, team still fully locked
 	blockHeight = cosmosMath.NewIntFromUint64(blocksPerMonth * 11)
 	monthsUnlocked = cosmosMath.NewInt(11)
 
@@ -547,21 +547,21 @@ func (s *MintKeeperTestSuite) TestGetLockedVestingTokensNewMathematicalPrecision
 		"Participants locked should be zero at month 6. Expected: %s, Got: %s",
 		expectedParticipantsLocked, participantsLocked)
 
-	// Test at month 18 - foundation should be 25% unlocked (18/24)
+	// Test at month 18 - foundation has 6 of 24 months left locked
 	blockHeight = cosmosMath.NewIntFromUint64(blocksPerMonth * 18)
 	monthsUnlocked = cosmosMath.NewInt(18)
 
 	_, _, _, _, foundationLocked, _, _, err :=
 		keeper.GetLockedVestingTokens(blocksPerMonth, blockHeight, params, monthsUnlocked)
 	s.Require().NoError(err)
-	// Foundation: 88.5% of 10% locked initially, should be 25% unlocked at month 18
+	// Foundation: half of the foundation percent is locked at TGE and vests over 24 months
 	expectedFoundationLocked := params.FoundationTreasuryPercentOfTotalSupply.
 		Mul(keeper.FoundationInitialLockedPercentage).
 		Mul(params.MaxSupply.ToLegacyDec()).TruncateInt().
 		Mul(cosmosMath.NewInt(6)).Quo(cosmosMath.NewInt(24))
 
 	s.Require().True(foundationLocked.Equal(expectedFoundationLocked),
-		"Foundation locked should be 25% at month 18. Expected: %s, Got: %s",
+		"Foundation locked should have 6 of 24 months left at month 18. Expected: %s, Got: %s",
 		expectedFoundationLocked, foundationLocked)
 
 	// Month 24 is six months into the linear tail: (36-24)/36 = 1/3 of each bucket stays locked.
@@ -571,7 +571,7 @@ func (s *MintKeeperTestSuite) TestGetLockedVestingTokensNewMathematicalPrecision
 	_, preseedLocked, investorsLocked, teamLocked, _, _, _, err :=
 		keeper.GetLockedVestingTokens(blocksPerMonth, blockHeight, params, monthsUnlocked)
 	s.Require().NoError(err)
-	// Should be 1/3 locked (24 months remaining out of 36 total)
+	// 12 of 36 months remain, so one third stays locked
 	expectedPreseedLocked := params.InvestorsPreseedPercentOfTotalSupply.
 		Mul(params.MaxSupply.ToLegacyDec()).TruncateInt().
 		Mul(cosmosMath.NewInt(12)).Quo(cosmosMath.NewInt(36))
