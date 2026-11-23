@@ -5,7 +5,6 @@ import (
 	"time"
 
 	errorsmod "cosmossdk.io/errors"
-	cosmosMath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/allora-network/allora-chain/app/params"
@@ -53,12 +52,9 @@ func (ms msgServer) Register(ctx context.Context, msg *types.RegisterRequest) (_
 		return nil, err
 	}
 
-	var newRevenue cosmosMath.Int
-	if !params.RegistrationFee.IsZero() {
-		newRevenue, err = ms.sendEffectiveRevenue(ctx, msg.Sender, msg.TopicId, params.RegistrationFee)
-		if err != nil {
-			return nil, err
-		}
+	newRevenue, credited, err := ms.sendEffectiveRevenue(ctx, msg.Sender, msg.TopicId, params.RegistrationFee)
+	if err != nil {
+		return nil, err
 	}
 
 	nodeInfo := types.OffchainNode{
@@ -82,14 +78,14 @@ func (ms msgServer) Register(ctx context.Context, msg *types.RegisterRequest) (_
 		types.EmitNewWorkerRegisteredEvent(ctx, msg.TopicId, msg.Sender, msg.Owner)
 	}
 
-	// A zero registration fee adds nothing and emits nothing. A nonzero fee was
-	// credited above; emit that credit before activation.
-	if !params.RegistrationFee.IsZero() {
+	// Emit the credit after the registration event and before activation, so a
+	// funding-caused status event is last. A zero fee was not credited.
+	if credited {
 		types.EmitNewFundTopicEvent(ctx, msg.TopicId, msg.Sender, params.RegistrationFee, newRevenue, source)
 	}
 
 	if err = ms.activateTopicIfWeightAtLeastGlobalMin(ctx, msg.TopicId); err != nil {
-		sdk.UnwrapSDKContext(ctx).Logger().Error("Failed to activate topic", err)
+		sdk.UnwrapSDKContext(ctx).Logger().Error("Failed to activate topic", "error", err)
 		return nil, err
 	}
 

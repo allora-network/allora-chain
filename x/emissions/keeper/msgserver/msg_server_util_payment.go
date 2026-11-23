@@ -59,20 +59,32 @@ func (ms msgServer) activateTopicIfWeightAtLeastGlobalMin(
 }
 
 // Sends the fee to the ecosystem bucket and adds it to the topic's fee revenue.
-// A zero amount skips the bank transfer. Adding zero leaves the stored total
-// unchanged and returns that total.
+// A zero amount skips the bank transfer and the revenue write, and returns the
+// stored total with credited false. A nonzero amount is stored and credited is
+// true. Callers emit EventFundTopic when credited is true. FundTopic emits
+// either way, including a zero amount.
 func (ms msgServer) sendEffectiveRevenue(
 	ctx context.Context,
 	sender string,
 	topicId TopicId,
 	amount Allo,
-) (cosmosMath.Int, error) {
-	err := ms.checkBalanceAndSendFee(ctx, sender, amount)
-	if err != nil {
-		return cosmosMath.Int{}, err
+) (newRevenue cosmosMath.Int, credited bool, err error) {
+	if amount.IsZero() {
+		newRevenue, err = ms.tk.GetTopicFeeRevenue(ctx, topicId)
+		if err != nil {
+			return cosmosMath.Int{}, false, err
+		}
+		return newRevenue, false, nil
 	}
 
-	return ms.tk.AddTopicFeeRevenue(ctx, topicId, amount)
+	if err = ms.checkBalanceAndSendFee(ctx, sender, amount); err != nil {
+		return cosmosMath.Int{}, false, err
+	}
+	newRevenue, err = ms.tk.AddTopicFeeRevenue(ctx, topicId, amount)
+	if err != nil {
+		return cosmosMath.Int{}, false, err
+	}
+	return newRevenue, true, nil
 }
 
 // Check if user has enough balance to send the fee, then send the fee to EcoSystem bucket

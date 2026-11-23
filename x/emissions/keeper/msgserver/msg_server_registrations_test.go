@@ -4,6 +4,7 @@ import (
 	"context"
 
 	cosmosMath "cosmossdk.io/math"
+	abci "github.com/cometbft/cometbft/abci/types"
 	"github.com/cometbft/cometbft/crypto/secp256k1"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
@@ -102,6 +103,7 @@ func (s *MsgServerTestSuite) TestRegisterEmitsFundTopicEvent() {
 
 			revenueBefore, err := s.TopicKeeper().GetTopicFeeRevenue(ctx, topicId)
 			s.Require().NoError(err)
+			ecosystemBefore := s.ecosystemBalance(ctx)
 
 			callCtx := ctx.WithEventManager(sdk.NewEventManager())
 			_, err = msgServer.Register(callCtx, &types.RegisterRequest{
@@ -119,6 +121,77 @@ func (s *MsgServerTestSuite) TestRegisterEmitsFundTopicEvent() {
 			s.Require().True(moduleParams.RegistrationFee.Equal(events[0].Amount))
 			s.Require().True(revenueBefore.Add(moduleParams.RegistrationFee).Equal(events[0].NewRevenue))
 			s.Require().Equal(tc.source, events[0].Source)
+			s.Require().True(s.ecosystemBalance(ctx).Equal(ecosystemBefore.Add(moduleParams.RegistrationFee)))
+		})
+	}
+}
+
+// A registration fee on an inactive topic emits the registration, then the
+// credit, then the status change, and the topic becomes active.
+func (s *MsgServerTestSuite) TestRegisterFeeActivatesInactiveTopic() {
+	ctx, msgServer := s.Ctx(), s.EmissionsMsgServer()
+	moduleParams, err := s.ParamsKeeper().GetParams(ctx)
+	s.Require().NoError(err)
+	created, err := msgServer.CreateNewTopic(ctx, s.MockTopicMsg())
+	s.Require().NoError(err)
+
+	testCases := []struct {
+		name      string
+		topicId   uint64
+		addrIdx   int
+		isReputer bool
+	}{
+		{name: "worker", topicId: 1, addrIdx: 4, isReputer: false},
+		{name: "reputer", topicId: created.TopicId, addrIdx: 5, isReputer: true},
+	}
+
+	for _, tc := range testCases {
+		s.Run(tc.name, func() {
+			s.Require().NoError(s.StakingKeeper().AddReputerStake(ctx, tc.topicId, s.AddrsStr(1), cosmosMath.NewInt(500000)))
+			_, err := s.TopicKeeper().AddTopicFeeRevenue(ctx, tc.topicId, cosmosMath.NewInt(500000))
+			s.Require().NoError(err)
+			active, err := s.TopicKeeper().IsTopicActive(ctx, tc.topicId)
+			s.Require().NoError(err)
+			s.Require().False(active)
+
+			addr := s.Addrs(tc.addrIdx)
+			s.FundAccount(moduleParams.RegistrationFee.Int64(), addr)
+
+			callCtx := ctx.WithEventManager(sdk.NewEventManager())
+			_, err = msgServer.Register(callCtx, &types.RegisterRequest{
+				Sender:    addr.String(),
+				TopicId:   tc.topicId,
+				IsReputer: tc.isReputer,
+				Owner:     addr.String(),
+			})
+			s.Require().NoError(err)
+
+			var registeredAt, fundAt, statusAt int
+			seq := 0
+			for _, ev := range callCtx.EventManager().Events() {
+				parsed, err := sdk.ParseTypedEvent(abci.Event(ev))
+				if err != nil {
+					continue
+				}
+				seq++
+				switch parsed.(type) {
+				case *types.EventWorkerRegistered, *types.EventReputerRegistered:
+					registeredAt = seq
+				case *types.EventFundTopic:
+					fundAt = seq
+				case *types.EventTopicStatusChanged:
+					statusAt = seq
+				}
+			}
+			s.Require().Positive(registeredAt)
+			s.Require().Positive(fundAt)
+			s.Require().Positive(statusAt)
+			s.Require().Less(registeredAt, fundAt, "the registration event precedes the credit")
+			s.Require().Less(fundAt, statusAt, "the credit event precedes activation")
+
+			active, err = s.TopicKeeper().IsTopicActive(ctx, tc.topicId)
+			s.Require().NoError(err)
+			s.Require().True(active)
 		})
 	}
 }

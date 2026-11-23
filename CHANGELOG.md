@@ -85,6 +85,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * [#1007](https://github.com/allora-network/allora-chain/pull/1007) `labels` on `EventEpochLabelRegistryFrozen`: the frozen registry's label names in compact-id order (`labels[i]` has id `i+1`)
 * [#1026](https://github.com/allora-network/allora-chain/pull/1026) `discarded_addresses` on `EventActiveForecastersSet`: the epoch's active forecasters whose forecasts the worker nonce close discarded
 * [#1025](https://github.com/allora-network/allora-chain/pull/1025) Split the worker whitelist into sibling inferer (existing worker lists) and forecaster whitelists: global/topic lists, enable/disable msgs, queries, events, `create-topic` flag `enable_forecaster_whitelist`, and param `global_forecaster_whitelist_enabled` (default `true` for newly generated genesis).
+* [#1047](https://github.com/allora-network/allora-chain/pull/1047) `new_revenue` and `source` (`TopicFundSource`) on `EventFundTopic`. Registration and data-sending fees emit it, as topic creation and `FundTopic` already did. Events from before this upgrade have neither attribute; a typed decoder reads those as `0` and `TOPIC_FUND_SOURCE_UNSPECIFIED`.
 
 ### Changed
 
@@ -94,6 +95,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * [#1026](https://github.com/allora-network/allora-chain/pull/1026) `addresses` on `EventActiveForecastersSet` lists only the forecasters whose forecasts were stored for the epoch; it used to list every active forecaster, including those whose forecasts the close discarded.
 * [#1011](https://github.com/allora-network/allora-chain/pull/1011) Additive API change: `types.EmitNewInsert{Inferer,Forecaster,Reputer}PayloadEvent` and their `New*EventBase` constructors take a `PayloadAdmissionOutcome`; `AppendForecast` and `AppendReputerLoss` return it.
 * [#1025](https://github.com/allora-network/allora-chain/pull/1025) `InsertWorkerPayload` now gates inferences via the worker (inferer) whitelist and forecasts via the forecaster whitelist; a bundle that carries both is rejected unless the actor holds both permissions. `enable_forecaster_whitelist` is an independent opt-in on `CreateNewTopic` (default `false`, like `enable_worker_whitelist`/`enable_reputer_whitelist`), so new topics created without the flag have ungated forecasts even when `enable_worker_whitelist` is set. The `create-topic` CLI gains a new required positional arg for the flag.
+* [#1047](https://github.com/allora-network/allora-chain/pull/1047) `Register`, `InsertWorkerPayload` and `InsertReputerPayload` emit the action, then `EventFundTopic`, then any funding-caused `EventTopicStatusChanged`. A zero `FundTopic` still emits `EventFundTopic` for the unchanged total. A zero registration, data-sending, or create-topic fee does not emit one and does not write a revenue entry.
 
 ### Deprecated
 
@@ -139,6 +141,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * [#1026](https://github.com/allora-network/allora-chain/pull/1026) `types.EmitNewActiveForecastersSetEvent` and `types.NewActiveForecastersSetEventBase` take `discardedAddresses`.
 * [#1015](https://github.com/allora-network/allora-chain/pull/1015) `TopicKeeper.InactivateTopic` takes `reason`, `weight`, `minWeight` and `thresholdWeight`; `TopicKeeper.ActivateTopic` takes `reason`, `weight` and `minWeight`; `TopicKeeper.AttemptTopicReactivation` takes `weight` and `minWeight`.
 * [#1015](https://github.com/allora-network/allora-chain/pull/1015) `BankingKeeper.MoveCoinsFromAlloraRewardsToEcosystem` returns the `cosmos.Int` amount it moved along with its error.
+* [#1047](https://github.com/allora-network/allora-chain/pull/1047) `types.EmitNewFundTopicEvent` and `types.NewFundTopicEventBase` take `newRevenue` and `source`. `TopicKeeper.AddTopicFeeRevenue` returns the stored total.
 
 # [Released]
 

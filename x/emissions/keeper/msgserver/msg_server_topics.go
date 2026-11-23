@@ -69,9 +69,9 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.CreateNewTopi
 	}
 
 	// Transfer the creation fee to the ecosystem bucket and add it to the topic's
-	// fee revenue. A zero fee skips the bank transfer. Adding zero leaves the
-	// stored revenue unchanged, and the funding event below is skipped.
-	newTopicFeeRevenue, err := ms.sendEffectiveRevenue(ctx, msg.Creator, topicId, params.CreateTopicFee)
+	// fee revenue. A zero fee skips the transfer and does not write a revenue
+	// entry; the funding event below is skipped with it.
+	newTopicFeeRevenue, credited, err := ms.sendEffectiveRevenue(ctx, msg.Creator, topicId, params.CreateTopicFee)
 	if err != nil {
 		return nil, err
 	}
@@ -142,7 +142,7 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.CreateNewTopi
 		}
 	}
 
-	if !params.CreateTopicFee.IsZero() {
+	if credited {
 		// The creation fee is credited to the topic's fee revenue, so emit the
 		// same event as FundTopic to keep the fee-revenue event stream complete.
 		types.EmitNewFundTopicEvent(

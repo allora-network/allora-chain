@@ -2140,6 +2140,24 @@ func TestEmitNewTopicWeightUpdatedAfterStakeChangeEvent(t *testing.T) {
 	require.Contains(t, val.GetValue(), topicFeeRevenue.String())
 }
 
+func TestEmitNewFundTopicEvent(t *testing.T) {
+	ctx := sdk.Context{}.WithEventManager(sdk.NewEventManager())
+	amount := cosmosMath.NewInt(10)
+	newRevenue := cosmosMath.NewInt(25)
+	types.EmitNewFundTopicEvent(ctx, 1, "allo1funder", amount, newRevenue, types.TopicFundSource_TOPIC_FUND_SOURCE_TOPIC_FUNDING)
+
+	events := ctx.EventManager().Events()
+	require.Len(t, events, 1)
+	event := events[0]
+	require.Equal(t, "emissions.v10.EventFundTopic", event.Type)
+	val, exists := event.GetAttribute("new_revenue")
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), "25")
+	val, exists = event.GetAttribute("source")
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), "TOPIC_FUND_SOURCE_TOPIC_FUNDING")
+}
+
 func TestEmitNewTopicFeeRevenueDrippedEvent(t *testing.T) {
 	ctx := sdk.Context{}.WithEventManager(sdk.NewEventManager())
 	topicId := uint64(1)

@@ -164,6 +164,7 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadEmitsFundTopicEvent() {
 	s.Require().NoError(err)
 	revenueBefore, err := s.TopicKeeper().GetTopicFeeRevenue(s.Ctx(), topicId)
 	s.Require().NoError(err)
+	ecosystemBefore := s.ecosystemBalance(s.Ctx())
 
 	callCtx := s.Ctx().WithEventManager(sdk.NewEventManager())
 	_, err = s.EmissionsMsgServer().InsertWorkerPayload(callCtx, &workerMsg)
@@ -176,6 +177,7 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadEmitsFundTopicEvent() {
 	s.Require().True(moduleParams.DataSendingFee.Equal(events[0].Amount))
 	s.Require().True(revenueBefore.Add(moduleParams.DataSendingFee).Equal(events[0].NewRevenue))
 	s.Require().Equal(types.TopicFundSource_TOPIC_FUND_SOURCE_WORKER_SUBMISSION, events[0].Source)
+	s.Require().True(s.ecosystemBalance(s.Ctx()).Equal(ecosystemBefore.Add(moduleParams.DataSendingFee)))
 }
 
 func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadZeroFeeEmitsNoFundEvent() {

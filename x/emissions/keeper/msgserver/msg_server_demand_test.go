@@ -4,12 +4,19 @@ import (
 	cosmosMath "cosmossdk.io/math"
 	abci "github.com/cometbft/cometbft/abci/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 
 	"github.com/allora-network/allora-chain/app/params"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/testutil"
 	"github.com/allora-network/allora-chain/x/emissions/types"
+	minttypes "github.com/allora-network/allora-chain/x/mint/types"
 )
+
+func (s *MsgServerTestSuite) ecosystemBalance(ctx sdk.Context) cosmosMath.Int {
+	addr := authtypes.NewModuleAddress(minttypes.EcosystemModuleName)
+	return s.BankKeeper().GetBalance(ctx, addr, params.DefaultBondDenom).Amount
+}
 
 func fundTopicEvents(ctx sdk.Context) []*types.EventFundTopic {
 	out := make([]*types.EventFundTopic, 0)
@@ -346,6 +353,7 @@ func (s *MsgServerTestSuite) TestFundTopicActivationEmitsActivatedByFunding() {
 
 	revenueBefore, err := s.TopicKeeper().GetTopicFeeRevenue(s.Ctx(), topicId)
 	s.Require().NoError(err)
+	ecosystemBefore := s.ecosystemBalance(s.Ctx())
 
 	em := sdk.NewEventManager()
 	callCtx := s.Ctx().WithEventManager(em)
@@ -367,6 +375,7 @@ func (s *MsgServerTestSuite) TestFundTopicActivationEmitsActivatedByFunding() {
 	s.Require().Len(topicStatusEvents(callCtx), 1)
 	s.Require().NotNil(event)
 	s.Require().Less(fundAt, statusAt, "the credit event precedes activation")
+	s.Require().True(s.ecosystemBalance(s.Ctx()).Equal(ecosystemBefore.Add(amount)))
 
 	moduleParams, err := s.ParamsKeeper().GetParams(s.Ctx())
 	s.Require().NoError(err)
