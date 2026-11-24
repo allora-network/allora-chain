@@ -98,7 +98,7 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.InsertWo
 		return nil, errorsmod.Wrapf(types.ErrAddressNotRegistered, "worker is not registered in this topic")
 	}
 
-	err = sendEffectiveRevenueActivateTopicIfWeightSufficient(ctx, ms, msg.Sender, topicId, moduleParams.DataSendingFee)
+	newRevenue, credited, err := ms.sendEffectiveRevenue(ctx, msg.Sender, topicId, moduleParams.DataSendingFee)
 	if err != nil {
 		return nil, err
 	}
@@ -124,6 +124,17 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.InsertWo
 		if err != nil {
 			return nil, err
 		}
+	}
+
+	// Emit the credit after the payload events and before activation, so a
+	// funding-caused status event is last. A zero fee was not credited.
+	if credited {
+		types.EmitNewFundTopicEvent(ctx, topicId, msg.Sender, moduleParams.DataSendingFee, newRevenue, types.TopicFundSource_TOPIC_FUND_SOURCE_WORKER_SUBMISSION)
+	}
+
+	if err = ms.activateTopicIfWeightAtLeastGlobalMin(ctx, topicId); err != nil {
+		sdk.UnwrapSDKContext(ctx).Logger().Error("Failed to activate topic", "error", err)
+		return nil, err
 	}
 
 	return &types.InsertWorkerPayloadResponse{}, nil

@@ -237,10 +237,10 @@ func EmitNewWorkerUnregisteredEvent(ctx context.Context, topicId TopicId, worker
 	}
 }
 
-func EmitNewFundTopicEvent(ctx context.Context, topicId TopicId, funder string, amount cosmosMath.Int) {
+func EmitNewFundTopicEvent(ctx context.Context, topicId TopicId, funder string, amount, newRevenue cosmosMath.Int, source TopicFundSource) {
 	metrics.IncrProducerEventCount(metrics.FUND_TOPIC_EVENT)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	err := sdkCtx.EventManager().EmitTypedEvent(NewFundTopicEventBase(topicId, funder, amount))
+	err := sdkCtx.EventManager().EmitTypedEvent(NewFundTopicEventBase(topicId, funder, amount, newRevenue, source))
 	if err != nil {
 		sdkCtx.Logger().Warn("Error emitting NewFundTopicEvent", "error", err)
 	}

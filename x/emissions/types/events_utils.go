@@ -396,11 +396,13 @@ func NewWorkerUnregisteredEventBase(topicId TopicId, worker string) proto.Messag
 	}
 }
 
-func NewFundTopicEventBase(topicId TopicId, funder string, amount math.Int) proto.Message {
+func NewFundTopicEventBase(topicId TopicId, funder string, amount, newRevenue math.Int, source TopicFundSource) proto.Message {
 	return &EventFundTopic{
-		TopicId: topicId,
-		Funder:  funder,
-		Amount:  amount,
+		TopicId:    topicId,
+		Funder:     funder,
+		Amount:     amount,
+		NewRevenue: newRevenue,
+		Source:     source,
 	}
 }
 

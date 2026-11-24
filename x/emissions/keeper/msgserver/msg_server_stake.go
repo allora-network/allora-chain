@@ -61,7 +61,7 @@ func (ms msgServer) AddStake(ctx context.Context, msg *types.AddStakeRequest) (_
 		return nil, err
 	}
 
-	err = activateTopicIfWeightAtLeastGlobalMin(ctx, ms, msg.TopicId)
+	err = ms.activateTopicIfWeightAtLeastGlobalMin(ctx, msg.TopicId)
 	return &types.AddStakeResponse{}, err
 }
 
@@ -201,7 +201,7 @@ func (ms msgServer) DelegateStake(ctx context.Context, msg *types.DelegateStakeR
 		return nil, err
 	}
 
-	err = activateTopicIfWeightAtLeastGlobalMin(ctx, ms, msg.TopicId)
+	err = ms.activateTopicIfWeightAtLeastGlobalMin(ctx, msg.TopicId)
 	return &types.DelegateStakeResponse{}, err
 }
 

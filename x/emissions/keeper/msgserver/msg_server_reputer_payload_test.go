@@ -1,6 +1,7 @@
 package msgserver_test
 
 import (
+	cosmosMath "cosmossdk.io/math"
 	abci "github.com/cometbft/cometbft/abci/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
@@ -115,6 +116,72 @@ func (s *MsgServerTestSuite) TestMsgInsertReputerPayloadEmitsAdmissionOutcome() 
 	s.Require().Equal(types.PayloadAdmissionOutcome_PAYLOAD_ADMISSION_OUTCOME_ADMITTED, events[0].AdmissionOutcome)
 	s.Require().Equal(s.AddrsStr(1), events[1].Reputer)
 	s.Require().Equal(types.PayloadAdmissionOutcome_PAYLOAD_ADMISSION_OUTCOME_NOT_ADMITTED, events[1].AdmissionOutcome)
+}
+
+func (s *MsgServerTestSuite) TestMsgInsertReputerPayloadEmitsFundTopicEvent() {
+	reputerIndexes := testutil.ReturnIndexes(0, 1)
+	workerIndexes := testutil.ReturnIndexes(1, 1)
+	topic := s.FullTopicSetup(workerIndexes, reputerIndexes)
+
+	nonce, _, _ := s.TopicKeeper().GetNextPossibleChurningBlockByTopicId(s.Ctx(), topic.Id)
+	s.WithBlockHeight(nonce)
+	s.EndBlock()
+	s.SetupInferences(topic.Id, nonce, workerIndexes)
+	s.WithBlockHeight(nonce + topic.WorkerSubmissionWindow)
+	s.CloseWorkerNonce(topic, types.Nonce{BlockHeight: nonce})
+	s.WithBlockHeight(nonce + topic.GroundTruthLag*2)
+
+	moduleParams, err := s.ParamsKeeper().GetParams(s.Ctx())
+	s.Require().NoError(err)
+	revenueBefore, err := s.TopicKeeper().GetTopicFeeRevenue(s.Ctx(), topic.Id)
+	s.Require().NoError(err)
+	ecosystemBefore := s.ecosystemBalance(s.Ctx())
+	s.WithEventManager(sdk.NewEventManager())
+
+	s.Require().NoError(s.InsertReputerLossBundle(topic.GetId(), nonce, reputerIndexes))
+
+	events := fundTopicEvents(s.Ctx())
+	s.Require().Len(events, 1)
+	event := events[0]
+	s.Require().Equal(topic.Id, event.TopicId)
+	s.Require().Equal(s.AddrsStr(reputerIndexes[0]), event.Funder)
+	s.Require().True(moduleParams.DataSendingFee.Equal(event.Amount))
+	s.Require().True(revenueBefore.Add(moduleParams.DataSendingFee).Equal(event.NewRevenue))
+	s.Require().Equal(types.TopicFundSource_TOPIC_FUND_SOURCE_REPUTER_SUBMISSION, event.Source)
+	s.Require().True(s.ecosystemBalance(s.Ctx()).Equal(ecosystemBefore.Add(moduleParams.DataSendingFee)))
+}
+
+func (s *MsgServerTestSuite) TestMsgInsertReputerPayloadZeroFeeEmitsNoFundEvent() {
+	reputerIndexes := testutil.ReturnIndexes(0, 1)
+	workerIndexes := testutil.ReturnIndexes(1, 1)
+	topic := s.FullTopicSetup(workerIndexes, reputerIndexes)
+
+	nonce, _, _ := s.TopicKeeper().GetNextPossibleChurningBlockByTopicId(s.Ctx(), topic.Id)
+	s.WithBlockHeight(nonce)
+	s.EndBlock()
+	s.SetupInferences(topic.Id, nonce, workerIndexes)
+	s.WithBlockHeight(nonce + topic.WorkerSubmissionWindow)
+	s.CloseWorkerNonce(topic, types.Nonce{BlockHeight: nonce})
+	s.WithBlockHeight(nonce + topic.GroundTruthLag*2)
+
+	_, err := s.EmissionsMsgServer().UpdateParams(s.Ctx(), &types.UpdateParamsRequest{
+		Sender: s.AddrsStr(0),
+		Params: &types.OptionalParams{ //nolint:exhaustruct
+			DataSendingFee: []cosmosMath.Int{cosmosMath.ZeroInt()},
+		},
+	})
+	s.Require().NoError(err)
+
+	revenueBefore, err := s.TopicKeeper().GetTopicFeeRevenue(s.Ctx(), topic.Id)
+	s.Require().NoError(err)
+	s.WithEventManager(sdk.NewEventManager())
+
+	s.Require().NoError(s.InsertReputerLossBundle(topic.GetId(), nonce, reputerIndexes))
+	s.Require().Empty(fundTopicEvents(s.Ctx()))
+
+	revenueAfter, err := s.TopicKeeper().GetTopicFeeRevenue(s.Ctx(), topic.Id)
+	s.Require().NoError(err)
+	s.Require().True(revenueBefore.Equal(revenueAfter))
 }
 
 func (s *MsgServerTestSuite) TestMsgInsertReputerPayloadReputerNotMatchSignature() {
