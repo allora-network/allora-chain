@@ -55420,8 +55420,8 @@ func (x *EventWorkerUnregistered) GetWorker() string {
 
 // Fee revenue credited to a topic, and the total stored afterwards.
 // FundTopic emits this even when amount is zero, reporting the unchanged total.
-// A zero registration fee, data-sending fee, or create-topic fee does not:
-// nothing was credited.
+// A zero registration fee, data-sending fee, or create-topic fee emits no
+// event, because nothing was credited.
 type EventFundTopic struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
