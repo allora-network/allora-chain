@@ -51,7 +51,15 @@ export PATH=$PATH:$(go env GOPATH)/bin
 ```
 
 ## Run a Local Network
-To run a local node for testing purposes, execute the following commands:
+
+**In Docker (recommended):** a single-validator chain with a fresh genesis,
+from a release image, a GHCR dev build of any branch, or your working tree:
+```
+cd localnet && docker compose up -d
+```
+See [localnet/README.md](localnet/README.md).
+
+**From source:** to run a local node for testing purposes, execute the following commands:
 ```
 make init
 allorad start
@@ -282,11 +290,11 @@ INTEGRATION=TRUE go test -timeout 10m ./test/integration/ -v
 
 ## Run Upgrade Tests
 
-To run upgrade tests, execute the following commands:
+To run upgrade tests, execute the following commands from a full clone (`Dockerfile.upgrade` cannot build from a linked git worktree):
 
 ```bash
-DO_UPGRADE="true" UPGRADE_VERSION="v0.17.0" bash test/local_testnet_l1.sh
-UPGRADE=TRUE UPGRADE_TARGET="v0.17.0" go test -timeout 10m ./test/integration/ -v
+DO_UPGRADE=true bash test/local_testnet_l1.sh
+UPGRADE=true UPGRADE_TARGET=v0.18.0 RPC_MODE=SingleRpc RPC_URLS=http://localhost:26657 go test -v -count=1 -timeout 20m -run '^TestUpgradeTestSuite$' ./test/integration
 ```
 
 ## Run Stress Tests

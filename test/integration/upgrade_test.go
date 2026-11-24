@@ -7,12 +7,24 @@ import (
 
 	upgradetypes "cosmossdk.io/x/upgrade/types"
 	testCommon "github.com/allora-network/allora-chain/test/common"
+	rpchttp "github.com/cometbft/cometbft/rpc/client/http"
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	govtypesv1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
 	"github.com/ignite/cli/v28/ignite/pkg/cosmosaccount"
 	"github.com/stretchr/testify/require"
 )
+
+const (
+	// blocksPastPlanHeight is how far past the plan height every validator must commit,
+	// which shows that the new binary keeps producing blocks after running the handler.
+	blocksPastPlanHeight = int64(5)
+	upgradeWaitTimeout   = 10 * time.Minute
+	upgradePollInterval  = 2 * time.Second
+	validatorRpcTimeout  = 5 * time.Second
+)
+
+var defaultValidatorRpcUrls = []string{"http://localhost:26657", "http://localhost:26658", "http://localhost:26659"}
 
 // get the amount of coins required to deposit for a proposal
 func getDepositRequired(m testCommon.TestConfig) sdktypes.Coin {
@@ -53,8 +65,9 @@ func voteOnProposal(m testCommon.TestConfig, proposalId uint64) {
 	}
 }
 
-// propose an upgrade to the specified software version
-func proposeUpgrade(m testCommon.TestConfig, upgradeName string, planHeightDelta int64) (proposalId uint64, proposalHeight int64) {
+// propose an upgrade to the specified software version at the height choosePlanHeight
+// returns for the earliest height allowed by planHeightDelta
+func proposeUpgrade(m testCommon.TestConfig, upgradeName string, planHeightDelta int64, choosePlanHeight func(earliest int64) int64) (proposalId uint64, proposalHeight int64) {
 	ctx := context.Background()
 	name := upgradeName
 	summary := "Upgrade to " + name + " software version"
@@ -64,7 +77,7 @@ func proposeUpgrade(m testCommon.TestConfig, upgradeName string, planHeightDelta
 	if planHeightDelta <= 0 {
 		planHeightDelta = DefaultPlanHeightDelta
 	}
-	proposalHeight = currHeight + planHeightDelta // 4 1/6 minutes
+	proposalHeight = choosePlanHeight(currHeight + planHeightDelta) // 4 1/6 minutes
 	m.T.Logf("Current Height: %d, proposing upgrade for %d", currHeight, proposalHeight)
 	msgSoftwareUpgrade := &upgradetypes.MsgSoftwareUpgrade{
 		Authority: authtypes.NewModuleAddress("gov").String(),
@@ -154,16 +167,69 @@ func getModuleVersion(m testCommon.TestConfig, moduleName string) moduleVersionS
 	}
 }
 
-// wait for the block before the upgrade, then sleep to give
-// the cosmovisor time to reboot the node software
-func waitForUpgrade(m testCommon.TestConfig, proposalHeight int64) {
-	ctx := context.Background()
-	var timeToSleep = 15 * time.Second
-	err := m.Client.WaitForBlockHeight(ctx, proposalHeight-1)
-	require.NoError(m.T, err)
-	m.T.Logf("--- Block Height %d Reached, Preparing to Sleep %d while Upgrade Happens ---",
-		proposalHeight-1, timeToSleep)
-	time.Sleep(timeToSleep)
+// validatorNode is a direct RPC connection to one validator. Test clients in
+// SingleRpc mode see only one node, and the upgrade must hold on all of them.
+type validatorNode struct {
+	url    string
+	client *rpchttp.HTTP
+}
+
+// connect to every validator of the local network
+func connectValidators(m testCommon.TestConfig) []validatorNode {
+	urls := testCommon.LookupEnvStringArrayWithDefault(m.T, "UPGRADE_VALIDATOR_RPC_URLS", defaultValidatorRpcUrls)
+	nodes := make([]validatorNode, 0, len(urls))
+	for _, url := range urls {
+		client, err := rpchttp.New(url, "/websocket")
+		require.NoErrorf(m.T, err, "connecting to validator %s", url)
+		nodes = append(nodes, validatorNode{url: url, client: client})
+	}
+	return nodes
+}
+
+// abciInfo asks a validator's running binary for its version and last committed height.
+func (n validatorNode) abciInfo() (version string, height int64, err error) {
+	ctx, cancel := context.WithTimeout(context.Background(), validatorRpcTimeout)
+	defer cancel()
+	info, err := n.client.ABCIInfo(ctx)
+	if err != nil {
+		return "", 0, err
+	}
+	return info.Response.Version, info.Response.LastBlockHeight, nil
+}
+
+// read the binary version of each validator, requiring it to be the scenario's baseline when one is set
+func requireBaselineAppVersions(m testCommon.TestConfig, nodes []validatorNode, baselineVersion string) map[string]string {
+	versions := make(map[string]string, len(nodes))
+	for _, node := range nodes {
+		version, _, err := node.abciInfo()
+		require.NoErrorf(m.T, err, "querying validator %s before upgrade", node.url)
+		if baselineVersion != "" {
+			require.Equalf(m.T, baselineVersion, version, "validator %s is not running the baseline binary", node.url)
+		}
+		m.T.Logf("Validator %s pre-upgrade binary version: %s", node.url, version)
+		versions[node.url] = version
+	}
+	return versions
+}
+
+// waitForUpgrade blocks until every validator commits blocks past the plan height,
+// then requires each one to report a binary different from the one it ran before.
+// The old binary halts at the plan height, so RPC errors during the restart are retried.
+func waitForUpgrade(m testCommon.TestConfig, nodes []validatorNode, preVersions map[string]string, proposalHeight int64) {
+	targetHeight := proposalHeight + blocksPastPlanHeight
+	deadline := time.Now().Add(upgradeWaitTimeout)
+	for _, node := range nodes {
+		for {
+			version, height, err := node.abciInfo()
+			if err == nil && height >= targetHeight {
+				require.NotEqualf(m.T, preVersions[node.url], version, "validator %s passed plan height %d on its pre-upgrade binary", node.url, proposalHeight)
+				m.T.Logf("Validator %s at height %d (plan height %d) on binary version %s", node.url, height, proposalHeight, version)
+				break
+			}
+			require.Truef(m.T, time.Now().Before(deadline), "validator %s did not reach height %d: last height %d, last error: %v", node.url, targetHeight, height, err)
+			time.Sleep(upgradePollInterval)
+		}
+	}
 }
 
 func getAppliedVersionHeight(m testCommon.TestConfig, version string) int64 {
@@ -200,14 +266,36 @@ func UpgradeChecks(m testCommon.TestConfig, upgradeName string) {
 		}
 	}
 
+	for moduleName, expected := range scenario.BaselineModuleVersions {
+		snapshot := getModuleVersion(m, moduleName)
+		require.Truef(m.T, snapshot.Found, "module %s expected to exist on the baseline", moduleName)
+		require.Equalf(m.T, expected, snapshot.Version, "module %s baseline consensus version mismatch", moduleName)
+	}
+
+	nodes := connectValidators(m)
+	preVersions := requireBaselineAppVersions(m, nodes, scenario.BaselineAppVersion)
+
+	var stateChecks upgradeStateChecks
+	choosePlanHeight := func(earliest int64) int64 { return earliest }
+	if scenario.NewStateChecks != nil {
+		stateChecks = scenario.NewStateChecks()
+		m.T.Logf("--- Seeding baseline state for %s ---", scenario.UpgradeName)
+		stateChecks.SeedBaseline(m)
+		requireBaselineAppVersions(m, nodes, scenario.BaselineAppVersion)
+		choosePlanHeight = func(earliest int64) int64 { return stateChecks.ChoosePlanHeight(m, earliest) }
+	}
+
 	m.T.Logf("--- Propose Upgrade to %s software version ---", scenario.UpgradeName)
-	proposalId, proposalHeight := proposeUpgrade(m, scenario.UpgradeName, planHeightDelta)
+	proposalId, proposalHeight := proposeUpgrade(m, scenario.UpgradeName, planHeightDelta, choosePlanHeight)
 	m.T.Logf("--- Vote on Upgrade Proposal %d ---", proposalId)
 	voteOnProposal(m, proposalId)
 	m.T.Logf("--- Waiting for Proposal %d to Pass ---", proposalId)
 	waitForProposalPass(m, proposalId)
+	if stateChecks != nil {
+		stateChecks.BeforeUpgradeBlock(m, proposalHeight)
+	}
 	m.T.Logf("--- Waiting for Upgrade to %s at height %d ---", scenario.UpgradeName, proposalHeight)
-	waitForUpgrade(m, proposalHeight)
+	waitForUpgrade(m, nodes, preVersions, proposalHeight)
 
 	for _, check := range scenario.ModuleChecks {
 		m.T.Logf("--- Validating module %s ---", check.ModuleName)
@@ -243,4 +331,11 @@ func UpgradeChecks(m testCommon.TestConfig, upgradeName string) {
 	height := getAppliedVersionHeight(m, scenario.UpgradeName)
 	m.T.Log("--- Checking upgrade has been applied at the proposed height ---")
 	require.Equal(m.T, height, proposalHeight)
+
+	if stateChecks != nil {
+		m.T.Log("--- Verifying migrated state ---")
+		stateChecks.VerifyMigration(m, proposalHeight)
+		m.T.Log("--- Driving the chain on migrated state ---")
+		stateChecks.DriveMigratedState(m, nodes, proposalHeight)
+	}
 }

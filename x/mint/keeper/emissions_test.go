@@ -1,6 +1,7 @@
 package keeper_test
 
 import (
+	"fmt"
 	"math"
 
 	cosmosMath "cosmossdk.io/math"
@@ -239,7 +240,7 @@ func (s *MintKeeperTestSuite) TestGetLockedVestingTokensNewBasicFunctionality() 
 	s.Require().Equal(participantsLocked, expectedParticipants, "Participants should be unlocked at genesis")
 	s.Require().Equal(cosmosMath.ZeroInt(), updatedMonths, "Months unlocked should be 0 at genesis")
 
-	// Test after 11 months (month 11) - preseed, investors, team should start vesting
+	// Test after 11 months (month 11) - preseed, investors, team still fully locked
 	blockHeight = cosmosMath.NewIntFromUint64(blocksPerMonth * 11)
 	monthsUnlocked = cosmosMath.NewInt(11)
 
@@ -255,7 +256,8 @@ func (s *MintKeeperTestSuite) TestGetLockedVestingTokensNewBasicFunctionality() 
 	s.Require().True(expectedTotal.Equal(cosmosMath.ZeroInt()) || totalLocked.GT(cosmosMath.ZeroInt()), "Total locked should be > 0 at month 11")
 	s.Require().Equal(cosmosMath.NewInt(11), updatedMonths, "Months unlocked should be 11 at month 11")
 
-	// Test after 1 year (month 12) - preseed, investors, team should start vesting
+	// Test at month 12. The investors, preseed, and team cliff is month 18,
+	// so these buckets are still fully locked. Foundation has vested for 12 of 24 months.
 	blockHeight = cosmosMath.NewIntFromUint64(blocksPerMonth * 12)
 	monthsUnlocked = cosmosMath.NewInt(12)
 
@@ -263,10 +265,9 @@ func (s *MintKeeperTestSuite) TestGetLockedVestingTokensNewBasicFunctionality() 
 		keeper.GetLockedVestingTokens(blocksPerMonth, blockHeight, params, monthsUnlocked)
 	s.Require().NoError(err)
 
-	// At 12 months, preseed/investors/team should start vesting (2/3 remaining)
-	expectedPreseed = params.InvestorsPreseedPercentOfTotalSupply.Mul(params.MaxSupply.ToLegacyDec()).TruncateInt().Mul(cosmosMath.NewInt(24)).Quo(cosmosMath.NewInt(36))
-	expectedInvestors = params.InvestorsPercentOfTotalSupply.Mul(params.MaxSupply.ToLegacyDec()).TruncateInt().Mul(cosmosMath.NewInt(24)).Quo(cosmosMath.NewInt(36))
-	expectedTeam = params.TeamPercentOfTotalSupply.Mul(params.MaxSupply.ToLegacyDec()).TruncateInt().Mul(cosmosMath.NewInt(24)).Quo(cosmosMath.NewInt(36))
+	expectedPreseed = params.InvestorsPreseedPercentOfTotalSupply.Mul(params.MaxSupply.ToLegacyDec()).TruncateInt()
+	expectedInvestors = params.InvestorsPercentOfTotalSupply.Mul(params.MaxSupply.ToLegacyDec()).TruncateInt()
+	expectedTeam = params.TeamPercentOfTotalSupply.Mul(params.MaxSupply.ToLegacyDec()).TruncateInt()
 	expectedFoundation = params.FoundationTreasuryPercentOfTotalSupply.Mul(keeper.FoundationInitialLockedPercentage).Mul(params.MaxSupply.ToLegacyDec()).TruncateInt().Mul(cosmosMath.NewInt(12)).Quo(cosmosMath.NewInt(24))
 	expectedParticipants = cosmosMath.ZeroInt()
 
@@ -279,14 +280,36 @@ func (s *MintKeeperTestSuite) TestGetLockedVestingTokensNewBasicFunctionality() 
 	s.mintKeeper.Logger(s.ctx).Debug("Foundation locked", "actual", foundationLocked.String(), "expected", expectedFoundation.String())
 	s.mintKeeper.Logger(s.ctx).Debug("Participants locked", "actual", participantsLocked.String(), "expected", expectedParticipants.String())
 	s.mintKeeper.Logger(s.ctx).Debug("Updated months", "value", updatedMonths.String())
-	s.Require().Equal(preseedLocked, expectedPreseed, "Preseed locked should be 2/3 of total at month 12")
-	s.Require().Equal(investorsLocked, expectedInvestors, "Investors locked should be 2/3 of total at month 12")
-	s.Require().Equal(teamLocked, expectedTeam, "Team locked should be 2/3 of total at month 12")
+	s.Require().Equal(preseedLocked, expectedPreseed, "Preseed should still be fully locked at month 12")
+	s.Require().Equal(investorsLocked, expectedInvestors, "Investors should still be fully locked at month 12")
+	s.Require().Equal(teamLocked, expectedTeam, "Team should still be fully locked at month 12")
 	s.Require().Equal(participantsLocked, expectedParticipants, "Participants should be fully unlocked at month 12")
 	s.Require().Equal(foundationLocked, expectedFoundation, "Foundation should still be locked at month 12")
 	s.Require().Equal(cosmosMath.NewInt(12), updatedMonths, "Months unlocked should be 12")
 
-	// Test after 2 years (month 24) - preseed, investors, team should be fully unlocked
+	// Month 18 is the investors, preseed, and team cliff. (36-18)/36 leaves half of each
+	// bucket locked. Foundation is on its own 24-month line, with 6 months left.
+	blockHeight = cosmosMath.NewIntFromUint64(blocksPerMonth * 18)
+	monthsUnlocked = cosmosMath.NewInt(18)
+
+	_, preseedLocked, investorsLocked, teamLocked, foundationLocked, participantsLocked, updatedMonths, err =
+		keeper.GetLockedVestingTokens(blocksPerMonth, blockHeight, params, monthsUnlocked)
+	s.Require().NoError(err)
+
+	expectedPreseed = params.InvestorsPreseedPercentOfTotalSupply.Mul(params.MaxSupply.ToLegacyDec()).TruncateInt().Mul(cosmosMath.NewInt(18)).Quo(cosmosMath.NewInt(36))
+	expectedInvestors = params.InvestorsPercentOfTotalSupply.Mul(params.MaxSupply.ToLegacyDec()).TruncateInt().Mul(cosmosMath.NewInt(18)).Quo(cosmosMath.NewInt(36))
+	expectedTeam = params.TeamPercentOfTotalSupply.Mul(params.MaxSupply.ToLegacyDec()).TruncateInt().Mul(cosmosMath.NewInt(18)).Quo(cosmosMath.NewInt(36))
+	expectedFoundation = params.FoundationTreasuryPercentOfTotalSupply.Mul(keeper.FoundationInitialLockedPercentage).Mul(params.MaxSupply.ToLegacyDec()).TruncateInt().Mul(cosmosMath.NewInt(6)).Quo(cosmosMath.NewInt(24))
+	expectedParticipants = cosmosMath.ZeroInt()
+
+	s.Require().Equal(expectedPreseed, preseedLocked, "Preseed should be half locked at month 18")
+	s.Require().Equal(expectedInvestors, investorsLocked, "Investors should be half locked at month 18")
+	s.Require().Equal(expectedTeam, teamLocked, "Team should be half locked at month 18")
+	s.Require().Equal(expectedParticipants, participantsLocked, "Participants should be fully unlocked at month 18")
+	s.Require().Equal(expectedFoundation, foundationLocked, "Foundation should have 6 of 24 months left at month 18")
+	s.Require().Equal(cosmosMath.NewInt(18), updatedMonths, "Months unlocked should be 18")
+
+	// Month 24: one third of investors, preseed, and team remains locked. Foundation is fully unlocked.
 	blockHeight = cosmosMath.NewIntFromUint64(blocksPerMonth * 24)
 	monthsUnlocked = cosmosMath.NewInt(24)
 
@@ -473,7 +496,8 @@ func (s *MintKeeperTestSuite) TestGetLockedVestingTokensNewVestingSchedules() {
 		}
 	}
 
-	// Test Preseed/Investors/Team vesting (12 month cliff + 24 month linear = 36 months total)
+	// Investors, preseed, and team: fully locked through month 17, half released
+	// at month 18, fully unlocked at month 36.
 	cliffVestingTests := []struct {
 		months         int64
 		shouldBeLocked bool
@@ -481,7 +505,9 @@ func (s *MintKeeperTestSuite) TestGetLockedVestingTokensNewVestingSchedules() {
 	}{
 		{0, true, "Cliff tokens should be locked at month 0"},
 		{6, true, "Cliff tokens should be locked at month 6"},
-		{12, true, "Cliff tokens should be locked at month 12 (cliff)"},
+		{12, true, "Cliff tokens should still be fully locked at month 12"},
+		{17, true, "Cliff tokens should still be fully locked at month 17"},
+		{18, true, "Cliff tokens should be partially locked at month 18"},
 		{24, true, "Cliff tokens should be partially locked at month 24"},
 		{36, false, "Cliff tokens should be unlocked at month 36"},
 		{48, false, "Cliff tokens should be unlocked at month 48"},
@@ -521,31 +547,31 @@ func (s *MintKeeperTestSuite) TestGetLockedVestingTokensNewMathematicalPrecision
 		"Participants locked should be zero at month 6. Expected: %s, Got: %s",
 		expectedParticipantsLocked, participantsLocked)
 
-	// Test at month 18 - foundation should be 25% unlocked (18/24)
+	// Test at month 18 - foundation has 6 of 24 months left locked
 	blockHeight = cosmosMath.NewIntFromUint64(blocksPerMonth * 18)
 	monthsUnlocked = cosmosMath.NewInt(18)
 
 	_, _, _, _, foundationLocked, _, _, err :=
 		keeper.GetLockedVestingTokens(blocksPerMonth, blockHeight, params, monthsUnlocked)
 	s.Require().NoError(err)
-	// Foundation: 88.5% of 10% locked initially, should be 25% unlocked at month 18
+	// Foundation: half of the foundation percent is locked at TGE and vests over 24 months
 	expectedFoundationLocked := params.FoundationTreasuryPercentOfTotalSupply.
 		Mul(keeper.FoundationInitialLockedPercentage).
 		Mul(params.MaxSupply.ToLegacyDec()).TruncateInt().
 		Mul(cosmosMath.NewInt(6)).Quo(cosmosMath.NewInt(24))
 
 	s.Require().True(foundationLocked.Equal(expectedFoundationLocked),
-		"Foundation locked should be 25% at month 18. Expected: %s, Got: %s",
+		"Foundation locked should have 6 of 24 months left at month 18. Expected: %s, Got: %s",
 		expectedFoundationLocked, foundationLocked)
 
-	// Test at month 24 - cliff tokens should be 2/3 unlocked (12 months cliff + 12 months linear)
+	// Month 24 is six months into the linear tail: (36-24)/36 = 1/3 of each bucket stays locked.
 	blockHeight = cosmosMath.NewIntFromUint64(blocksPerMonth * 24)
 	monthsUnlocked = cosmosMath.NewInt(24)
 
 	_, preseedLocked, investorsLocked, teamLocked, _, _, _, err :=
 		keeper.GetLockedVestingTokens(blocksPerMonth, blockHeight, params, monthsUnlocked)
 	s.Require().NoError(err)
-	// Should be 1/3 locked (24 months remaining out of 36 total)
+	// 12 of 36 months remain, so one third stays locked
 	expectedPreseedLocked := params.InvestorsPreseedPercentOfTotalSupply.
 		Mul(params.MaxSupply.ToLegacyDec()).TruncateInt().
 		Mul(cosmosMath.NewInt(12)).Quo(cosmosMath.NewInt(36))
@@ -871,4 +897,151 @@ func (s *MintKeeperTestSuite) TestGetLockedVestingTokensNewStressTest() {
 	s.Require().True(teamLocked.Equal(cosmosMath.ZeroInt()), "Team should be zero with max months")
 	s.Require().True(foundationLocked.Equal(cosmosMath.ZeroInt()), "Foundation should be zero with max months")
 	s.Require().True(participantsLocked.Equal(cosmosMath.ZeroInt()), "Participants should be zero with max months")
+}
+
+// TestInvestorsTeamEighteenMonthCliff pins the investors, preseed, and team
+// schedule: fully locked before month 18, half unlocked at month 18, and fully
+// unlocked at month 36. Preseed uses that same cliff.
+//
+// The steps table holds literal uallo amounts. The every-month loop checks the
+// piecewise shape, full lock then (36-month)/36 then zero, and the 18 and 36
+// boundaries. That loop recomputes the fraction, so the literals are what pin rounding.
+func (s *MintKeeperTestSuite) TestInvestorsTeamEighteenMonthCliff() {
+	blocksPerMonth := uint64(525960)
+	params := generateNewMintParams()
+	// 26.05% seed and 5% preseed. Together they are the 31.05% investors allocation.
+	params.InvestorsPercentOfTotalSupply = cosmosMath.LegacyMustNewDecFromStr("0.2605")
+	params.InvestorsPreseedPercentOfTotalSupply = cosmosMath.LegacyMustNewDecFromStr("0.05")
+
+	const (
+		fullPreseed   = "50000000000000000000000000"
+		fullInvestors = "260500000000000000000000000"
+		fullTeam      = "175000000000000000000000000"
+	)
+
+	steps := []struct {
+		month         int64
+		preseed       string
+		investors     string
+		team          string
+		foundation    string
+		updatedMonths int64
+	}{
+		{month: 0, preseed: fullPreseed, investors: fullInvestors, team: fullTeam, foundation: "88500000000000000000000000", updatedMonths: 0},
+		{month: 11, preseed: fullPreseed, investors: fullInvestors, team: fullTeam, foundation: "47937500000000000000000000", updatedMonths: 11},
+		{month: 12, preseed: fullPreseed, investors: fullInvestors, team: fullTeam, foundation: "44250000000000000000000000", updatedMonths: 12},
+		{month: 17, preseed: fullPreseed, investors: fullInvestors, team: fullTeam, foundation: "25812500000000000000000000", updatedMonths: 17},
+		{month: 18, preseed: "25000000000000000000000000", investors: "130250000000000000000000000", team: "87500000000000000000000000", foundation: "22125000000000000000000000", updatedMonths: 18},
+		{month: 19, preseed: "23611111111111111111111111", investors: "123013888888888888888888888", team: "82638888888888888888888888", foundation: "18437500000000000000000000", updatedMonths: 19},
+		{month: 24, preseed: "16666666666666666666666666", investors: "86833333333333333333333333", team: "58333333333333333333333333", foundation: "0", updatedMonths: 24},
+		{month: 35, preseed: "1388888888888888888888888", investors: "7236111111111111111111111", team: "4861111111111111111111111", foundation: "0", updatedMonths: 35},
+		{month: 36, preseed: "0", investors: "0", team: "0", foundation: "0", updatedMonths: 36},
+		{month: 42, preseed: "0", investors: "0", team: "0", foundation: "0", updatedMonths: 36},
+		{month: 48, preseed: "0", investors: "0", team: "0", foundation: "0", updatedMonths: 36},
+	}
+
+	var previousPreseed, previousInvestors cosmosMath.Int
+	for _, tc := range steps {
+		s.Run(fmt.Sprintf("month_%d", tc.month), func() {
+			_, preseed, investors, team, foundation, participants, updated, err := keeper.GetLockedVestingTokens(
+				blocksPerMonth,
+				cosmosMath.NewInt(tc.month).Mul(cosmosMath.NewIntFromUint64(blocksPerMonth)),
+				params,
+				cosmosMath.NewInt(tc.month),
+			)
+			s.Require().NoError(err)
+			s.Require().Equal(tc.preseed, preseed.String(), "preseed")
+			s.Require().Equal(tc.investors, investors.String(), "investors")
+			s.Require().Equal(tc.team, team.String(), "team")
+			s.Require().Equal(tc.foundation, foundation.String(), "foundation")
+			s.Require().True(participants.IsZero(), "participants")
+			s.Require().Equal(cosmosMath.NewInt(tc.updatedMonths).String(), updated.String(), "months")
+			if tc.month > 0 {
+				s.Require().False(preseed.GT(previousPreseed), "locked preseed must not increase")
+				s.Require().False(investors.GT(previousInvestors), "locked investors must not increase")
+			}
+			previousPreseed = preseed
+			previousInvestors = investors
+		})
+	}
+
+	s.Run("every month from 0 through 48", func() {
+		fullPre, ok := cosmosMath.NewIntFromString(fullPreseed)
+		s.Require().True(ok)
+		fullInv, ok := cosmosMath.NewIntFromString(fullInvestors)
+		s.Require().True(ok)
+		fullTm, ok := cosmosMath.NewIntFromString(fullTeam)
+		s.Require().True(ok)
+		var prevPreseed, prevInvestors cosmosMath.Int
+		for month := int64(0); month <= 48; month++ {
+			_, preseed, investors, team, foundation, _, updated, err := keeper.GetLockedVestingTokens(
+				blocksPerMonth,
+				cosmosMath.NewInt(month).Mul(cosmosMath.NewIntFromUint64(blocksPerMonth)),
+				params,
+				cosmosMath.NewInt(month),
+			)
+			s.Require().NoError(err, "month %d", month)
+			var wantPreseed, wantInv, wantTeam cosmosMath.Int
+			switch {
+			case month < 18:
+				wantPreseed, wantInv, wantTeam = fullPre, fullInv, fullTm
+			case month < 36:
+				remaining := cosmosMath.NewInt(36 - month)
+				thirtySix := cosmosMath.NewInt(36)
+				wantPreseed = fullPre.Mul(remaining).Quo(thirtySix)
+				wantInv = fullInv.Mul(remaining).Quo(thirtySix)
+				wantTeam = fullTm.Mul(remaining).Quo(thirtySix)
+			default:
+				wantPreseed, wantInv, wantTeam = cosmosMath.ZeroInt(), cosmosMath.ZeroInt(), cosmosMath.ZeroInt()
+			}
+			s.Require().Equal(wantPreseed.String(), preseed.String(), "month %d preseed", month)
+			s.Require().Equal(wantInv.String(), investors.String(), "month %d investors", month)
+			s.Require().Equal(wantTeam.String(), team.String(), "month %d team", month)
+			if month >= 24 {
+				s.Require().True(foundation.IsZero(), "month %d foundation", month)
+			} else {
+				s.Require().False(foundation.IsZero(), "month %d foundation", month)
+			}
+			wantMonths := month
+			if wantMonths > 36 {
+				wantMonths = 36
+			}
+			s.Require().Equal(cosmosMath.NewInt(wantMonths).String(), updated.String(), "month %d counter", month)
+			if month > 0 {
+				s.Require().False(preseed.GT(prevPreseed), "month %d locked preseed increased", month)
+				s.Require().False(investors.GT(prevInvestors), "month %d locked investors increased", month)
+			}
+			prevPreseed = preseed
+			prevInvestors = investors
+		}
+	})
+
+	s.Run("stored month wins over a lower block month", func() {
+		_, preseed, investors, team, _, _, updated, err := keeper.GetLockedVestingTokens(
+			blocksPerMonth,
+			cosmosMath.NewInt(12).Mul(cosmosMath.NewIntFromUint64(blocksPerMonth)),
+			params,
+			cosmosMath.NewInt(17),
+		)
+		s.Require().NoError(err)
+		s.Require().Equal(fullPreseed, preseed.String())
+		s.Require().Equal(fullInvestors, investors.String())
+		s.Require().Equal(fullTeam, team.String())
+		s.Require().Equal(cosmosMath.NewInt(17).String(), updated.String())
+	})
+
+	s.Run("block month past the cliff uses the linear tail", func() {
+		// Month 20 keeps 16/36 of each bucket locked.
+		_, preseed, investors, team, _, _, updated, err := keeper.GetLockedVestingTokens(
+			blocksPerMonth,
+			cosmosMath.NewInt(20).Mul(cosmosMath.NewIntFromUint64(blocksPerMonth)),
+			params,
+			cosmosMath.ZeroInt(),
+		)
+		s.Require().NoError(err)
+		s.Require().Equal("22222222222222222222222222", preseed.String())
+		s.Require().Equal("115777777777777777777777777", investors.String())
+		s.Require().Equal("77777777777777777777777777", team.String())
+		s.Require().Equal(cosmosMath.NewInt(20).String(), updated.String())
+	})
 }

@@ -3,7 +3,7 @@ FROM golang:1.26.10-bookworm AS builder
 ENV GO111MODULE=on \
     GOMODCACHE=/gocache \
     GOTOOLCHAIN=local \
-    BASELINE_VERSION_TAG=v0.17.0 \
+    BASELINE_VERSION_TAG=v0.17.2 \
     UPGRADE_VERSION_TAG=v0.18.0
 
 WORKDIR /src
@@ -17,6 +17,10 @@ RUN --mount=type=cache,target=/gocache \
     retry-fetch go install cosmossdk.io/tools/cosmovisor/cmd/cosmovisor@v1.6.0
 
 ADD . /src
+
+# The baseline comes from a tag in the build context's git history, and the context's
+# .git must be a directory: a linked worktree's .git file points outside the context.
+RUN test -d /src/.git || (echo "Dockerfile.upgrade needs a full clone: .git is not a directory" >&2; exit 1)
 
 # Build the baseline tag without modifying the current working tree.
 # A shared local clone keeps repository objects in /src instead of duplicating them.
