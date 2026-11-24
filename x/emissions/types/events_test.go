@@ -2158,6 +2158,27 @@ func TestEmitNewFundTopicEvent(t *testing.T) {
 	require.Contains(t, val.GetValue(), "TOPIC_FUND_SOURCE_TOPIC_FUNDING")
 }
 
+// A pre-upgrade EventFundTopic has no new_revenue or source attribute.
+// The missing total stays nil. The missing source is the zero enum value.
+func TestParsePreUpgradeFundTopicEvent(t *testing.T) {
+	parsed, err := sdk.ParseTypedEvent(abci.Event{
+		Type: "emissions.v10.EventFundTopic",
+		Attributes: []abci.EventAttribute{
+			{Key: "topic_id", Value: "1"},
+			{Key: "funder", Value: `"allo1funder"`},
+			{Key: "amount", Value: `"10"`},
+		},
+	})
+	require.NoError(t, err)
+	fund, ok := parsed.(*types.EventFundTopic)
+	require.True(t, ok)
+	require.Equal(t, uint64(1), fund.TopicId)
+	require.Equal(t, "allo1funder", fund.Funder)
+	require.True(t, fund.Amount.Equal(cosmosMath.NewInt(10)))
+	require.True(t, fund.NewRevenue.IsNil())
+	require.Equal(t, types.TopicFundSource_TOPIC_FUND_SOURCE_UNSPECIFIED, fund.Source)
+}
+
 func TestEmitNewTopicFeeRevenueDrippedEvent(t *testing.T) {
 	ctx := sdk.Context{}.WithEventManager(sdk.NewEventManager())
 	topicId := uint64(1)

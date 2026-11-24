@@ -85,7 +85,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * [#1007](https://github.com/allora-network/allora-chain/pull/1007) `labels` on `EventEpochLabelRegistryFrozen`: the frozen registry's label names in compact-id order (`labels[i]` has id `i+1`)
 * [#1026](https://github.com/allora-network/allora-chain/pull/1026) `discarded_addresses` on `EventActiveForecastersSet`: the epoch's active forecasters whose forecasts the worker nonce close discarded
 * [#1025](https://github.com/allora-network/allora-chain/pull/1025) Split the worker whitelist into sibling inferer (existing worker lists) and forecaster whitelists: global/topic lists, enable/disable msgs, queries, events, `create-topic` flag `enable_forecaster_whitelist`, and param `global_forecaster_whitelist_enabled` (default `true` for newly generated genesis).
-* [#1047](https://github.com/allora-network/allora-chain/pull/1047) `new_revenue` and `source` (`TopicFundSource`) on `EventFundTopic`. Registration and data-sending fees emit it, as topic creation and `FundTopic` already did. Events from before this upgrade have neither attribute; a typed decoder reads those as `0` and `TOPIC_FUND_SOURCE_UNSPECIFIED`.
+* [#1047](https://github.com/allora-network/allora-chain/pull/1047) `new_revenue` and `source` (`TopicFundSource`) on `EventFundTopic`. Registration and data-sending fees emit it, as topic creation and `FundTopic` already did. Events from before this upgrade have neither attribute. `ParseTypedEvent` leaves `new_revenue` nil, so callers use `IsNil` and treat it as unknown, and `source` decodes as `TOPIC_FUND_SOURCE_UNSPECIFIED`. A zero total emitted after this upgrade is a present, non-nil zero.
 
 ### Changed
 
