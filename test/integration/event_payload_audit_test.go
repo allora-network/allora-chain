@@ -110,7 +110,7 @@ func (a *eventAudit) auditRewardPayouts(block chainBlock) {
 }
 
 func (a *eventAudit) workerOwner(height int64, address string) string {
-	response, err := a.m.Client.QueryEmissions().GetWorkerNodeInfo(atHeight(a.ctx, height), &emissionstypes.GetWorkerNodeInfoRequest{Address: address})
+	response, err := queryEmissions(a, height, emissionstypes.QueryServiceClient.GetWorkerNodeInfo, &emissionstypes.GetWorkerNodeInfoRequest{Address: address})
 	if err != nil {
 		a.failf(height, "GetWorkerNodeInfo %s: %v", address, err)
 		return ""
@@ -177,7 +177,7 @@ func (a *eventAudit) auditCombinedValuesFromWeights(height int64, facts blockCon
 		}
 		allNewEpoch := false
 		if topicId, _, found := parseTopicNonceKey(key); found {
-			topicResponse, err := a.m.Client.QueryEmissions().GetTopic(atHeight(a.ctx, height), &emissionstypes.GetTopicRequest{TopicId: topicId})
+			topicResponse, err := queryEmissions(a, height, emissionstypes.QueryServiceClient.GetTopic, &emissionstypes.GetTopicRequest{TopicId: topicId})
 			if err != nil {
 				a.failf(height, "network inference weights for %s: %v", key, err)
 			} else if topicResponse.Topic.InitialRegret.IsZero() {
@@ -407,16 +407,15 @@ func (a *eventAudit) requireAlignedActor(height int64, what string, index int, a
 }
 
 func (a *eventAudit) storedNetworkInferences(height int64, event *emissionstypes.EventNetworkInferenceBundle) *emissionstypes.NetworkInferenceBundle {
-	queryCtx := atHeight(a.ctx, height)
 	if event.OutlierResistant {
-		response, err := a.m.Client.QueryEmissions().GetNetworkInferencesAtBlockOutlierResistant(queryCtx, &emissionstypes.GetNetworkInferencesAtBlockOutlierResistantRequest{TopicId: event.TopicId, BlockHeightLastInference: event.Nonce})
+		response, err := queryEmissions(a, height, emissionstypes.QueryServiceClient.GetNetworkInferencesAtBlockOutlierResistant, &emissionstypes.GetNetworkInferencesAtBlockOutlierResistantRequest{TopicId: event.TopicId, BlockHeightLastInference: event.Nonce})
 		if err != nil {
 			a.failf(height, "GetNetworkInferencesAtBlockOutlierResistant topic %d nonce %d: %v", event.TopicId, event.Nonce, err)
 			return nil
 		}
 		return response.NetworkInferences
 	}
-	response, err := a.m.Client.QueryEmissions().GetNetworkInferencesAtBlock(queryCtx, &emissionstypes.GetNetworkInferencesAtBlockRequest{TopicId: event.TopicId, BlockHeightLastInference: event.Nonce})
+	response, err := queryEmissions(a, height, emissionstypes.QueryServiceClient.GetNetworkInferencesAtBlock, &emissionstypes.GetNetworkInferencesAtBlockRequest{TopicId: event.TopicId, BlockHeightLastInference: event.Nonce})
 	if err != nil {
 		a.failf(height, "GetNetworkInferencesAtBlock topic %d nonce %d: %v", event.TopicId, event.Nonce, err)
 		return nil
@@ -438,7 +437,7 @@ func (a *eventAudit) requireValues(height int64, what string, event []alloraMath
 // stored under its nonce.
 func (a *eventAudit) auditNetworkLoss(height int64, event *emissionstypes.EventNetworkLossSet) {
 	a.requireReputerNonceOpen(height, "EventNetworkLossSet", event.TopicId, event.Nonce)
-	response, err := a.m.Client.QueryEmissions().GetNetworkLossBundleAtBlock(atHeight(a.ctx, height), &emissionstypes.GetNetworkLossBundleAtBlockRequest{TopicId: event.TopicId, BlockHeight: event.Nonce})
+	response, err := queryEmissions(a, height, emissionstypes.QueryServiceClient.GetNetworkLossBundleAtBlock, &emissionstypes.GetNetworkLossBundleAtBlockRequest{TopicId: event.TopicId, BlockHeight: event.Nonce})
 	if err != nil {
 		a.failf(height, "GetNetworkLossBundleAtBlock topic %d nonce %d: %v", event.TopicId, event.Nonce, err)
 		return
