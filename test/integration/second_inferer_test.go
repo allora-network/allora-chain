@@ -96,38 +96,72 @@ func insertWorkerPayload(m testCommon.TestConfig, account cosmosaccount.Account,
 	return err
 }
 
-// insertTwoWorkerReputerBundle submits Alice's losses for two inferers who also
-// forecast, with distinct values so regrets, scores and rewards differ per worker.
-func insertTwoWorkerReputerBundle(m testCommon.TestConfig, topicId uint64, nonce int64, workers [2]string) error {
+// forecasterLosses holds the loss values a reputer reports for one forecaster.
+type forecasterLosses struct {
+	worker string
+	// forecast is the loss of the forecaster's own forecast-implied inference.
+	forecast int64
+	// oneOut is the network loss with this forecaster left out.
+	oneOut int64
+	// oneIn is the loss of the inferers combined with only this forecaster.
+	oneIn int64
+	// oneOutInferers is the loss with each inferer left out of this forecaster's
+	// forecast-implied inference, in the order of the bundle's inferers.
+	oneOutInferers []int64
+}
+
+// reputerLosses is the set of values Alice reports for one nonce. Every slice of
+// per-inferer values follows the order of the inferers passed to insertReputerBundle.
+type reputerLosses struct {
+	inferers       []int64
+	oneOutInferers []int64
+	forecasters    []forecasterLosses
+}
+
+// insertReputerBundle submits Alice's losses for the given inferers and forecasters,
+// with distinct values so regrets, scores and rewards differ per worker.
+func insertReputerBundle(m testCommon.TestConfig, topicId uint64, nonce int64, inferers []string, losses reputerLosses) error {
 	ctx := context.Background()
-	attributed := func(first, second int64) []*types.InputWorkerAttributedValue {
-		return []*types.InputWorkerAttributedValue{
-			{Worker: workers[0], Value: boundedInt(first)},
-			{Worker: workers[1], Value: boundedInt(second)},
+	attributedInferers := func(values []int64) []*types.InputWorkerAttributedValue {
+		rows := make([]*types.InputWorkerAttributedValue, len(inferers))
+		for i, inferer := range inferers {
+			rows[i] = &types.InputWorkerAttributedValue{Worker: inferer, Value: boundedInt(values[i])}
 		}
+		return rows
 	}
-	withheld := func(first, second int64) []*types.InputWithheldWorkerAttributedValue {
-		return []*types.InputWithheldWorkerAttributedValue{
-			{Worker: workers[0], Value: boundedInt(first)},
-			{Worker: workers[1], Value: boundedInt(second)},
+	withheldInferers := func(values []int64) []*types.InputWithheldWorkerAttributedValue {
+		rows := make([]*types.InputWithheldWorkerAttributedValue, len(inferers))
+		for i, inferer := range inferers {
+			rows[i] = &types.InputWithheldWorkerAttributedValue{Worker: inferer, Value: boundedInt(values[i])}
+		}
+		return rows
+	}
+	forecasterValues := make([]*types.InputWorkerAttributedValue, len(losses.forecasters))
+	oneOutForecasterValues := make([]*types.InputWithheldWorkerAttributedValue, len(losses.forecasters))
+	oneInForecasterValues := make([]*types.InputWorkerAttributedValue, len(losses.forecasters))
+	oneOutInfererForecasterValues := make([]*types.InputOneOutInfererForecasterValues, len(losses.forecasters))
+	for i, forecaster := range losses.forecasters {
+		forecasterValues[i] = &types.InputWorkerAttributedValue{Worker: forecaster.worker, Value: boundedInt(forecaster.forecast)}
+		oneOutForecasterValues[i] = &types.InputWithheldWorkerAttributedValue{Worker: forecaster.worker, Value: boundedInt(forecaster.oneOut)}
+		oneInForecasterValues[i] = &types.InputWorkerAttributedValue{Worker: forecaster.worker, Value: boundedInt(forecaster.oneIn)}
+		oneOutInfererForecasterValues[i] = &types.InputOneOutInfererForecasterValues{
+			Forecaster:          forecaster.worker,
+			OneOutInfererValues: withheldInferers(forecaster.oneOutInferers),
 		}
 	}
 	valueBundle := &types.InputValueBundle{
-		TopicId:                topicId,
-		Reputer:                m.AliceAddr,
-		ReputerRequestNonce:    &types.ReputerRequestNonce{ReputerNonce: &types.Nonce{BlockHeight: nonce}},
-		ExtraData:              nil,
-		CombinedValue:          boundedInt(100),
-		NaiveValue:             boundedInt(103),
-		InfererValues:          attributed(90, 110),
-		ForecasterValues:       attributed(95, 115),
-		OneOutInfererValues:    withheld(101, 99),
-		OneOutForecasterValues: withheld(102, 98),
-		OneInForecasterValues:  attributed(97, 104),
-		OneOutInfererForecasterValues: []*types.InputOneOutInfererForecasterValues{
-			{Forecaster: workers[0], OneOutInfererValues: withheld(96, 106)},
-			{Forecaster: workers[1], OneOutInfererValues: withheld(94, 108)},
-		},
+		TopicId:                       topicId,
+		Reputer:                       m.AliceAddr,
+		ReputerRequestNonce:           &types.ReputerRequestNonce{ReputerNonce: &types.Nonce{BlockHeight: nonce}},
+		ExtraData:                     nil,
+		CombinedValue:                 boundedInt(100),
+		NaiveValue:                    boundedInt(103),
+		InfererValues:                 attributedInferers(losses.inferers),
+		ForecasterValues:              forecasterValues,
+		OneOutInfererValues:           withheldInferers(losses.oneOutInferers),
+		OneOutForecasterValues:        oneOutForecasterValues,
+		OneInForecasterValues:         oneInForecasterValues,
+		OneOutInfererForecasterValues: oneOutInfererForecasterValues,
 	}
 	src, err := valueBundle.XXX_Marshal(make([]byte, 0), true)
 	if err != nil {
@@ -152,10 +186,13 @@ func insertTwoWorkerReputerBundle(m testCommon.TestConfig, topicId uint64, nonce
 	return err
 }
 
-// SecondInfererChecks runs one epoch with two real inferers who also forecast, so
-// the multi-inferer network inference path and forecaster rewards run. A third
-// worker forecasts only about an address that submits nothing, so the close discards
-// that forecast. It must run after a first epoch has produced network losses.
+// SecondInfererChecks runs two epochs with two real inferers, Bob and Validator0,
+// who also forecast, so the multi-inferer network inference path and forecaster
+// rewards run. In the first epoch Validator1 forecasts only about an address that
+// submits nothing, so the close discards that forecast and the reputer scores two
+// forecasters. In the second epoch Validator1 forecasts about the two inferers, so
+// the close keeps its forecast and the reputer scores three forecasters. It must run
+// after a first epoch has produced network losses.
 func SecondInfererChecks(m testCommon.TestConfig) {
 	ctx := context.Background()
 	fundAccount(m, m.Validator0Addr)
@@ -179,15 +216,22 @@ func SecondInfererChecks(m testCommon.TestConfig) {
 	require.NoError(m.T, insertWorkerPayload(m, m.Validator1Acc, m.Validator1Addr, m.TopicID, nonce, nil, []string{m.Validator2Addr}))
 
 	require.NoError(m.T, m.Client.WaitForBlockHeight(ctx, nonce+topic.GroundTruthLag))
-	require.NoError(m.T, insertTwoWorkerReputerBundle(m, m.TopicID, nonce, workers))
+	require.NoError(m.T, insertReputerBundle(m, m.TopicID, nonce, workers[:], reputerLosses{
+		inferers:       []int64{90, 110},
+		oneOutInferers: []int64{101, 99},
+		forecasters: []forecasterLosses{
+			{worker: workers[0], forecast: 95, oneOut: 102, oneIn: 97, oneOutInferers: []int64{96, 106}},
+			{worker: workers[1], forecast: 115, oneOut: 98, oneIn: 104, oneOutInferers: []int64{94, 108}},
+		},
+	}))
 	require.NoError(m.T, m.Client.WaitForBlockHeight(ctx, nonce+topic.GroundTruthLag+topic.EpochLength))
 	ValidateGetNetworkLossBundle(m, m.TopicID, nonce)
 
 	// A second epoch with the same two inferers so the topic no longer sits on
 	// its all-new-inferer epoch: the combined inference now uses regret-informed
-	// weights and the forecaster's submission contributes through the
-	// forecast-implied inference, which is what the audit's recompute rule and
-	// forecaster weight coverage need.
+	// weights, and the forecasts of Bob, Validator0 and Validator1 contribute
+	// through forecast-implied inferences, which is what the audit's recompute
+	// rule and forecaster weight coverage need.
 	_, err = waitForNextChurningBlock(m, m.TopicID)
 	require.NoError(m.T, err)
 	nextTopicResponse, err := m.Client.QueryEmissions().GetTopic(ctx, &types.GetTopicRequest{TopicId: m.TopicID})
@@ -199,7 +243,15 @@ func SecondInfererChecks(m testCommon.TestConfig) {
 	require.NoError(m.T, insertWorkerPayload(m, m.Validator0Acc, m.Validator0Addr, m.TopicID, nextNonce, &secondValue, workers[:]))
 	require.NoError(m.T, insertWorkerPayload(m, m.Validator1Acc, m.Validator1Addr, m.TopicID, nextNonce, nil, workers[:]))
 	require.NoError(m.T, m.Client.WaitForBlockHeight(ctx, nextNonce+nextTopic.GroundTruthLag))
-	require.NoError(m.T, insertTwoWorkerReputerBundle(m, m.TopicID, nextNonce, workers))
+	require.NoError(m.T, insertReputerBundle(m, m.TopicID, nextNonce, workers[:], reputerLosses{
+		inferers:       []int64{90, 110},
+		oneOutInferers: []int64{101, 99},
+		forecasters: []forecasterLosses{
+			{worker: workers[0], forecast: 95, oneOut: 102, oneIn: 97, oneOutInferers: []int64{96, 106}},
+			{worker: workers[1], forecast: 115, oneOut: 98, oneIn: 104, oneOutInferers: []int64{94, 108}},
+			{worker: m.Validator1Addr, forecast: 93, oneOut: 100, oneIn: 99, oneOutInferers: []int64{92, 107}},
+		},
+	}))
 	require.NoError(m.T, m.Client.WaitForBlockHeight(ctx, nextNonce+nextTopic.GroundTruthLag+nextTopic.EpochLength))
 	ValidateGetNetworkLossBundle(m, m.TopicID, nextNonce)
 }
