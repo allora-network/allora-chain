@@ -122,3 +122,35 @@ func TestTakeTransferConsumesOneMovement(t *testing.T) {
 func TestMissingCoverage(t *testing.T) {
 	require.Equal(t, []string{"b"}, missingCoverage(map[string]int{"a": 1}, []string{"a", "b"}))
 }
+
+func TestMissingWeightEvents(t *testing.T) {
+	bundleOf := func(inferers, forecasters int) *emissionstypes.EventNetworkInferenceBundle {
+		bundle := new(emissionstypes.EventNetworkInferenceBundle)
+		bundle.InfererValues = make(alloraMath.DecMatrix, inferers)
+		bundle.ForecasterValues = make(alloraMath.DecMatrix, forecasters)
+		return bundle
+	}
+	infererOnly := networkWeights{infererAddresses: []string{"a", "b"}, infererWeights: []alloraMath.Dec{alloraMath.OneDec(), alloraMath.OneDec()}, forecasterAddresses: nil, forecasterWeights: nil}
+	both := networkWeights{infererAddresses: infererOnly.infererAddresses, infererWeights: infererOnly.infererWeights, forecasterAddresses: []string{"f"}, forecasterWeights: []alloraMath.Dec{alloraMath.OneDec()}}
+	none := networkWeights{infererAddresses: nil, infererWeights: nil, forecasterAddresses: nil, forecasterWeights: nil}
+	infererEvent, forecasterEvent := "EventNetworkInferenceInfererWeightsSet", "EventNetworkInferenceForecasterWeightsSet"
+
+	for name, tc := range map[string]struct {
+		bundle   *emissionstypes.EventNetworkInferenceBundle
+		weights  networkWeights
+		allNew   bool
+		wantMiss []string
+	}{
+		"single inferer needs no weights":                {bundleOf(1, 0), none, false, []string{}},
+		"two inferers without inferer weights":           {bundleOf(2, 0), none, false, []string{infererEvent}},
+		"two inferers with inferer weights":              {bundleOf(2, 0), infererOnly, false, []string{}},
+		"forecast rows without forecaster weights":       {bundleOf(2, 1), infererOnly, false, []string{forecasterEvent}},
+		"forecast rows with both weights":                {bundleOf(2, 1), both, false, []string{}},
+		"all-new epoch needs no forecaster weights":      {bundleOf(2, 1), infererOnly, true, []string{}},
+		"nothing emitted for forecasts and two inferers": {bundleOf(2, 1), none, false, []string{infererEvent, forecasterEvent}},
+	} {
+		t.Run(name, func(t *testing.T) {
+			require.Equal(t, tc.wantMiss, missingWeightEvents(tc.bundle, tc.weights, tc.allNew))
+		})
+	}
+}
