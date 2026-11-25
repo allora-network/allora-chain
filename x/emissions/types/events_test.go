@@ -2164,9 +2164,9 @@ func TestParsePreUpgradeFundTopicEvent(t *testing.T) {
 	parsed, err := sdk.ParseTypedEvent(abci.Event{
 		Type: "emissions.v10.EventFundTopic",
 		Attributes: []abci.EventAttribute{
-			{Key: "topic_id", Value: "1"},
-			{Key: "funder", Value: `"allo1funder"`},
-			{Key: "amount", Value: `"10"`},
+			{Key: "topic_id", Value: "1", Index: false},
+			{Key: "funder", Value: `"allo1funder"`, Index: false},
+			{Key: "amount", Value: `"10"`, Index: false},
 		},
 	})
 	require.NoError(t, err)
