@@ -51,7 +51,15 @@ export PATH=$PATH:$(go env GOPATH)/bin
 ```
 
 ## Run a Local Network
-To run a local node for testing purposes, execute the following commands:
+
+**In Docker (recommended):** a single-validator chain with a fresh genesis,
+from a release image, a GHCR dev build of any branch, or your working tree:
+```
+cd localnet && docker compose up -d
+```
+See [localnet/README.md](localnet/README.md).
+
+**From source:** to run a local node for testing purposes, execute the following commands:
 ```
 make init
 allorad start

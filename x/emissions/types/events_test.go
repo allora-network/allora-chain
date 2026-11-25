@@ -2140,6 +2140,45 @@ func TestEmitNewTopicWeightUpdatedAfterStakeChangeEvent(t *testing.T) {
 	require.Contains(t, val.GetValue(), topicFeeRevenue.String())
 }
 
+func TestEmitNewFundTopicEvent(t *testing.T) {
+	ctx := sdk.Context{}.WithEventManager(sdk.NewEventManager())
+	amount := cosmosMath.NewInt(10)
+	newRevenue := cosmosMath.NewInt(25)
+	types.EmitNewFundTopicEvent(ctx, 1, "allo1funder", amount, newRevenue, types.TopicFundSource_TOPIC_FUND_SOURCE_TOPIC_FUNDING)
+
+	events := ctx.EventManager().Events()
+	require.Len(t, events, 1)
+	event := events[0]
+	require.Equal(t, "emissions.v10.EventFundTopic", event.Type)
+	val, exists := event.GetAttribute("new_revenue")
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), "25")
+	val, exists = event.GetAttribute("source")
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), "TOPIC_FUND_SOURCE_TOPIC_FUNDING")
+}
+
+// A pre-upgrade EventFundTopic has no new_revenue or source attribute.
+// The missing total stays nil. The missing source is the zero enum value.
+func TestParsePreUpgradeFundTopicEvent(t *testing.T) {
+	parsed, err := sdk.ParseTypedEvent(abci.Event{
+		Type: "emissions.v10.EventFundTopic",
+		Attributes: []abci.EventAttribute{
+			{Key: "topic_id", Value: "1"},
+			{Key: "funder", Value: `"allo1funder"`},
+			{Key: "amount", Value: `"10"`},
+		},
+	})
+	require.NoError(t, err)
+	fund, ok := parsed.(*types.EventFundTopic)
+	require.True(t, ok)
+	require.Equal(t, uint64(1), fund.TopicId)
+	require.Equal(t, "allo1funder", fund.Funder)
+	require.True(t, fund.Amount.Equal(cosmosMath.NewInt(10)))
+	require.True(t, fund.NewRevenue.IsNil())
+	require.Equal(t, types.TopicFundSource_TOPIC_FUND_SOURCE_UNSPECIFIED, fund.Source)
+}
+
 func TestEmitNewTopicFeeRevenueDrippedEvent(t *testing.T) {
 	ctx := sdk.Context{}.WithEventManager(sdk.NewEventManager())
 	topicId := uint64(1)

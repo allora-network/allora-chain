@@ -51,7 +51,8 @@ func (ms msgServer) Register(ctx context.Context, msg *types.RegisterRequest) (_
 	if err != nil {
 		return nil, err
 	}
-	err = sendEffectiveRevenueActivateTopicIfWeightSufficient(ctx, ms, msg.Sender, msg.TopicId, params.RegistrationFee)
+
+	newRevenue, credited, err := ms.sendEffectiveRevenue(ctx, msg.Sender, msg.TopicId, params.RegistrationFee)
 	if err != nil {
 		return nil, err
 	}
@@ -61,11 +62,13 @@ func (ms msgServer) Register(ctx context.Context, msg *types.RegisterRequest) (_
 		Owner:       msg.Owner,
 	}
 
+	source := types.TopicFundSource_TOPIC_FUND_SOURCE_WORKER_REGISTRATION
 	if msg.IsReputer {
 		err = ms.rlk.InsertReputer(ctx, msg.TopicId, msg.Sender, nodeInfo)
 		if err != nil {
 			return nil, err
 		}
+		source = types.TopicFundSource_TOPIC_FUND_SOURCE_REPUTER_REGISTRATION
 		types.EmitNewReputerRegisteredEvent(ctx, msg.TopicId, msg.Sender, msg.Owner)
 	} else {
 		err = ms.wk.InsertWorker(ctx, msg.TopicId, msg.Sender, nodeInfo)
@@ -73,6 +76,17 @@ func (ms msgServer) Register(ctx context.Context, msg *types.RegisterRequest) (_
 			return nil, err
 		}
 		types.EmitNewWorkerRegisteredEvent(ctx, msg.TopicId, msg.Sender, msg.Owner)
+	}
+
+	// Emit the credit after the registration event and before activation, so a
+	// funding-caused status event is last. A zero fee was not credited.
+	if credited {
+		types.EmitNewFundTopicEvent(ctx, msg.TopicId, msg.Sender, params.RegistrationFee, newRevenue, source)
+	}
+
+	if err = ms.activateTopicIfWeightAtLeastGlobalMin(ctx, msg.TopicId); err != nil {
+		sdk.UnwrapSDKContext(ctx).Logger().Error("Failed to activate topic", "error", err)
+		return nil, err
 	}
 
 	return &types.RegisterResponse{}, nil //nolint:exhaustruct // due to deprecated fields

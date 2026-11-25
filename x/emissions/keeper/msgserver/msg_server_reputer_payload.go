@@ -103,8 +103,9 @@ func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.InsertR
 		return nil, errorsmod.Wrapf(types.ErrInsufficientStake, "reputer does not have sufficient stake in the topic")
 	}
 
-	// Before accepting data, transfer the fee to the ecosystem bucket
-	err = sendEffectiveRevenueActivateTopicIfWeightSufficient(ctx, ms, msg.Sender, topicId, moduleParams.DataSendingFee)
+	// A zero fee is not charged. A nonzero fee is transferred and added to the
+	// topic's fee revenue before the payload is stored.
+	newRevenue, credited, err := ms.sendEffectiveRevenue(ctx, msg.Sender, topicId, moduleParams.DataSendingFee)
 	if err != nil {
 		return nil, err
 	}
@@ -115,5 +116,17 @@ func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.InsertR
 	}
 
 	types.EmitNewInsertReputerPayloadEvent(ctx, vb, admissionOutcome)
+
+	// Emit the credit after the payload event and before activation, so a
+	// funding-caused status event is last. A zero fee was not credited.
+	if credited {
+		types.EmitNewFundTopicEvent(ctx, topicId, msg.Sender, moduleParams.DataSendingFee, newRevenue, types.TopicFundSource_TOPIC_FUND_SOURCE_REPUTER_SUBMISSION)
+	}
+
+	if err = ms.activateTopicIfWeightAtLeastGlobalMin(ctx, topicId); err != nil {
+		sdk.UnwrapSDKContext(ctx).Logger().Error("Failed to activate topic", "error", err)
+		return nil, err
+	}
+
 	return &types.InsertReputerPayloadResponse{}, nil
 }

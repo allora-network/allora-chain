@@ -44,7 +44,7 @@ func (s *KeeperTestSuite) TestTopicInvariantTotalSumPreviousTopicWeightsEqualAct
 		s.Require().NoError(err)
 		err = s.StakingKeeper().AddReputerStake(ctx, topicId, reputerAddr, stakeAmount)
 		s.Require().NoError(err)
-		err = k.AddTopicFeeRevenue(ctx, topicId, cosmosMath.NewInt(100))
+		_, err = k.AddTopicFeeRevenue(ctx, topicId, cosmosMath.NewInt(100))
 		s.Require().NoError(err)
 		weight, _, _, err := k.GetCurrentTopicWeight(
 			ctx, topicId, epochLength,

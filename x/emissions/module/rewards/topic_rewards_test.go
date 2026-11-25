@@ -27,7 +27,7 @@ func (s *RewardsTestSuite) TestGetAndUpdateActiveTopicWeights() {
 	s.Require().NoError(err, "Setting parameters should not fail")
 
 	setTopicWeight := func(topicId uint64, revenue, stake int64) {
-		err = s.TopicKeeper().AddTopicFeeRevenue(s.Ctx(), topicId, cosmosMath.NewInt(revenue))
+		_, err = s.TopicKeeper().AddTopicFeeRevenue(s.Ctx(), topicId, cosmosMath.NewInt(revenue))
 		s.Require().NoError(err)
 		err = s.StakingKeeper().SetTopicStake(s.Ctx(), topicId, cosmosMath.NewInt(stake))
 		s.Require().NoError(err)
@@ -120,7 +120,7 @@ func (s *RewardsTestSuite) TestGetAndUpdateActiveTopicWeightsEmitsStatusReasons(
 	s.Require().NoError(err)
 
 	setTopicWeight := func(topicId uint64, revenue, stake int64) {
-		err = s.TopicKeeper().AddTopicFeeRevenue(s.Ctx(), topicId, cosmosMath.NewInt(revenue))
+		_, err = s.TopicKeeper().AddTopicFeeRevenue(s.Ctx(), topicId, cosmosMath.NewInt(revenue))
 		s.Require().NoError(err)
 		err = s.StakingKeeper().SetTopicStake(s.Ctx(), topicId, cosmosMath.NewInt(stake))
 		s.Require().NoError(err)
@@ -224,7 +224,8 @@ func (s *RewardsTestSuite) TestGetAndUpdateActiveTopicWeightsSkipsRefusedReactiv
 	s.Require().NoError(s.ParamsKeeper().SetParams(s.Ctx(), params))
 
 	setTopicWeight := func(topicId uint64, revenue, stake int64) {
-		s.Require().NoError(s.TopicKeeper().AddTopicFeeRevenue(s.Ctx(), topicId, cosmosMath.NewInt(revenue)))
+		_, err := s.TopicKeeper().AddTopicFeeRevenue(s.Ctx(), topicId, cosmosMath.NewInt(revenue))
+		s.Require().NoError(err)
 		s.Require().NoError(s.StakingKeeper().SetTopicStake(s.Ctx(), topicId, cosmosMath.NewInt(stake)))
 	}
 
@@ -315,7 +316,8 @@ func (s *RewardsTestSuite) TestGetAndUpdateActiveTopicWeightsReportsEpochEvictio
 	s.Require().NoError(s.ParamsKeeper().SetParams(s.Ctx(), params))
 
 	setTopicWeight := func(topicId uint64, revenue, stake int64) {
-		s.Require().NoError(s.TopicKeeper().AddTopicFeeRevenue(s.Ctx(), topicId, cosmosMath.NewInt(revenue)))
+		_, err := s.TopicKeeper().AddTopicFeeRevenue(s.Ctx(), topicId, cosmosMath.NewInt(revenue))
+		s.Require().NoError(err)
 		s.Require().NoError(s.StakingKeeper().SetTopicStake(s.Ctx(), topicId, cosmosMath.NewInt(stake)))
 	}
 
@@ -399,7 +401,8 @@ func (s *RewardsTestSuite) TestGetAndUpdateActiveTopicWeightsReportsReactivation
 	s.Require().NoError(s.ParamsKeeper().SetParams(s.Ctx(), params))
 
 	s.WithBlockHeight(0)
-	s.Require().NoError(s.TopicKeeper().AddTopicFeeRevenue(s.Ctx(), topic.Id, cosmosMath.NewInt(1000)))
+	_, err := s.TopicKeeper().AddTopicFeeRevenue(s.Ctx(), topic.Id, cosmosMath.NewInt(1000))
+	s.Require().NoError(err)
 	s.Require().NoError(s.StakingKeeper().SetTopicStake(s.Ctx(), topic.Id, cosmosMath.NewInt(1000)))
 	s.Require().NoError(s.TopicKeeper().SetTopic(s.Ctx(), topic.Id, topic))
 	s.Require().NoError(s.TopicKeeper().ActivateTopic(s.Ctx(), topic.Id, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec()))

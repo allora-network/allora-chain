@@ -4,12 +4,73 @@ import (
 	cosmosMath "cosmossdk.io/math"
 	abci "github.com/cometbft/cometbft/abci/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 
 	"github.com/allora-network/allora-chain/app/params"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/testutil"
 	"github.com/allora-network/allora-chain/x/emissions/types"
+	minttypes "github.com/allora-network/allora-chain/x/mint/types"
 )
+
+func (s *MsgServerTestSuite) ecosystemBalance(ctx sdk.Context) cosmosMath.Int {
+	addr := authtypes.NewModuleAddress(minttypes.EcosystemModuleName)
+	return s.BankKeeper().GetBalance(ctx, addr, params.DefaultBondDenom).Amount
+}
+
+func fundTopicEvents(ctx sdk.Context) []*types.EventFundTopic {
+	out := make([]*types.EventFundTopic, 0)
+	for _, ev := range ctx.EventManager().Events() {
+		msg, err := sdk.ParseTypedEvent(abci.Event(ev))
+		if err != nil {
+			continue
+		}
+		if e, ok := msg.(*types.EventFundTopic); ok {
+			out = append(out, e)
+		}
+	}
+	return out
+}
+
+func topicStatusEvents(ctx sdk.Context) []*types.EventTopicStatusChanged {
+	out := make([]*types.EventTopicStatusChanged, 0)
+	for _, ev := range ctx.EventManager().Events() {
+		msg, err := sdk.ParseTypedEvent(abci.Event(ev))
+		if err != nil {
+			continue
+		}
+		if e, ok := msg.(*types.EventTopicStatusChanged); ok {
+			out = append(out, e)
+		}
+	}
+	return out
+}
+
+// firstFundAndStatus indexes the first fund event and the first status event
+// in emission order. A zero index means that event was absent.
+func firstFundAndStatus(ctx sdk.Context) (fund *types.EventFundTopic, fundAt int, status *types.EventTopicStatusChanged, statusAt int) {
+	seq := 0
+	for _, ev := range ctx.EventManager().Events() {
+		msg, err := sdk.ParseTypedEvent(abci.Event(ev))
+		if err != nil {
+			continue
+		}
+		seq++
+		switch e := msg.(type) {
+		case *types.EventFundTopic:
+			if fund == nil {
+				fund = e
+				fundAt = seq
+			}
+		case *types.EventTopicStatusChanged:
+			if status == nil {
+				status = e
+				statusAt = seq
+			}
+		}
+	}
+	return fund, fundAt, status, statusAt
+}
 
 func (s *MsgServerTestSuite) TestFundTopicSimple() {
 	senderAddr := s.Addrs(0)
@@ -225,9 +286,9 @@ func (s *MsgServerTestSuite) TestTopicWeightDoesNotChangeWithDifferentEpochLengt
 }
 
 // TestFundTopicZeroAmountStillActivatesWeightSufficientTopic pins that a
-// zero-amount funding skips only the transfer and fee-revenue credit, which
-// would be no-ops, and still attempts activation: activation depends on the
-// topic's current weight, not on the amount.
+// zero-amount funding skips the bank transfer and adds zero to the current
+// fee revenue. The fund event is still emitted for that unchanged total, and
+// activation still runs because it depends on the topic's weight.
 func (s *MsgServerTestSuite) TestFundTopicZeroAmountStillActivatesWeightSufficientTopic() {
 	ctx := s.Ctx()
 	topicId := uint64(1)
@@ -237,7 +298,7 @@ func (s *MsgServerTestSuite) TestFundTopicZeroAmountStillActivatesWeightSufficie
 	// fee revenue has zero weight, so both stake and revenue are needed.
 	err := s.StakingKeeper().AddReputerStake(ctx, topicId, s.AddrsStr(1), cosmosMath.NewInt(500000))
 	s.Require().NoError(err)
-	err = s.TopicKeeper().AddTopicFeeRevenue(ctx, topicId, cosmosMath.NewInt(500000))
+	_, err = s.TopicKeeper().AddTopicFeeRevenue(ctx, topicId, cosmosMath.NewInt(500000))
 	s.Require().NoError(err)
 
 	active, err := s.TopicKeeper().IsTopicActive(ctx, topicId)
@@ -249,15 +310,27 @@ func (s *MsgServerTestSuite) TestFundTopicZeroAmountStillActivatesWeightSufficie
 	sender := s.Addrs(0)
 	balanceBefore := s.BankKeeper().GetBalance(ctx, sender, params.DefaultBondDenom)
 
-	_, err = s.EmissionsMsgServer().FundTopic(ctx, &types.FundTopicRequest{
+	em := sdk.NewEventManager()
+	callCtx := ctx.WithEventManager(em)
+	_, err = s.EmissionsMsgServer().FundTopic(callCtx, &types.FundTopicRequest{
 		Sender:  s.AddrsStr(0),
 		TopicId: topicId,
 		Amount:  cosmosMath.ZeroInt(),
 	})
 	s.Require().NoError(err)
 
-	// The zero amount must be a true no-op: no fee-revenue credit and no coin
-	// movement, in addition to the activation behavior asserted below.
+	fund, fundAt, status, statusAt := firstFundAndStatus(callCtx)
+	s.Require().Len(fundTopicEvents(callCtx), 1)
+	s.Require().NotNil(fund)
+	s.Require().Equal(topicId, fund.TopicId)
+	s.Require().Equal(s.AddrsStr(0), fund.Funder)
+	s.Require().True(fund.Amount.IsZero())
+	s.Require().True(feeRevenueBefore.Equal(fund.NewRevenue))
+	s.Require().Equal(types.TopicFundSource_TOPIC_FUND_SOURCE_TOPIC_FUNDING, fund.Source)
+	s.Require().Len(topicStatusEvents(callCtx), 1)
+	s.Require().NotNil(status)
+	s.Require().Less(fundAt, statusAt, "the credit event precedes activation")
+
 	feeRevenueAfter, err := s.TopicKeeper().GetTopicFeeRevenue(ctx, topicId)
 	s.Require().NoError(err)
 	s.Require().Equal(feeRevenueBefore, feeRevenueAfter, "zero-amount funding must not change fee revenue")
@@ -278,26 +351,31 @@ func (s *MsgServerTestSuite) TestFundTopicActivationEmitsActivatedByFunding() {
 	s.Require().NoError(s.StakingKeeper().AddReputerStake(s.Ctx(), topicId, s.AddrsStr(1), cosmosMath.NewInt(500000)))
 	s.MintTokensToAddress(funder, amount)
 
+	revenueBefore, err := s.TopicKeeper().GetTopicFeeRevenue(s.Ctx(), topicId)
+	s.Require().NoError(err)
+	ecosystemBefore := s.ecosystemBalance(s.Ctx())
+
 	em := sdk.NewEventManager()
-	_, err := s.EmissionsMsgServer().FundTopic(s.Ctx().WithEventManager(em), &types.FundTopicRequest{
+	callCtx := s.Ctx().WithEventManager(em)
+	_, err = s.EmissionsMsgServer().FundTopic(callCtx, &types.FundTopicRequest{
 		Sender:  funder.String(),
 		TopicId: topicId,
 		Amount:  amount,
 	})
 	s.Require().NoError(err)
 
-	var events []*types.EventTopicStatusChanged
-	for _, ev := range em.Events() {
-		msg, parseErr := sdk.ParseTypedEvent(abci.Event(ev))
-		if parseErr != nil {
-			continue
-		}
-		if typed, ok := msg.(*types.EventTopicStatusChanged); ok {
-			events = append(events, typed)
-		}
-	}
-	s.Require().Len(events, 1)
-	event := events[0]
+	fund, fundAt, event, statusAt := firstFundAndStatus(callCtx)
+	s.Require().Len(fundTopicEvents(callCtx), 1)
+	s.Require().NotNil(fund)
+	s.Require().Equal(topicId, fund.TopicId)
+	s.Require().Equal(funder.String(), fund.Funder)
+	s.Require().True(amount.Equal(fund.Amount))
+	s.Require().True(revenueBefore.Add(amount).Equal(fund.NewRevenue))
+	s.Require().Equal(types.TopicFundSource_TOPIC_FUND_SOURCE_TOPIC_FUNDING, fund.Source)
+	s.Require().Len(topicStatusEvents(callCtx), 1)
+	s.Require().NotNil(event)
+	s.Require().Less(fundAt, statusAt, "the credit event precedes activation")
+	s.Require().True(s.ecosystemBalance(s.Ctx()).Equal(ecosystemBefore.Add(amount)))
 
 	moduleParams, err := s.ParamsKeeper().GetParams(s.Ctx())
 	s.Require().NoError(err)

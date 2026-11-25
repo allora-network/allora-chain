@@ -13,12 +13,8 @@ import (
 // Percentage of foundation tokens that are locked at TGE
 var FoundationInitialLockedPercentage = math.LegacyMustNewDecFromStr("0.5")
 
-// GetLockedVestingTokens calculates the number of uncirculating (locked) tokens
-// for vesting categories according to the updated tokenomics.
-// return the uncirculating supply, i.e. tokens on a vesting schedule
-// these tokens will be custodied by a centralized actor off chain.
-// this function returns the circulating supply based off of what
-// the agreements off chain say were supposed to happen for token lockup
+// GetLockedVestingTokens returns how many tokens are still locked in each vesting bucket.
+// The amounts follow the off-chain lockup agreements. This module does not custody those tokens.
 func GetLockedVestingTokens(
 	blocksPerMonth uint64,
 	blockHeight math.Int,
@@ -31,21 +27,24 @@ func GetLockedVestingTokens(
 	if blocksPerMonth == 0 {
 		return math.ZeroInt(), math.ZeroInt(), math.ZeroInt(), math.ZeroInt(), math.ZeroInt(), math.ZeroInt(), math.ZeroInt(), errors.Wrap(types.ErrInvalidBlocksPerMonth, "blocks per month cannot be zero")
 	}
-	// Define periods
-	twelve := math.NewInt(12)
+	// Investors, preseed, and team stay fully locked for 18 emissions months,
+	// then vest on the line that reaches zero at month 36.
+	eighteen := math.NewInt(18)
 	twentyFour := math.NewInt(24)
 	thirtySix := math.NewInt(36)
 
+	investorsTeamCliff := eighteen
+
 	// ---- 1. Extract percentage allocations from params ----
 	maxSupply := params.MaxSupply.ToLegacyDec()
-	percentInvestors := params.InvestorsPercentOfTotalSupply
 	percentPreseedInvestors := params.InvestorsPreseedPercentOfTotalSupply
+	percentInvestors := params.InvestorsPercentOfTotalSupply
 	percentTeam := params.TeamPercentOfTotalSupply
 	percentFoundation := params.FoundationTreasuryPercentOfTotalSupply
 	lockedFoundationPercentage := percentFoundation.Mul(FoundationInitialLockedPercentage)
 	// Full amounts
-	fullInvestors := percentInvestors.MulTruncate(maxSupply).TruncateInt()
 	fullPreseedInvestors := percentPreseedInvestors.MulTruncate(maxSupply).TruncateInt()
+	fullInvestors := percentInvestors.MulTruncate(maxSupply).TruncateInt()
 	fullTeam := percentTeam.MulTruncate(maxSupply).TruncateInt()
 
 	// Locked sub-amounts
@@ -72,19 +71,21 @@ func GetLockedVestingTokens(
 		foundationLocked = math.ZeroInt() // everything unlocked already
 	}
 
-	// one year cliff : preseed, investors, team
-	if monthsAlreadyUnlocked.LT(twelve) {
-		investorsLocked = fullInvestors
+	// 18-month cliff for preseed, investors, and team. Month 18 is the first
+	// month on the linear schedule, which locks (36-month)/36 of each bucket,
+	// so half unlocks at the cliff. The buckets are fully unlocked at month 36.
+	if monthsAlreadyUnlocked.LT(investorsTeamCliff) {
 		preseedInvestorsLocked = fullPreseedInvestors
+		investorsLocked = fullInvestors
 		teamLocked = fullTeam
 	} else if monthsAlreadyUnlocked.LT(thirtySix) {
 		remainingMonths := thirtySix.Sub(monthsAlreadyUnlocked)
-		investorsLocked = fullInvestors.Mul(remainingMonths).Quo(thirtySix)
 		preseedInvestorsLocked = fullPreseedInvestors.Mul(remainingMonths).Quo(thirtySix)
+		investorsLocked = fullInvestors.Mul(remainingMonths).Quo(thirtySix)
 		teamLocked = fullTeam.Mul(remainingMonths).Quo(thirtySix)
 	} else {
-		investorsLocked = math.ZeroInt()
 		preseedInvestorsLocked = math.ZeroInt()
+		investorsLocked = math.ZeroInt()
 		teamLocked = math.ZeroInt()
 	}
 	// participants are unlocked from start

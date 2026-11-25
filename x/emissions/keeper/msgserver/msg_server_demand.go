@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"cosmossdk.io/errors"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
@@ -32,11 +33,20 @@ func (ms msgServer) FundTopic(ctx context.Context, msg *types.FundTopicRequest) 
 		return nil, err
 	}
 
-	err = sendEffectiveRevenueActivateTopicIfWeightSufficient(ctx, ms, msg.Sender, msg.TopicId, msg.Amount)
+	newRevenue, _, err := ms.sendEffectiveRevenue(ctx, msg.Sender, msg.TopicId, msg.Amount)
 	if err != nil {
 		return nil, err
 	}
 
-	types.EmitNewFundTopicEvent(ctx, msg.TopicId, msg.Sender, msg.Amount)
-	return &types.FundTopicResponse{}, err
+	// A zero amount still emits. The transfer is skipped and the stored revenue
+	// is left as it is; the event reports that total. Emit before activation so
+	// a funding-caused status event follows the credit.
+	types.EmitNewFundTopicEvent(ctx, msg.TopicId, msg.Sender, msg.Amount, newRevenue, types.TopicFundSource_TOPIC_FUND_SOURCE_TOPIC_FUNDING)
+
+	if err = ms.activateTopicIfWeightAtLeastGlobalMin(ctx, msg.TopicId); err != nil {
+		sdk.UnwrapSDKContext(ctx).Logger().Error("Failed to activate topic", "error", err)
+		return nil, err
+	}
+
+	return &types.FundTopicResponse{}, nil
 }
