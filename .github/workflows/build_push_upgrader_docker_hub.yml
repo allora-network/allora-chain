@@ -15,6 +15,9 @@ on:
         description: 'Upgrade released version tag (example: v0.16.0)'
         required: true
 
+permissions:
+  contents: read
+
 concurrency:
   group: ${{ github.ref }}
   cancel-in-progress: true
