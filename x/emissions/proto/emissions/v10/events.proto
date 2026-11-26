@@ -437,6 +437,10 @@ message EventWorkerUnregistered {
   string worker = 2;
 }
 
+// Fee revenue credited to a topic, and the total stored afterwards.
+// FundTopic emits this even when amount is zero, reporting the unchanged total.
+// A zero registration fee, data-sending fee, or create-topic fee emits no
+// event, because nothing was credited.
 message EventFundTopic {
   uint64 topic_id = 1;
   string funder = 2;
@@ -446,6 +450,23 @@ message EventFundTopic {
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];
+  string new_revenue = 4 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+  TopicFundSource source = 5;
+}
+
+enum TopicFundSource {
+  TOPIC_FUND_SOURCE_UNSPECIFIED = 0;
+  TOPIC_FUND_SOURCE_TOPIC_CREATION = 1;
+  TOPIC_FUND_SOURCE_TOPIC_FUNDING = 2;
+  TOPIC_FUND_SOURCE_WORKER_REGISTRATION = 3;
+  TOPIC_FUND_SOURCE_REPUTER_REGISTRATION = 4;
+  TOPIC_FUND_SOURCE_WORKER_SUBMISSION = 5;
+  TOPIC_FUND_SOURCE_REPUTER_SUBMISSION = 6;
 }
 
 message EventParamsSet {

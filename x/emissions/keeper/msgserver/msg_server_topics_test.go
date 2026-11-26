@@ -333,6 +333,7 @@ func (s *MsgServerTestSuite) TestCreateNewTopicEmitsGateAndFeeEvents() {
 			// A fresh event manager isolates this call's events from the
 			// shared suite context.
 			ctx := s.Ctx().WithEventManager(sdk.NewEventManager())
+			ecosystemBefore := s.ecosystemBalance(ctx)
 
 			msg := s.MockTopicMsg()
 			msg.EnableWorkerWhitelist = tc.enableWorker
@@ -362,6 +363,8 @@ func (s *MsgServerTestSuite) TestCreateNewTopicEmitsGateAndFeeEvents() {
 					s.Require().Equal(topicId, e.TopicId)
 					s.Require().Equal(creator, e.Funder)
 					s.Require().Equal(params.CreateTopicFee, e.Amount)
+					s.Require().True(params.CreateTopicFee.Equal(e.NewRevenue))
+					s.Require().Equal(types.TopicFundSource_TOPIC_FUND_SOURCE_TOPIC_CREATION, e.Source)
 					funded++
 					fundedAt = seq
 				case *types.EventTopicWorkerWhitelistEnabled:
@@ -398,12 +401,37 @@ func (s *MsgServerTestSuite) TestCreateNewTopicEmitsGateAndFeeEvents() {
 				s.Require().Less(at, fundedAt, "the gate events must precede the fee funding event")
 			}
 			s.Require().Less(createdAt, fundedAt, "the creation event must precede the fee funding event")
+			s.Require().True(s.ecosystemBalance(ctx).Equal(ecosystemBefore.Add(params.CreateTopicFee)))
 		})
 	}
 }
 
+// new_revenue is the stored total, so a creation fee on a topic that already
+// holds revenue reports the sum.
+func (s *MsgServerTestSuite) TestCreateNewTopicFeeAddsToExistingRevenue() {
+	ctx := s.Ctx()
+	params, err := s.EmissionsKeeper().GetParams(ctx)
+	s.Require().NoError(err)
+
+	nextId, err := s.TopicKeeper().GetNextTopicId(ctx)
+	s.Require().NoError(err)
+	previous := cosmosMath.NewInt(700)
+	_, err = s.TopicKeeper().AddTopicFeeRevenue(ctx, nextId, previous)
+	s.Require().NoError(err)
+
+	callCtx := ctx.WithEventManager(sdk.NewEventManager())
+	res, err := s.EmissionsMsgServer().CreateNewTopic(callCtx, s.MockTopicMsg())
+	s.Require().NoError(err)
+	s.Require().Equal(nextId, res.TopicId)
+
+	events := fundTopicEvents(callCtx)
+	s.Require().Len(events, 1)
+	s.Require().True(previous.Add(params.CreateTopicFee).Equal(events[0].NewRevenue))
+}
+
 // TestCreateNewTopicZeroFeeEmitsNoFundEvent pins that a zero create-topic fee
-// performs no payment, credits no fee revenue, and emits no funding event.
+// skips the bank transfer, leaves fee revenue unchanged, and emits no funding event.
+
 func (s *MsgServerTestSuite) TestCreateNewTopicZeroFeeEmitsNoFundEvent() {
 	msgServer := s.EmissionsMsgServer()
 
@@ -447,7 +475,7 @@ func (s *MsgServerTestSuite) TestCreateNewTopicZeroFeeEmitsNoFundEvent() {
 
 	feeRevenue, err := s.TopicKeeper().GetTopicFeeRevenue(ctx, res.TopicId)
 	s.Require().NoError(err)
-	s.Require().True(feeRevenue.IsZero(), "a zero create fee must not credit fee revenue")
+	s.Require().True(feeRevenue.IsZero(), "a zero create fee must leave fee revenue unchanged")
 
 	balanceAfter := s.BankKeeper().GetBalance(ctx, creator, params.DefaultBondDenom)
 	s.Require().True(balanceBefore.Equal(balanceAfter), "a zero create fee must not move coins")
