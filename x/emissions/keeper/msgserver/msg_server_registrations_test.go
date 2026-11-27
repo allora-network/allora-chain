@@ -205,7 +205,7 @@ func (s *MsgServerTestSuite) TestRegisterZeroFeeEmitsNoFundEvent() {
 
 	_, err = msgServer.UpdateParams(ctx, &types.UpdateParamsRequest{
 		Sender: s.AddrsStr(0),
-		Params: &types.OptionalParams{ //nolint:exhaustruct
+		Params: &types.OptionalParams{ //nolint:exhaustruct_v5
 			RegistrationFee: []cosmosMath.Int{cosmosMath.ZeroInt()},
 		},
 	})

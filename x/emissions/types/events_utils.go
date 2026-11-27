@@ -273,7 +273,7 @@ func NewReputerSubmissionRetiredEventBase(topicId TopicId, nonce BlockHeight, re
 }
 
 func ValueBundleToEventValueBundleBase(bundle *ValueBundle) *EventValueBundle {
-	//nolint:exhaustruct
+	//nolint:exhaustruct_v5
 	evb := &EventValueBundle{
 		ExtraData:     bundle.ExtraData,
 		CombinedValue: clampDec(bundle.CombinedValue),

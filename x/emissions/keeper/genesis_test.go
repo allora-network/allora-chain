@@ -964,7 +964,7 @@ func (s *KeeperTestSuite) TestInitGenesisRejectsMalformedNestedNilFields() {
 // TestGenesisInferenceRoundTrip covers the round-trip of the live temporary
 // inferences store through ExportGenesis -> InitGenesis on a fresh suite.
 //
-//nolint:exhaustruct
+//nolint:exhaustruct_v5
 func (s *KeeperTestSuite) TestGenesisInferenceRoundTrip() {
 	ctx := s.Ctx()
 	topicId := uint64(1)
@@ -1001,7 +1001,7 @@ func (s *KeeperTestSuite) TestGenesisInferenceRoundTrip() {
 	s.Require().Equal([]byte("gdata"), got.ExtraData)
 }
 
-//nolint:exhaustruct
+//nolint:exhaustruct_v5
 func (s *KeeperTestSuite) TestGenesisMultiInferenceRoundTripWithTopicLabelRegistry() {
 	ctx := s.Ctx()
 	topicId := s.CreateTopic()
@@ -1054,7 +1054,7 @@ func (s *KeeperTestSuite) TestGenesisMultiInferenceRoundTripWithTopicLabelRegist
 	s.Require().Equal("0.3", gotInput.Values[1].Value.String())
 }
 
-//nolint:exhaustruct
+//nolint:exhaustruct_v5
 func (s *KeeperTestSuite) TestGenesisMultiInferenceRequiresSufficientTopicLabelRegistry() {
 	ctx := s.Ctx()
 	topicId := s.CreateTopic()

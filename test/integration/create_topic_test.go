@@ -72,7 +72,7 @@ func CreateTopic(m testCommon.TestConfig) (topicId uint64) {
 	require.NoError(m.T, err)
 	_, err = m.Client.WaitForTx(ctx, txResp.TxHash)
 	require.NoError(m.T, err)
-	createTopicResponse := &emissionstypes.CreateNewTopicResponse{} //nolint:exhaustruct // the fields are populated by decode
+	createTopicResponse := &emissionstypes.CreateNewTopicResponse{} //nolint:exhaustruct_v5 // the fields are populated by decode
 	err = txResp.Decode(createTopicResponse)
 	require.NoError(m.T, err)
 	topicId = createTopicResponse.TopicId
@@ -154,7 +154,7 @@ func CreateTopicMultiLabel(m testCommon.TestConfig) (topicId uint64) {
 	require.NoError(m.T, err)
 	_, err = m.Client.WaitForTx(ctx, txResp.TxHash)
 	require.NoError(m.T, err)
-	createTopicResponse := &emissionstypes.CreateNewTopicResponse{} //nolint:exhaustruct // the fields are populated by decode
+	createTopicResponse := &emissionstypes.CreateNewTopicResponse{} //nolint:exhaustruct_v5 // the fields are populated by decode
 	err = txResp.Decode(createTopicResponse)
 	require.NoError(m.T, err)
 	topicId = createTopicResponse.TopicId

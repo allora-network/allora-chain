@@ -25,11 +25,11 @@ func rendersOverGateway(t *testing.T, a *AlloraApp, msg sdk.Msg) bool {
 	t.Helper()
 	packed, err := codectypes.NewAnyWithValue(msg)
 	require.NoError(t, err)
-	//nolint:exhaustruct // wire form: only TypeUrl+Value survive the gRPC boundary
+	//nolint:exhaustruct_v5 // wire form: only TypeUrl+Value survive the gRPC boundary
 	wire := &codectypes.Any{TypeUrl: packed.TypeUrl, Value: packed.Value}
-	//nolint:exhaustruct // minimal response tx; only the message Any drives resolution
+	//nolint:exhaustruct_v5 // minimal response tx; only the message Any drives resolution
 	tx := &txtypes.Tx{Body: &txtypes.TxBody{Messages: []*codectypes.Any{wire}}}
-	//nolint:exhaustruct // only the marshaling options the gateway sets are relevant
+	//nolint:exhaustruct_v5 // only the marshaling options the gateway sets are relevant
 	m := &gogojsonpb.Marshaler{OrigName: true, EmitDefaults: true, AnyResolver: a.interfaceRegistry}
 	_, err = m.MarshalToString(tx)
 	return err == nil
@@ -48,13 +48,13 @@ func TestGatewayRendersConsensusTypesOnly(t *testing.T) {
 	require.True(t, rendersOverGateway(t, a, historicalV9Worker()),
 		"a historical v9 tx must render over the REST gateway")
 
-	//nolint:exhaustruct // only Sender is needed to resolve the type URL
+	//nolint:exhaustruct_v5 // only Sender is needed to resolve the type URL
 	require.False(t, rendersOverGateway(t, a, &mintv2.UpdateParamsRequest{Sender: "allo1sender"}),
 		"query-only mint.v2 must not render over the REST gateway")
-	//nolint:exhaustruct // only the signer fields are needed
+	//nolint:exhaustruct_v5 // only the signer fields are needed
 	require.False(t, rendersOverGateway(t, a, &emissionsv7.AddToGlobalWorkerWhitelistRequest{Sender: "allo1sender", Address: "allo1addr"}),
 		"query-only v7 whitelist tx must not render over the REST gateway")
-	//nolint:exhaustruct // only the signer fields are needed
+	//nolint:exhaustruct_v5 // only the signer fields are needed
 	require.False(t, rendersOverGateway(t, a, &emissionsv8.BulkRemoveFromTopicReputerWhitelistRequest{Sender: "allo1sender"}),
 		"query-only v8 whitelist tx must not render over the REST gateway")
 }

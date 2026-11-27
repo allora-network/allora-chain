@@ -115,7 +115,7 @@ func (s *QueryServerTestSuite) TestGetReputerLossBundlesAtBlock() {
 	require := s.Require()
 	topicId := uint64(1)
 	block := types.BlockHeight(100)
-	//nolint:exhaustruct
+	//nolint:exhaustruct_v5
 	valueBundle := &types.ValueBundle{
 		TopicId:             topicId,
 		Reputer:             s.AddrsStr(0),

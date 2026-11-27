@@ -16,7 +16,7 @@ import (
 // historicalV9WorkerPayload is a pre-v10 worker payload: the shape that stopped
 // decoding after the v10 proto bump.
 func historicalV9WorkerPayload(sender string) sdk.Msg {
-	//nolint:exhaustruct // only the fields exercised by the nested walk are set
+	//nolint:exhaustruct_v5 // only the fields exercised by the nested walk are set
 	return &emissionsv9.InsertWorkerPayloadRequest{
 		Sender: sender,
 		WorkerDataBundle: &emissionsv9.InputWorkerDataBundle{
@@ -48,7 +48,7 @@ func TestHistoricalTxDoesNotMoveConsensus(t *testing.T) {
 	// baseapp's pre-ante routing check (which only inspects top-level messages).
 	inner, err := codectypes.NewAnyWithValue(historicalV9WorkerPayload(sender.String()))
 	require.NoError(t, err)
-	//nolint:exhaustruct // only Grantee and Msgs matter
+	//nolint:exhaustruct_v5 // only Grantee and Msgs matter
 	wrapped := &authz.MsgExec{Grantee: sender.String(), Msgs: []*codectypes.Any{inner}}
 
 	ctx := chain.GetContext()

@@ -17,7 +17,7 @@ func TestReputerValueBundlesToLossBundles(t *testing.T) {
 		block   = int64(100)
 		reputer = "allo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqas6usy"
 	)
-	// nolint:exhaustruct
+	// nolint:exhaustruct_v5
 	validValueBundle := &ValueBundle{
 		TopicId: topicID,
 		ReputerRequestNonce: &ReputerRequestNonce{
@@ -49,7 +49,7 @@ func TestReputerValueBundlesToLossBundles(t *testing.T) {
 			name: "nil inner value bundle",
 			input: ReputerValueBundles{
 				ReputerValueBundles: []*ReputerValueBundle{
-					{ValueBundle: nil},
+					{ValueBundle: nil, Signature: nil, Pubkey: ""},
 				},
 			},
 			wantErr: sdkerrors.ErrInvalidRequest,
@@ -59,7 +59,7 @@ func TestReputerValueBundlesToLossBundles(t *testing.T) {
 			name: "valid bundle",
 			input: ReputerValueBundles{
 				ReputerValueBundles: []*ReputerValueBundle{
-					{ValueBundle: validValueBundle},
+					{ValueBundle: validValueBundle, Signature: nil, Pubkey: ""},
 				},
 			},
 			wantErr: nil,

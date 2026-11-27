@@ -108,8 +108,8 @@ func proposeUpgrade(m testCommon.TestConfig, upgradeName string, planHeightDelta
 	require.NoError(m.T, err)
 	_, err = m.Client.WaitForTx(ctx, txResp.TxHash)
 	require.NoError(m.T, err)
-	submitProposalMsgResponse := &govtypesv1.MsgSubmitProposalResponse{} //nolint:exhaustruct // the fields are populated by decode
-	err = txResp.Decode(submitProposalMsgResponse)
+	var submitProposalMsgResponse govtypesv1.MsgSubmitProposalResponse
+	err = txResp.Decode(&submitProposalMsgResponse)
 	require.NoError(m.T, err)
 	require.NotNil(m.T, submitProposalMsgResponse.ProposalId)
 	return submitProposalMsgResponse.ProposalId, proposalHeight

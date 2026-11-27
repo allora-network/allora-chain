@@ -19,7 +19,7 @@ func TestHarnessObservesExecutedTx(t *testing.T) {
 	sender := chain.SenderAccount.GetAddress()
 	recipient := sdk.AccAddress([]byte("recipient___________"))
 
-	//nolint:exhaustruct // only these fields matter for the control
+	//nolint:exhaustruct_v5 // only these fields matter for the control
 	msg := &banktypes.MsgSend{
 		FromAddress: sender.String(),
 		ToAddress:   recipient.String(),

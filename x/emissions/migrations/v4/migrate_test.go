@@ -145,7 +145,7 @@ func (s *EmissionsV4MigrationTestSuite) TestMigratedTopicWithNoProblems() {
 
 	topicId := uint64(2)
 
-	migratedOldTopic := emissionstypes.Topic{ //nolint:exhaustruct
+	migratedOldTopic := emissionstypes.Topic{ //nolint:exhaustruct_v5
 		Id:                       topicId,
 		Creator:                  "creator",
 		Metadata:                 "metadata",
@@ -220,7 +220,7 @@ func (s *EmissionsV4MigrationTestSuite) TestMigratedTopicWithNaNInitialRegret() 
 	store := runtime.KVStoreAdapter(s.StoreServiceEmissions().OpenKVStore(s.Ctx()))
 	cdc := s.EmissionsKeeper().GetBinaryCodec()
 
-	migratedOldTopicWithNaNInitialRegret := emissionstypes.Topic{ //nolint:exhaustruct
+	migratedOldTopicWithNaNInitialRegret := emissionstypes.Topic{ //nolint:exhaustruct_v5
 		Id:                       1,
 		Creator:                  "creator",
 		Metadata:                 "metadata",

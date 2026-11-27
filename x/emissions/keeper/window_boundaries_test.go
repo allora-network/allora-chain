@@ -19,7 +19,7 @@ func (s *KeeperTestSuite) TestBlockWithinReputerSubmissionWindowOfNonce() {
 	}{
 		{
 			name: "Simple case - Block within window",
-			topic: types.Topic{ //nolint:exhaustruct
+			topic: types.Topic{ //nolint:exhaustruct_v5
 				EpochLength:    100,
 				GroundTruthLag: 100,
 			},
@@ -33,7 +33,7 @@ func (s *KeeperTestSuite) TestBlockWithinReputerSubmissionWindowOfNonce() {
 		},
 		{
 			name: "Simple case - Block outside window (too early)",
-			topic: types.Topic{ //nolint:exhaustruct
+			topic: types.Topic{ //nolint:exhaustruct_v5
 				EpochLength:    100,
 				GroundTruthLag: 100,
 			},
@@ -47,7 +47,7 @@ func (s *KeeperTestSuite) TestBlockWithinReputerSubmissionWindowOfNonce() {
 		},
 		{
 			name: "Simple case - Block outside window (too late)",
-			topic: types.Topic{ //nolint:exhaustruct
+			topic: types.Topic{ //nolint:exhaustruct_v5
 				EpochLength:    100,
 				GroundTruthLag: 100,
 			},
@@ -61,7 +61,7 @@ func (s *KeeperTestSuite) TestBlockWithinReputerSubmissionWindowOfNonce() {
 		},
 		{
 			name: "Simple case - Block exactly at window start",
-			topic: types.Topic{ //nolint:exhaustruct
+			topic: types.Topic{ //nolint:exhaustruct_v5
 				EpochLength:    100,
 				GroundTruthLag: 100,
 			},
@@ -75,7 +75,7 @@ func (s *KeeperTestSuite) TestBlockWithinReputerSubmissionWindowOfNonce() {
 		},
 		{
 			name: "Simple case - Block exactly at window end",
-			topic: types.Topic{ //nolint:exhaustruct
+			topic: types.Topic{ //nolint:exhaustruct_v5
 				EpochLength:    100,
 				GroundTruthLag: 100,
 			},
@@ -89,7 +89,7 @@ func (s *KeeperTestSuite) TestBlockWithinReputerSubmissionWindowOfNonce() {
 		},
 		{
 			name: "GTLag not divisible by EpochLength - Block within window",
-			topic: types.Topic{ //nolint:exhaustruct
+			topic: types.Topic{ //nolint:exhaustruct_v5
 				EpochLength:    100,
 				GroundTruthLag: 130,
 			},
@@ -103,7 +103,7 @@ func (s *KeeperTestSuite) TestBlockWithinReputerSubmissionWindowOfNonce() {
 		},
 		{
 			name: "GTLag not divisible by EpochLength - Lower boundary out",
-			topic: types.Topic{ //nolint:exhaustruct
+			topic: types.Topic{ //nolint:exhaustruct_v5
 				EpochLength:    100,
 				GroundTruthLag: 130,
 			},
@@ -117,7 +117,7 @@ func (s *KeeperTestSuite) TestBlockWithinReputerSubmissionWindowOfNonce() {
 		},
 		{
 			name: "GTLag not divisible by EpochLength - Lower boundary in",
-			topic: types.Topic{ //nolint:exhaustruct
+			topic: types.Topic{ //nolint:exhaustruct_v5
 				EpochLength:    100,
 				GroundTruthLag: 130,
 			},
@@ -131,7 +131,7 @@ func (s *KeeperTestSuite) TestBlockWithinReputerSubmissionWindowOfNonce() {
 		},
 		{
 			name: "GTLag not divisible by EpochLength - reveal block is not yet the window",
-			topic: types.Topic{ //nolint:exhaustruct
+			topic: types.Topic{ //nolint:exhaustruct_v5
 				EpochLength:    100,
 				GroundTruthLag: 130,
 			},
@@ -145,7 +145,7 @@ func (s *KeeperTestSuite) TestBlockWithinReputerSubmissionWindowOfNonce() {
 		},
 		{
 			name: "GTLag not divisible by EpochLength - window opens exactly when the previous nonce closes",
-			topic: types.Topic{ //nolint:exhaustruct
+			topic: types.Topic{ //nolint:exhaustruct_v5
 				EpochLength:    100,
 				GroundTruthLag: 130,
 			},
@@ -159,7 +159,7 @@ func (s *KeeperTestSuite) TestBlockWithinReputerSubmissionWindowOfNonce() {
 		},
 		{
 			name: "GTLag not divisible by EpochLength - Upper boundary in",
-			topic: types.Topic{ //nolint:exhaustruct
+			topic: types.Topic{ //nolint:exhaustruct_v5
 				EpochLength:    100,
 				GroundTruthLag: 130,
 			},
@@ -173,7 +173,7 @@ func (s *KeeperTestSuite) TestBlockWithinReputerSubmissionWindowOfNonce() {
 		},
 		{
 			name: "GTLag not divisible by EpochLength - Upper boundary out",
-			topic: types.Topic{ //nolint:exhaustruct
+			topic: types.Topic{ //nolint:exhaustruct_v5
 				EpochLength:    100,
 				GroundTruthLag: 130,
 			},
@@ -187,7 +187,7 @@ func (s *KeeperTestSuite) TestBlockWithinReputerSubmissionWindowOfNonce() {
 		},
 		{
 			name: "GTLag less than EpochLength - Block within window",
-			topic: types.Topic{ //nolint:exhaustruct
+			topic: types.Topic{ //nolint:exhaustruct_v5
 				EpochLength:    100,
 				GroundTruthLag: 70,
 			},
@@ -201,7 +201,7 @@ func (s *KeeperTestSuite) TestBlockWithinReputerSubmissionWindowOfNonce() {
 		},
 		{
 			name: "GTLag multiple of EpochLength",
-			topic: types.Topic{ //nolint:exhaustruct
+			topic: types.Topic{ //nolint:exhaustruct_v5
 				EpochLength:    100,
 				GroundTruthLag: 200, // Exactly 2 epochs
 			},
@@ -215,7 +215,7 @@ func (s *KeeperTestSuite) TestBlockWithinReputerSubmissionWindowOfNonce() {
 		},
 		{
 			name: "GTLag multiple of EpochLength - Lower boundary out",
-			topic: types.Topic{ //nolint:exhaustruct
+			topic: types.Topic{ //nolint:exhaustruct_v5
 				EpochLength:    100,
 				GroundTruthLag: 200, // Exactly 2 epochs
 			},
@@ -229,7 +229,7 @@ func (s *KeeperTestSuite) TestBlockWithinReputerSubmissionWindowOfNonce() {
 		},
 		{
 			name: "GTLag multiple of EpochLength - Lower boundary in",
-			topic: types.Topic{ //nolint:exhaustruct
+			topic: types.Topic{ //nolint:exhaustruct_v5
 				EpochLength:    100,
 				GroundTruthLag: 200, // Exactly 2 epochs
 			},
@@ -243,7 +243,7 @@ func (s *KeeperTestSuite) TestBlockWithinReputerSubmissionWindowOfNonce() {
 		},
 		{
 			name: "GTLag multiple of EpochLength - Upper boundary in",
-			topic: types.Topic{ //nolint:exhaustruct
+			topic: types.Topic{ //nolint:exhaustruct_v5
 				EpochLength:    100,
 				GroundTruthLag: 200, // Exactly 2 epochs
 			},
@@ -257,7 +257,7 @@ func (s *KeeperTestSuite) TestBlockWithinReputerSubmissionWindowOfNonce() {
 		},
 		{
 			name: "GTLag multiple of EpochLength - Upper boundary out",
-			topic: types.Topic{ //nolint:exhaustruct
+			topic: types.Topic{ //nolint:exhaustruct_v5
 				EpochLength:    100,
 				GroundTruthLag: 200, // Exactly 2 epochs
 			},
@@ -301,7 +301,7 @@ func (s *KeeperTestSuite) TestBlockWithinWorkerSubmissionWindowOfNonce() {
 	}{
 		{
 			name: "Simple case - Block in the middle of the window",
-			topic: types.Topic{ //nolint:exhaustruct
+			topic: types.Topic{ //nolint:exhaustruct_v5
 				WorkerSubmissionWindow: 100,
 			},
 			nonce: types.Nonce{
@@ -314,7 +314,7 @@ func (s *KeeperTestSuite) TestBlockWithinWorkerSubmissionWindowOfNonce() {
 		},
 		{
 			name: "Simple case - Block outside window (too early)",
-			topic: types.Topic{ //nolint:exhaustruct
+			topic: types.Topic{ //nolint:exhaustruct_v5
 				WorkerSubmissionWindow: 100,
 			},
 			nonce: types.Nonce{
@@ -327,7 +327,7 @@ func (s *KeeperTestSuite) TestBlockWithinWorkerSubmissionWindowOfNonce() {
 		},
 		{
 			name: "Simple case - Block outside window (too late)",
-			topic: types.Topic{ //nolint:exhaustruct
+			topic: types.Topic{ //nolint:exhaustruct_v5
 				WorkerSubmissionWindow: 100,
 			},
 			nonce: types.Nonce{
@@ -340,7 +340,7 @@ func (s *KeeperTestSuite) TestBlockWithinWorkerSubmissionWindowOfNonce() {
 		},
 		{
 			name: "Edge case - Block exactly at window start",
-			topic: types.Topic{ //nolint:exhaustruct
+			topic: types.Topic{ //nolint:exhaustruct_v5
 				WorkerSubmissionWindow: 100,
 			},
 			nonce: types.Nonce{
@@ -353,7 +353,7 @@ func (s *KeeperTestSuite) TestBlockWithinWorkerSubmissionWindowOfNonce() {
 		},
 		{
 			name: "Edge case - Block exactly at window end",
-			topic: types.Topic{ //nolint:exhaustruct
+			topic: types.Topic{ //nolint:exhaustruct_v5
 				WorkerSubmissionWindow: 100,
 			},
 			nonce: types.Nonce{
@@ -366,7 +366,7 @@ func (s *KeeperTestSuite) TestBlockWithinWorkerSubmissionWindowOfNonce() {
 		},
 		{
 			name: "Edge case - Zero submission window",
-			topic: types.Topic{ //nolint:exhaustruct
+			topic: types.Topic{ //nolint:exhaustruct_v5
 				WorkerSubmissionWindow: 0,
 			},
 			nonce: types.Nonce{
@@ -379,7 +379,7 @@ func (s *KeeperTestSuite) TestBlockWithinWorkerSubmissionWindowOfNonce() {
 		},
 		{
 			name: "Edge case - Large submission window",
-			topic: types.Topic{ //nolint:exhaustruct
+			topic: types.Topic{ //nolint:exhaustruct_v5
 				WorkerSubmissionWindow: 10000,
 			},
 			nonce: types.Nonce{
@@ -392,7 +392,7 @@ func (s *KeeperTestSuite) TestBlockWithinWorkerSubmissionWindowOfNonce() {
 		},
 		{
 			name: "Edge case - Nonce at block zero",
-			topic: types.Topic{ //nolint:exhaustruct
+			topic: types.Topic{ //nolint:exhaustruct_v5
 				WorkerSubmissionWindow: 100,
 			},
 			nonce: types.Nonce{
@@ -405,7 +405,7 @@ func (s *KeeperTestSuite) TestBlockWithinWorkerSubmissionWindowOfNonce() {
 		},
 		{
 			name: "Edge case - Block at max int64",
-			topic: types.Topic{ //nolint:exhaustruct
+			topic: types.Topic{ //nolint:exhaustruct_v5
 				WorkerSubmissionWindow: 100,
 			},
 			nonce: types.Nonce{
@@ -418,7 +418,7 @@ func (s *KeeperTestSuite) TestBlockWithinWorkerSubmissionWindowOfNonce() {
 		},
 		{
 			name: "Edge case - Overflow",
-			topic: types.Topic{ //nolint:exhaustruct
+			topic: types.Topic{ //nolint:exhaustruct_v5
 				WorkerSubmissionWindow: 10,
 			},
 			nonce: types.Nonce{
@@ -431,7 +431,7 @@ func (s *KeeperTestSuite) TestBlockWithinWorkerSubmissionWindowOfNonce() {
 		},
 		{
 			name: "Edge case - Near overflow but valid",
-			topic: types.Topic{ //nolint:exhaustruct
+			topic: types.Topic{ //nolint:exhaustruct_v5
 				WorkerSubmissionWindow: 10,
 			},
 			nonce: types.Nonce{
@@ -475,7 +475,7 @@ func (s *KeeperTestSuite) TestReputerSubmissionWindowBounds() {
 	}{
 		{
 			name:          "aligned lag opens at the reveal",
-			topic:         types.Topic{EpochLength: 100, GroundTruthLag: 100}, //nolint:exhaustruct
+			topic:         types.Topic{EpochLength: 100, GroundTruthLag: 100}, //nolint:exhaustruct_v5
 			nonceHeight:   1000,
 			expectedStart: 1100,
 			expectedEnd:   1200,
@@ -484,7 +484,7 @@ func (s *KeeperTestSuite) TestReputerSubmissionWindowBounds() {
 		},
 		{
 			name:          "fractional lag waits for the end of the reveal epoch",
-			topic:         types.Topic{EpochLength: 100, GroundTruthLag: 130}, //nolint:exhaustruct
+			topic:         types.Topic{EpochLength: 100, GroundTruthLag: 130}, //nolint:exhaustruct_v5
 			nonceHeight:   1000,
 			expectedStart: 1200,
 			expectedEnd:   1300,
@@ -493,7 +493,7 @@ func (s *KeeperTestSuite) TestReputerSubmissionWindowBounds() {
 		},
 		{
 			name:          "production-shaped fractional lag",
-			topic:         types.Topic{EpochLength: 35, GroundTruthLag: 3388}, //nolint:exhaustruct
+			topic:         types.Topic{EpochLength: 35, GroundTruthLag: 3388}, //nolint:exhaustruct_v5
 			nonceHeight:   1_000_000,
 			expectedStart: 1_003_395,
 			expectedEnd:   1_003_430,
@@ -502,7 +502,7 @@ func (s *KeeperTestSuite) TestReputerSubmissionWindowBounds() {
 		},
 		{
 			name:          "overflow is rejected",
-			topic:         types.Topic{EpochLength: 100, GroundTruthLag: 100}, //nolint:exhaustruct
+			topic:         types.Topic{EpochLength: 100, GroundTruthLag: 100}, //nolint:exhaustruct_v5
 			nonceHeight:   math.MaxInt64 - 150,
 			expectedStart: 0,
 			expectedEnd:   0,
@@ -511,7 +511,7 @@ func (s *KeeperTestSuite) TestReputerSubmissionWindowBounds() {
 		},
 		{
 			name:          "zero epoch length is rejected",
-			topic:         types.Topic{EpochLength: 0, GroundTruthLag: 100}, //nolint:exhaustruct
+			topic:         types.Topic{EpochLength: 0, GroundTruthLag: 100}, //nolint:exhaustruct_v5
 			nonceHeight:   1000,
 			expectedStart: 0,
 			expectedEnd:   0,
@@ -520,7 +520,7 @@ func (s *KeeperTestSuite) TestReputerSubmissionWindowBounds() {
 		},
 		{
 			name:          "ground truth lag overflow is rejected",
-			topic:         types.Topic{EpochLength: 100, GroundTruthLag: 130}, //nolint:exhaustruct
+			topic:         types.Topic{EpochLength: 100, GroundTruthLag: 130}, //nolint:exhaustruct_v5
 			nonceHeight:   math.MaxInt64 - 129,
 			expectedStart: 0,
 			expectedEnd:   0,
@@ -529,7 +529,7 @@ func (s *KeeperTestSuite) TestReputerSubmissionWindowBounds() {
 		},
 		{
 			name:          "reveal plus extra lag overflow is rejected",
-			topic:         types.Topic{EpochLength: 100, GroundTruthLag: 130}, //nolint:exhaustruct
+			topic:         types.Topic{EpochLength: 100, GroundTruthLag: 130}, //nolint:exhaustruct_v5
 			nonceHeight:   math.MaxInt64 - 199,
 			expectedStart: 0,
 			expectedEnd:   0,
@@ -538,7 +538,7 @@ func (s *KeeperTestSuite) TestReputerSubmissionWindowBounds() {
 		},
 		{
 			name:          "lower bound plus epoch length overflow is rejected",
-			topic:         types.Topic{EpochLength: 100, GroundTruthLag: 130}, //nolint:exhaustruct
+			topic:         types.Topic{EpochLength: 100, GroundTruthLag: 130}, //nolint:exhaustruct_v5
 			nonceHeight:   math.MaxInt64 - 200,
 			expectedStart: 0,
 			expectedEnd:   0,
@@ -578,8 +578,8 @@ func (s *KeeperTestSuite) TestReputerSubmissionWindowBounds() {
 
 func (s *KeeperTestSuite) TestReputerSubmissionWindowBoundsRejectsMissingNonce() {
 	_, _, err := keeper.ReputerSubmissionWindowBounds(
-		types.Topic{EpochLength: 100, GroundTruthLag: 100}, //nolint:exhaustruct
-		types.ReputerRequestNonce{},                        //nolint:exhaustruct
+		types.Topic{EpochLength: 100, GroundTruthLag: 100}, //nolint:exhaustruct_v5
+		types.ReputerRequestNonce{},                        //nolint:exhaustruct_v5
 	)
 	s.Require().ErrorIs(err, types.ErrInvalidValue)
 }

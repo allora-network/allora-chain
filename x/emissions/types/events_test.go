@@ -798,7 +798,7 @@ func assertEventNetworkInferenceBundle(
 	}
 }
 
-//nolint:exhaustruct
+//nolint:exhaustruct_v5
 func TestValueBundleToEventValueBundleBase(t *testing.T) {
 	const maxInferers = 32
 
@@ -2314,12 +2314,12 @@ func TestNewTopicRewardForfeitedEventBaseKeepsRewardNonceOnlyForDistributionFail
 func TestEmitNewInsertInfererPayloadEventWithAdmissionOutcome(t *testing.T) {
 	ctx := sdk.Context{}.WithEventManager(sdk.NewEventManager())
 	// Only the fields read by the insert-payload event helper are populated.
-	bundle := &types.InputWorkerDataBundle{ //nolint:exhaustruct
+	bundle := &types.InputWorkerDataBundle{ //nolint:exhaustruct_v5
 		Worker:  "worker1",
 		Nonce:   &types.Nonce{BlockHeight: 10},
 		TopicId: 1,
-		InferenceForecastsBundle: &types.InputInferenceForecastBundle{ //nolint:exhaustruct
-			Inference: &types.InputInference{ //nolint:exhaustruct
+		InferenceForecastsBundle: &types.InputInferenceForecastBundle{ //nolint:exhaustruct_v5
+			Inference: &types.InputInference{ //nolint:exhaustruct_v5
 				Inferer:     "worker1",
 				TopicId:     1,
 				BlockHeight: 10,
@@ -2344,12 +2344,12 @@ func TestEmitNewInsertInfererPayloadEventWithAdmissionOutcome(t *testing.T) {
 func TestEmitNewInsertInfererPayloadEventEmitsUnspecifiedAdmissionOutcome(t *testing.T) {
 	ctx := sdk.Context{}.WithEventManager(sdk.NewEventManager())
 	// Only the fields read by the insert-payload event helper are populated.
-	bundle := &types.InputWorkerDataBundle{ //nolint:exhaustruct
+	bundle := &types.InputWorkerDataBundle{ //nolint:exhaustruct_v5
 		Worker:  "worker1",
 		Nonce:   &types.Nonce{BlockHeight: 10},
 		TopicId: 1,
-		InferenceForecastsBundle: &types.InputInferenceForecastBundle{ //nolint:exhaustruct
-			Inference: &types.InputInference{ //nolint:exhaustruct
+		InferenceForecastsBundle: &types.InputInferenceForecastBundle{ //nolint:exhaustruct_v5
+			Inference: &types.InputInference{ //nolint:exhaustruct_v5
 				Inferer:     "worker1",
 				TopicId:     1,
 				BlockHeight: 10,
@@ -2379,12 +2379,12 @@ func TestEmitNewInsertInfererPayloadEventEmitsUnspecifiedAdmissionOutcome(t *tes
 func TestParseLegacyInsertInfererPayloadEventAdmissionOutcomeUnspecified(t *testing.T) {
 	ctx := sdk.Context{}.WithEventManager(sdk.NewEventManager())
 	// Only the fields read by the insert-payload event helper are populated.
-	bundle := &types.InputWorkerDataBundle{ //nolint:exhaustruct
+	bundle := &types.InputWorkerDataBundle{ //nolint:exhaustruct_v5
 		Worker:  "worker1",
 		Nonce:   &types.Nonce{BlockHeight: 10},
 		TopicId: 1,
-		InferenceForecastsBundle: &types.InputInferenceForecastBundle{ //nolint:exhaustruct
-			Inference: &types.InputInference{ //nolint:exhaustruct
+		InferenceForecastsBundle: &types.InputInferenceForecastBundle{ //nolint:exhaustruct_v5
+			Inference: &types.InputInference{ //nolint:exhaustruct_v5
 				Inferer:     "worker1",
 				TopicId:     1,
 				BlockHeight: 10,

@@ -18,7 +18,7 @@ import (
 // createTopicWithCap creates a simple SINGLE-arity regression topic with an
 // explicit max_top_inferers_to_reward request value and returns (topicId, err).
 //
-//nolint:exhaustruct
+//nolint:exhaustruct_v5
 func (s *MsgServerTestSuite) createTopicWithCap(sender string, capValue uint64) (uint64, error) {
 	ctx, msgServer := s.Ctx(), s.EmissionsMsgServer()
 	senderAddr, err := sdk.AccAddressFromBech32(sender)
@@ -58,7 +58,7 @@ func (s *MsgServerTestSuite) createTopicWithCap(sender string, capValue uint64) 
 // baseCapUpdateMsg builds an UpdateTopicRequest whose fields match a topic made
 // by createTopicWithCap, so only the field a test overrides actually changes.
 //
-//nolint:exhaustruct
+//nolint:exhaustruct_v5
 func (s *MsgServerTestSuite) baseCapUpdateMsg(sender string, topicId uint64) *types.UpdateTopicRequest {
 	return &types.UpdateTopicRequest{
 		Sender:                 sender,
@@ -79,7 +79,7 @@ func (s *MsgServerTestSuite) baseCapUpdateMsg(sender string, topicId uint64) *ty
 // baseWSWUpdateMsg builds an UpdateTopicRequest whose fields match the topic
 // created by createTopicForWSWTests, so only the overridden field changes.
 //
-//nolint:exhaustruct
+//nolint:exhaustruct_v5
 func (s *MsgServerTestSuite) baseWSWUpdateMsg(sender string, topicId uint64) *types.UpdateTopicRequest {
 	return &types.UpdateTopicRequest{
 		Sender:                 sender,

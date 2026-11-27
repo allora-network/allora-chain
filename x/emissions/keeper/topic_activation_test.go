@@ -440,7 +440,7 @@ func (s *KeeperTestSuite) TestActivateTopicEmitsOpenReputerWindowEvent() {
 	s.Require().NoError(err)
 
 	openedEvents := 0
-	openedEventName := gogoproto.MessageName(&types.EventReputerSubmissionWindowOpened{}) //nolint:exhaustruct // only the registered type name is needed, not an instance
+	openedEventName := gogoproto.MessageName(&types.EventReputerSubmissionWindowOpened{}) //nolint:exhaustruct_v5 // only the registered type name is needed, not an instance
 	for _, event := range s.Ctx().EventManager().Events()[eventStart:] {
 		if event.Type == openedEventName {
 			openedEvents++
@@ -454,7 +454,7 @@ func (s *KeeperTestSuite) TestActivateTopicEmitsOpenReputerWindowEvent() {
 
 func countReputerSubmissionWindowOpenedEvents(s *KeeperTestSuite, eventStart int) int {
 	count := 0
-	openedEventName := gogoproto.MessageName(&types.EventReputerSubmissionWindowOpened{}) //nolint:exhaustruct // only the registered type name is needed, not an instance
+	openedEventName := gogoproto.MessageName(&types.EventReputerSubmissionWindowOpened{}) //nolint:exhaustruct_v5 // only the registered type name is needed, not an instance
 	for _, event := range s.Ctx().EventManager().Events()[eventStart:] {
 		if event.Type == openedEventName {
 			count++

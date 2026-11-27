@@ -652,7 +652,7 @@ func (s *KeeperTestSuite) TestInitialEmaScoreSettingInAppendInference() {
 	s.Require().NoError(err)
 
 	// Create and append a new inference
-	//nolint:exhaustruct
+	//nolint:exhaustruct_v5
 	inference := &types.Inference{
 		TopicId:     topicId,
 		BlockHeight: blockHeight,
@@ -732,7 +732,7 @@ func (s *KeeperTestSuite) TestInitialEmaScoreSettingInAppendReputer() {
 	s.Require().NoError(err)
 
 	// Create and append a new reputer value bundle
-	//nolint:exhaustruct
+	//nolint:exhaustruct_v5
 	valueBundle := &types.ValueBundle{
 		TopicId: topicId,
 		ReputerRequestNonce: &types.ReputerRequestNonce{
@@ -857,7 +857,7 @@ func (s *KeeperTestSuite) TestLivenessPenaltyAppliedInAppendInference() {
 	}))
 
 	// Create and append a new inference
-	//nolint:exhaustruct
+	//nolint:exhaustruct_v5
 	inference := &types.Inference{
 		TopicId:     topicId,
 		BlockHeight: blockHeight,
@@ -975,7 +975,7 @@ func (s *KeeperTestSuite) TestLivenessPenaltyAppliedInAppendReputerLoss() {
 	}))
 
 	// Create and append a new reputer loss
-	//nolint:exhaustruct
+	//nolint:exhaustruct_v5
 	valueBundleReputer := types.ValueBundle{
 		Reputer:             reputer,
 		CombinedValue:       alloraMath.MustNewDecFromString(".0000256948644008351"),

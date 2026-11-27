@@ -15,7 +15,7 @@ import (
 
 // Topics tests
 //
-//nolint:exhaustruct
+//nolint:exhaustruct_v5
 func (s *MsgServerTestSuite) TestCreateNewTopic() {
 	ctx := s.Ctx()
 	msgServer := s.EmissionsMsgServer()
@@ -437,7 +437,7 @@ func (s *MsgServerTestSuite) TestCreateNewTopicZeroFeeEmitsNoFundEvent() {
 
 	// A zero create-topic fee is a valid configuration: validateCreateTopicFee
 	// only rejects negative values.
-	newParams := &types.OptionalParams{ //nolint:exhaustruct
+	newParams := &types.OptionalParams{ //nolint:exhaustruct_v5
 		CreateTopicFee: []cosmosMath.Int{cosmosMath.ZeroInt()},
 	}
 	_, err := msgServer.UpdateParams(s.Ctx(), &types.UpdateParamsRequest{Sender: s.AddrsStr(0), Params: newParams})
@@ -1361,7 +1361,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicMeritSortitionInactiveIgnoresWindow(
 // submission window currently covering the block height set by the caller.
 // Returns the topic id.
 //
-//nolint:exhaustruct
+//nolint:exhaustruct_v5
 func (s *MsgServerTestSuite) createTopicForWSWTests(sender string) uint64 {
 	ctx, msgServer := s.Ctx(), s.EmissionsMsgServer()
 	require := s.Require()
@@ -1418,7 +1418,7 @@ func (s *MsgServerTestSuite) setupActiveTopicWithOpenWSW(sender string) (sdk.Con
 // CreateNewTopic canonicalizes the whitelist in place: trimmed, NFC-normalized,
 // and deduplicated.
 //
-//nolint:exhaustruct
+//nolint:exhaustruct_v5
 func (s *MsgServerTestSuite) TestSetTopicCanonicalizesLabelWhitelist() {
 	ctx, msgServer := s.Ctx(), s.EmissionsMsgServer()
 	require := s.Require()
@@ -1466,7 +1466,7 @@ func (s *MsgServerTestSuite) TestSetTopicCanonicalizesLabelWhitelist() {
 // TestUpdateTopicMaxLabelsBlockedWhenWorkerWindowOpen asserts the generalized
 // WSW lock now also guards max_labels_per_submission mutations.
 //
-//nolint:exhaustruct
+//nolint:exhaustruct_v5
 func (s *MsgServerTestSuite) TestUpdateTopicMaxLabelsBlockedWhenWorkerWindowOpen() {
 	ctx, msgServer := s.Ctx(), s.EmissionsMsgServer()
 	require := s.Require()
@@ -1505,7 +1505,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicMaxLabelsBlockedWhenWorkerWindowOpen
 // TestUpdateTopicWhitelistBlockedWhenWorkerWindowOpen asserts the generalized
 // WSW lock now also guards label_whitelist mutations.
 //
-//nolint:exhaustruct
+//nolint:exhaustruct_v5
 func (s *MsgServerTestSuite) TestUpdateTopicWhitelistBlockedWhenWorkerWindowOpen() {
 	ctx, msgServer := s.Ctx(), s.EmissionsMsgServer()
 	require := s.Require()
@@ -1544,7 +1544,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicWhitelistBlockedWhenWorkerWindowOpen
 // TestUpdateTopicLabelDefaultBlockedWhenWorkerWindowOpen asserts the generalized
 // WSW lock also guards label_default_value mutations.
 //
-//nolint:exhaustruct
+//nolint:exhaustruct_v5
 func (s *MsgServerTestSuite) TestUpdateTopicLabelDefaultBlockedWhenWorkerWindowOpen() {
 	ctx, msgServer := s.Ctx(), s.EmissionsMsgServer()
 	require := s.Require()
@@ -1586,7 +1586,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicLabelDefaultBlockedWhenWorkerWindowO
 // nonce, whitelist/cap mutations are accepted again (and the whitelist is
 // canonicalized by SetTopic on its way in).
 //
-//nolint:exhaustruct
+//nolint:exhaustruct_v5
 func (s *MsgServerTestSuite) TestUpdateTopicWhitelistAllowedAfterWSWClosed() {
 	ctx, msgServer := s.Ctx(), s.EmissionsMsgServer()
 	require := s.Require()
@@ -1637,7 +1637,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicWhitelistAllowedAfterWSWClosed() {
 // case, where the update is allowed and the close can no longer run. Here B=5,
 // W=10, so B+W=15.
 //
-//nolint:exhaustruct
+//nolint:exhaustruct_v5
 func (s *MsgServerTestSuite) TestUpdateTopicLabelDefaultBlockedAtExactWSWCloseBlock() {
 	ctx, msgServer := s.Ctx(), s.EmissionsMsgServer()
 	require := s.Require()
@@ -1682,7 +1682,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicLabelDefaultBlockedAtExactWSWCloseBl
 // "unchanged" or "use module default". Values outside the allowed cap range
 // are rejected and the topic remains unchanged.
 //
-//nolint:exhaustruct
+//nolint:exhaustruct_v5
 func (s *MsgServerTestSuite) TestUpdateTopicRejectsOutOfRangeMaxLabelsPerSubmission() {
 	ctx, msgServer := s.Ctx(), s.EmissionsMsgServer()
 	require := s.Require()
@@ -1732,7 +1732,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicRejectsOutOfRangeMaxLabelsPerSubmiss
 // a full-payload operation: a nil label_whitelist replaces the existing topic
 // whitelist with unrestricted, rather than preserving the old whitelist.
 //
-//nolint:exhaustruct
+//nolint:exhaustruct_v5
 func (s *MsgServerTestSuite) TestUpdateTopicFullPayloadClearsLabelWhitelist() {
 	ctx, msgServer := s.Ctx(), s.EmissionsMsgServer()
 	require := s.Require()
@@ -1774,7 +1774,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicFullPayloadClearsLabelWhitelist() {
 // A regression to the newest-only check would therefore accept the
 // update; the generalized check must reject it.
 //
-//nolint:exhaustruct
+//nolint:exhaustruct_v5
 func (s *MsgServerTestSuite) TestUpdateTopicWSWLockBlocksWhenOlderNonceStillWithinWindow() {
 	ctx, msgServer := s.Ctx(), s.EmissionsMsgServer()
 	require := s.Require()
@@ -1815,7 +1815,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicWSWLockBlocksWhenOlderNonceStillWith
 // TestUpdateTopicAllowsNonGuardedFieldsDuringOpenWSW confirms that metadata and
 // other non-guarded fields may be updated while a worker submission window is open.
 //
-//nolint:exhaustruct
+//nolint:exhaustruct_v5
 func (s *MsgServerTestSuite) TestUpdateTopicAllowsNonGuardedFieldsDuringOpenWSW() {
 	msgServer := s.EmissionsMsgServer()
 	require := s.Require()
@@ -1853,7 +1853,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicAllowsNonGuardedFieldsDuringOpenWSW(
 // TestUpdateTopicWSWLockListsAllChangedGuardedFields asserts the WSW rejection
 // error lists every guarded field that changed, not just the first one.
 //
-//nolint:exhaustruct
+//nolint:exhaustruct_v5
 func (s *MsgServerTestSuite) TestUpdateTopicWSWLockListsAllChangedGuardedFields() {
 	msgServer := s.EmissionsMsgServer()
 	require := s.Require()
@@ -1888,7 +1888,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicWSWLockListsAllChangedGuardedFields(
 // TestUpdateTopicWSWLockListsAllFourGuardedFields asserts all four WSW-guarded
 // field names appear in the rejection error when they all change at once.
 //
-//nolint:exhaustruct
+//nolint:exhaustruct_v5
 func (s *MsgServerTestSuite) TestUpdateTopicWSWLockListsAllFourGuardedFields() {
 	msgServer := s.EmissionsMsgServer()
 	require := s.Require()
@@ -1926,7 +1926,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicWSWLockListsAllFourGuardedFields() {
 // TestUpdateTopicWhitelistCosmeticChangeAllowedDuringOpenWSW confirms that a
 // whitelist update that canonicalizes to the existing list does not trigger the WSW guard.
 //
-//nolint:exhaustruct
+//nolint:exhaustruct_v5
 func (s *MsgServerTestSuite) TestUpdateTopicWhitelistCosmeticChangeAllowedDuringOpenWSW() {
 	msgServer := s.EmissionsMsgServer()
 	require := s.Require()

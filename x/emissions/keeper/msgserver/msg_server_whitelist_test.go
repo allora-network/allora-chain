@@ -9,7 +9,7 @@ import (
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
-//nolint:exhaustruct
+//nolint:exhaustruct_v5
 func (s *MsgServerTestSuite) TestWhitelistAdminOperations() {
 	ctx := s.Ctx()
 	msgServer := s.EmissionsMsgServer()
@@ -99,7 +99,7 @@ func (s *MsgServerTestSuite) TestWhitelistAdminOperations() {
 	}
 }
 
-//nolint:exhaustruct
+//nolint:exhaustruct_v5
 func (s *MsgServerTestSuite) TestGlobalWhitelistOperations() {
 	ctx := s.Ctx()
 	msgServer := s.EmissionsMsgServer()
@@ -415,7 +415,7 @@ func (s *MsgServerTestSuite) TestGlobalWhitelistOperations() {
 	}
 }
 
-//nolint:exhaustruct
+//nolint:exhaustruct_v5
 func (s *MsgServerTestSuite) TestBulkWhitelistOperations() {
 	ctx := s.Ctx()
 	msgServer := s.EmissionsMsgServer()
@@ -634,7 +634,7 @@ func (s *MsgServerTestSuite) TestBulkWhitelistOperations() {
 	}
 }
 
-//nolint:exhaustruct
+//nolint:exhaustruct_v5
 func (s *MsgServerTestSuite) TestTopicWhitelistOperations() {
 	ctx := s.Ctx()
 	msgServer := s.EmissionsMsgServer()
@@ -1004,7 +1004,7 @@ func (s *MsgServerTestSuite) TestTopicWhitelistOperations() {
 	}
 }
 
-//nolint:exhaustruct
+//nolint:exhaustruct_v5
 func (s *MsgServerTestSuite) TestBulkTopicWhitelistOperations() {
 	ctx := s.Ctx()
 	msgServer := s.EmissionsMsgServer()

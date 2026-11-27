@@ -10,7 +10,7 @@ import (
 	"github.com/rs/zerolog"
 )
 
-//nolint:exhaustruct
+//nolint:exhaustruct_v5
 func NewTestLogger(t zerolog.TestingLog) log.Logger {
 	lvl := zerolog.DebugLevel
 	cw := zerolog.ConsoleWriter{

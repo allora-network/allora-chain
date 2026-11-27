@@ -10,7 +10,7 @@ import (
 	fuzzcommon "github.com/allora-network/allora-chain/test/fuzz/common"
 )
 
-var UnusedActor Actor = Actor{} //nolint:exhaustruct
+var UnusedActor Actor = Actor{} //nolint:exhaustruct_v5
 
 // Every function responsible for doing a state transition
 // should adhere to this function signature

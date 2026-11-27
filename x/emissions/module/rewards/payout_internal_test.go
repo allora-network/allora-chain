@@ -56,7 +56,7 @@ func newPayoutTestFixture(t *testing.T) payoutTestFixture {
 	}, map[string]*storetypes.TransientStoreKey{
 		"transient_test": storetypes.NewTransientStoreKey("transient_test"),
 	}, nil)
-	ctx := testCtx.WithHeaderInfo(header.Info{Height: 1, Time: time.Now()}).WithLogger(log.NewNopLogger()) //nolint:exhaustruct
+	ctx := testCtx.WithHeaderInfo(header.Info{Height: 1, Time: time.Now()}).WithLogger(log.NewNopLogger()) //nolint:exhaustruct_v5
 
 	encCfg := moduletestutil.MakeTestEncodingConfig(auth.AppModule{AppModuleBasic: auth.AppModuleBasic{}}, bank.AppModule{AppModuleBasic: bank.AppModuleBasic{}})
 	cdc := encCfg.Codec

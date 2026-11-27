@@ -61,7 +61,7 @@ func (s *MsgServerTestSuite) setUpMsgInsertWorkerPayloadWithBlockHeight(
 	}
 
 	// Create a InsertWorkerPayloadRequest message
-	//nolint:exhaustruct
+	//nolint:exhaustruct_v5
 	workerMsg := types.InsertWorkerPayloadRequest{
 		Sender: worker,
 		WorkerDataBundle: &types.InputWorkerDataBundle{
@@ -191,7 +191,7 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadZeroFeeEmitsNoFundEvent()
 
 	_, err := s.EmissionsMsgServer().UpdateParams(s.Ctx(), &types.UpdateParamsRequest{
 		Sender: s.AddrsStr(0),
-		Params: &types.OptionalParams{ //nolint:exhaustruct
+		Params: &types.OptionalParams{ //nolint:exhaustruct_v5
 			DataSendingFee: []cosmosMath.Int{cosmosMath.ZeroInt()},
 		},
 	})
@@ -441,7 +441,7 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadWithFewTopElementsPerFore
 	adminAddr := sdk.AccAddress(adminPrivateKey.PubKey().Address())
 	_ = s.WhitelistsKeeper().AddWhitelistAdmin(s.Ctx(), adminAddr.String())
 
-	newParams := &types.OptionalParams{ //nolint:exhaustruct
+	newParams := &types.OptionalParams{ //nolint:exhaustruct_v5
 		MaxElementsPerForecast: []uint64{3},
 		// rest not updated
 	}
@@ -546,7 +546,7 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadForecasterEventNoElements
 	adminAddr := sdk.AccAddress(adminPrivateKey.PubKey().Address())
 	_ = s.WhitelistsKeeper().AddWhitelistAdmin(s.Ctx(), adminAddr.String())
 
-	newParams := &types.OptionalParams{ //nolint:exhaustruct
+	newParams := &types.OptionalParams{ //nolint:exhaustruct_v5
 		MaxElementsPerForecast: []uint64{0},
 		// rest not updated
 	}
@@ -769,7 +769,7 @@ func (s *MsgServerTestSuite) TestInsertingHugeBundleWorkerPayloadFails() {
 	}
 
 	// Create a InsertWorkerPayloadRequest message
-	//nolint:exhaustruct
+	//nolint:exhaustruct_v5
 	workerMsg := &types.InsertWorkerPayloadRequest{
 		Sender: worker,
 		WorkerDataBundle: &types.InputWorkerDataBundle{
@@ -819,7 +819,7 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadVerifyFailed() {
 	inferer2 := s.AddrsStr(4)
 
 	// Create a InsertWorkerPayloadRequest message
-	//nolint:exhaustruct
+	//nolint:exhaustruct_v5
 	workerMsg := &types.InsertWorkerPayloadRequest{
 		Sender: worker,
 		WorkerDataBundle: &types.InputWorkerDataBundle{
@@ -865,7 +865,7 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadWithLowScoreForecastsAreR
 	adminAddr := sdk.AccAddress(adminPrivateKey.PubKey().Address())
 	_ = s.WhitelistsKeeper().AddWhitelistAdmin(s.Ctx(), adminAddr.String())
 
-	newParams := &types.OptionalParams{ //nolint:exhaustruct
+	newParams := &types.OptionalParams{ //nolint:exhaustruct_v5
 		MaxElementsPerForecast: []uint64{3},
 		// rest not updated
 	}
@@ -992,7 +992,7 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadForecastIncludesSelf() {
 	_ = s.WhitelistsKeeper().AddWhitelistAdmin(s.Ctx(), adminAddr.String())
 
 	// Set up params similar to other tests
-	newParams := &types.OptionalParams{ //nolint:exhaustruct
+	newParams := &types.OptionalParams{ //nolint:exhaustruct_v5
 		MaxElementsPerForecast: []uint64{3},
 		// not updated params remain nil
 	}
@@ -1105,7 +1105,7 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadSucceedsWithUnregisteredF
 	require.NoError(err, "InsertWorkerPayload should succeed with an unregistered inferer")
 }
 
-//nolint:exhaustruct
+//nolint:exhaustruct_v5
 func (s *MsgServerTestSuite) TestMsgInsertWorkerPayload_NormalizeInference() {
 	type tc struct {
 		name          string
@@ -1635,7 +1635,7 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayload_NotAdmittedDoesNotStageI
 		events[0].AdmissionOutcome)
 }
 
-//nolint:exhaustruct
+//nolint:exhaustruct_v5
 func (s *MsgServerTestSuite) TestMsgInsertWorkerPayload_SingleArityValidationBeforePlanning() {
 	type labeledValue struct {
 		label string
@@ -1762,7 +1762,7 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayload_SingleArityValidationBef
 	}
 }
 
-//nolint:exhaustruct
+//nolint:exhaustruct_v5
 func (s *MsgServerTestSuite) TestMsgInsertWorkerPayload_LabelRegistryAdmissionPlanning() {
 	type labeledValue struct {
 		label string

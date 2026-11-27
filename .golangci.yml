@@ -11,10 +11,10 @@ linters:
     - durationcheck
     - errcheck
     - errname
-    - exhaustruct
+    - exhaustruct_v5
     - forcetypeassert
     - goheader
-    - gomodguard
+    - gomodguard_v2
     - goprintffuncname
     - gosec
     - govet
@@ -34,6 +34,12 @@ linters:
     - unparam
     - unused
   settings:
+    # These external structs are filled with the fields a call uses.
+    exhaustruct_v5:
+      optional-patterns:
+        - cosmossdk\.io/api/cosmos/autocli/v1\.RpcCommandOptions
+        - cosmossdk\.io/api/cosmos/autocli/v1\.PositionalArgDescriptor
+        - testing/fstest\.MapFile
     # These checkers report on code already in the tree. goconst is
     # omitted from the enable list for the same reason.
     testifylint:

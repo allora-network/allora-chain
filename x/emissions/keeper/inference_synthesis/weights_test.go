@@ -1,4 +1,4 @@
-//nolint:exhaustruct
+//nolint:exhaustruct_v5
 package inferencesynthesis_test
 
 import (
@@ -433,7 +433,7 @@ func (s *WeightsTestSuite) TestCalcWeightsGivenWorkers() {
 				s.Require().True(missingInferer.Equal(missingForecaster))
 			},
 		},
-		{ //nolint:exhaustruct
+		{ //nolint:exhaustruct_v5
 			name: "empty workers should error",
 			args: synth.CalcWeightsGivenWorkersArgs{
 				Logger:                 s.Ctx().Logger(),
@@ -448,7 +448,7 @@ func (s *WeightsTestSuite) TestCalcWeightsGivenWorkers() {
 			},
 			expectedError: true,
 		},
-		{ //nolint:exhaustruct
+		{ //nolint:exhaustruct_v5
 			name: "missing regret values should error",
 			args: synth.CalcWeightsGivenWorkersArgs{
 				Logger:                 s.Ctx().Logger(),

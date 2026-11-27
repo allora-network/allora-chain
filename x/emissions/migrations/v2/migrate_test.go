@@ -418,7 +418,7 @@ func (s *EmissionsV2MigrationTestSuite) TestMigrateParams() {
 	cdc := s.EmissionsKeeper().GetBinaryCodec()
 	// Create a Params with garbage in it
 	defaultParams := types.DefaultParams()
-	prevParams := oldtypes.Params{ //nolint:exhaustruct
+	prevParams := oldtypes.Params{ //nolint:exhaustruct_v5
 		Version:                         "v1",
 		MinTopicWeight:                  alloraMath.OneDec(),
 		RequiredMinimumStake:            cosmosMath.OneUint(),

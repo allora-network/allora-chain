@@ -1,4 +1,4 @@
-//nolint:exhaustruct
+//nolint:exhaustruct_v5
 package testutil
 
 import (
@@ -80,7 +80,7 @@ type account struct {
 }
 
 func NewTestSuite(moduleName string) TestSuite {
-	//nolint:exhaustruct
+	//nolint:exhaustruct_v5
 	return TestSuite{
 		ModuleName: moduleName,
 	}
@@ -375,7 +375,7 @@ func (s *TestSuite) SetupTest() {
 		"mint":      keyMint,
 	}, map[string]*storetypes.TransientStoreKey{
 		"transient_test": storetypes.NewTransientStoreKey("transient_test"),
-	}, nil).WithHeaderInfo(header.Info{Time: time.Now()}) //nolint:exhaustruct
+	}, nil).WithHeaderInfo(header.Info{Time: time.Now()}) //nolint:exhaustruct_v5
 
 	// Set logger to show logs from the module too
 	logger := alloralog.NewTestLogger(s.T()).With("module", s.ModuleName)
@@ -516,7 +516,7 @@ func (s *TestSuite) SetParamsForTest() {
 	err := s.WhitelistsKeeper().AddWhitelistAdmin(s.Ctx(), adminAddr.String())
 	s.Require().NoError(err)
 
-	//nolint:exhaustruct
+	//nolint:exhaustruct_v5
 	newParams := &types.OptionalParams{
 		MaxTopInferersToReward:  []uint64{24},
 		MinEpochLength:          []int64{1},
@@ -896,7 +896,7 @@ func buildInputValueBundle(
 	buildWorkerBundleValues := buildLossBundleValues[*types.WorkerAttributedValue, *types.InputWorkerAttributedValue]
 	buildWithheldBundleValues := buildLossBundleValues[*types.WithheldWorkerAttributedValue, *types.InputWithheldWorkerAttributedValue]
 
-	//nolint:exhaustruct
+	//nolint:exhaustruct_v5
 	return &types.InputValueBundle{
 		TopicId:                topicId,
 		ReputerRequestNonce:    &types.ReputerRequestNonce{ReputerNonce: &types.Nonce{BlockHeight: nonce}},
@@ -1326,7 +1326,7 @@ func (s *TestSuite) SetupParticipants(topicID uint64, indexes []int, isReputer b
 
 func (s *TestSuite) SetupInferences(topicID uint64, nonce int64, workerIndexes []int, options ...Option) types.Nonce {
 	if len(workerIndexes) == 0 {
-		return types.Nonce{} //nolint:exhaustruct
+		return types.Nonce{} //nolint:exhaustruct_v5
 	}
 
 	p := new(customParams)

@@ -28,15 +28,15 @@ diff --git a/x/emissions/module/abci.go b/x/emissions/module/abci.go
 diff --git a/x/emissions/module/module.go b/x/emissions/module/module.go
 --- a/x/emissions/module/module.go
 +++ b/x/emissions/module/module.go
-@@ -41,6 +41,7 @@ var (
- 	_ module.HasGenesis       = AppModule{} //nolint:exhaustruct
- 	_ appmodule.AppModule     = AppModule{} //nolint:exhaustruct
- 	_ appmodule.HasEndBlocker = AppModule{} //nolint:exhaustruct
-+	_ module.HasInvariants    = AppModule{} //nolint:exhaustruct
+@@ -46,6 +46,7 @@ var (
+ 	_ module.HasGenesis       = AppModule{} //nolint:exhaustruct_v5
+ 	_ appmodule.AppModule     = AppModule{} //nolint:exhaustruct_v5
+ 	_ appmodule.HasEndBlocker = AppModule{} //nolint:exhaustruct_v5
++	_ module.HasInvariants    = AppModule{} //nolint:exhaustruct_v5
  )
  
  // ConsensusVersion defines the current module consensus version.
-@@ -210,3 +211,8 @@ func (am AppModule) EndBlock(ctx context.Context) error {
+@@ -231,3 +232,8 @@ func (am AppModule) EndBlock(ctx context.Context) error {
  	}
  	return err
  }

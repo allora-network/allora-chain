@@ -280,7 +280,7 @@ func TestFindTopNByScoreDescWithNils(t *testing.T) {
 	reputerScoreEmas := []emissionstypes.Score{
 		{TopicId: topicId, BlockHeight: 1, Address: worker3Addr.String(), Score: alloraMath.NewDecFromInt64(80)},
 		{TopicId: topicId, BlockHeight: 1, Address: worker5Addr.String(), Score: alloraMath.NewDecFromInt64(100)},
-		{}, //nolint:exhaustruct
+		{}, //nolint:exhaustruct_v5
 	}
 
 	// Actors with nil scores sent to the end

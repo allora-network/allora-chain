@@ -148,7 +148,7 @@ func NewAlloraApp(
 	baseAppOptions ...func(*baseapp.BaseApp),
 ) (*AlloraApp, error) {
 	var (
-		app        = &AlloraApp{} //nolint:exhaustruct
+		app        = &AlloraApp{} //nolint:exhaustruct_v5
 		appBuilder *runtime.AppBuilder
 	)
 

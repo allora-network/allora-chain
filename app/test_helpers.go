@@ -9,7 +9,7 @@ import (
 	ibctestingtypes "github.com/cosmos/ibc-go/v8/testing/types"
 )
 
-var _ ibctesting.TestingApp = &AlloraApp{} //nolint:exhaustruct
+var _ ibctesting.TestingApp = &AlloraApp{} //nolint:exhaustruct_v5
 
 func (app *AlloraApp) GetBaseApp() *baseapp.BaseApp {
 	return app.App.BaseApp

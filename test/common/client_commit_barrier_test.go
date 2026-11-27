@@ -88,9 +88,9 @@ func (n *fakeCometNode) serve(w http.ResponseWriter, r *http.Request) {
 func (n *fakeCometNode) result(req rpctypes.RPCRequest) (any, string) {
 	switch req.Method {
 	case "status":
-		return &coretypes.ResultStatus{ //nolint:exhaustruct // the client reads network and height only
-			NodeInfo: p2p.DefaultNodeInfo{Network: "barrier-test"},                     //nolint:exhaustruct // see above
-			SyncInfo: coretypes.SyncInfo{LatestBlockHeight: n.blockStoreHeight.Load()}, //nolint:exhaustruct // see above
+		return &coretypes.ResultStatus{ //nolint:exhaustruct_v5 // the client reads network and height only
+			NodeInfo: p2p.DefaultNodeInfo{Network: "barrier-test"},                     //nolint:exhaustruct_v5 // see above
+			SyncInfo: coretypes.SyncInfo{LatestBlockHeight: n.blockStoreHeight.Load()}, //nolint:exhaustruct_v5 // see above
 		}, ""
 	case "abci_info":
 		height := n.appHeight.Load()
@@ -99,12 +99,12 @@ func (n *fakeCometNode) result(req rpctypes.RPCRequest) (any, string) {
 			n.blockStoreHeight.Store(height)
 		}
 		return &coretypes.ResultABCIInfo{
-			Response: abci.ResponseInfo{LastBlockHeight: height}, //nolint:exhaustruct // the barrier reads height only
+			Response: abci.ResponseInfo{LastBlockHeight: height}, //nolint:exhaustruct_v5 // the barrier reads height only
 		}, ""
 	case "abci_query":
 		return n.abciQuery(req)
 	case "broadcast_tx_sync":
-		return &coretypes.ResultBroadcastTx{ //nolint:exhaustruct // a code of zero means CheckTx accepted the tx
+		return &coretypes.ResultBroadcastTx{ //nolint:exhaustruct_v5 // a code of zero means CheckTx accepted the tx
 			Hash: cmttypes.Tx("tx").Hash(),
 		}, ""
 	case "tx":
@@ -112,10 +112,10 @@ func (n *fakeCometNode) result(req rpctypes.RPCRequest) (any, string) {
 		if height == 0 {
 			return nil, "tx not found"
 		}
-		return &coretypes.ResultTx{ //nolint:exhaustruct // the client reads hash, height and result
+		return &coretypes.ResultTx{ //nolint:exhaustruct_v5 // the client reads hash, height and result
 			Hash:   cmttypes.Tx("tx").Hash(),
 			Height: height,
-			TxResult: abci.ExecTxResult{ //nolint:exhaustruct // see above
+			TxResult: abci.ExecTxResult{ //nolint:exhaustruct_v5 // see above
 				Code: n.txCode.Load(),
 				Log:  "execution failed",
 			},
@@ -138,14 +138,14 @@ func (n *fakeCometNode) abciQuery(req rpctypes.RPCRequest) (any, string) {
 	switch params.Path {
 	case "/cosmos.auth.v1beta1.Query/Account":
 		var account *codectypes.Any
-		account, err = codectypes.NewAnyWithValue(&authtypes.BaseAccount{ //nolint:exhaustruct // sequence and number stay zero
+		account, err = codectypes.NewAnyWithValue(&authtypes.BaseAccount{ //nolint:exhaustruct_v5 // sequence and number stay zero
 			Address: sdktypes.AccAddress("barrier-test-sender").String(),
 		})
 		if err == nil {
 			value, err = (&authtypes.QueryAccountResponse{Account: account}).Marshal()
 		}
 	case "/cosmos.tx.v1beta1.Service/Simulate":
-		value, err = (&txtypes.SimulateResponse{ //nolint:exhaustruct // CalculateGas reads gas info only
+		value, err = (&txtypes.SimulateResponse{ //nolint:exhaustruct_v5 // CalculateGas reads gas info only
 			GasInfo: &sdktypes.GasInfo{GasWanted: 100000, GasUsed: 100000},
 		}).Marshal()
 	default:
@@ -155,7 +155,7 @@ func (n *fakeCometNode) abciQuery(req rpctypes.RPCRequest) (any, string) {
 		return nil, err.Error()
 	}
 	return &coretypes.ResultABCIQuery{
-		Response: abci.ResponseQuery{Value: value}, //nolint:exhaustruct // a code of zero means success
+		Response: abci.ResponseQuery{Value: value}, //nolint:exhaustruct_v5 // a code of zero means success
 	}, ""
 }
 
@@ -253,7 +253,7 @@ func TestBroadcastTxWaitsForEveryNodeAtTxHeight(t *testing.T) {
 			c := newBarrierTestClient(t, RoundRobin, submitter, laggard)
 			account, _, err := c.AccountRegistryCreate("alice")
 			require.NoError(t, err)
-			msg := &banktypes.MsgSend{ //nolint:exhaustruct // the fake node does not execute the message
+			msg := &banktypes.MsgSend{ //nolint:exhaustruct_v5 // the fake node does not execute the message
 				FromAddress: sdktypes.AccAddress("barrier-test-sender").String(),
 				ToAddress:   sdktypes.AccAddress("barrier-test-target").String(),
 			}

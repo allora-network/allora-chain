@@ -224,7 +224,7 @@ func ValueBundleToNetworkInferenceBundle(vb *ValueBundle) *NetworkInferenceBundl
 		nonce = vb.ReputerRequestNonce.ReputerNonce.BlockHeight
 	}
 
-	//nolint:exhaustruct
+	//nolint:exhaustruct_v5
 	out := &NetworkInferenceBundle{
 		TopicId: vb.TopicId,
 		Nonce:   nonce,

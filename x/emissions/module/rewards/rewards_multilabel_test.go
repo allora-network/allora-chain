@@ -1,4 +1,4 @@
-//nolint:gosec,exhaustruct
+//nolint:gosec,exhaustruct_v5
 package rewards_test
 
 import (

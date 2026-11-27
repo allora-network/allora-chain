@@ -74,7 +74,7 @@ func MigrateParams(store storetypes.KVStore, cdc codec.BinaryCodec) error {
 	// DIFFERENCE BETWEEN OLD PARAMS AND NEW PARAMS:
 	// ADDED:
 	//      InitialRegretQuantile, PNormSafeDiv
-	newParams := v5Types.Params{ //nolint:exhaustruct
+	newParams := v5Types.Params{ //nolint:exhaustruct_v5
 		Version:                             oldParams.Version,
 		MaxSerializedMsgLength:              oldParams.MaxSerializedMsgLength,
 		MinTopicWeight:                      oldParams.MinTopicWeight,
@@ -233,7 +233,7 @@ func ResetMapsWithNonNumericValues(ctx sdk.Context, store storetypes.KVStore, cd
 
 // copyTopic duplicates a topic into a new struct
 func copyTopic(original emissionstypes.Topic) emissionstypes.Topic {
-	return emissionstypes.Topic{ //nolint:exhaustruct
+	return emissionstypes.Topic{ //nolint:exhaustruct_v5
 		Id:                       original.Id,
 		Creator:                  original.Creator,
 		Metadata:                 original.Metadata,

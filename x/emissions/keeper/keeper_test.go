@@ -1,4 +1,4 @@
-//nolint:exhaustruct,staticcheck
+//nolint:exhaustruct_v5,staticcheck
 package keeper_test
 
 import (
@@ -108,7 +108,7 @@ func (s *KeeperTestSuite) TestPruneRecordsAfterRewards() {
 	reputerRequestNonce := &types.ReputerRequestNonce{
 		ReputerNonce: &types.Nonce{BlockHeight: block},
 	}
-	//nolint:exhaustruct
+	//nolint:exhaustruct_v5
 	networkLosses := types.ValueBundle{
 		Reputer:             s.AddrsStr(4),
 		CombinedValue:       alloraMath.MustNewDecFromString(".0000117005278862668"),

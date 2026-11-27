@@ -66,7 +66,7 @@ func TestEmitNewEpochLabelRegistryFrozenEventCarriesTheLabels(t *testing.T) {
 // registries with ids 1..n in slice order, so on such a registry the names are in
 // compact-id order and match the frozen-registry event's labels for the epoch.
 //
-//nolint:exhaustruct // the bundle has many fields that play no part in label order
+//nolint:exhaustruct_v5 // the bundle has many fields that play no part in label order
 func TestNetworkInferenceBundleLabelNamesFollowTheRegistry(t *testing.T) {
 	registry := types.EpochLabelRegistry{TopicId: 1, EpochId: 10, Labels: []*types.TopicLabel{
 		{Id: 1, Name: "up"}, {Id: 2, Name: "flat"}, {Id: 3, Name: "down"},

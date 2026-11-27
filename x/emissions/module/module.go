@@ -43,10 +43,10 @@ import (
 )
 
 var (
-	_ module.AppModuleBasic   = AppModule{} //nolint:exhaustruct
-	_ module.HasGenesis       = AppModule{} //nolint:exhaustruct
-	_ appmodule.AppModule     = AppModule{} //nolint:exhaustruct
-	_ appmodule.HasEndBlocker = AppModule{} //nolint:exhaustruct
+	_ module.AppModuleBasic   = AppModule{} //nolint:exhaustruct_v5
+	_ module.HasGenesis       = AppModule{} //nolint:exhaustruct_v5
+	_ appmodule.AppModule     = AppModule{} //nolint:exhaustruct_v5
+	_ appmodule.HasEndBlocker = AppModule{} //nolint:exhaustruct_v5
 )
 
 // ConsensusVersion defines the current module consensus version.
