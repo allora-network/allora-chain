@@ -52,7 +52,7 @@ func MigrateStore(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 }
 
 func MigrateParams(store storetypes.KVStore, cdc codec.BinaryCodec) error {
-	oldParams := oldtypes.Params{} //nolint:exhaustruct_v5 // populated in unmarshal below
+	var oldParams oldtypes.Params
 	oldParamsBytes := store.Get(types.ParamsKey)
 	if oldParamsBytes == nil {
 		return errorsmod.Wrapf(types.ErrNotFound, "old parameters not found")

@@ -74,8 +74,8 @@ func createTopic(
 		return false
 	}
 
-	createTopicResponse := &emissionstypes.CreateNewTopicResponse{} //nolint:exhaustruct_v5 // the fields are populated by decode
-	err = txResp.Decode(createTopicResponse)
+	var createTopicResponse emissionstypes.CreateNewTopicResponse
+	err = txResp.Decode(&createTopicResponse)
 	failIfOnErr(m.T, data.failOnErr, err)
 	if err != nil {
 		iterFailLog(m.T, iteration, actor, "failed to create topic", "tx decode error", err)

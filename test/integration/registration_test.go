@@ -22,8 +22,8 @@ func RegisterAliceAsReputer(m testCommon.TestConfig) {
 	require.NoError(m.T, err)
 	_, err = m.Client.WaitForTx(ctx, txResp.TxHash)
 	require.NoError(m.T, err)
-	registerAliceResponse := &emissionstypes.RegisterResponse{} //nolint:exhaustruct_v5 // the fields are populated by decode
-	err = txResp.Decode(registerAliceResponse)
+	var registerAliceResponse emissionstypes.RegisterResponse
+	err = txResp.Decode(&registerAliceResponse)
 	require.NoError(m.T, err)
 
 	// Check Alice registered as reputer
