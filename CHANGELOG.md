@@ -118,6 +118,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * [#1003](https://github.com/allora-network/allora-chain/pull/1003) Topic creation now emits its events in order — create, whitelist gates, fee — with the creation fee reported as `EventFundTopic` (creator as funder). Gate enable/disable emits once per state transition, and zero-fee payments skip no-op bank writes but still attempt activation.
 * [#1012](https://github.com/allora-network/allora-chain/pull/1012) When the worker nonce closes, drop a forecast left with fewer than two inferers in the active set. A new forecast that names the same inferer twice is rejected. A forecast already stored is still accepted.
 * [#1011](https://github.com/allora-network/allora-chain/pull/1011) Restore `EventInsertInfererPayload` for not-admitted submissions and `EventInsertForecasterPayload` for fully-filtered forecasts (regression from #942 in v0.17.0).
+* [#1051](https://github.com/allora-network/allora-chain/pull/1051) `EventTopicFeeRevenueDripped` reports `drip_amount` as `old_revenue - new_revenue`, the revenue the drip actually removed. It was truncated from the fractional drip separately, so on a fractional drip it was one unit below the difference between the event's own `old_revenue` and `new_revenue`; when the drip exceeded the whole revenue and the new revenue was clamped to zero, it reported the whole computed drip instead of the revenue removed.
 
 ### Security
 
@@ -136,6 +137,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### Changed
 
 * [#1004](https://github.com/allora-network/allora-chain/pull/1004) `types.EmitNewActorScoresSetEvent` drops its unused `blockHeight` parameter; callers passing a height no longer compile.
+* [#1051](https://github.com/allora-network/allora-chain/pull/1051) `types.EmitNewTopicFeeRevenueDrippedEvent` and `types.NewTopicFeeRevenueDrippedEventBase` drop their `dripAmount` parameter, which is now derived from `oldRevenue - newRevenue`; callers passing it no longer compile.
 * [#1015](https://github.com/allora-network/allora-chain/pull/1015) `types.EmitNewTopicStatusChangedEvent` and `types.NewTopicStatusChangedEventBase` take `reason`, `weight`, `minWeight` and `thresholdWeight`.
 * [#1009](https://github.com/allora-network/allora-chain/pull/1009) `types.EmitNewAddStakeEvent`, `types.EmitNewRemoveStakeEvent`, `types.NewAddStakeEventBase` and `types.NewRemoveStakeEventBase` take `topicStake`.
 * [#1009](https://github.com/allora-network/allora-chain/pull/1009) `types.EmitNewDelegateRewardShareUpdatedEvent`, `types.EmitNewDelegateRewardDistributedEvent`, `types.NewDelegateRewardShareUpdatedEventBase` and `types.NewDelegateRewardDistributedEventBase` take `nonce`.

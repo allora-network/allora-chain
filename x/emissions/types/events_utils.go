@@ -915,12 +915,15 @@ func NewTopicWeightUpdatedAfterStakeChangeEventBase(topicId TopicId, newWeight a
 	}
 }
 
-func NewTopicFeeRevenueDrippedEventBase(topicId TopicId, oldRevenue math.Int, newRevenue math.Int, dripAmount math.Int) proto.Message {
+// NewTopicFeeRevenueDrippedEventBase builds the event from the topic's revenue
+// before and after the drip. The drip amount is their difference, so the three
+// numbers the event carries always reconcile.
+func NewTopicFeeRevenueDrippedEventBase(topicId TopicId, oldRevenue math.Int, newRevenue math.Int) proto.Message {
 	return &EventTopicFeeRevenueDripped{
 		TopicId:    topicId,
 		OldRevenue: oldRevenue,
 		NewRevenue: newRevenue,
-		DripAmount: dripAmount,
+		DripAmount: oldRevenue.Sub(newRevenue),
 	}
 }
 

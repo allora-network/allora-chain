@@ -908,12 +908,7 @@ func (k *TopicKeeper) DripTopicFeeRevenue(ctx sdk.Context, topic types.Topic, bl
 			return errorsmod.Wrap(err, "error validating new topic fee revenue")
 		}
 
-		// Emit event using the calculated dripPerEpoch
-		dripAmountInt, err := dripPerEpoch.SdkIntTrim()
-		if err != nil {
-			ctx.Logger().Warn("Error converting drip per epoch to sdk int to emit topic fee revenue dripped event", "error", err)
-		}
-		types.EmitNewTopicFeeRevenueDrippedEvent(ctx, topic.Id, topicFeeRevenue, newTopicFeeRevenue, dripAmountInt)
+		types.EmitNewTopicFeeRevenueDrippedEvent(ctx, topic.Id, topicFeeRevenue, newTopicFeeRevenue)
 
 		return k.topicFeeRevenue.Set(ctx, topic.Id, newTopicFeeRevenue)
 	}
