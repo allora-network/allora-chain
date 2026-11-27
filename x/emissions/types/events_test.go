@@ -2273,8 +2273,8 @@ func TestTopicRewardForfeitEventsEmitZeroAmount(t *testing.T) {
 		name  string
 		event proto.Message
 	}{
-		{"no reward nonce", types.NewTopicRewardForfeitedNoRewardNonceEventBase(1, 940, cosmosMath.ZeroInt())},
-		{"distribution failed", types.NewTopicRewardForfeitedDistributionFailedEventBase(1, 940, 930, cosmosMath.ZeroInt())},
+		{"no reward nonce", types.NewTopicRewardForfeitedEventBase(1, 940, types.TopicRewardForfeitReason_TOPIC_REWARD_FORFEIT_REASON_NO_REWARD_NONCE, 0, cosmosMath.ZeroInt())},
+		{"distribution failed", types.NewTopicRewardForfeitedEventBase(1, 940, types.TopicRewardForfeitReason_TOPIC_REWARD_FORFEIT_REASON_DISTRIBUTION_FAILED, 930, cosmosMath.ZeroInt())},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -2285,6 +2285,29 @@ func TestTopicRewardForfeitEventsEmitZeroAmount(t *testing.T) {
 			amount, ok := events[0].GetAttribute("amount")
 			require.True(t, ok, "amount is emitted")
 			require.Equal(t, `"0"`, amount.GetValue())
+		})
+	}
+}
+
+// The reward nonce is part of the forfeit event only for a failed distribution;
+// the constructor drops it for every other reason.
+func TestNewTopicRewardForfeitedEventBaseKeepsRewardNonceOnlyForDistributionFailed(t *testing.T) {
+	tests := []struct {
+		reason types.TopicRewardForfeitReason
+		want   int64
+	}{
+		{types.TopicRewardForfeitReason_TOPIC_REWARD_FORFEIT_REASON_UNSPECIFIED, 0},
+		{types.TopicRewardForfeitReason_TOPIC_REWARD_FORFEIT_REASON_NO_REWARD_NONCE, 0},
+		{types.TopicRewardForfeitReason_TOPIC_REWARD_FORFEIT_REASON_NONCE_READ_FAILED, 0},
+		{types.TopicRewardForfeitReason_TOPIC_REWARD_FORFEIT_REASON_DISTRIBUTION_FAILED, 930},
+	}
+	for _, tt := range tests {
+		t.Run(tt.reason.String(), func(t *testing.T) {
+			event, ok := types.NewTopicRewardForfeitedEventBase(1, 940, tt.reason, 930, cosmosMath.NewInt(5)).(*types.EventTopicRewardForfeited)
+			require.True(t, ok)
+			require.Equal(t, tt.want, event.RewardNonce)
+			require.Equal(t, tt.reason, event.Reason)
+			require.Equal(t, int64(940), event.Epoch)
 		})
 	}
 }

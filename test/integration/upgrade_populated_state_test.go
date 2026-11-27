@@ -16,12 +16,10 @@ import (
 	testCommon "github.com/allora-network/allora-chain/test/common"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
-	grpctypes "github.com/cosmos/cosmos-sdk/types/grpc"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/ignite/cli/v28/ignite/pkg/cosmosaccount"
 	"github.com/stretchr/testify/require"
-	"google.golang.org/grpc/metadata"
 )
 
 const (
@@ -194,11 +192,6 @@ func updateEmissionsParams(m testCommon.TestConfig, update emissionstypes.Option
 
 func waitForHeight(m testCommon.TestConfig, height int64) {
 	require.NoError(m.T, m.Client.WaitForBlockHeight(context.Background(), height))
-}
-
-// atHeight pins the emissions queries made with the returned context to one height.
-func atHeight(height int64) context.Context {
-	return metadata.AppendToOutgoingContext(context.Background(), grpctypes.GRPCBlockHeightHeader, strconv.FormatInt(height, 10))
 }
 
 func topicNextChurn(m testCommon.TestConfig, ctx context.Context, topicId uint64) int64 {
@@ -708,7 +701,7 @@ func (c *populatedStateChecks) BeforeUpgradeBlock(m testCommon.TestConfig, planH
 	waitForHeight(m, planHeight-1)
 	deadline := time.Now().Add(snapshotRetryWindow)
 	for {
-		snapshot, err := c.tryChainSnapshot(m, atHeight(planHeight-1))
+		snapshot, err := c.tryChainSnapshot(m, atHeight(context.Background(), planHeight-1))
 		if err == nil {
 			c.lastOld = snapshot
 			break
@@ -754,7 +747,7 @@ func (c *populatedStateChecks) workerWindowOf(topicId uint64) int64 {
 // Every value is exact, apart from runtime values of the topics that block moves,
 // which are checked against what the end blocker specifies.
 func (c *populatedStateChecks) VerifyMigration(m testCommon.TestConfig, planHeight int64) {
-	post, err := c.tryChainSnapshot(m, atHeight(planHeight))
+	post, err := c.tryChainSnapshot(m, atHeight(context.Background(), planHeight))
 	require.NoError(m.T, err)
 	pre := c.lastOld
 	ceiling, floor := migratedCeilingAndFloor(c.seedCeiling)
@@ -788,7 +781,7 @@ func (c *populatedStateChecks) VerifyMigration(m testCommon.TestConfig, planHeig
 	}
 	m.T.Logf("%d values unchanged across the upgrade block, %d migrated or moved by the end blocker", compared, len(keys)-compared)
 
-	ctx := atHeight(planHeight)
+	ctx := atHeight(context.Background(), planHeight)
 	for _, topicId := range c.topicIds {
 		scheduled := post[fmt.Sprintf("%s%d/scheduled", runtimeTopicPrefix, topicId)]
 		require.Equalf(m.T, pre[fmt.Sprintf("%s%d/scheduled", runtimeTopicPrefix, topicId)], scheduled, "topic %d activity across the upgrade block", topicId)
@@ -929,8 +922,8 @@ func rewardedActor(rewarded map[string]bool, address string) bool {
 // requireAddStakeExact adds stake on the topic with no reputer rewards, where the amount is exact.
 func (c *populatedStateChecks) requireAddStakeExact(m testCommon.TestConfig) {
 	height := broadcastOK(m, m.AliceAcc, addStakeMsg(m.AliceAddr, c.blockerTopic, postUpgradeStake))
-	before := c.reputerStake(m, atHeight(height-1), c.blockerTopic)
-	after := c.reputerStake(m, atHeight(height), c.blockerTopic)
+	before := c.reputerStake(m, atHeight(context.Background(), height-1), c.blockerTopic)
+	after := c.reputerStake(m, atHeight(context.Background(), height), c.blockerTopic)
 	require.Equal(m.T, cosmosMath.NewInt(postUpgradeStake).String(), after.Sub(before).String())
 }
 
@@ -939,13 +932,13 @@ func (c *populatedStateChecks) requireAddStakeExact(m testCommon.TestConfig) {
 func (c *populatedStateChecks) requirePendingRemovalsComplete(m testCommon.TestConfig) {
 	query := m.Client.QueryEmissions()
 	waitForHeight(m, c.stakeRemovalBlock)
-	before := c.reputerStake(m, atHeight(c.stakeRemovalBlock-1), c.blockerTopic)
-	after := c.reputerStake(m, atHeight(c.stakeRemovalBlock), c.blockerTopic)
+	before := c.reputerStake(m, atHeight(context.Background(), c.stakeRemovalBlock-1), c.blockerTopic)
+	after := c.reputerStake(m, atHeight(context.Background(), c.stakeRemovalBlock), c.blockerTopic)
 	require.Equal(m.T, cosmosMath.NewInt(reputerRemovalAmount).String(), before.Sub(after).String(), "reputer removal amount")
 
 	waitForHeight(m, c.delegateRemovalBlock)
 	delegated := func(height int64) cosmosMath.Int {
-		response, err := query.GetStakeFromDelegatorInTopicInReputer(atHeight(height), &emissionstypes.GetStakeFromDelegatorInTopicInReputerRequest{
+		response, err := query.GetStakeFromDelegatorInTopicInReputer(atHeight(context.Background(), height), &emissionstypes.GetStakeFromDelegatorInTopicInReputerRequest{
 			TopicId: c.regressionTopic, DelegatorAddress: m.BobAddr, ReputerAddress: m.AliceAddr,
 		})
 		require.NoError(m.T, err)
@@ -970,10 +963,10 @@ func (c *populatedStateChecks) requireInactiveTopicStakeChangeKeepsTotal(m testC
 	require.NoError(m.T, err)
 	completed := removal.Removal.BlockRemovalCompleted
 	waitForHeight(m, completed)
-	before, _ := topicPreviousWeight(m, atHeight(completed-1), c.driftTopic)
-	after, _ := topicPreviousWeight(m, atHeight(completed), c.driftTopic)
+	before, _ := topicPreviousWeight(m, atHeight(context.Background(), completed-1), c.driftTopic)
+	after, _ := topicPreviousWeight(m, atHeight(context.Background(), completed), c.driftTopic)
 	require.False(m.T, before.Equal(after), "the completed removal must change the stored weight")
-	require.Zero(m.T, topicNextChurn(m, atHeight(completed), c.driftTopic), "the topic must stay inactive")
+	require.Zero(m.T, topicNextChurn(m, atHeight(context.Background(), completed), c.driftTopic), "the topic must stay inactive")
 	requireScheduledSumAt(m, c, completed)
 }
 
@@ -982,13 +975,13 @@ func (c *populatedStateChecks) requireInactiveTopicStakeChangeKeepsTotal(m testC
 func (c *populatedStateChecks) requireGhostReactivationCountsWeightOnce(m testCommon.TestConfig) {
 	weight, _ := topicPreviousWeight(m, context.Background(), c.ghostTopic)
 	height := broadcastOK(m, m.BobAcc, &emissionstypes.FundTopicRequest{Sender: m.BobAddr, TopicId: c.ghostTopic, Amount: cosmosMath.NewInt(10_000)})
-	require.Equal(m.T, height+seedEpochLength, topicNextChurn(m, atHeight(height), c.ghostTopic), "the funded topic must be rescheduled")
+	require.Equal(m.T, height+seedEpochLength, topicNextChurn(m, atHeight(context.Background(), height), c.ghostTopic), "the funded topic must be rescheduled")
 	requireScheduledSumAt(m, c, height)
 	m.T.Logf("Topic %d reactivated at %d with stored weight %s", c.ghostTopic, height, weight)
 }
 
 func requireScheduledSumAt(m testCommon.TestConfig, c *populatedStateChecks, height int64) {
-	ctx := atHeight(height)
+	ctx := atHeight(context.Background(), height)
 	require.Equalf(m.T, c.sumOfScheduledWeights(m, ctx).String(), totalSumWeights(m, ctx).String(), "total at height %d", height)
 }
 

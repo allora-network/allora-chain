@@ -722,27 +722,15 @@ func EmitNewWorkerSubmissionWindowClosedEvent(ctx context.Context, topicId Topic
 	}
 }
 
-// EmitNewTopicRewardForfeitedNoRewardNonceEvent notifies that a topic's
-// reward went back to the ecosystem account because the topic had no reward
-// nonce to settle it against.
-func EmitNewTopicRewardForfeitedNoRewardNonceEvent(ctx context.Context, topicId TopicId, epoch int64, amount cosmosMath.Int) {
-	metrics.IncrProducerEventCount(metrics.TOPIC_REWARD_FORFEITED_NO_REWARD_NONCE_EVENT)
+// EmitNewTopicRewardForfeitedEvent notifies that a topic's reward went back to
+// the ecosystem account. rewardNonce is read only for
+// TOPIC_REWARD_FORFEIT_REASON_DISTRIBUTION_FAILED.
+func EmitNewTopicRewardForfeitedEvent(ctx context.Context, topicId TopicId, epoch int64, reason TopicRewardForfeitReason, rewardNonce int64, amount cosmosMath.Int) {
+	metrics.IncrProducerEventCount(metrics.TOPIC_REWARD_FORFEITED_EVENT)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	err := sdkCtx.EventManager().EmitTypedEvent(NewTopicRewardForfeitedNoRewardNonceEventBase(topicId, epoch, amount))
+	err := sdkCtx.EventManager().EmitTypedEvent(NewTopicRewardForfeitedEventBase(topicId, epoch, reason, rewardNonce, amount))
 	if err != nil {
-		sdkCtx.Logger().Warn("Error emitting TopicRewardForfeitedNoRewardNonceEvent", "error", err)
-	}
-}
-
-// EmitNewTopicRewardForfeitedDistributionFailedEvent notifies that a topic's
-// reward went back to the ecosystem account because distributing and paying
-// it out to the topic's actors failed.
-func EmitNewTopicRewardForfeitedDistributionFailedEvent(ctx context.Context, topicId TopicId, epoch int64, rewardNonce int64, amount cosmosMath.Int) {
-	metrics.IncrProducerEventCount(metrics.TOPIC_REWARD_FORFEITED_DISTRIBUTION_FAILED_EVENT)
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	err := sdkCtx.EventManager().EmitTypedEvent(NewTopicRewardForfeitedDistributionFailedEventBase(topicId, epoch, rewardNonce, amount))
-	if err != nil {
-		sdkCtx.Logger().Warn("Error emitting TopicRewardForfeitedDistributionFailedEvent", "error", err)
+		sdkCtx.Logger().Warn("Error emitting TopicRewardForfeitedEvent", "error", err)
 	}
 }
 
