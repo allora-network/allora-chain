@@ -51,7 +51,7 @@ func (s *KeeperTestSuite) TestInsertActiveReputerLosses() {
 	topicId := uint64(1)
 	block := types.BlockHeight(100)
 
-	//nolint:exhaustruct
+	//nolint:exhaustruct_v5
 	lossBundles := types.LossBundles{
 		&types.ValueBundle{
 			TopicId: topicId,
@@ -94,7 +94,7 @@ func (s *KeeperTestSuite) TestInsertNetworkLossBundleAtBlock() {
 	require := s.Require()
 	topicId := uint64(1)
 	block := types.BlockHeight(100)
-	//nolint:exhaustruct
+	//nolint:exhaustruct_v5
 	lossBundle := types.ValueBundle{
 		TopicId: topicId,
 		ReputerRequestNonce: &types.ReputerRequestNonce{
@@ -143,7 +143,7 @@ func (s *KeeperTestSuite) TestGetLatestNetworkLossBundle() {
 
 	// Insert first network loss bundle
 	blockHeight1 := types.BlockHeight(100)
-	//nolint:exhaustruct
+	//nolint:exhaustruct_v5
 	lossBundle1 := types.ValueBundle{
 		TopicId: topicId,
 		ReputerRequestNonce: &types.ReputerRequestNonce{
@@ -160,7 +160,7 @@ func (s *KeeperTestSuite) TestGetLatestNetworkLossBundle() {
 
 	// Insert second network loss bundle
 	blockHeight2 := types.BlockHeight(200)
-	//nolint:exhaustruct
+	//nolint:exhaustruct_v5
 	lossBundle2 := types.ValueBundle{
 		TopicId: topicId,
 		ReputerRequestNonce: &types.ReputerRequestNonce{
@@ -315,7 +315,7 @@ func (s *KeeperTestSuite) TestAppendReputerLoss() {
 	// Create value bundles for all reputers
 	reputerValueBundles := make([]*types.ReputerValueBundle, len(reputers))
 	for i, reputer := range reputers {
-		//nolint:exhaustruct
+		//nolint:exhaustruct_v5
 		valueBundle := types.ValueBundle{
 			Reputer:             reputer,
 			CombinedValue:       alloraMath.MustNewDecFromString(".0000256948644008351"),
@@ -398,7 +398,7 @@ func (s *KeeperTestSuite) TestAppendReputerLossInsertFailureReturnsUnspecifiedOu
 	reputer := s.AddrsStr(0)
 	// The reputer clears admission (open slot) but the bundle itself is
 	// invalid, so the final store fails after the active-set write.
-	//nolint:exhaustruct
+	//nolint:exhaustruct_v5
 	valueBundle := types.ValueBundle{
 		TopicId:             0, // invalid on purpose: rejected by ValueBundle.Validate
 		ReputerRequestNonce: &types.ReputerRequestNonce{ReputerNonce: &types.Nonce{BlockHeight: 10}},
@@ -453,7 +453,7 @@ func (s *KeeperTestSuite) TestAppendReputerLossWithResetActiveReputers() {
 	// Create reputer value bundles
 	reputerValueBundles := make([]*types.ReputerValueBundle, len(reputers))
 	for i, reputer := range reputers {
-		//nolint:exhaustruct
+		//nolint:exhaustruct_v5
 		valueBundle := types.ValueBundle{
 			Reputer:             reputer,
 			CombinedValue:       alloraMath.MustNewDecFromString(".0000256948644008351"),
@@ -542,7 +542,7 @@ func (s *KeeperTestSuite) TestRemoveReputerLoss() {
 	reputer := s.AddrsStr(0)
 
 	// Create a reputer loss bundle
-	//nolint:exhaustruct
+	//nolint:exhaustruct_v5
 	valueBundle := types.ValueBundle{
 		TopicId: topicId,
 		ReputerRequestNonce: &types.ReputerRequestNonce{
@@ -588,7 +588,7 @@ func (s *KeeperTestSuite) TestRetireReputerSubmissions() {
 	laterNonce := int64(300)
 
 	insertBundle := func(accountIndex int, nonceHeight int64) {
-		//nolint:exhaustruct
+		//nolint:exhaustruct_v5
 		valueBundle := types.ValueBundle{
 			TopicId: topicId,
 			ReputerRequestNonce: &types.ReputerRequestNonce{

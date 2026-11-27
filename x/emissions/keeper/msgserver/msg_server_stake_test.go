@@ -1424,7 +1424,7 @@ func (s *MsgServerTestSuite) TestRewardDelegateStake() {
 	err = s.ScoresKeeper().InsertReputerScore(s.Ctx(), topicId, block, scoreToAdd)
 	s.Require().NoError(err)
 
-	//nolint:exhaustruct
+	//nolint:exhaustruct_v5
 	reputerValueBundle := &types.ValueBundle{
 		TopicId:             topicId,
 		ReputerRequestNonce: &types.ReputerRequestNonce{ReputerNonce: &types.Nonce{BlockHeight: block}},
@@ -1586,7 +1586,7 @@ func (s *MsgServerTestSuite) TestRewardDelegateStakeOnUnregisteredReputer() {
 	err = s.ScoresKeeper().InsertReputerScore(s.Ctx(), topicId, block, scoreToAdd)
 	s.Require().NoError(err)
 
-	//nolint:exhaustruct
+	//nolint:exhaustruct_v5
 	valueBundle := &types.ValueBundle{
 		TopicId:             topicId,
 		ReputerRequestNonce: &types.ReputerRequestNonce{ReputerNonce: &types.Nonce{BlockHeight: block}},
@@ -1653,7 +1653,7 @@ func (s *MsgServerTestSuite) insertValueBundlesAndGetRewards(
 	}
 	err := s.ScoresKeeper().InsertReputerScore(s.Ctx(), topicId, block, scoreToAdd)
 	s.Require().NoError(err)
-	//nolint:exhaustruct
+	//nolint:exhaustruct_v5
 	valueBundle := &types.ValueBundle{
 		TopicId:             topicId,
 		ReputerRequestNonce: &types.ReputerRequestNonce{ReputerNonce: &types.Nonce{BlockHeight: block}},

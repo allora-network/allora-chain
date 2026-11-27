@@ -259,10 +259,10 @@ func (s *WorkerTestSuite) TestProcessAndStoreNetworkInferencesCatchesOutliers() 
 	// Create inferences where worker3 is an obvious outlier
 	inferences := &types.Inferences{
 		Inferences: []*types.Inference{
-			{Inferer: worker0, Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("1.0")}, TopicId: topicId, BlockHeight: blockHeight},
-			{Inferer: worker1, Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("1.1")}, TopicId: topicId, BlockHeight: blockHeight},
-			{Inferer: worker2, Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("0.9")}, TopicId: topicId, BlockHeight: blockHeight},
-			{Inferer: worker3, Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("100.0")}, TopicId: topicId, BlockHeight: blockHeight}, // outlier
+			{Inferer: worker0, Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("1.0")}, TopicId: topicId, BlockHeight: blockHeight, ExtraData: nil, Proof: ""},
+			{Inferer: worker1, Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("1.1")}, TopicId: topicId, BlockHeight: blockHeight, ExtraData: nil, Proof: ""},
+			{Inferer: worker2, Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("0.9")}, TopicId: topicId, BlockHeight: blockHeight, ExtraData: nil, Proof: ""},
+			{Inferer: worker3, Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("100.0")}, TopicId: topicId, BlockHeight: blockHeight, ExtraData: nil, Proof: ""}, // outlier
 		},
 	}
 
@@ -279,6 +279,7 @@ func (s *WorkerTestSuite) TestProcessAndStoreNetworkInferencesCatchesOutliers() 
 				},
 				TopicId:     topicId,
 				BlockHeight: blockHeight,
+				ExtraData:   nil,
 			},
 			{
 				Forecaster: forecaster1,
@@ -290,6 +291,7 @@ func (s *WorkerTestSuite) TestProcessAndStoreNetworkInferencesCatchesOutliers() 
 				},
 				TopicId:     topicId,
 				BlockHeight: blockHeight,
+				ExtraData:   nil,
 			},
 		},
 	}
@@ -410,10 +412,10 @@ func (s *WorkerTestSuite) TestProcessAndStoreNetworkInferencesNoOutliers() {
 	// Create inferences where all values are within normal bounds
 	inferences := &types.Inferences{
 		Inferences: []*types.Inference{
-			{Inferer: worker0, Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("1.0")}, TopicId: topicId, BlockHeight: blockHeight},
-			{Inferer: worker1, Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("1.1")}, TopicId: topicId, BlockHeight: blockHeight},
-			{Inferer: worker2, Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("0.9")}, TopicId: topicId, BlockHeight: blockHeight},
-			{Inferer: worker3, Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("1.2")}, TopicId: topicId, BlockHeight: blockHeight},
+			{Inferer: worker0, Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("1.0")}, TopicId: topicId, BlockHeight: blockHeight, ExtraData: nil, Proof: ""},
+			{Inferer: worker1, Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("1.1")}, TopicId: topicId, BlockHeight: blockHeight, ExtraData: nil, Proof: ""},
+			{Inferer: worker2, Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("0.9")}, TopicId: topicId, BlockHeight: blockHeight, ExtraData: nil, Proof: ""},
+			{Inferer: worker3, Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("1.2")}, TopicId: topicId, BlockHeight: blockHeight, ExtraData: nil, Proof: ""},
 		},
 	}
 
@@ -430,6 +432,7 @@ func (s *WorkerTestSuite) TestProcessAndStoreNetworkInferencesNoOutliers() {
 				},
 				TopicId:     topicId,
 				BlockHeight: blockHeight,
+				ExtraData:   nil,
 			},
 			{
 				Forecaster: forecaster1,
@@ -441,6 +444,7 @@ func (s *WorkerTestSuite) TestProcessAndStoreNetworkInferencesNoOutliers() {
 				},
 				TopicId:     topicId,
 				BlockHeight: blockHeight,
+				ExtraData:   nil,
 			},
 		},
 	}
@@ -899,8 +903,8 @@ func (s *WorkerTestSuite) TestNetworkInferenceWeightsAreAppliedValuesWhenAllInfe
 	forecaster0 := s.AddrsStr(4)
 	inferences := &types.Inferences{
 		Inferences: []*types.Inference{
-			{Inferer: worker0, Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("1.0")}, TopicId: topicId, BlockHeight: blockHeight},
-			{Inferer: worker1, Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("3.0")}, TopicId: topicId, BlockHeight: blockHeight},
+			{Inferer: worker0, Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("1.0")}, TopicId: topicId, BlockHeight: blockHeight, ExtraData: nil, Proof: ""},
+			{Inferer: worker1, Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("3.0")}, TopicId: topicId, BlockHeight: blockHeight, ExtraData: nil, Proof: ""},
 		},
 	}
 	forecasts := &types.Forecasts{
@@ -913,6 +917,7 @@ func (s *WorkerTestSuite) TestNetworkInferenceWeightsAreAppliedValuesWhenAllInfe
 				},
 				TopicId:     topicId,
 				BlockHeight: blockHeight,
+				ExtraData:   nil,
 			},
 		},
 	}

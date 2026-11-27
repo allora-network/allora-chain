@@ -28,12 +28,16 @@ func (s *QueryServerTestSuite) TestGetInferencesAtBlock() {
 				BlockHeight: blockHeight,
 				Inferer:     "allo10es2a97cr7u2m3aa08tcu7yd0d300thdct45ve",
 				Values:      []alloraMath.Dec{alloraMath.NewDecFromInt64(1)},
+				ExtraData:   nil,
+				Proof:       "",
 			},
 			{
 				TopicId:     topicId,
 				BlockHeight: blockHeight,
 				Inferer:     "allo1snm6pxg7p9jetmkhz0jz9ku3vdzmszegy9q5lh",
 				Values:      []alloraMath.Dec{alloraMath.NewDecFromInt64(2)},
+				ExtraData:   nil,
+				Proof:       "",
 			},
 		},
 	}
@@ -54,7 +58,7 @@ func (s *QueryServerTestSuite) TestGetInferencesAtBlock() {
 	s.Require().Equal(&expectedInferences, results.Inferences)
 }
 
-//nolint:exhaustruct
+//nolint:exhaustruct_v5
 func (s *QueryServerTestSuite) TestGetWorkerLatestInputInferenceByTopicId() {
 	ctx := s.Ctx()
 	queryServer := s.EmissionsQueryServer()
@@ -103,7 +107,7 @@ func (s *QueryServerTestSuite) TestGetWorkerLatestInputInferenceByTopicId() {
 	s.Require().Equal("0.2", latestInput.LatestInputInference.Values[1].Value.String())
 }
 
-//nolint:exhaustruct
+//nolint:exhaustruct_v5
 func (s *QueryServerTestSuite) TestGetWorkerLatestInputInferenceByTopicIdInvalidAddress() {
 	ctx := s.Ctx()
 	queryServer := s.EmissionsQueryServer()
@@ -117,7 +121,7 @@ func (s *QueryServerTestSuite) TestGetWorkerLatestInputInferenceByTopicIdInvalid
 	s.Require().ErrorIs(err, sdkerrors.ErrInvalidAddress)
 }
 
-//nolint:exhaustruct
+//nolint:exhaustruct_v5
 func (s *QueryServerTestSuite) TestGetWorkerLatestInputInferenceByTopicIdTopicNotFound() {
 	ctx := s.Ctx()
 	queryServer := s.EmissionsQueryServer()
@@ -135,7 +139,7 @@ func (s *QueryServerTestSuite) TestGetWorkerLatestInputInferenceByTopicIdTopicNo
 // GetNetworkInferencesAtBlockOutlierResistant — reject MULTI topics with InvalidArgument instead of
 // returning an empty bundle with OK.
 //
-//nolint:exhaustruct
+//nolint:exhaustruct_v5
 func (s *QueryServerTestSuite) TestGetLatestNetworkInferencesOutlierResistantRejectsMultiTopic() {
 	ctx := s.Ctx()
 	queryServer := s.EmissionsQueryServer()
@@ -155,7 +159,7 @@ func (s *QueryServerTestSuite) TestGetLatestNetworkInferencesOutlierResistantRej
 // An unknown topic must map to NotFound, matching every other topic-scoped handler in this
 // file.
 //
-//nolint:exhaustruct
+//nolint:exhaustruct_v5
 func (s *QueryServerTestSuite) TestGetLatestNetworkInferencesOutlierResistantTopicNotFound() {
 	ctx := s.Ctx()
 	queryServer := s.EmissionsQueryServer()
@@ -169,7 +173,7 @@ func (s *QueryServerTestSuite) TestGetLatestNetworkInferencesOutlierResistantTop
 // Boundary: a SINGLE-arity topic with no stored bundle is fine — it still returns OK with a
 // zero-nonce bundle. The error is only for MULTI, not for "empty".
 //
-//nolint:exhaustruct
+//nolint:exhaustruct_v5
 func (s *QueryServerTestSuite) TestGetLatestNetworkInferencesOutlierResistantSingleTopicEmptyOK() {
 	ctx := s.Ctx()
 	queryServer := s.EmissionsQueryServer()
@@ -182,7 +186,7 @@ func (s *QueryServerTestSuite) TestGetLatestNetworkInferencesOutlierResistantSin
 	s.Require().Equal(types.BlockHeight(0), resp.NetworkInferences.Nonce)
 }
 
-//nolint:exhaustruct
+//nolint:exhaustruct_v5
 func (s *QueryServerTestSuite) TestGetNetworkInferencesAtBlock() {
 	queryServer := s.EmissionsQueryServer()
 	require := s.Require()
@@ -289,7 +293,7 @@ func (s *QueryServerTestSuite) TestGetNetworkInferencesAtBlock() {
 	require.NotNil(response, "Response should not be nil")
 }
 
-//nolint:exhaustruct
+//nolint:exhaustruct_v5
 func (s *QueryServerTestSuite) TestGetLatestNetworkInferences() {
 	queryServer := s.EmissionsQueryServer()
 	keeper := *s.EmissionsKeeper()
@@ -645,7 +649,7 @@ func (s *QueryServerTestSuite) TestGetLatestNetworkInferencesWithMissingInferenc
 	s.WithBlockHeight(blockHeights["loss"])
 
 	// Set Loss bundles
-	//nolint:exhaustruct
+	//nolint:exhaustruct_v5
 	lossBundle := types.ValueBundle{
 		CombinedValue:       alloraMath.MustNewDecFromString("0.00001342819294865661936622664543402969"),
 		ReputerRequestNonce: reputerLossRequestNonce,
@@ -726,7 +730,7 @@ func getInferencesForBlockHeight(workers []string, blockHeight int64, topicId ui
 	}
 
 	for i, worker := range workers {
-		//nolint:exhaustruct
+		//nolint:exhaustruct_v5
 		inferences = append(inferences, &types.Inference{
 			Inferer:     worker,
 			Values:      []alloraMath.Dec{alloraMath.MustNewDecFromString(inferenceValues[i])},
@@ -755,7 +759,7 @@ func getForecastsForBlockHeight(workers []string, forecasters []string, blockHei
 				Value:   alloraMath.MustNewDecFromString(forecastValues[i][j]),
 			})
 		}
-		//nolint:exhaustruct
+		//nolint:exhaustruct_v5
 		forecasts = append(forecasts, &types.Forecast{
 			Forecaster:       forecaster,
 			ForecastElements: elements,

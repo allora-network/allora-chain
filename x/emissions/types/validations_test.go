@@ -1278,7 +1278,7 @@ func validTopic(p Params) Topic {
 	}
 }
 
-//nolint:exhaustruct
+//nolint:exhaustruct_v5
 func validParams() Params {
 	return Params{
 		MaxStringLength:               256,
@@ -1295,7 +1295,7 @@ func validParams() Params {
 // baseValidInput returns a minimal InputInference whose basic fields pass
 // InputInference.Validate(); each sub-test overrides Values as needed.
 //
-//nolint:exhaustruct
+//nolint:exhaustruct_v5
 func baseValidInput(t *testing.T) *InputInference {
 	t.Helper()
 	return &InputInference{
@@ -1454,7 +1454,7 @@ func TestInputInference_ValidateWithLimits_RejectsInvalidLabel(t *testing.T) {
 }
 
 func validInputValueBundleForDupTests() *InputValueBundle {
-	return &InputValueBundle{ //nolint:exhaustruct // only the fields needed by the duplicate-actor tests are set
+	return &InputValueBundle{ //nolint:exhaustruct_v5 // only the fields needed by the duplicate-actor tests are set
 		TopicId:             1,
 		ReputerRequestNonce: &ReputerRequestNonce{ReputerNonce: &Nonce{BlockHeight: 100}},
 		Reputer:             "allo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqas6usy",
@@ -1565,7 +1565,7 @@ func TestInputOneOutInfererForecasterValues_ValidateRejectsDuplicateInferers(t *
 func TestValueBundle_ValidateAllowsDuplicateActors(t *testing.T) {
 	addr := "allo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqas6usy"
 	dec := alloraMath.MustNewDecFromString("1")
-	bundle := &ValueBundle{ //nolint:exhaustruct // only the fields needed by the duplicate-actor test are set
+	bundle := &ValueBundle{ //nolint:exhaustruct_v5 // only the fields needed by the duplicate-actor test are set
 		TopicId:             1,
 		ReputerRequestNonce: &ReputerRequestNonce{ReputerNonce: &Nonce{BlockHeight: 100}},
 		Reputer:             addr,

@@ -19,7 +19,7 @@ func (s *MsgServerTestSuite) TestUpdateAllParams() {
 	err := s.WhitelistsKeeper().AddWhitelistAdmin(ctx, adminAddr.String())
 	require.NoError(err)
 
-	newParams := &types.OptionalParams{ //nolint:exhaustruct
+	newParams := &types.OptionalParams{ //nolint:exhaustruct_v5
 		Version:                             []string{"1234"},
 		MinTopicWeight:                      []alloraMath.Dec{alloraMath.NewDecFromInt64(1234)},
 		RequiredMinimumStake:                []cosmosMath.Int{cosmosMath.NewInt(1234)},
@@ -169,13 +169,13 @@ func (s *MsgServerTestSuite) TestUpdateParamsRejectsZeroMaxUnfulfilledRequests()
 	}{
 		{
 			name: "worker cap",
-			params: &types.OptionalParams{ //nolint:exhaustruct
+			params: &types.OptionalParams{ //nolint:exhaustruct_v5
 				MaxUnfulfilledWorkerRequests: []uint64{0},
 			},
 		},
 		{
 			name: "reputer cap",
-			params: &types.OptionalParams{ //nolint:exhaustruct
+			params: &types.OptionalParams{ //nolint:exhaustruct_v5
 				MaxUnfulfilledReputerRequests: []uint64{0},
 			},
 		},
@@ -214,7 +214,7 @@ func (s *MsgServerTestSuite) TestUpdateGlobalForecasterWhitelistEnabled() {
 	for _, want := range []bool{false, true} {
 		_, err = msgServer.UpdateParams(ctx, &types.UpdateParamsRequest{
 			Sender: adminAddr.String(),
-			Params: &types.OptionalParams{ //nolint:exhaustruct
+			Params: &types.OptionalParams{ //nolint:exhaustruct_v5
 				GlobalForecasterWhitelistEnabled: []bool{want},
 			},
 		})
@@ -244,7 +244,7 @@ func (s *MsgServerTestSuite) TestUpdateMinTopInferersToReward() {
 	for _, want := range []uint64{5, 0} {
 		_, err = msgServer.UpdateParams(ctx, &types.UpdateParamsRequest{
 			Sender: adminAddr.String(),
-			Params: &types.OptionalParams{ //nolint:exhaustruct
+			Params: &types.OptionalParams{ //nolint:exhaustruct_v5
 				MinTopInferersToReward: []uint64{want},
 			},
 		})
@@ -279,7 +279,7 @@ func (s *MsgServerTestSuite) TestUpdateMaxCanonicalLabelByteLength() {
 	}{
 		{
 			name: "valid update",
-			params: &types.OptionalParams{ //nolint:exhaustruct
+			params: &types.OptionalParams{ //nolint:exhaustruct_v5
 				MaxCanonicalLabelByteLength: []uint64{32},
 			},
 			wantErr: false,
@@ -287,7 +287,7 @@ func (s *MsgServerTestSuite) TestUpdateMaxCanonicalLabelByteLength() {
 		},
 		{
 			name: "empty repeated leaves value unchanged",
-			params: &types.OptionalParams{ //nolint:exhaustruct
+			params: &types.OptionalParams{ //nolint:exhaustruct_v5
 				Version: []string{"proto-01-no-op"},
 			},
 			wantErr: false,
@@ -297,7 +297,7 @@ func (s *MsgServerTestSuite) TestUpdateMaxCanonicalLabelByteLength() {
 		},
 		{
 			name: "zero rejected",
-			params: &types.OptionalParams{ //nolint:exhaustruct
+			params: &types.OptionalParams{ //nolint:exhaustruct_v5
 				MaxCanonicalLabelByteLength: []uint64{0},
 			},
 			wantErr: true,
@@ -307,7 +307,7 @@ func (s *MsgServerTestSuite) TestUpdateMaxCanonicalLabelByteLength() {
 		},
 		{
 			name: "above max rejected",
-			params: &types.OptionalParams{ //nolint:exhaustruct
+			params: &types.OptionalParams{ //nolint:exhaustruct_v5
 				MaxCanonicalLabelByteLength: []uint64{types.MaxMaxCanonicalLabelByteLength + 1},
 			},
 			wantErr: true,
@@ -351,7 +351,7 @@ func (s *MsgServerTestSuite) TestUpdateParamsNonWhitelistedUser() {
 	nonAdminAddr := sdk.AccAddress(nonAdminPrivateKey.PubKey().Address())
 
 	// Define new parameters to update
-	newParams := &types.OptionalParams{ //nolint:exhaustruct
+	newParams := &types.OptionalParams{ //nolint:exhaustruct_v5
 		Version: []string{"2.0"}, // example of changing the version
 		// don't update the other params
 	}

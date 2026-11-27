@@ -19,9 +19,9 @@ import (
 )
 
 var (
-	_ module.HasGenesis         = AppModule{} //nolint:exhaustruct
-	_ appmodule.AppModule       = AppModule{} //nolint:exhaustruct
-	_ appmodule.HasBeginBlocker = AppModule{} //nolint:exhaustruct
+	_ module.HasGenesis         = AppModule{} //nolint:exhaustruct_v5
+	_ appmodule.AppModule       = AppModule{} //nolint:exhaustruct_v5
+	_ appmodule.HasBeginBlocker = AppModule{} //nolint:exhaustruct_v5
 )
 
 const ConsensusVersion = 1

@@ -122,7 +122,7 @@ func registerActor(m testCommon.TestConfig, account cosmosaccount.Account, topic
 	require.NoError(m.T, err)
 	_, err = m.Client.WaitForTx(ctx, txResp.TxHash)
 	require.NoError(m.T, err)
-	registerResponse := &types.RegisterResponse{} //nolint:exhaustruct // the fields are populated by decode
+	registerResponse := &types.RegisterResponse{} //nolint:exhaustruct_v5 // the fields are populated by decode
 	err = txResp.Decode(registerResponse)
 	require.NoError(m.T, err)
 }
@@ -198,7 +198,7 @@ func createTestTopic(m testCommon.TestConfig, creator string, metadata string, e
 	require.NoError(m.T, err)
 	_, err = m.Client.WaitForTx(ctx, txResp.TxHash)
 	require.NoError(m.T, err)
-	createTopicResponse := &types.CreateNewTopicResponse{} //nolint:exhaustruct // the fields are populated by decode
+	createTopicResponse := &types.CreateNewTopicResponse{} //nolint:exhaustruct_v5 // the fields are populated by decode
 	err = txResp.Decode(createTopicResponse)
 	require.NoError(m.T, err)
 	return createTopicResponse.TopicId

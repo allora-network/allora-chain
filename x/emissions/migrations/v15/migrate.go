@@ -316,10 +316,10 @@ func seedSingleArityRegistry(
 	pairKey := collections.Join(topicId, block)
 	lblKeyBytes := make([]byte, lblKeyCodec.Size(pairKey))
 	if _, err := lblKeyCodec.Encode(lblKeyBytes, pairKey); err != nil {
-		return kvPair{}, false, errorsmod.Wrap(err, "failed to encode label store key") //nolint:exhaustruct // zero-value sentinel: ok=false, err set
+		return kvPair{}, false, errorsmod.Wrap(err, "failed to encode label store key") //nolint:exhaustruct_v5 // zero-value sentinel: ok=false, err set
 	}
 	if labelStore.Has(lblKeyBytes) {
-		return kvPair{}, false, nil //nolint:exhaustruct // zero-value sentinel: ok=false signals "skip, already present"
+		return kvPair{}, false, nil //nolint:exhaustruct_v5 // zero-value sentinel: ok=false signals "skip, already present"
 	}
 	registry := emissionstypes.EpochLabelRegistry{
 		TopicId: topicId,

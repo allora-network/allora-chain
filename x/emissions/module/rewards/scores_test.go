@@ -584,7 +584,7 @@ func (s *RewardsTestSuite) TestGenerateReputerScoresWithZeroListeningCoefficient
 	s.Require().NoError(err)
 
 	// Create reported losses
-	//nolint:exhaustruct
+	//nolint:exhaustruct_v5
 	reportedLosses := types.LossBundles{
 		{
 			TopicId: topicId,
@@ -709,7 +709,7 @@ func (s *RewardsTestSuite) TestCalculateTopicInitialEmaScoreEdgeCases() {
 		{
 			name: "single score",
 			scores: []types.Score{
-				{Score: alloraMath.MustNewDecFromString("0.5")}, //nolint:exhaustruct
+				{Score: alloraMath.MustNewDecFromString("0.5")}, //nolint:exhaustruct_v5
 			},
 			expectedError: false,
 			expectedScore: "0.5", // With single score, no std dev calculation possible, returns the score
@@ -931,7 +931,7 @@ func (s *RewardsTestSuite) TestDuplicateForecasterRowsProduceDeterministicScores
 			}
 			forecasterRows = append(forecasterRows, row)
 		}
-		return &types.LossBundle{ //nolint:exhaustruct // only the one-out-inferer forecaster rows are used
+		return &types.LossBundle{ //nolint:exhaustruct_v5 // only the one-out-inferer forecaster rows are used
 			OneOutInfererForecasterValues: forecasterRows,
 		}
 	}

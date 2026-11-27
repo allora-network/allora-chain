@@ -27,8 +27,8 @@ import (
 // The read path also asserts intoAny (AsAny) and protoTxProvider (GetProtoTx) on
 // historicalTx structurally; those are covered by TestHistoricalTxImplementsReadInterfaces.
 var (
-	_ sdk.Tx                = historicalTx{}      //nolint:exhaustruct // interface assertion only
-	_ txtypes.ServiceServer = compositeTxServer{} //nolint:exhaustruct // interface assertion only
+	_ sdk.Tx                = historicalTx{}      //nolint:exhaustruct_v5 // interface assertion only
+	_ txtypes.ServiceServer = compositeTxServer{} //nolint:exhaustruct_v5 // interface assertion only
 )
 
 // The consensus tx decoder (app.txConfig) rejects pre-upgrade payloads: after the
@@ -125,7 +125,7 @@ func (app *AlloraApp) buildQueryDecodingPath() error {
 	// The tolerant decoder and the tx config share one codec so Any resolution is
 	// consistent across decode and (gRPC) response marshaling.
 	queryCodec := codec.NewProtoCodec(reg)
-	//nolint:exhaustruct // only the decoder and sign modes are overridden; the rest default
+	//nolint:exhaustruct_v5 // only the decoder and sign modes are overridden; the rest default
 	txConfig, err := authtx.NewTxConfigWithOptions(queryCodec, authtx.ConfigOptions{
 		EnabledSignModes: authtx.DefaultSignModes,
 		ProtoDecoder:     newHistoricalTxDecoder(queryCodec),
@@ -149,7 +149,7 @@ func (app *AlloraApp) buildQueryInterfaceRegistry() (codectypes.InterfaceRegistr
 	sc := app.interfaceRegistry.SigningContext()
 	reg, err := codectypes.NewInterfaceRegistryWithOptions(codectypes.InterfaceRegistryOptions{
 		ProtoFiles: gogoproto.HybridResolver,
-		//nolint:exhaustruct // only address codecs are set; see comment above
+		//nolint:exhaustruct_v5 // only address codecs are set; see comment above
 		SigningOptions: txsigning.Options{
 			AddressCodec:          sc.AddressCodec(),
 			ValidatorAddressCodec: sc.ValidatorAddressCodec(),
@@ -189,7 +189,7 @@ func (app *AlloraApp) buildQueryInterfaceRegistry() (codectypes.InterfaceRegistr
 // to codec.go, which the emissions module registers into the app registry:
 // that would widen what the consensus decoder accepts.
 //
-//nolint:exhaustruct // type registration; the field values are never read
+//nolint:exhaustruct_v5 // type registration; the field values are never read
 func registerHistoricalWhitelistMsgs(reg codectypes.InterfaceRegistry) {
 	reg.RegisterImplementations((*sdk.Msg)(nil),
 		&emissionsv7.AddToGlobalWorkerWhitelistRequest{},

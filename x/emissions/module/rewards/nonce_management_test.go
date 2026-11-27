@@ -15,7 +15,7 @@ import (
 
 func countReputerSubmissionWindowOpenedEvents(s *RewardsTestSuite, eventStart int) int {
 	count := 0
-	openedEventName := gogoproto.MessageName(&types.EventReputerSubmissionWindowOpened{}) //nolint:exhaustruct // only the registered type name is needed, not an instance
+	openedEventName := gogoproto.MessageName(&types.EventReputerSubmissionWindowOpened{}) //nolint:exhaustruct_v5 // only the registered type name is needed, not an instance
 	for _, event := range s.Ctx().EventManager().Events()[eventStart:] {
 		if event.Type == openedEventName {
 			count++
@@ -263,7 +263,7 @@ func (s *RewardsTestSuite) TestPruneRetiresSubmissionsOfPrunedNonces() {
 	s.Require().NoError(s.NonceKeeper().AddReputerNonce(s.Ctx(), topic.Id, &types.Nonce{BlockHeight: keptNonce}))
 
 	insertBundle := func(accountIndex int, nonceHeight int64) {
-		//nolint:exhaustruct
+		//nolint:exhaustruct_v5
 		valueBundle := types.ValueBundle{
 			TopicId: topic.Id,
 			ReputerRequestNonce: &types.ReputerRequestNonce{
@@ -271,7 +271,7 @@ func (s *RewardsTestSuite) TestPruneRetiresSubmissionsOfPrunedNonces() {
 			},
 			Reputer: s.AddrsStr(accountIndex),
 			InfererValues: []*types.WorkerAttributedValue{
-				{Worker: s.AddrsStr(2), Value: alloraMath.MustNewDecFromString("123")}, //nolint:exhaustruct // value bundle fields optional for storage
+				{Worker: s.AddrsStr(2), Value: alloraMath.MustNewDecFromString("123")}, //nolint:exhaustruct_v5 // value bundle fields optional for storage
 			},
 			CombinedValue: alloraMath.MustNewDecFromString("123"),
 			NaiveValue:    alloraMath.MustNewDecFromString("123"),

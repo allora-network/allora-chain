@@ -84,7 +84,7 @@ func SignAndDeliver(t *testing.T, chain *ibctesting.TestChain, msgs ...sdk.Msg) 
 	txBytes, err := chain.TxConfig.TxEncoder()(tx)
 	require.NoError(t, err)
 
-	//nolint:exhaustruct // only these block fields are needed to deliver one tx
+	//nolint:exhaustruct_v5 // only these block fields are needed to deliver one tx
 	resp, err := chain.App.GetBaseApp().FinalizeBlock(&abci.RequestFinalizeBlock{
 		Height:             chain.App.GetBaseApp().LastBlockHeight() + 1,
 		Time:               chain.CurrentHeader.GetTime(),

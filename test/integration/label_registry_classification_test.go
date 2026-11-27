@@ -29,7 +29,7 @@ import (
 //     no open worker submission window (covered by the freshly-created,
 //     inactive test topic).
 //
-//nolint:exhaustruct
+//nolint:exhaustruct_v5
 func LabelRegistryClassificationChecks(m testCommon.TestConfig) {
 	ctx := context.Background()
 	m.T.Log(">>> Label Registry integration scenarios <<<")

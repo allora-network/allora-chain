@@ -27,12 +27,12 @@ import (
 const ConsensusVersion = 6
 
 var (
-	_ module.AppModuleBasic = AppModule{} //nolint:exhaustruct
-	_ module.HasGenesis     = AppModule{} //nolint:exhaustruct
-	_ module.HasServices    = AppModule{} //nolint:exhaustruct
+	_ module.AppModuleBasic = AppModule{} //nolint:exhaustruct_v5
+	_ module.HasGenesis     = AppModule{} //nolint:exhaustruct_v5
+	_ module.HasServices    = AppModule{} //nolint:exhaustruct_v5
 
-	_ appmodule.AppModule       = AppModule{} //nolint:exhaustruct
-	_ appmodule.HasBeginBlocker = AppModule{} //nolint:exhaustruct
+	_ appmodule.AppModule       = AppModule{} //nolint:exhaustruct_v5
+	_ appmodule.HasBeginBlocker = AppModule{} //nolint:exhaustruct_v5
 )
 
 // AppModuleBasic defines the basic application module used by the mint module.

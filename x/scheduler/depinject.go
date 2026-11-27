@@ -11,7 +11,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 )
 
-var _ depinject.OnePerModuleType = AppModule{} //nolint:exhaustruct
+var _ depinject.OnePerModuleType = AppModule{} //nolint:exhaustruct_v5
 
 // IsOnePerModuleType implements the depinject.OnePerModuleType interface.
 func (am AppModule) IsOnePerModuleType() {}

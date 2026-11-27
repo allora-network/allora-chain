@@ -138,7 +138,7 @@ func CalcForecastImpliedInferences(args CalcForecastImpliedInferencesArgs) (map[
 				return nil, errorsmod.Wrapf(sdkerrors.ErrLogic, "topic id %d has invalid arity", args.TopicId)
 			}
 
-			//nolint:exhaustruct
+			//nolint:exhaustruct_v5
 			forecastImpliedInference := emissionstypes.Inference{
 				TopicId:     args.TopicId,
 				BlockHeight: blockHeight,
@@ -237,7 +237,7 @@ func CalcForecastImpliedInferences(args CalcForecastImpliedInferencesArgs) (map[
 			}
 		}
 
-		//nolint:exhaustruct
+		//nolint:exhaustruct_v5
 		forecastImpliedInference := emissionstypes.Inference{
 			TopicId:     args.TopicId,
 			BlockHeight: blockHeight,

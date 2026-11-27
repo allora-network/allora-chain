@@ -82,7 +82,7 @@ func newTestnetApp(logger log.Logger, db dbm.DB, traceStore io.Writer, appOpts s
 
 func initAppForTestnet(app *app.AlloraApp, args valArgs) *app.AlloraApp {
 	// Required Changes:
-	ctx := app.BaseApp.NewUncachedContext(true, tmproto.Header{}) //nolint:exhaustruct // cosmos-sdk logic
+	ctx := app.BaseApp.NewUncachedContext(true, tmproto.Header{}) //nolint:exhaustruct_v5 // cosmos-sdk logic
 
 	pubkey := &ed25519.PubKey{Key: args.newValPubKey.Bytes()}
 	pubkeyAny, err := codectypes.NewAnyWithValue(pubkey)

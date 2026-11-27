@@ -74,7 +74,7 @@ func createTopic(
 		return false
 	}
 
-	createTopicResponse := &emissionstypes.CreateNewTopicResponse{} //nolint:exhaustruct // the fields are populated by decode
+	createTopicResponse := &emissionstypes.CreateNewTopicResponse{} //nolint:exhaustruct_v5 // the fields are populated by decode
 	err = txResp.Decode(createTopicResponse)
 	failIfOnErr(m.T, data.failOnErr, err)
 	if err != nil {

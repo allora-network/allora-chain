@@ -22,7 +22,7 @@ func RegisterAliceAsReputer(m testCommon.TestConfig) {
 	require.NoError(m.T, err)
 	_, err = m.Client.WaitForTx(ctx, txResp.TxHash)
 	require.NoError(m.T, err)
-	registerAliceResponse := &emissionstypes.RegisterResponse{} //nolint:exhaustruct // the fields are populated by decode
+	registerAliceResponse := &emissionstypes.RegisterResponse{} //nolint:exhaustruct_v5 // the fields are populated by decode
 	err = txResp.Decode(registerAliceResponse)
 	require.NoError(m.T, err)
 
@@ -62,7 +62,7 @@ func RegisterBobAsWorker(m testCommon.TestConfig) {
 	require.NoError(m.T, err)
 	_, err = m.Client.WaitForTx(ctx, txResp.TxHash)
 	require.NoError(m.T, err)
-	registerBobResponse := &emissionstypes.RegisterResponse{} //nolint:exhaustruct // the fields are populated by decode
+	registerBobResponse := &emissionstypes.RegisterResponse{} //nolint:exhaustruct_v5 // the fields are populated by decode
 	err = txResp.Decode(registerBobResponse)
 	require.NoError(m.T, err)
 	// Check Bob registered as worker

@@ -147,7 +147,7 @@ func (s *EmissionsV5MigrationTestSuite) TestMigratedTopicWithNaNInitialRegret() 
 	store := runtime.KVStoreAdapter(s.StoreServiceEmissions().OpenKVStore(s.Ctx()))
 	cdc := s.EmissionsKeeper().GetBinaryCodec()
 
-	migratedOldTopicWithNaNInitialRegret := emissionstypes.Topic{ //nolint:exhaustruct
+	migratedOldTopicWithNaNInitialRegret := emissionstypes.Topic{ //nolint:exhaustruct_v5
 		Id:                       2,
 		Creator:                  "creator",
 		Metadata:                 "metadata",
@@ -221,7 +221,7 @@ func (s *EmissionsV5MigrationTestSuite) TestMigratedSumTotalPreviousTopicWeights
 	store := runtime.KVStoreAdapter(s.StoreServiceEmissions().OpenKVStore(s.Ctx()))
 	cdc := s.EmissionsKeeper().GetBinaryCodec()
 
-	migratedOldTopic1 := emissionstypes.Topic{ //nolint:exhaustruct
+	migratedOldTopic1 := emissionstypes.Topic{ //nolint:exhaustruct_v5
 		Id:                       2,
 		Creator:                  "creator",
 		Metadata:                 "metadata",

@@ -30,7 +30,7 @@ func requireDecsEqual(t *testing.T, got, want []alloraMath.Dec) {
 
 // Every event constructor carrying a []Dec value field must clamp it.
 //
-//nolint:exhaustruct,forcetypeassert // partial inputs + event type assertions are intentional in tests
+//nolint:exhaustruct_v5,forcetypeassert // partial inputs + event type assertions are intentional in tests
 func TestEventClamp_SliceFields(t *testing.T) {
 	actor := ActorType_ACTOR_TYPE_INFERER_UNSPECIFIED
 	addrs := []string{"a", "b", "c", "d"}
@@ -115,7 +115,7 @@ func TestEventClamp_ScalarFields(t *testing.T) {
 
 // Bundle path: arrays and matrices clamp; NaN passes through; empty stays nil.
 //
-//nolint:exhaustruct
+//nolint:exhaustruct_v5
 func TestEventClamp_NetworkInferenceBundle(t *testing.T) {
 	nan := alloraMath.NewNaN()
 	labeled := func(vs ...alloraMath.Dec) []*LabeledValue {
@@ -144,7 +144,7 @@ func TestEventClamp_NetworkInferenceBundle(t *testing.T) {
 
 // ValueBundle path: scalars, slices, and the NaN-filled one-out matrix.
 //
-//nolint:exhaustruct
+//nolint:exhaustruct_v5
 func TestEventClamp_ValueBundle(t *testing.T) {
 	wav := func(w string, v alloraMath.Dec) *WorkerAttributedValue {
 		return &WorkerAttributedValue{Worker: w, Value: v}

@@ -526,16 +526,19 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesTwoWorker
 					{Inferer: "worker0", Value: alloraMath.MustNewDecFromString("3")},
 					{Inferer: s.AddrsStr(1), Value: alloraMath.MustNewDecFromString("4")},
 				},
+				TopicId:     0,
+				BlockHeight: 0,
+				ExtraData:   nil,
 			},
 		},
 	}
 
 	expected := map[string]*emissionstypes.Inference{
-		"forecaster0": {Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("1.063129668414686004388530315977163")}},
+		"forecaster0": {Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("1.063129668414686004388530315977163")}, TopicId: 0, BlockHeight: 0, Inferer: "", ExtraData: nil, Proof: ""},
 	}
 	inferenceByWorker := map[string]*emissionstypes.Inference{
-		"worker0":     {Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("1")}},
-		s.AddrsStr(1): {Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("2")}},
+		"worker0":     {Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("1")}, TopicId: 0, BlockHeight: 0, Inferer: "", ExtraData: nil, Proof: ""},
+		s.AddrsStr(1): {Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("2")}, TopicId: 0, BlockHeight: 0, Inferer: "", ExtraData: nil, Proof: ""},
 	}
 
 	allInferersAreNew := false
@@ -625,16 +628,19 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesTwoWorker
 				ForecastElements: []*emissionstypes.ForecastElement{
 					{Inferer: s.AddrsStr(1), Value: alloraMath.MustNewDecFromString("4")},
 				},
+				TopicId:     0,
+				BlockHeight: 0,
+				ExtraData:   nil,
 			},
 		},
 	}
 
 	expected := map[string]*emissionstypes.Inference{
-		"worker0": {Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("2")}},
+		"worker0": {Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("2")}, TopicId: 0, BlockHeight: 0, Inferer: "", ExtraData: nil, Proof: ""},
 	}
 	inferenceByWorker := map[string]*emissionstypes.Inference{
-		"worker0":     {Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("1")}},
-		s.AddrsStr(1): {Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("2")}},
+		"worker0":     {Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("1")}, TopicId: 0, BlockHeight: 0, Inferer: "", ExtraData: nil, Proof: ""},
+		s.AddrsStr(1): {Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("2")}, TopicId: 0, BlockHeight: 0, Inferer: "", ExtraData: nil, Proof: ""},
 	}
 
 	topicId := uint64(1)
@@ -726,6 +732,9 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesThreeWork
 					{Inferer: s.AddrsStr(1), Value: alloraMath.MustNewDecFromString("2")},
 					{Inferer: s.AddrsStr(2), Value: alloraMath.MustNewDecFromString("3")},
 				},
+				TopicId:     0,
+				BlockHeight: 0,
+				ExtraData:   nil,
 			},
 			{
 				Forecaster: s.AddrsStr(1),
@@ -734,19 +743,22 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesThreeWork
 					{Inferer: s.AddrsStr(1), Value: alloraMath.MustNewDecFromString("5")},
 					{Inferer: s.AddrsStr(2), Value: alloraMath.MustNewDecFromString("6")},
 				},
+				TopicId:     0,
+				BlockHeight: 0,
+				ExtraData:   nil,
 			},
 		},
 	}
 
 	expected := map[string]*emissionstypes.Inference{
-		"worker0":     {Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("1.317025398914864082848526530373150")}},
-		s.AddrsStr(1): {Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("1.2974778440227044")}},
+		"worker0":     {Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("1.317025398914864082848526530373150")}, TopicId: 0, BlockHeight: 0, Inferer: "", ExtraData: nil, Proof: ""},
+		s.AddrsStr(1): {Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("1.2974778440227044")}, TopicId: 0, BlockHeight: 0, Inferer: "", ExtraData: nil, Proof: ""},
 		s.AddrsStr(2): nil,
 	}
 	inferenceByWorker := map[string]*emissionstypes.Inference{
-		"worker0":     {Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("1")}},
-		s.AddrsStr(1): {Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("2")}},
-		s.AddrsStr(2): {Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("3")}},
+		"worker0":     {Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("1")}, TopicId: 0, BlockHeight: 0, Inferer: "", ExtraData: nil, Proof: ""},
+		s.AddrsStr(1): {Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("2")}, TopicId: 0, BlockHeight: 0, Inferer: "", ExtraData: nil, Proof: ""},
+		s.AddrsStr(2): {Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("3")}, TopicId: 0, BlockHeight: 0, Inferer: "", ExtraData: nil, Proof: ""},
 	}
 
 	topicId := uint64(1)
@@ -856,6 +868,9 @@ func (s *InferenceSynthesisTestSuite) TestCalcForcastImpliedInferencesEpoch2() {
 					{Inferer: worker3, Value: epoch2Get("forecasted_loss_0_for_3")},
 					{Inferer: worker4, Value: epoch2Get("forecasted_loss_0_for_4")},
 				},
+				TopicId:     0,
+				BlockHeight: 0,
+				ExtraData:   nil,
 			},
 		},
 	}
@@ -864,14 +879,14 @@ func (s *InferenceSynthesisTestSuite) TestCalcForcastImpliedInferencesEpoch2() {
 	pNorm := alloraMath.MustNewDecFromString("3.0")
 	cNorm := alloraMath.MustNewDecFromString("0.75")
 	expected := map[string]*emissionstypes.Inference{
-		forecaster0: {Values: []alloraMath.Dec{epoch2Get("forecast_implied_inference_0")}},
+		forecaster0: {Values: []alloraMath.Dec{epoch2Get("forecast_implied_inference_0")}, TopicId: 0, BlockHeight: 0, Inferer: "", ExtraData: nil, Proof: ""},
 	}
 	inferenceByWorker := map[string]*emissionstypes.Inference{
-		worker0: {Values: []alloraMath.Dec{epoch2Get("inference_0")}},
-		worker1: {Values: []alloraMath.Dec{epoch2Get("inference_1")}},
-		worker2: {Values: []alloraMath.Dec{epoch2Get("inference_2")}},
-		worker3: {Values: []alloraMath.Dec{epoch2Get("inference_3")}},
-		worker4: {Values: []alloraMath.Dec{epoch2Get("inference_4")}},
+		worker0: {Values: []alloraMath.Dec{epoch2Get("inference_0")}, TopicId: 0, BlockHeight: 0, Inferer: "", ExtraData: nil, Proof: ""},
+		worker1: {Values: []alloraMath.Dec{epoch2Get("inference_1")}, TopicId: 0, BlockHeight: 0, Inferer: "", ExtraData: nil, Proof: ""},
+		worker2: {Values: []alloraMath.Dec{epoch2Get("inference_2")}, TopicId: 0, BlockHeight: 0, Inferer: "", ExtraData: nil, Proof: ""},
+		worker3: {Values: []alloraMath.Dec{epoch2Get("inference_3")}, TopicId: 0, BlockHeight: 0, Inferer: "", ExtraData: nil, Proof: ""},
+		worker4: {Values: []alloraMath.Dec{epoch2Get("inference_4")}, TopicId: 0, BlockHeight: 0, Inferer: "", ExtraData: nil, Proof: ""},
 	}
 
 	topicId := uint64(1)
@@ -971,6 +986,9 @@ func (s *InferenceSynthesisTestSuite) TestCalcForcastImpliedInferencesEpoch3() {
 					{Inferer: worker3, Value: epoch3Get("forecasted_loss_0_for_3")},
 					{Inferer: worker4, Value: epoch3Get("forecasted_loss_0_for_4")},
 				},
+				TopicId:     0,
+				BlockHeight: 0,
+				ExtraData:   nil,
 			},
 		},
 	}
@@ -980,14 +998,14 @@ func (s *InferenceSynthesisTestSuite) TestCalcForcastImpliedInferencesEpoch3() {
 	pNorm := alloraMath.MustNewDecFromString("3.0")
 	cNorm := alloraMath.MustNewDecFromString("0.75")
 	expected := map[string]*emissionstypes.Inference{
-		forecaster0: {Values: []alloraMath.Dec{epoch3Get("forecast_implied_inference_0")}},
+		forecaster0: {Values: []alloraMath.Dec{epoch3Get("forecast_implied_inference_0")}, TopicId: 0, BlockHeight: 0, Inferer: "", ExtraData: nil, Proof: ""},
 	}
 	inferenceByWorker := map[string]*emissionstypes.Inference{
-		worker0: {Values: []alloraMath.Dec{epoch3Get("inference_0")}},
-		worker1: {Values: []alloraMath.Dec{epoch3Get("inference_1")}},
-		worker2: {Values: []alloraMath.Dec{epoch3Get("inference_2")}},
-		worker3: {Values: []alloraMath.Dec{epoch3Get("inference_3")}},
-		worker4: {Values: []alloraMath.Dec{epoch3Get("inference_4")}},
+		worker0: {Values: []alloraMath.Dec{epoch3Get("inference_0")}, TopicId: 0, BlockHeight: 0, Inferer: "", ExtraData: nil, Proof: ""},
+		worker1: {Values: []alloraMath.Dec{epoch3Get("inference_1")}, TopicId: 0, BlockHeight: 0, Inferer: "", ExtraData: nil, Proof: ""},
+		worker2: {Values: []alloraMath.Dec{epoch3Get("inference_2")}, TopicId: 0, BlockHeight: 0, Inferer: "", ExtraData: nil, Proof: ""},
+		worker3: {Values: []alloraMath.Dec{epoch3Get("inference_3")}, TopicId: 0, BlockHeight: 0, Inferer: "", ExtraData: nil, Proof: ""},
+		worker4: {Values: []alloraMath.Dec{epoch3Get("inference_4")}, TopicId: 0, BlockHeight: 0, Inferer: "", ExtraData: nil, Proof: ""},
 	}
 	topicId := uint64(1)
 	allInferersAreNew := false
@@ -1080,13 +1098,16 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesForecaste
 					{Inferer: "nonexistent_worker1", Value: alloraMath.MustNewDecFromString("3")},
 					{Inferer: "nonexistent_worker2", Value: alloraMath.MustNewDecFromString("4")},
 				},
+				TopicId:     0,
+				BlockHeight: 0,
+				ExtraData:   nil,
 			},
 		},
 	}
 
 	// Only one valid inferer exists
 	inferenceByWorker := map[string]*emissionstypes.Inference{
-		"worker0": {Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("1")}},
+		"worker0": {Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("1")}, TopicId: 0, BlockHeight: 0, Inferer: "", ExtraData: nil, Proof: ""},
 	}
 
 	allInferersAreNew := false
@@ -1160,13 +1181,16 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesForecaste
 			{
 				Forecaster:       "forecaster0",
 				ForecastElements: []*emissionstypes.ForecastElement{},
+				TopicId:          0,
+				BlockHeight:      0,
+				ExtraData:        nil,
 			},
 		},
 	}
 
 	inferenceByWorker := map[string]*emissionstypes.Inference{
-		"worker0":     {Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("1")}},
-		s.AddrsStr(1): {Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("2")}},
+		"worker0":     {Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("1")}, TopicId: 0, BlockHeight: 0, Inferer: "", ExtraData: nil, Proof: ""},
+		s.AddrsStr(1): {Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("2")}, TopicId: 0, BlockHeight: 0, Inferer: "", ExtraData: nil, Proof: ""},
 	}
 
 	allInferersAreNew := false
@@ -1245,6 +1269,9 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesMultipleF
 					{Inferer: s.AddrsStr(1), Value: alloraMath.MustNewDecFromString("2.5")},
 					// Missing forecast for worker2
 				},
+				TopicId:     0,
+				BlockHeight: 0,
+				ExtraData:   nil,
 			},
 			{
 				Forecaster: s.AddrsStr(1),
@@ -1253,6 +1280,9 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesMultipleF
 					{Inferer: s.AddrsStr(2), Value: alloraMath.MustNewDecFromString("3.2")},
 					// Missing forecast for worker1
 				},
+				TopicId:     0,
+				BlockHeight: 0,
+				ExtraData:   nil,
 			},
 			{
 				Forecaster: s.AddrsStr(2),
@@ -1261,6 +1291,9 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesMultipleF
 					{Inferer: s.AddrsStr(2), Value: alloraMath.MustNewDecFromString("3.0")},
 					// Missing forecast for worker0
 				},
+				TopicId:     0,
+				BlockHeight: 0,
+				ExtraData:   nil,
 			},
 			{
 				Forecaster: s.AddrsStr(3),
@@ -1269,15 +1302,18 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesMultipleF
 					{Inferer: "nonexistent_worker2", Value: alloraMath.MustNewDecFromString("5.0")},
 					// This forecaster doesn't hit any active inferers
 				},
+				TopicId:     0,
+				BlockHeight: 0,
+				ExtraData:   nil,
 			},
 		},
 	}
 
 	// All active inferers have inferences
 	inferenceByWorker := map[string]*emissionstypes.Inference{
-		"worker0":     {Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("1")}},
-		s.AddrsStr(1): {Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("2")}},
-		s.AddrsStr(2): {Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("3")}},
+		"worker0":     {Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("1")}, TopicId: 0, BlockHeight: 0, Inferer: "", ExtraData: nil, Proof: ""},
+		s.AddrsStr(1): {Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("2")}, TopicId: 0, BlockHeight: 0, Inferer: "", ExtraData: nil, Proof: ""},
+		s.AddrsStr(2): {Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("3")}, TopicId: 0, BlockHeight: 0, Inferer: "", ExtraData: nil, Proof: ""},
 	}
 
 	allInferersAreNew := false
@@ -1392,8 +1428,8 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesMultiArit
 
 	// Each inferer submits a single-column (short) vector; the registry has 3 labels.
 	inferenceByWorker := map[string]*emissionstypes.Inference{
-		inferer0: {Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("1")}},
-		inferer1: {Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("2")}},
+		inferer0: {Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("1")}, TopicId: 0, BlockHeight: 0, Inferer: "", ExtraData: nil, Proof: ""},
+		inferer1: {Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("2")}, TopicId: 0, BlockHeight: 0, Inferer: "", ExtraData: nil, Proof: ""},
 	}
 
 	forecasts := &emissionstypes.Forecasts{
@@ -1404,6 +1440,9 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesMultiArit
 					{Inferer: inferer0, Value: alloraMath.MustNewDecFromString("3")},
 					{Inferer: inferer1, Value: alloraMath.MustNewDecFromString("4")},
 				},
+				TopicId:     0,
+				BlockHeight: 0,
+				ExtraData:   nil,
 			},
 		},
 	}
@@ -1480,8 +1519,8 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesMultiArit
 	inferer1 := s.AddrsStr(1)
 
 	inferenceByWorker := map[string]*emissionstypes.Inference{
-		inferer0: {Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("1")}},
-		inferer1: {Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("2")}},
+		inferer0: {Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("1")}, TopicId: 0, BlockHeight: 0, Inferer: "", ExtraData: nil, Proof: ""},
+		inferer1: {Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("2")}, TopicId: 0, BlockHeight: 0, Inferer: "", ExtraData: nil, Proof: ""},
 	}
 
 	// Equal forecast-element values => equal regrets => equal weights.
@@ -1493,6 +1532,9 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesMultiArit
 					{Inferer: inferer0, Value: alloraMath.MustNewDecFromString("0.4")},
 					{Inferer: inferer1, Value: alloraMath.MustNewDecFromString("0.4")},
 				},
+				TopicId:     0,
+				BlockHeight: 0,
+				ExtraData:   nil,
 			},
 		},
 	}

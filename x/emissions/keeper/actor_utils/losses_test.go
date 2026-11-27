@@ -44,18 +44,24 @@ func (a *ActorUtilsTestSuite) TestFilterUnacceptedWorkersFromReputerValueBundle(
 				BlockHeight: 1,
 				Inferer:     inferer1,
 				Values:      []alloraMath.Dec{alloraMath.NewDecFromInt64(1)},
+				ExtraData:   nil,
+				Proof:       "",
 			},
 			{
 				TopicId:     1,
 				BlockHeight: 1,
 				Inferer:     inferer2,
 				Values:      []alloraMath.Dec{alloraMath.NewDecFromInt64(2)},
+				ExtraData:   nil,
+				Proof:       "",
 			},
 			{
 				TopicId:     1,
 				BlockHeight: 1,
 				Inferer:     inferer4,
 				Values:      []alloraMath.Dec{alloraMath.NewDecFromInt64(3)},
+				ExtraData:   nil,
+				Proof:       "",
 			},
 		},
 	}
@@ -78,6 +84,7 @@ func (a *ActorUtilsTestSuite) TestFilterUnacceptedWorkersFromReputerValueBundle(
 						Value:   alloraMath.NewDecFromInt64(2),
 					},
 				},
+				ExtraData: nil,
 			},
 			{
 				TopicId:     1,
@@ -89,6 +96,7 @@ func (a *ActorUtilsTestSuite) TestFilterUnacceptedWorkersFromReputerValueBundle(
 						Value:   alloraMath.NewDecFromInt64(3),
 					},
 				},
+				ExtraData: nil,
 			},
 		},
 	}
@@ -176,12 +184,16 @@ func (a *ActorUtilsTestSuite) TestFilterUnacceptedWorkersFromReputerValueBundleK
 				BlockHeight: 1,
 				Inferer:     inferer1,
 				Values:      []alloraMath.Dec{alloraMath.NewDecFromInt64(1)},
+				ExtraData:   nil,
+				Proof:       "",
 			},
 			{
 				TopicId:     1,
 				BlockHeight: 1,
 				Inferer:     inferer2,
 				Values:      []alloraMath.Dec{alloraMath.NewDecFromInt64(2)},
+				ExtraData:   nil,
+				Proof:       "",
 			},
 		},
 	})
@@ -196,6 +208,7 @@ func (a *ActorUtilsTestSuite) TestFilterUnacceptedWorkersFromReputerValueBundleK
 				ForecastElements: []*emissionstypes.ForecastElement{
 					{Inferer: inferer1, Value: alloraMath.NewDecFromInt64(1)},
 				},
+				ExtraData: nil,
 			},
 		},
 	})
@@ -242,7 +255,7 @@ func (a *ActorUtilsTestSuite) TestFilterUnacceptedWorkersFromReputerValueBundleK
 
 	for _, tt := range tests {
 		a.Run(tt.name, func() {
-			valueBundle := &emissionstypes.ValueBundle{ //nolint:exhaustruct // only the fields under test are set
+			valueBundle := &emissionstypes.ValueBundle{ //nolint:exhaustruct_v5 // only the fields under test are set
 				TopicId: 1,
 				ReputerRequestNonce: &emissionstypes.ReputerRequestNonce{
 					ReputerNonce: &workerNonce,

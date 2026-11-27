@@ -166,7 +166,7 @@ func (s *MsgServerTestSuite) TestMsgInsertReputerPayloadZeroFeeEmitsNoFundEvent(
 
 	_, err := s.EmissionsMsgServer().UpdateParams(s.Ctx(), &types.UpdateParamsRequest{
 		Sender: s.AddrsStr(0),
-		Params: &types.OptionalParams{ //nolint:exhaustruct
+		Params: &types.OptionalParams{ //nolint:exhaustruct_v5
 			DataSendingFee: []cosmosMath.Int{cosmosMath.ZeroInt()},
 		},
 	})
@@ -192,7 +192,7 @@ func (s *MsgServerTestSuite) TestMsgInsertReputerPayloadReputerNotMatchSignature
 	topicId := uint64(1)
 
 	unauthReputer := s.AddrsStr(3)
-	//nolint:exhaustruct
+	//nolint:exhaustruct_v5
 	inputValueBundle := &types.InputValueBundle{
 		TopicId:             topicId,
 		ReputerRequestNonce: &types.ReputerRequestNonce{ReputerNonce: &types.Nonce{BlockHeight: 1}},

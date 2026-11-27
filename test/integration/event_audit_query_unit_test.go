@@ -53,7 +53,11 @@ func runIsTopicActive(nodes []*fakeEmissionsNode) (*emissionstypes.IsTopicActive
 }
 
 func TestQueryEveryNodeAgreeingNodesRecordNothing(t *testing.T) {
-	nodes := []*fakeEmissionsNode{{active: true}, {active: true}, {active: true}}
+	nodes := []*fakeEmissionsNode{
+		{QueryServiceClient: nil, active: true, err: nil, heights: nil},
+		{QueryServiceClient: nil, active: true, err: nil, heights: nil},
+		{QueryServiceClient: nil, active: true, err: nil, heights: nil},
+	}
 	response, violations, err := runIsTopicActive(nodes)
 	require.NoError(t, err)
 	require.True(t, response.IsActive)
@@ -64,7 +68,11 @@ func TestQueryEveryNodeAgreeingNodesRecordNothing(t *testing.T) {
 }
 
 func TestQueryEveryNodeDisagreeingResponseIsAViolation(t *testing.T) {
-	nodes := []*fakeEmissionsNode{{active: true}, {active: true}, {active: false}}
+	nodes := []*fakeEmissionsNode{
+		{QueryServiceClient: nil, active: true, err: nil, heights: nil},
+		{QueryServiceClient: nil, active: true, err: nil, heights: nil},
+		{QueryServiceClient: nil, active: false, err: nil, heights: nil},
+	}
 	response, violations, err := runIsTopicActive(nodes)
 	require.NoError(t, err)
 	require.True(t, response.IsActive, "node 0's response is returned")
@@ -76,7 +84,11 @@ func TestQueryEveryNodeDisagreeingResponseIsAViolation(t *testing.T) {
 }
 
 func TestQueryEveryNodeNode0DisagreeingNamesEveryOtherNode(t *testing.T) {
-	nodes := []*fakeEmissionsNode{{active: false}, {active: true}, {active: true}}
+	nodes := []*fakeEmissionsNode{
+		{QueryServiceClient: nil, active: false, err: nil, heights: nil},
+		{QueryServiceClient: nil, active: true, err: nil, heights: nil},
+		{QueryServiceClient: nil, active: true, err: nil, heights: nil},
+	}
 	_, violations, _ := runIsTopicActive(nodes)
 	require.Len(t, violations, 1)
 	require.Contains(t, violations[0], "differs from node(s) 1,2")
@@ -84,7 +96,11 @@ func TestQueryEveryNodeNode0DisagreeingNamesEveryOtherNode(t *testing.T) {
 
 func TestQueryEveryNodeErrorOnOneNodeIsAViolation(t *testing.T) {
 	for failing := range 3 {
-		nodes := []*fakeEmissionsNode{{active: true}, {active: true}, {active: true}}
+		nodes := []*fakeEmissionsNode{
+			{QueryServiceClient: nil, active: true, err: nil, heights: nil},
+			{QueryServiceClient: nil, active: true, err: nil, heights: nil},
+			{QueryServiceClient: nil, active: true, err: nil, heights: nil},
+		}
 		nodes[failing].err = status.Error(codes.Unavailable, "node down")
 		_, violations, _ := runIsTopicActive(nodes)
 		require.Len(t, violations, 1, "failing node %d", failing)
@@ -94,8 +110,8 @@ func TestQueryEveryNodeErrorOnOneNodeIsAViolation(t *testing.T) {
 
 func TestQueryEveryNodeSameErrorOnAllNodesIsAgreement(t *testing.T) {
 	nodes := []*fakeEmissionsNode{
-		{err: status.Error(codes.NotFound, "no topic")},
-		{err: status.Error(codes.NotFound, "no topic")},
+		{err: status.Error(codes.NotFound, "no topic"), QueryServiceClient: nil, active: false, heights: nil},
+		{err: status.Error(codes.NotFound, "no topic"), QueryServiceClient: nil, active: false, heights: nil},
 	}
 	_, violations, err := runIsTopicActive(nodes)
 	require.Error(t, err)
@@ -105,8 +121,8 @@ func TestQueryEveryNodeSameErrorOnAllNodesIsAgreement(t *testing.T) {
 
 func TestQueryEveryNodeDifferentErrorCodesAreAViolation(t *testing.T) {
 	nodes := []*fakeEmissionsNode{
-		{err: status.Error(codes.NotFound, "no topic")},
-		{err: status.Error(codes.Internal, "boom")},
+		{err: status.Error(codes.NotFound, "no topic"), QueryServiceClient: nil, active: false, heights: nil},
+		{err: status.Error(codes.Internal, "boom"), QueryServiceClient: nil, active: false, heights: nil},
 	}
 	_, violations, _ := runIsTopicActive(nodes)
 	require.Len(t, violations, 1)

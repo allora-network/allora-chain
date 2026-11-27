@@ -73,13 +73,13 @@ func buildTxBytes(t *testing.T, msgs ...sdk.Msg) []byte {
 		require.NoError(t, err)
 		anys = append(anys, a)
 	}
-	//nolint:exhaustruct // minimal tx envelope; only these fields are read on decode
+	//nolint:exhaustruct_v5 // minimal tx envelope; only these fields are read on decode
 	bodyBz, err := cdc.Marshal(&txtypes.TxBody{Messages: anys})
 	require.NoError(t, err)
-	//nolint:exhaustruct // minimal tx envelope
+	//nolint:exhaustruct_v5 // minimal tx envelope
 	aiBz, err := cdc.Marshal(&txtypes.AuthInfo{Fee: &txtypes.Fee{GasLimit: 200000}})
 	require.NoError(t, err)
-	//nolint:exhaustruct // minimal tx envelope
+	//nolint:exhaustruct_v5 // minimal tx envelope
 	rawBz, err := cdc.Marshal(&txtypes.TxRaw{BodyBytes: bodyBz, AuthInfoBytes: aiBz, Signatures: [][]byte{{0x01}}})
 	require.NoError(t, err)
 	return rawBz
@@ -88,7 +88,7 @@ func buildTxBytes(t *testing.T, msgs ...sdk.Msg) []byte {
 // historicalV9Worker is a pre-v10 worker payload: the exact shape that stopped
 // decoding after the v10 proto bump.
 func historicalV9Worker() sdk.Msg {
-	//nolint:exhaustruct // only the fields exercised by the nested walk are set
+	//nolint:exhaustruct_v5 // only the fields exercised by the nested walk are set
 	return &emissionsv9.InsertWorkerPayloadRequest{
 		Sender: "allo1sender",
 		WorkerDataBundle: &emissionsv9.InputWorkerDataBundle{
@@ -117,7 +117,7 @@ type workerPayloadCase struct {
 // v9 uses InputWorkerDataBundle. This is the full historical tx surface the query
 // path must keep decoding.
 func historicalWorkerPayloads() []workerPayloadCase {
-	//nolint:exhaustruct // only the fields exercised by the nested walk are set
+	//nolint:exhaustruct_v5 // only the fields exercised by the nested walk are set
 	v2Bundle := &emissionsv2.WorkerDataBundle{
 		Worker:  "allo1worker",
 		Nonce:   &emissionsv2.Nonce{BlockHeight: 1},
@@ -128,7 +128,7 @@ func historicalWorkerPayloads() []workerPayloadCase {
 		InferencesForecastsBundleSignature: []byte{0x01},
 		Pubkey:                             "pubkey",
 	}
-	//nolint:exhaustruct // v4-v8 nest this exact v3 bundle type
+	//nolint:exhaustruct_v5 // v4-v8 nest this exact v3 bundle type
 	v3Bundle := &emissionsv3.WorkerDataBundle{
 		Worker:  "allo1worker",
 		Nonce:   &emissionsv3.Nonce{BlockHeight: 1},
@@ -139,7 +139,7 @@ func historicalWorkerPayloads() []workerPayloadCase {
 		InferencesForecastsBundleSignature: []byte{0x01},
 		Pubkey:                             "pubkey",
 	}
-	//nolint:exhaustruct // only Sender and the bundle matter for the decode walk
+	//nolint:exhaustruct_v5 // only Sender and the bundle matter for the decode walk
 	return []workerPayloadCase{
 		{"v2", &emissionsv2.MsgInsertWorkerPayload{Sender: "allo1sender", WorkerDataBundle: v2Bundle}, false},
 		{"v3", &emissionsv3.MsgInsertWorkerPayload{Sender: "allo1sender", WorkerDataBundle: v3Bundle}, false},
@@ -172,7 +172,7 @@ func TestQueryDecoderDecodesHistoricalWorkerPayloads(t *testing.T) {
 		t.Run(tc.name+"_wrapped", func(t *testing.T) {
 			inner, err := codectypes.NewAnyWithValue(tc.msg)
 			require.NoError(t, err)
-			//nolint:exhaustruct // only Grantee and Msgs matter
+			//nolint:exhaustruct_v5 // only Grantee and Msgs matter
 			exec := &authz.MsgExec{Grantee: "allo1grantee", Msgs: []*codectypes.Any{inner}}
 			tx, err := dec(buildTxBytes(t, exec))
 			require.NoError(t, err)
@@ -204,7 +204,7 @@ func TestConsensusDecoderRejectsWrappedHistoricalV9(t *testing.T) {
 	a := sharedApp(t)
 	inner, err := codectypes.NewAnyWithValue(historicalV9Worker())
 	require.NoError(t, err)
-	//nolint:exhaustruct // only Grantee and Msgs matter
+	//nolint:exhaustruct_v5 // only Grantee and Msgs matter
 	exec := &authz.MsgExec{Grantee: "allo1grantee", Msgs: []*codectypes.Any{inner}}
 	_, err = a.txConfig.TxDecoder()(buildTxBytes(t, exec))
 	require.Error(t, err, "consensus decoder must reject a wrapped historical payload")
@@ -214,7 +214,7 @@ func TestConsensusDecoderRejectsWrappedHistoricalV9(t *testing.T) {
 // branch, so it yields the SDK's own tx type, not the tolerant fallback.
 func TestQueryDecoderKeepsStrictPathForCurrentTx(t *testing.T) {
 	a := sharedApp(t)
-	//nolint:exhaustruct // a valid current (v10) msg is all that is needed
+	//nolint:exhaustruct_v5 // a valid current (v10) msg is all that is needed
 	msg := &emissionstypes.InsertWorkerPayloadRequest{Sender: "allo1sender"}
 	tx, err := a.queryTxConfig.TxDecoder()(buildTxBytes(t, msg))
 	require.NoError(t, err)
@@ -238,7 +238,7 @@ func TestMintV2QueryRegistryDoesNotAffectConsensus(t *testing.T) {
 	}
 
 	// And a mint.v2 tx decodes on the query path but not on the consensus path.
-	//nolint:exhaustruct // only Sender is needed
+	//nolint:exhaustruct_v5 // only Sender is needed
 	bz := buildTxBytes(t, &mintv2.UpdateParamsRequest{Sender: "allo1sender"})
 	_, errQ := a.queryTxConfig.TxDecoder()(bz)
 	require.NoError(t, errQ)
@@ -252,15 +252,15 @@ func TestMintV2QueryRegistryDoesNotAffectConsensus(t *testing.T) {
 func TestQueryDecoderRejectsUnresolvableMessageAny(t *testing.T) {
 	a := sharedApp(t)
 	cdc := marshalCodec()
-	//nolint:exhaustruct // the empty type URL is the point of the case
+	//nolint:exhaustruct_v5 // the empty type URL is the point of the case
 	empty := &codectypes.Any{Value: []byte{0x0a, 0x02, 0x68, 0x69}}
-	//nolint:exhaustruct // minimal tx envelope
+	//nolint:exhaustruct_v5 // minimal tx envelope
 	bodyBz, err := cdc.Marshal(&txtypes.TxBody{Messages: []*codectypes.Any{empty}})
 	require.NoError(t, err)
-	//nolint:exhaustruct // minimal tx envelope
+	//nolint:exhaustruct_v5 // minimal tx envelope
 	aiBz, err := cdc.Marshal(&txtypes.AuthInfo{Fee: &txtypes.Fee{GasLimit: 200000}})
 	require.NoError(t, err)
-	//nolint:exhaustruct // minimal tx envelope
+	//nolint:exhaustruct_v5 // minimal tx envelope
 	rawBz, err := cdc.Marshal(&txtypes.TxRaw{BodyBytes: bodyBz, AuthInfoBytes: aiBz, Signatures: [][]byte{{0x01}}})
 	require.NoError(t, err)
 
@@ -318,7 +318,7 @@ func TestHistoricalWhitelistMsgsAreQueryOnly(t *testing.T) {
 		require.Errorf(t, errConsensus, "consensus registry must not resolve %s", typeURL)
 	}
 
-	//nolint:exhaustruct // only the signer fields matter for the decode walk
+	//nolint:exhaustruct_v5 // only the signer fields matter for the decode walk
 	bz := buildTxBytes(t, &emissionsv7.AddToGlobalWorkerWhitelistRequest{
 		Sender: "allo1sender", Address: "allo1addr",
 	})
@@ -343,7 +343,7 @@ func TestQueryDecoderRejectsGarbage(t *testing.T) {
 // The tolerant fallback type satisfies the three interfaces the tx service asserts
 // on decoded txs: sdk.Tx, intoAny, and protoTxProvider.
 func TestHistoricalTxImplementsReadInterfaces(t *testing.T) {
-	//nolint:exhaustruct // empty envelope is enough for interface checks
+	//nolint:exhaustruct_v5 // empty envelope is enough for interface checks
 	var h any = historicalTx{tx: &txtypes.Tx{Body: &txtypes.TxBody{}, AuthInfo: &txtypes.AuthInfo{}}}
 	_, isTx := h.(sdk.Tx)
 	require.True(t, isTx)
@@ -356,7 +356,7 @@ func TestHistoricalTxImplementsReadInterfaces(t *testing.T) {
 // AsAny caches the concrete *txtypes.Tx that mkTxResult (GetTx / GetTxsEvent) then
 // type-asserts; a plain pack would leave the cache empty.
 func TestHistoricalTxAsAnyCachesConcreteTx(t *testing.T) {
-	//nolint:exhaustruct // empty envelope is enough
+	//nolint:exhaustruct_v5 // empty envelope is enough
 	h := historicalTx{tx: &txtypes.Tx{Body: &txtypes.TxBody{}, AuthInfo: &txtypes.AuthInfo{}}}
 	any := h.AsAny()
 	cached, ok := any.GetCachedValue().(*txtypes.Tx)
@@ -367,7 +367,7 @@ func TestHistoricalTxAsAnyCachesConcreteTx(t *testing.T) {
 // GetMsgsV2 is unsupported on the read path and returns an explicit error rather
 // than a nil slice that a caller might treat as "no messages".
 func TestHistoricalTxGetMsgsV2Errors(t *testing.T) {
-	//nolint:exhaustruct // empty envelope is enough
+	//nolint:exhaustruct_v5 // empty envelope is enough
 	h := historicalTx{tx: &txtypes.Tx{Body: &txtypes.TxBody{}}}
 	msgs, err := h.GetMsgsV2()
 	require.Error(t, err)
@@ -384,23 +384,23 @@ func TestCompositeTxServerRouting(t *testing.T) {
 	ctx := context.Background()
 
 	// exhaustruct is not meaningful for empty request probes
-	//nolint:exhaustruct
+	//nolint:exhaustruct_v5
 	_, _ = cts.GetTx(ctx, &txtypes.GetTxRequest{})
-	//nolint:exhaustruct
+	//nolint:exhaustruct_v5
 	_, _ = cts.GetTxsEvent(ctx, &txtypes.GetTxsEventRequest{})
-	//nolint:exhaustruct
+	//nolint:exhaustruct_v5
 	_, _ = cts.GetBlockWithTxs(ctx, &txtypes.GetBlockWithTxsRequest{})
-	//nolint:exhaustruct
+	//nolint:exhaustruct_v5
 	_, _ = cts.Simulate(ctx, &txtypes.SimulateRequest{})
-	//nolint:exhaustruct
+	//nolint:exhaustruct_v5
 	_, _ = cts.BroadcastTx(ctx, &txtypes.BroadcastTxRequest{})
-	//nolint:exhaustruct
+	//nolint:exhaustruct_v5
 	_, _ = cts.TxDecode(ctx, &txtypes.TxDecodeRequest{})
-	//nolint:exhaustruct
+	//nolint:exhaustruct_v5
 	_, _ = cts.TxEncode(ctx, &txtypes.TxEncodeRequest{})
-	//nolint:exhaustruct
+	//nolint:exhaustruct_v5
 	_, _ = cts.TxEncodeAmino(ctx, &txtypes.TxEncodeAminoRequest{})
-	//nolint:exhaustruct
+	//nolint:exhaustruct_v5
 	_, _ = cts.TxDecodeAmino(ctx, &txtypes.TxDecodeAminoRequest{})
 
 	require.Equal(t, []string{

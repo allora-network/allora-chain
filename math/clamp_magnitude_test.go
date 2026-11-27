@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-//nolint:exhaustruct // tests construct partial apd/Dec values on purpose
+//nolint:exhaustruct_v5 // tests construct partial apd/Dec values on purpose
 func TestClampMagnitude(t *testing.T) {
 	dec := MustNewDecFromString
 	minM := dec("1e-40")

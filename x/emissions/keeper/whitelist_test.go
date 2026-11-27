@@ -10,7 +10,7 @@ import (
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
-//nolint:exhaustruct
+//nolint:exhaustruct_v5
 func (s *KeeperTestSuite) TestWhitelistOperations() {
 	ctx := s.Ctx()
 	k := s.WhitelistsKeeper()
@@ -149,7 +149,7 @@ func (s *KeeperTestSuite) TestWhitelistOperations() {
 	}
 }
 
-//nolint:exhaustruct
+//nolint:exhaustruct_v5
 func (s *KeeperTestSuite) TestWhitelistEnableDisableOperations() {
 	ctx := s.Ctx()
 	k := s.WhitelistsKeeper()
@@ -509,7 +509,7 @@ func (s *KeeperTestSuite) TestTopicPermissionCanUpdateTopicWhitelist() {
 	s.Require().NoError(err)
 }
 
-//nolint:exhaustruct
+//nolint:exhaustruct_v5
 func (s *KeeperTestSuite) TestWhitelistBasedPermissions() {
 	ctx := s.Ctx()
 	k := s.WhitelistsKeeper()

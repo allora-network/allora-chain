@@ -65,12 +65,16 @@ func (s *KeeperTestSuite) TestGetInferencesAtBlock() {
 				BlockHeight: block,
 				Values:      []alloraMath.Dec{alloraMath.NewDecFromInt64(1)}, // Assuming NewDecFromInt64 exists and is appropriate
 				Inferer:     "allo10es2a97cr7u2m3aa08tcu7yd0d300thdct45ve",
+				ExtraData:   nil,
+				Proof:       "",
 			},
 			{
 				TopicId:     topicId,
 				BlockHeight: block,
 				Values:      []alloraMath.Dec{alloraMath.NewDecFromInt64(2)},
 				Inferer:     "allo1snm6pxg7p9jetmkhz0jz9ku3vdzmszegy9q5lh",
+				ExtraData:   nil,
+				Proof:       "",
 			},
 		},
 	}
@@ -108,18 +112,24 @@ func (s *KeeperTestSuite) TestGetInferencesAtBlockOutlierResistant() {
 				BlockHeight: block,
 				Values:      []alloraMath.Dec{alloraMath.NewDecFromInt64(100)}, // Assuming NewDecFromInt64 exists and is appropriate
 				Inferer:     "allo10es2a97cr7u2m3aa08tcu7yd0d300thdct45ve",
+				ExtraData:   nil,
+				Proof:       "",
 			},
 			{
 				TopicId:     topicId,
 				BlockHeight: block,
 				Values:      []alloraMath.Dec{alloraMath.NewDecFromInt64(200)},
 				Inferer:     "allo1snm6pxg7p9jetmkhz0jz9ku3vdzmszegy9q5lh",
+				ExtraData:   nil,
+				Proof:       "",
 			},
 			{
 				TopicId:     topicId,
 				BlockHeight: block,
 				Values:      []alloraMath.Dec{alloraMath.NewDecFromInt64(10000)},
 				Inferer:     "allo1snm6pxg7p9jetmkhz0jz9ku3vdzmszegy9q5lh",
+				ExtraData:   nil,
+				Proof:       "",
 			},
 		},
 	}
@@ -262,6 +272,7 @@ func (s *KeeperTestSuite) TestGetForecastsAtBlock() {
 						Value:   alloraMath.MustNewDecFromString("2"),
 					},
 				},
+				ExtraData: nil,
 			},
 			{
 				TopicId:     topicId,
@@ -277,6 +288,7 @@ func (s *KeeperTestSuite) TestGetForecastsAtBlock() {
 						Value:   alloraMath.MustNewDecFromString("4"),
 					},
 				},
+				ExtraData: nil,
 			},
 		},
 	}
@@ -452,9 +464,9 @@ func (s *KeeperTestSuite) TestAppendInference() {
 
 	allInferences := types.Inferences{
 		Inferences: []*types.Inference{
-			{TopicId: topicId, BlockHeight: blockHeightInferences, Inferer: worker1, Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("0.52")}},
-			{TopicId: topicId, BlockHeight: blockHeightInferences, Inferer: worker2, Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("0.71")}},
-			{TopicId: topicId, BlockHeight: blockHeightInferences, Inferer: worker3, Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("0.71")}},
+			{TopicId: topicId, BlockHeight: blockHeightInferences, Inferer: worker1, Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("0.52")}, ExtraData: nil, Proof: ""},
+			{TopicId: topicId, BlockHeight: blockHeightInferences, Inferer: worker2, Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("0.71")}, ExtraData: nil, Proof: ""},
+			{TopicId: topicId, BlockHeight: blockHeightInferences, Inferer: worker3, Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("0.71")}, ExtraData: nil, Proof: ""},
 		},
 	}
 	for _, inference := range allInferences.Inferences {
@@ -552,7 +564,7 @@ func (s *KeeperTestSuite) TestAppendInference() {
 	s.Require().Equal(updateAttemptForWorker2.BlockHeight, updatedWorker2Score.BlockHeight, "unchanged height")
 }
 
-//nolint:exhaustruct
+//nolint:exhaustruct_v5
 func (s *KeeperTestSuite) TestPlanInferenceAdmission() {
 	type tc struct {
 		name      string
@@ -702,7 +714,7 @@ func (s *KeeperTestSuite) TestPlanInferenceAdmission() {
 	}
 }
 
-//nolint:exhaustruct
+//nolint:exhaustruct_v5
 func (s *KeeperTestSuite) TestCommitInference() {
 	makeInference := func(topicId uint64, nonce types.BlockHeight, inferer string, value string) *types.Inference {
 		return &types.Inference{
@@ -1073,7 +1085,7 @@ func (s *KeeperTestSuite) TestCommitInference() {
 // unreachable from TestCommitInference, whose runner routes on plan.Admitted(), so
 // they require a dedicated test.
 //
-//nolint:exhaustruct
+//nolint:exhaustruct_v5
 func (s *KeeperTestSuite) TestCommitInferenceGuardsRejectWrongMethod() {
 	ctx := s.Ctx()
 	topicId := s.CreateTopic()
@@ -1119,7 +1131,7 @@ func (s *KeeperTestSuite) TestCommitInferenceGuardsRejectWrongMethod() {
 	s.Require().Error(err)
 }
 
-//nolint:exhaustruct
+//nolint:exhaustruct_v5
 func (s *KeeperTestSuite) TestAppendInferenceFlow() {
 	type tc struct {
 		name      string
@@ -1243,7 +1255,7 @@ func (s *KeeperTestSuite) TestAppendInferenceWithResetActiveWorkers() {
 	// Create first set of inferences
 	inferences := make([]*types.Inference, 5)
 	for i := range inferences {
-		//nolint:exhaustruct
+		//nolint:exhaustruct_v5
 		inferences[i] = &types.Inference{
 			TopicId:     topicId,
 			BlockHeight: blockHeightInferences,
@@ -1284,7 +1296,7 @@ func (s *KeeperTestSuite) TestAppendInferenceWithResetActiveWorkers() {
 	blockHeightInferences = blockHeightInferences + topic.EpochLength
 	inferences = make([]*types.Inference, 5)
 	for i := 1; i <= len(inferences); i++ {
-		//nolint:exhaustruct
+		//nolint:exhaustruct_v5
 		inferences[i-1] = &types.Inference{
 			TopicId:     topicId,
 			BlockHeight: blockHeightInferences,
@@ -1405,7 +1417,7 @@ func (s *KeeperTestSuite) TestAppendForecast() {
 	err := s.ParamsKeeper().SetParams(ctx, params)
 	s.Require().NoError(err)
 
-	//nolint:exhaustruct
+	//nolint:exhaustruct_v5
 	newForecast := types.Forecast{
 		TopicId:     topicId,
 		BlockHeight: blockHeightInferences,
@@ -1501,7 +1513,7 @@ func (s *KeeperTestSuite) TestAppendForecastInsertFailureReturnsUnspecifiedOutco
 
 	// The forecaster clears admission (open slot) but the forecast itself is
 	// invalid, so the final store fails after the active-set write.
-	//nolint:exhaustruct
+	//nolint:exhaustruct_v5
 	forecast := types.Forecast{
 		TopicId:     0, // invalid on purpose: rejected by Forecast.Validate
 		Forecaster:  s.AddrsStr(0),
@@ -1559,7 +1571,7 @@ func (s *KeeperTestSuite) TestAppendForecastWithResetActiveForecasters() {
 	// Create forecasts for all workers
 	allForecasts := types.Forecasts{Forecasts: make([]*types.Forecast, len(workers))}
 	for i, worker := range workers {
-		//nolint:exhaustruct
+		//nolint:exhaustruct_v5
 		allForecasts.Forecasts[i] = &types.Forecast{
 			TopicId:          topicId,
 			BlockHeight:      blockHeightInferences,
@@ -1732,7 +1744,7 @@ func (s *KeeperTestSuite) TestRemoveInference() {
 // id space, and enforces SINGLE/RequireUnity rules. CloseWorkerNonce later
 // filters that temporary ELR and remaps active vectors into final compact ids.
 //
-//nolint:exhaustruct
+//nolint:exhaustruct_v5
 func (s *KeeperTestSuite) TestNormalizeInputInference() {
 	type labeledInput struct {
 		label string
@@ -1940,7 +1952,7 @@ func (s *KeeperTestSuite) TestNormalizeInputInference() {
 // always starts from a fresh (empty) registry, so len(registry.Labels) there
 // equals the submission's own label count and never exercises this path.
 //
-//nolint:exhaustruct // proto input structs omit optional ExtraData/Proof fields
+//nolint:exhaustruct_v5 // proto input structs omit optional ExtraData/Proof fields
 func (s *KeeperTestSuite) TestNormalizeInputInferenceDenseMultiAgainstPreGrownRegistry() {
 	s.SetupTest()
 	ctx := s.Ctx()
@@ -2013,13 +2025,13 @@ func (s *KeeperTestSuite) TestNormalizeInputInferenceDenseMultiAgainstPreGrownRe
 // that filters the temporary ELR to active non-default labels and remaps dense
 // vectors into compact final ids.
 //
-//nolint:exhaustruct
+//nolint:exhaustruct_v5
 func (s *KeeperTestSuite) TestCompactRegistryAndRemapInferences() {
 	topic := types.Topic{
 		Id:                1,
 		OutputArity:       types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
 		LabelDefaultValue: alloraMath.ZeroDec(),
-	} //nolint:exhaustruct
+	} //nolint:exhaustruct_v5
 	nonce := types.BlockHeight(7)
 	maxLabelBytes := types.DefaultParams().MaxCanonicalLabelByteLength
 	tempRegistry := types.EpochLabelRegistry{
@@ -2146,13 +2158,13 @@ func (s *KeeperTestSuite) TestCompactRegistryAndRemapInferences() {
 // the topic LabelDefaultValue otherwise. This is the common production path and
 // is not covered by TestCompactRegistryAndRemapInferences (MULTI-only).
 //
-//nolint:exhaustruct
+//nolint:exhaustruct_v5
 func (s *KeeperTestSuite) TestCompactRegistryAndRemapInferencesSingleArity() {
 	topic := types.Topic{
 		Id:                1,
 		OutputArity:       types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
 		LabelDefaultValue: alloraMath.MustNewDecFromString("9"),
-	} //nolint:exhaustruct
+	} //nolint:exhaustruct_v5
 	nonce := types.BlockHeight(7)
 	maxLabelBytes := types.DefaultParams().MaxCanonicalLabelByteLength
 	// The temporary registry is irrelevant to the SINGLE output: the branch
@@ -2810,7 +2822,7 @@ func epochLabelNames(labels []*types.TopicLabel) []string {
 // registry, which pins the atomicity invariant: a mid-batch error must not
 // leave partial growth in state.
 //
-//nolint:exhaustruct // table-driven cases intentionally set only the fields each case exercises
+//nolint:exhaustruct_v5 // table-driven cases intentionally set only the fields each case exercises
 func (s *KeeperTestSuite) TestRegisterEpochLabels_BatchBehavior() {
 	nonce := types.BlockHeight(7)
 	testCases := []struct {
@@ -2976,7 +2988,7 @@ func (s *KeeperTestSuite) TestRegisterEpochLabels_BatchBehavior() {
 // TestRegisterEpochLabels_InputValidation covers the early validation branches
 // that return before any state is read or written.
 //
-//nolint:exhaustruct // table-driven cases intentionally set only the fields each case exercises
+//nolint:exhaustruct_v5 // table-driven cases intentionally set only the fields each case exercises
 func (s *KeeperTestSuite) TestRegisterEpochLabels_InputValidation() {
 	validNonce := types.BlockHeight(7)
 	testCases := []struct {

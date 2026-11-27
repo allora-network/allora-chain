@@ -693,7 +693,7 @@ func (s *EmissionsV15MigrationTestSuite) TestMigrateAllInferences_SeedsHistorica
 
 		// The migrated inference must be denormalizable through the seeded registry:
 		// a 1-element values vector against a 1-label registry, no length mismatch.
-		//nolint:exhaustruct // GetInferencesAtBlock only reads topic.Id for the store key
+		//nolint:exhaustruct_v5 // GetInferencesAtBlock only reads topic.Id for the store key
 		gotInferences, err := s.WorkerKeeper().GetInferencesAtBlock(
 			s.Ctx(), emissionstypes.Topic{Id: e.topicId}, e.block, false)
 		s.Require().NoError(err)
@@ -917,7 +917,7 @@ func (s *EmissionsV15MigrationTestSuite) TestMigrateStoreFromLegacyV013StateViaV
 }
 
 func (s *EmissionsV15MigrationTestSuite) makeLegacyValueBundle(topicID uint64, blockHeight int64) emissionstypes.ValueBundle {
-	//nolint:exhaustruct
+	//nolint:exhaustruct_v5
 	return emissionstypes.ValueBundle{
 		TopicId: topicID,
 		ReputerRequestNonce: &emissionstypes.ReputerRequestNonce{

@@ -8,7 +8,7 @@ import (
 	alloraMath "github.com/allora-network/allora-chain/math"
 )
 
-//nolint:exhaustruct
+//nolint:exhaustruct_v5
 func Test_convertNetworkInferenceBundleToEvent(t *testing.T) {
 	dec := func(s string) alloraMath.Dec {
 		return alloraMath.MustNewDecFromString(s)

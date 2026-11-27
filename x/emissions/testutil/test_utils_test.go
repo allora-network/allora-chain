@@ -17,22 +17,22 @@ func TestNetworkInferenceBundleToLossBundleSkeletonGroupsForecasterRows(t *testi
 		worker2     = "allo1worker2"
 	)
 
-	bundle := &types.NetworkInferenceBundle{ //nolint:exhaustruct // only the one-out-inferer forecaster values are under test
+	bundle := &types.NetworkInferenceBundle{ //nolint:exhaustruct_v5 // only the one-out-inferer forecaster values are under test
 		OneOutInfererForecasterValues: []*types.OneOutInfererForecasterValue{
 			{
 				Forecaster:        forecasterA,
 				WithheldInferer:   worker1,
-				CombinedInference: []*types.LabeledValue{{Value: alloraMath.NewDecFromInt64(11)}},
+				CombinedInference: []*types.LabeledValue{{Value: alloraMath.NewDecFromInt64(11), LabelId: 0, LabelName: ""}},
 			},
 			{
 				Forecaster:        forecasterB,
 				WithheldInferer:   worker1,
-				CombinedInference: []*types.LabeledValue{{Value: alloraMath.NewDecFromInt64(21)}},
+				CombinedInference: []*types.LabeledValue{{Value: alloraMath.NewDecFromInt64(21), LabelId: 0, LabelName: ""}},
 			},
 			{
 				Forecaster:        forecasterA,
 				WithheldInferer:   worker2,
-				CombinedInference: []*types.LabeledValue{{Value: alloraMath.NewDecFromInt64(12)}},
+				CombinedInference: []*types.LabeledValue{{Value: alloraMath.NewDecFromInt64(12), LabelId: 0, LabelName: ""}},
 			},
 		},
 	}

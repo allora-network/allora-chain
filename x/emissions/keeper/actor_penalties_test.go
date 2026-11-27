@@ -12,7 +12,7 @@ import (
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
-//nolint:exhaustruct
+//nolint:exhaustruct_v5
 func (s *KeeperTestSuite) TestCalculateLivenessPenaltyToInferer() {
 	ctx := s.Ctx()
 	k := s.EmissionsKeeper()
@@ -41,7 +41,7 @@ func (s *KeeperTestSuite) TestCalculateLivenessPenaltyToInferer() {
 	s.Require().True(inDelta, "expected %s, got %s", alloraMath.MustNewDecFromString("265.61"), newScore.Score)
 }
 
-//nolint:exhaustruct
+//nolint:exhaustruct_v5
 func (s *KeeperTestSuite) TestApplyLivenessPenaltyToForecaster() {
 	ctx := s.Ctx()
 	k := s.EmissionsKeeper()
@@ -70,7 +70,7 @@ func (s *KeeperTestSuite) TestApplyLivenessPenaltyToForecaster() {
 	s.Require().True(inDelta, "expected %s, got %s", alloraMath.MustNewDecFromString("265.61"), newScore.Score)
 }
 
-//nolint:exhaustruct
+//nolint:exhaustruct_v5
 func (s *KeeperTestSuite) TestApplyLivenessPenaltyToReputer() {
 	ctx := s.Ctx()
 	k := s.EmissionsKeeper()
@@ -100,7 +100,7 @@ func (s *KeeperTestSuite) TestApplyLivenessPenaltyToReputer() {
 	s.Require().True(inDelta, "expected %s, got %s", alloraMath.MustNewDecFromString("265.61"), newScore.Score)
 }
 
-//nolint:exhaustruct
+//nolint:exhaustruct_v5
 func TestApplyLivenessPenaltyToActor(t *testing.T) {
 	ctx := testutil.DefaultContextWithDB(t, storetypes.NewKVStoreKey("emissions"), storetypes.NewTransientStoreKey("transient_test")).Ctx
 	givenTopic := types.Topic{
@@ -175,7 +175,7 @@ func TestApplyLivenessPenaltyToActor(t *testing.T) {
 	}
 }
 
-//nolint:exhaustruct
+//nolint:exhaustruct_v5
 func TestCountWorkerContiguousMissedEpochs(t *testing.T) {
 	topic := types.Topic{
 		EpochLastEnded: 100,
@@ -229,7 +229,7 @@ func TestCountWorkerContiguousMissedEpochs(t *testing.T) {
 	}
 }
 
-//nolint:exhaustruct
+//nolint:exhaustruct_v5
 func TestCountReputerContiguousMissedEpochs(t *testing.T) {
 	topic := types.Topic{
 		EpochLastEnded: 110,

@@ -52,7 +52,7 @@ func MigrateStore(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 }
 
 func MigrateParams(store storetypes.KVStore, cdc codec.BinaryCodec) error {
-	oldParams := oldtypes.Params{} //nolint:exhaustruct // populated in unmarshal below
+	oldParams := oldtypes.Params{} //nolint:exhaustruct_v5 // populated in unmarshal below
 	oldParamsBytes := store.Get(types.ParamsKey)
 	if oldParamsBytes == nil {
 		return errorsmod.Wrapf(types.ErrNotFound, "old parameters not found")
@@ -74,7 +74,7 @@ func MigrateParams(store storetypes.KVStore, cdc codec.BinaryCodec) error {
 	//      MaxRetriesToFulfilNoncesWorker
 	//      MaxRetriesToFulfilNoncesReputer
 	//      MaxTopicsPerBlock
-	newParams := v3Types.Params{ //nolint:exhaustruct // not sure if safe to fix, also this upgrade has already happened.
+	newParams := v3Types.Params{ //nolint:exhaustruct_v5 // not sure if safe to fix, also this upgrade has already happened.
 		Version:                             oldParams.Version,
 		MaxSerializedMsgLength:              oldParams.MaxSerializedMsgLength,
 		MinTopicWeight:                      oldParams.MinTopicWeight,
@@ -273,7 +273,7 @@ func MigrateTopics(
 }
 
 func getNewTopic(oldMsg oldtypes.Topic) types.Topic {
-	return types.Topic{ //nolint:exhaustruct
+	return types.Topic{ //nolint:exhaustruct_v5
 		Id:             oldMsg.Id,
 		Creator:        oldMsg.Creator,
 		Metadata:       oldMsg.Metadata,

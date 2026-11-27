@@ -98,13 +98,13 @@ func NewTestConfig(
 	require.NoError(t, err)
 
 	encCfg := moduletestutil.MakeTestEncodingConfig(
-		mint.AppModuleBasic{},    //nolint:exhaustruct
-		emissions.AppModule{},    //nolint:exhaustruct
-		auth.AppModule{},         //nolint:exhaustruct
-		bank.AppModule{},         //nolint:exhaustruct
-		distribution.AppModule{}, //nolint:exhaustruct
-		gov.AppModule{},          //nolint:exhaustruct
-		upgrade.AppModule{},      //nolint:exhaustruct
+		mint.AppModuleBasic{},    //nolint:exhaustruct_v5
+		emissions.AppModule{},    //nolint:exhaustruct_v5
+		auth.AppModule{},         //nolint:exhaustruct_v5
+		bank.AppModule{},         //nolint:exhaustruct_v5
+		distribution.AppModule{}, //nolint:exhaustruct_v5
+		gov.AppModule{},          //nolint:exhaustruct_v5
+		upgrade.AppModule{},      //nolint:exhaustruct_v5
 	)
 
 	return TestConfig{

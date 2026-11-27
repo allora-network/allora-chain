@@ -89,7 +89,7 @@ func (ms msgServer) Register(ctx context.Context, msg *types.RegisterRequest) (_
 		return nil, err
 	}
 
-	return &types.RegisterResponse{}, nil //nolint:exhaustruct // due to deprecated fields
+	return &types.RegisterResponse{}, nil //nolint:exhaustruct_v5 // due to deprecated fields
 }
 
 // RemoveRegistration removes registration from a topic for worker or reputer
@@ -145,7 +145,7 @@ func (ms msgServer) RemoveRegistration(ctx context.Context, msg *types.RemoveReg
 	}
 
 	// Return a successful response
-	return &types.RemoveRegistrationResponse{}, nil //nolint:exhaustruct // due to deprecated fields
+	return &types.RemoveRegistrationResponse{}, nil //nolint:exhaustruct_v5 // due to deprecated fields
 }
 
 // CheckBalanceForRegistration checks if the account has enough balance to register

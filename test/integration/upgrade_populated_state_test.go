@@ -96,7 +96,7 @@ func newPopulatedStateChecks() *populatedStateChecks {
 		}
 		ceiling = parsed
 	}
-	return &populatedStateChecks{seedCeiling: ceiling, seededEpochs: map[uint64]int64{}} //nolint:exhaustruct // the remaining fields are populated while seeding
+	return &populatedStateChecks{seedCeiling: ceiling, seededEpochs: map[uint64]int64{}} //nolint:exhaustruct_v5 // the remaining fields are populated while seeding
 }
 
 // migratedCeilingAndFloor returns what the migration specifies for a seeded ceiling:
@@ -139,7 +139,7 @@ func createSeedTopic(
 	arity emissionstypes.TopicOutputArity,
 ) uint64 {
 	ctx := context.Background()
-	request := &emissionstypes.CreateNewTopicRequest{ //nolint:exhaustruct // label fields are set per topic type below
+	request := &emissionstypes.CreateNewTopicRequest{ //nolint:exhaustruct_v5 // label fields are set per topic type below
 		Creator:                  m.AliceAddr,
 		Metadata:                 metadata,
 		LossMethod:               "mse",
@@ -176,7 +176,7 @@ func createSeedTopic(
 	require.NoError(m.T, err)
 	_, err = m.Client.WaitForTx(ctx, txResp.TxHash)
 	require.NoError(m.T, err)
-	response := &emissionstypes.CreateNewTopicResponse{} //nolint:exhaustruct // the fields are populated by decode
+	response := &emissionstypes.CreateNewTopicResponse{} //nolint:exhaustruct_v5 // the fields are populated by decode
 	require.NoError(m.T, txResp.Decode(response))
 	return response.TopicId
 }
@@ -185,7 +185,7 @@ func addStakeMsg(sender string, topicId uint64, amount int64) *emissionstypes.Ad
 	return &emissionstypes.AddStakeRequest{Sender: sender, TopicId: topicId, Amount: cosmosMath.NewInt(amount)}
 }
 
-//nolint:exhaustruct // a params update names only the fields it changes
+//nolint:exhaustruct_v5 // a params update names only the fields it changes
 func updateEmissionsParams(m testCommon.TestConfig, update emissionstypes.OptionalParams) {
 	broadcastOK(m, m.AliceAcc, &emissionstypes.UpdateParamsRequest{Sender: m.AliceAddr, Params: &update})
 }
@@ -241,14 +241,14 @@ func (c *populatedStateChecks) SeedBaseline(m testCommon.TestConfig) {
 	for _, addr := range []string{m.AliceAddr, m.BobAddr, c.teamAddr, c.investorsAddr} {
 		addGlobalActor(m, addr)
 	}
-	updateEmissionsParams(m, emissionstypes.OptionalParams{ //nolint:exhaustruct // a params update names only the fields it changes
+	updateEmissionsParams(m, emissionstypes.OptionalParams{ //nolint:exhaustruct_v5 // a params update names only the fields it changes
 		MinEpochLength:          []int64{1},
 		MaxActiveTopicsPerBlock: []uint64{1},
 		MaxTopReputersToReward:  []uint64{24},
 	})
 
 	c.seedGhostTopic(m)
-	updateEmissionsParams(m, emissionstypes.OptionalParams{MaxActiveTopicsPerBlock: []uint64{5}}) //nolint:exhaustruct // a params update names only the fields it changes
+	updateEmissionsParams(m, emissionstypes.OptionalParams{MaxActiveTopicsPerBlock: []uint64{5}}) //nolint:exhaustruct_v5 // a params update names only the fields it changes
 	c.seedDriftedInactiveTopic(m)
 	c.seedActiveTopics(m)
 
@@ -317,12 +317,12 @@ func (c *populatedStateChecks) seedDriftedInactiveTopic(m testCommon.TestConfig)
 	raised, err = raised.Quo(alloraMath.NewDecFromInt64(2))
 	require.NoError(m.T, err)
 
-	updateEmissionsParams(m, emissionstypes.OptionalParams{MinTopicWeight: []alloraMath.Dec{raised}}) //nolint:exhaustruct // a params update names only the fields it changes
+	updateEmissionsParams(m, emissionstypes.OptionalParams{MinTopicWeight: []alloraMath.Dec{raised}}) //nolint:exhaustruct_v5 // a params update names only the fields it changes
 	churn := topicNextChurn(m, ctx, c.driftTopic)
 	waitForHeight(m, churn+1)
 	require.Zero(m.T, topicNextChurn(m, ctx, c.driftTopic), "the raised minimum must inactivate the topic")
 	require.NotZero(m.T, topicNextChurn(m, ctx, c.blockerTopic), "the raised minimum must leave the blocker active")
-	updateEmissionsParams(m, emissionstypes.OptionalParams{MinTopicWeight: []alloraMath.Dec{genesisParams.MinTopicWeight}}) //nolint:exhaustruct // a params update names only the fields it changes
+	updateEmissionsParams(m, emissionstypes.OptionalParams{MinTopicWeight: []alloraMath.Dec{genesisParams.MinTopicWeight}}) //nolint:exhaustruct_v5 // a params update names only the fields it changes
 
 	weightBefore, _ := topicPreviousWeight(m, ctx, c.driftTopic)
 	sumBefore := totalSumWeights(m, ctx)
@@ -417,7 +417,7 @@ func (c *populatedStateChecks) seedActiveTopics(m testCommon.TestConfig) {
 func (c *populatedStateChecks) seedPendingRemovals(m testCommon.TestConfig) {
 	m.T.Log("--- Seed: stake removals pending across the upgrade ---")
 	ctx := context.Background()
-	updateEmissionsParams(m, emissionstypes.OptionalParams{RemoveStakeDelayWindow: []int64{pendingRemovalDelay}}) //nolint:exhaustruct // a params update names only the fields it changes
+	updateEmissionsParams(m, emissionstypes.OptionalParams{RemoveStakeDelayWindow: []int64{pendingRemovalDelay}}) //nolint:exhaustruct_v5 // a params update names only the fields it changes
 	broadcastOK(m, m.AliceAcc, &emissionstypes.RemoveStakeRequest{
 		Sender:  m.AliceAddr,
 		TopicId: c.blockerTopic,
@@ -696,7 +696,7 @@ func (c *populatedStateChecks) BeforeUpgradeBlock(m testCommon.TestConfig, planH
 	// inferer on the baseline, so the payload above would open no reputer nonce.
 	waitForHeight(m, planHeight-seedEpochLength+seedWorkerWindow+1)
 	m.T.Logf("--- Seed: global max_top_inferers_to_reward = %d ---", c.seedCeiling)
-	updateEmissionsParams(m, emissionstypes.OptionalParams{MaxTopInferersToReward: []uint64{c.seedCeiling}}) //nolint:exhaustruct // a params update names only the fields it changes
+	updateEmissionsParams(m, emissionstypes.OptionalParams{MaxTopInferersToReward: []uint64{c.seedCeiling}}) //nolint:exhaustruct_v5 // a params update names only the fields it changes
 
 	waitForHeight(m, planHeight-1)
 	deadline := time.Now().Add(snapshotRetryWindow)
@@ -953,7 +953,7 @@ func (c *populatedStateChecks) requirePendingRemovalsComplete(m testCommon.TestC
 // that drifted the total on the baseline: the total must stay the sum over scheduled topics.
 func (c *populatedStateChecks) requireInactiveTopicStakeChangeKeepsTotal(m testCommon.TestConfig) {
 	ctx := context.Background()
-	updateEmissionsParams(m, emissionstypes.OptionalParams{RemoveStakeDelayWindow: []int64{shortRemovalDelay}}) //nolint:exhaustruct // a params update names only the fields it changes
+	updateEmissionsParams(m, emissionstypes.OptionalParams{RemoveStakeDelayWindow: []int64{shortRemovalDelay}}) //nolint:exhaustruct_v5 // a params update names only the fields it changes
 	broadcastOK(m, m.AliceAcc, &emissionstypes.RemoveStakeRequest{
 		Sender:  m.AliceAddr,
 		TopicId: c.driftTopic,

@@ -93,7 +93,7 @@ func TestFirstFingerprintDifference(t *testing.T) {
 }
 
 func TestRequireDecEqualSeparatesNaNFromZero(t *testing.T) {
-	audit := &eventAudit{} //nolint:exhaustruct // the comparison only records violations
+	audit := &eventAudit{} //nolint:exhaustruct_v5 // the comparison only records violations
 	audit.requireDecEqual(1, "nan vs zero", alloraMath.NewNaN(), alloraMath.ZeroDec())
 	audit.requireDecEqual(1, "zero vs nan", alloraMath.ZeroDec(), alloraMath.NewNaN())
 	require.Len(t, audit.violations, 2)

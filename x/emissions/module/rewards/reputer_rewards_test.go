@@ -736,7 +736,7 @@ func mockReputersData(s *RewardsTestSuite, topicId uint64, block int64, reputerI
 		}
 		err = s.ScoresKeeper().InsertReputerScore(s.Ctx(), topicId, block, scoreToAdd)
 		s.Require().NoError(err)
-		valueBundle := &types.ValueBundle{ //nolint:exhaustruct
+		valueBundle := &types.ValueBundle{ //nolint:exhaustruct_v5
 			TopicId: topicId,
 			ReputerRequestNonce: &types.ReputerRequestNonce{
 				ReputerNonce: &types.Nonce{BlockHeight: block}},
