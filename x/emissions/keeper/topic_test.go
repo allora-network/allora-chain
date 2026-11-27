@@ -623,7 +623,8 @@ func (s *KeeperTestSuite) TestDripTopicFeeRevenueEventReconcilesWhenDripExceedsR
 	require.NoError(k.ActivateTopic(ctx, topic.Id, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec()))
 
 	initialRevenue := cosmosMath.NewInt(1000000)
-	require.NoError(k.AddTopicFeeRevenue(ctx, topic.Id, initialRevenue))
+	_, err := k.AddTopicFeeRevenue(ctx, topic.Id, initialRevenue)
+	require.NoError(err)
 
 	blocksPerWeek, err := alloraMath.CalculateBlocksPerWeek(params.BlocksPerMonth)
 	require.NoError(err)
