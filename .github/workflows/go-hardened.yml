@@ -31,7 +31,7 @@ jobs:
     with:
       # Same patch as the toolchain line in go.mod. A floating minor
       # would pick up a later 1.26 release on its own.
-      go_version: '1.26.10'
+      go_version: '1.26.11'
       # cosmwasm/wasmvm (a transitive Cosmos SDK dep) requires CGO to
       # link against libwasmvm; matches the goreleaser build path.
       cgo_enabled: '1'
