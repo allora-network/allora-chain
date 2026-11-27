@@ -80,20 +80,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * [#1030](https://github.com/allora-network/allora-chain/pull/1030) `EVICTED_BY_EQUAL_WEIGHT` on `TopicStatusChangeReason`, for a topic evicted from a full active set by a challenger with the same weight; `EVICTED_BY_HIGHER_WEIGHT` now only means the challenger's weight was strictly higher
 * [#1009](https://github.com/allora-network/allora-chain/pull/1009) `EventRewardPayoutFailed`, emitted per actor when paying a topic participant's reward fails, carrying `topic_id`, the reward `nonce`, `address`, `actor_type`, `amount` and the failure `reason`
 * [#1009](https://github.com/allora-network/allora-chain/pull/1009) `WORKER_INFO_LOOKUP`, `ACCOUNT_SEND` and `NEGATIVE_REWARD` on `RewardPayoutFailureReason`; `EventRewardPayoutFailed` is now emitted for every payout failure where the actor is not paid
-* [#1009](https://github.com/allora-network/allora-chain/pull/1009) `EventTopicRewardForfeitedNoRewardNonce` and `EventTopicRewardForfeitedDistributionFailed`, emitted when a topic's reward goes back to the ecosystem account, carrying `topic_id`, the just-ended `epoch` and `amount`, the integer coins moved to the ecosystem account (zero when the reward was under one unit and nothing moved); the latter also carries the `reward_nonce` whose settlement failed
+* [#1009](https://github.com/allora-network/allora-chain/pull/1009) `EventTopicRewardForfeited`, emitted when a topic's reward goes back to the ecosystem account, carrying `topic_id`, the just-ended `epoch`, the `reason` (`NO_REWARD_NONCE`, `NONCE_READ_FAILED` or `DISTRIBUTION_FAILED`) and `amount`, the integer coins moved to the ecosystem account (zero when the reward was under one unit and nothing moved); `reward_nonce`, the nonce whose settlement failed, is set only for `DISTRIBUTION_FAILED`. `NO_REWARD_NONCE` is normal operation, not a failure
 * [#1009](https://github.com/allora-network/allora-chain/pull/1009) `EventNonceExpired`, emitted per unfulfilled nonce that leaves state without being fulfilled, carrying `topic_id`, the expired `nonce`, `actor_type` and the `reason` (`EVICTED_BY_CAP` when a new nonce pushes the list past the unfulfilled-request cap, `PRUNED_BY_AGE` when it ages past the retention threshold, `CLOSE_FAILED` when settlement of the nonce fails and the nonce is cleared in the close path)
 * [#1007](https://github.com/allora-network/allora-chain/pull/1007) `labels` on `EventEpochLabelRegistryFrozen`: the frozen registry's label names in compact-id order (`labels[i]` has id `i+1`)
 * [#1026](https://github.com/allora-network/allora-chain/pull/1026) `discarded_addresses` on `EventActiveForecastersSet`: the epoch's active forecasters whose forecasts the worker nonce close discarded
 * [#1025](https://github.com/allora-network/allora-chain/pull/1025) Split the worker whitelist into sibling inferer (existing worker lists) and forecaster whitelists: global/topic lists, enable/disable msgs, queries, events, `create-topic` flag `enable_forecaster_whitelist`, and param `global_forecaster_whitelist_enabled` (default `true` for newly generated genesis).
+* [#1047](https://github.com/allora-network/allora-chain/pull/1047) `new_revenue` and `source` (`TopicFundSource`) on `EventFundTopic`. Registration and data-sending fees emit it, as topic creation and `FundTopic` already did. Events from before this upgrade have neither attribute. `ParseTypedEvent` leaves `new_revenue` nil, so callers use `IsNil` and treat it as unknown, and `source` decodes as `TOPIC_FUND_SOURCE_UNSPECIFIED`. A zero total emitted after this upgrade is a present, non-nil zero.
 
 ### Changed
 
 * [#1046](https://github.com/allora-network/allora-chain/pull/1046) The module, CI, release builds, and chain images pin Go 1.26.10. The language line is 1.26.0 and the toolchain floor is 1.26.10. `golangci-lint` moves to v2.15.0, which can load that toolchain.
+* [#1045](https://github.com/allora-network/allora-chain/pull/1045) Investors, preseed, and team stay fully locked for 18 emissions months. Month 18 unlocks half of each bucket, then one thirty-sixth of the bucket unlocks each month, and the buckets are fully unlocked at month 36.
 * [#968](https://github.com/allora-network/allora-chain/pull/968) The global `max_top_inferers_to_reward` now rejects zero and serves as the live ceiling for the per-topic cap; score-history retention still uses the global value.
 * [#1004](https://github.com/allora-network/allora-chain/pull/1004) `EmitNewActorScoresSetEvent` no longer takes a height: `EventScoresSet` always carried the epoch nonce from the scores, and two callers passed the current block height, which was ignored.
 * [#1026](https://github.com/allora-network/allora-chain/pull/1026) `addresses` on `EventActiveForecastersSet` lists only the forecasters whose forecasts were stored for the epoch; it used to list every active forecaster, including those whose forecasts the close discarded.
 * [#1011](https://github.com/allora-network/allora-chain/pull/1011) Additive API change: `types.EmitNewInsert{Inferer,Forecaster,Reputer}PayloadEvent` and their `New*EventBase` constructors take a `PayloadAdmissionOutcome`; `AppendForecast` and `AppendReputerLoss` return it.
 * [#1025](https://github.com/allora-network/allora-chain/pull/1025) `InsertWorkerPayload` now gates inferences via the worker (inferer) whitelist and forecasts via the forecaster whitelist; a bundle that carries both is rejected unless the actor holds both permissions. `enable_forecaster_whitelist` is an independent opt-in on `CreateNewTopic` (default `false`, like `enable_worker_whitelist`/`enable_reputer_whitelist`), so new topics created without the flag have ungated forecasts even when `enable_worker_whitelist` is set. The `create-topic` CLI gains a new required positional arg for the flag.
+* [#1047](https://github.com/allora-network/allora-chain/pull/1047) `Register`, `InsertWorkerPayload` and `InsertReputerPayload` emit the action, then `EventFundTopic`, then any funding-caused `EventTopicStatusChanged`. A zero `FundTopic` still emits `EventFundTopic` for the unchanged total. A zero registration, data-sending, or create-topic fee does not emit one and does not write a revenue entry.
 
 ### Deprecated
 
@@ -129,7 +132,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 #### Added
 
-* [#1015](https://github.com/allora-network/allora-chain/pull/1015) `types.EmitNewTopicRewardForfeitedNoRewardNonceEvent`, `types.EmitNewTopicRewardForfeitedDistributionFailedEvent` and their `types.New...EventBase` constructors, whose `amount` is a `cosmos.Int`.
+* [#1015](https://github.com/allora-network/allora-chain/pull/1015) `types.EmitNewTopicRewardForfeitedEvent` and its `types.NewTopicRewardForfeitedEventBase` constructor, whose `amount` is a `cosmos.Int`.
 
 #### Changed
 
@@ -142,6 +145,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * [#1026](https://github.com/allora-network/allora-chain/pull/1026) `types.EmitNewActiveForecastersSetEvent` and `types.NewActiveForecastersSetEventBase` take `discardedAddresses`.
 * [#1015](https://github.com/allora-network/allora-chain/pull/1015) `TopicKeeper.InactivateTopic` takes `reason`, `weight`, `minWeight` and `thresholdWeight`; `TopicKeeper.ActivateTopic` takes `reason`, `weight` and `minWeight`; `TopicKeeper.AttemptTopicReactivation` takes `weight` and `minWeight`.
 * [#1015](https://github.com/allora-network/allora-chain/pull/1015) `BankingKeeper.MoveCoinsFromAlloraRewardsToEcosystem` returns the `cosmos.Int` amount it moved along with its error.
+* [#1047](https://github.com/allora-network/allora-chain/pull/1047) `types.EmitNewFundTopicEvent` and `types.NewFundTopicEventBase` take `newRevenue` and `source`. `TopicKeeper.AddTopicFeeRevenue` returns the stored total.
 
 # [Released]
 

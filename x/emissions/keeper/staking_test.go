@@ -1007,7 +1007,7 @@ func (s *KeeperTestSuite) TestTopicWeightRecalculationAfterStakeRemoval() {
 	// Add stake and fee revenue
 	err = k.AddReputerStake(ctx, topicId, reputerAddr, stakeAmount)
 	s.Require().NoError(err)
-	err = s.TopicKeeper().AddTopicFeeRevenue(ctx, topicId, feeRevenue)
+	_, err = s.TopicKeeper().AddTopicFeeRevenue(ctx, topicId, feeRevenue)
 	s.Require().NoError(err)
 
 	// Get initial weight and set it
@@ -1085,9 +1085,9 @@ func (s *KeeperTestSuite) TestTopicWeightRecalculationWithMultipleTopics() {
 	s.Require().NoError(err)
 	err = k.AddReputerStake(ctx, topicId2, reputerAddr, stakeAmount2)
 	s.Require().NoError(err)
-	err = s.TopicKeeper().AddTopicFeeRevenue(ctx, topicId1, feeRevenue1)
+	_, err = s.TopicKeeper().AddTopicFeeRevenue(ctx, topicId1, feeRevenue1)
 	s.Require().NoError(err)
-	err = s.TopicKeeper().AddTopicFeeRevenue(ctx, topicId2, feeRevenue2)
+	_, err = s.TopicKeeper().AddTopicFeeRevenue(ctx, topicId2, feeRevenue2)
 	s.Require().NoError(err)
 
 	// Calculate and set initial weights for both topics

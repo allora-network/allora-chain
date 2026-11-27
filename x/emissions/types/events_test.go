@@ -2140,6 +2140,45 @@ func TestEmitNewTopicWeightUpdatedAfterStakeChangeEvent(t *testing.T) {
 	require.Contains(t, val.GetValue(), topicFeeRevenue.String())
 }
 
+func TestEmitNewFundTopicEvent(t *testing.T) {
+	ctx := sdk.Context{}.WithEventManager(sdk.NewEventManager())
+	amount := cosmosMath.NewInt(10)
+	newRevenue := cosmosMath.NewInt(25)
+	types.EmitNewFundTopicEvent(ctx, 1, "allo1funder", amount, newRevenue, types.TopicFundSource_TOPIC_FUND_SOURCE_TOPIC_FUNDING)
+
+	events := ctx.EventManager().Events()
+	require.Len(t, events, 1)
+	event := events[0]
+	require.Equal(t, "emissions.v10.EventFundTopic", event.Type)
+	val, exists := event.GetAttribute("new_revenue")
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), "25")
+	val, exists = event.GetAttribute("source")
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), "TOPIC_FUND_SOURCE_TOPIC_FUNDING")
+}
+
+// A pre-upgrade EventFundTopic has no new_revenue or source attribute.
+// The missing total stays nil. The missing source is the zero enum value.
+func TestParsePreUpgradeFundTopicEvent(t *testing.T) {
+	parsed, err := sdk.ParseTypedEvent(abci.Event{
+		Type: "emissions.v10.EventFundTopic",
+		Attributes: []abci.EventAttribute{
+			{Key: "topic_id", Value: "1", Index: false},
+			{Key: "funder", Value: `"allo1funder"`, Index: false},
+			{Key: "amount", Value: `"10"`, Index: false},
+		},
+	})
+	require.NoError(t, err)
+	fund, ok := parsed.(*types.EventFundTopic)
+	require.True(t, ok)
+	require.Equal(t, uint64(1), fund.TopicId)
+	require.Equal(t, "allo1funder", fund.Funder)
+	require.True(t, fund.Amount.Equal(cosmosMath.NewInt(10)))
+	require.True(t, fund.NewRevenue.IsNil())
+	require.Equal(t, types.TopicFundSource_TOPIC_FUND_SOURCE_UNSPECIFIED, fund.Source)
+}
+
 func TestEmitNewTopicFeeRevenueDrippedEvent(t *testing.T) {
 	ctx := sdk.Context{}.WithEventManager(sdk.NewEventManager())
 	topicId := uint64(1)
@@ -2233,8 +2272,8 @@ func TestTopicRewardForfeitEventsEmitZeroAmount(t *testing.T) {
 		name  string
 		event proto.Message
 	}{
-		{"no reward nonce", types.NewTopicRewardForfeitedNoRewardNonceEventBase(1, 940, cosmosMath.ZeroInt())},
-		{"distribution failed", types.NewTopicRewardForfeitedDistributionFailedEventBase(1, 940, 930, cosmosMath.ZeroInt())},
+		{"no reward nonce", types.NewTopicRewardForfeitedEventBase(1, 940, types.TopicRewardForfeitReason_TOPIC_REWARD_FORFEIT_REASON_NO_REWARD_NONCE, 0, cosmosMath.ZeroInt())},
+		{"distribution failed", types.NewTopicRewardForfeitedEventBase(1, 940, types.TopicRewardForfeitReason_TOPIC_REWARD_FORFEIT_REASON_DISTRIBUTION_FAILED, 930, cosmosMath.ZeroInt())},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -2245,6 +2284,29 @@ func TestTopicRewardForfeitEventsEmitZeroAmount(t *testing.T) {
 			amount, ok := events[0].GetAttribute("amount")
 			require.True(t, ok, "amount is emitted")
 			require.Equal(t, `"0"`, amount.GetValue())
+		})
+	}
+}
+
+// The reward nonce is part of the forfeit event only for a failed distribution;
+// the constructor drops it for every other reason.
+func TestNewTopicRewardForfeitedEventBaseKeepsRewardNonceOnlyForDistributionFailed(t *testing.T) {
+	tests := []struct {
+		reason types.TopicRewardForfeitReason
+		want   int64
+	}{
+		{types.TopicRewardForfeitReason_TOPIC_REWARD_FORFEIT_REASON_UNSPECIFIED, 0},
+		{types.TopicRewardForfeitReason_TOPIC_REWARD_FORFEIT_REASON_NO_REWARD_NONCE, 0},
+		{types.TopicRewardForfeitReason_TOPIC_REWARD_FORFEIT_REASON_NONCE_READ_FAILED, 0},
+		{types.TopicRewardForfeitReason_TOPIC_REWARD_FORFEIT_REASON_DISTRIBUTION_FAILED, 930},
+	}
+	for _, tt := range tests {
+		t.Run(tt.reason.String(), func(t *testing.T) {
+			event, ok := types.NewTopicRewardForfeitedEventBase(1, 940, tt.reason, 930, cosmosMath.NewInt(5)).(*types.EventTopicRewardForfeited)
+			require.True(t, ok)
+			require.Equal(t, tt.want, event.RewardNonce)
+			require.Equal(t, tt.reason, event.Reason)
+			require.Equal(t, int64(940), event.Epoch)
 		})
 	}
 }

@@ -184,14 +184,23 @@ func ProcessAndStoreNetworkInferences(
 
 	types.EmitNewNetworkInferencesEvent(ctx, *networkInferencesResult.NetworkInferences)
 
-	// Emit packed network inference weight events
+	// Emit packed network inference weight events. When every inferer is new,
+	// the combined inference is a uniform average with no forecaster input, so
+	// the events report those applied weights, not the regret-informed values
+	// computed alongside them.
 	infererAddresses, infererWeights := buildSortedAddressWeights(networkInferencesResult.InfererToWeight)
 	if len(infererAddresses) > 0 {
+		if networkInferencesResult.AllInferersAreNew {
+			infererWeights = make([]alloraMath.Dec, len(infererAddresses))
+			for i := range infererWeights {
+				infererWeights[i] = alloraMath.OneDec()
+			}
+		}
 		types.EmitNewNetworkInferenceInfererWeightsSetEvent(ctx, topic.Id, nonce, infererAddresses, infererWeights)
 	}
 
 	forecasterAddresses, forecasterWeights := buildSortedAddressWeights(networkInferencesResult.ForecasterToWeight)
-	if len(forecasterAddresses) > 0 {
+	if len(forecasterAddresses) > 0 && !networkInferencesResult.AllInferersAreNew {
 		types.EmitNewNetworkInferenceForecasterWeightsSetEvent(ctx, topic.Id, nonce, forecasterAddresses, forecasterWeights)
 	}
 

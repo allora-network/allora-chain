@@ -396,11 +396,13 @@ func NewWorkerUnregisteredEventBase(topicId TopicId, worker string) proto.Messag
 	}
 }
 
-func NewFundTopicEventBase(topicId TopicId, funder string, amount math.Int) proto.Message {
+func NewFundTopicEventBase(topicId TopicId, funder string, amount, newRevenue math.Int, source TopicFundSource) proto.Message {
 	return &EventFundTopic{
-		TopicId: topicId,
-		Funder:  funder,
-		Amount:  amount,
+		TopicId:    topicId,
+		Funder:     funder,
+		Amount:     amount,
+		NewRevenue: newRevenue,
+		Source:     source,
 	}
 }
 
@@ -960,18 +962,17 @@ func NewReputerSubmissionWindowClosedEventBase(topicId TopicId, nonceBlockHeight
 	}
 }
 
-func NewTopicRewardForfeitedNoRewardNonceEventBase(topicId TopicId, epoch int64, amount math.Int) proto.Message {
-	return &EventTopicRewardForfeitedNoRewardNonce{
-		TopicId: topicId,
-		Epoch:   epoch,
-		Amount:  amount,
+// NewTopicRewardForfeitedEventBase builds the forfeit event. rewardNonce is kept
+// only for TOPIC_REWARD_FORFEIT_REASON_DISTRIBUTION_FAILED and is zero for every
+// other reason.
+func NewTopicRewardForfeitedEventBase(topicId TopicId, epoch int64, reason TopicRewardForfeitReason, rewardNonce int64, amount math.Int) proto.Message {
+	if reason != TopicRewardForfeitReason_TOPIC_REWARD_FORFEIT_REASON_DISTRIBUTION_FAILED {
+		rewardNonce = 0
 	}
-}
-
-func NewTopicRewardForfeitedDistributionFailedEventBase(topicId TopicId, epoch int64, rewardNonce int64, amount math.Int) proto.Message {
-	return &EventTopicRewardForfeitedDistributionFailed{
+	return &EventTopicRewardForfeited{
 		TopicId:     topicId,
 		Epoch:       epoch,
+		Reason:      reason,
 		RewardNonce: rewardNonce,
 		Amount:      amount,
 	}

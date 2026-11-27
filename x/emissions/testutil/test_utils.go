@@ -197,6 +197,10 @@ func (s *TestSuite) WithBlockHeight(height int64) {
 	s.ctx = s.ctx.WithBlockHeight(height)
 }
 
+func (s *TestSuite) WithEventManager(em sdk.EventManagerI) {
+	s.ctx = s.ctx.WithEventManager(em)
+}
+
 const (
 	multiPerm  = "multiple permissions account"
 	randomPerm = "random permission"

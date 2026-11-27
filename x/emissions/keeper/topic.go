@@ -815,24 +815,25 @@ func (k *TopicKeeper) GetTopicFeeRevenue(ctx context.Context, topicId TopicId) (
 	return feeRev, nil
 }
 
-// Add to the fee revenue collected by a topic
-func (k *TopicKeeper) AddTopicFeeRevenue(ctx context.Context, topicId TopicId, amount cosmosMath.Int) error {
+// Add amount to the fee revenue collected by a topic and return the stored total.
+// Adding zero leaves that total unchanged.
+func (k *TopicKeeper) AddTopicFeeRevenue(ctx context.Context, topicId TopicId, amount cosmosMath.Int) (cosmosMath.Int, error) {
 	if err := types.ValidateTopicId(topicId); err != nil {
-		return errorsmod.Wrap(err, "topic id validation failed")
+		return cosmosMath.Int{}, errorsmod.Wrap(err, "topic id validation failed")
 	}
 	if err := types.ValidateSdkIntRepresentingMonetaryValue(amount); err != nil {
-		return errorsmod.Wrap(err, "amount validation failed")
+		return cosmosMath.Int{}, errorsmod.Wrap(err, "amount validation failed")
 	}
 	topicFeeRevenue, err := k.GetTopicFeeRevenue(ctx, topicId)
 	if err != nil {
-		return errorsmod.Wrap(err, "error getting topic fee revenue")
+		return cosmosMath.Int{}, errorsmod.Wrap(err, "error getting topic fee revenue")
 	}
-	topicFeeRevenue = topicFeeRevenue.Add(amount)
-	if err = k.topicFeeRevenue.Set(ctx, topicId, topicFeeRevenue); err != nil {
-		return errorsmod.Wrap(err, "error setting topic fee revenue")
+	newTopicFeeRevenue := topicFeeRevenue.Add(amount)
+	if err = k.topicFeeRevenue.Set(ctx, topicId, newTopicFeeRevenue); err != nil {
+		return cosmosMath.Int{}, errorsmod.Wrap(err, "error setting topic fee revenue")
 	}
 
-	return nil
+	return newTopicFeeRevenue, nil
 }
 
 // Drop the fee revenue by the global Ecosystem bucket drip amount

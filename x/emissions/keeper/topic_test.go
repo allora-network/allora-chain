@@ -188,7 +188,7 @@ func (s *KeeperTestSuite) TestTopicGoesInactivateOnEpochEndBlockIfLowWeight() {
 	)
 
 	setTopicWeight := func(topicId uint64, revenue, stake int64) {
-		err := k.AddTopicFeeRevenue(s.Ctx(), topicId, cosmosMath.NewInt(revenue))
+		_, err := k.AddTopicFeeRevenue(s.Ctx(), topicId, cosmosMath.NewInt(revenue))
 		s.Require().NoError(err, "Adding topic fee revenue should not fail")
 		err = s.StakingKeeper().SetTopicStake(s.Ctx(), topicId, cosmosMath.NewInt(stake))
 		s.Require().NoError(err, "Setting topic stake should not fail")
@@ -362,7 +362,7 @@ func (s *KeeperTestSuite) TestGetTopicFeeRevenue() {
 	// Setup a topic with some revenue
 	initialRevenue := cosmosMath.NewInt(100)
 	initialRevenueInt := cosmosMath.NewInt(100)
-	err = k.AddTopicFeeRevenue(ctx, topicId, initialRevenue)
+	_, err = k.AddTopicFeeRevenue(ctx, topicId, initialRevenue)
 	s.Require().NoError(err, "Adding initial revenue should not fail")
 
 	// Test getting revenue for a topic with existing revenue
@@ -393,13 +393,22 @@ func (s *KeeperTestSuite) TestAddTopicFeeRevenue() {
 
 	// Add initial revenue
 	initialAmount := cosmosMath.NewInt(100)
-	err = k.AddTopicFeeRevenue(ctx, topicId, initialAmount)
+	added, err := k.AddTopicFeeRevenue(ctx, topicId, initialAmount)
 	s.Require().NoError(err, "Adding initial revenue should not fail")
+	s.Require().True(initialAmount.Equal(added), "the returned total is the amount added to an empty topic")
 
 	// Verify initial revenue
 	feeRev, err := k.GetTopicFeeRevenue(ctx, topicId)
 	s.Require().NoError(err, "Getting topic fee revenue should not fail")
 	s.Require().Equal(initialAmount, feeRev, "Initial revenue should be correctly recorded")
+
+	// Adding zero leaves the stored total unchanged and returns it.
+	unchanged, err := k.AddTopicFeeRevenue(ctx, topicId, cosmosMath.ZeroInt())
+	s.Require().NoError(err)
+	s.Require().True(initialAmount.Equal(unchanged))
+	feeRev, err = k.GetTopicFeeRevenue(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().True(initialAmount.Equal(feeRev))
 }
 
 // TOPIC REWARD NONCE
@@ -533,7 +542,7 @@ func (s *KeeperTestSuite) TestDripTopicFeeRevenue() {
 	require.NoError(err, "Activating the topic should not fail")
 
 	// Set up initial topic fee revenue
-	err = k.AddTopicFeeRevenue(ctx, topic.Id, initialRevenue)
+	_, err = k.AddTopicFeeRevenue(ctx, topic.Id, initialRevenue)
 	require.NoError(err, "Setting initial topic fee revenue should not fail")
 
 	// Calculate the blocks per week
@@ -683,7 +692,7 @@ func (s *KeeperTestSuite) TestDripTopicFeeRevenueWithTwoTopicsDifferentEpochLeng
 		err = k.ActivateTopic(ctx, topic.Id, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec())
 		require.NoError(err, "Activating the topic should not fail")
 
-		err = k.AddTopicFeeRevenue(ctx, topic.Id, initialRevenue)
+		_, err = k.AddTopicFeeRevenue(ctx, topic.Id, initialRevenue)
 		require.NoError(err, "Setting initial topic fee revenue should not fail")
 	}
 
@@ -742,7 +751,7 @@ func (s *KeeperTestSuite) TestRemoveTopicFromPreviousTopicWeights() {
 	// Add stake and fee revenue
 	err = s.StakingKeeper().AddReputerStake(ctx, topicId, reputerAddr, stakeAmount)
 	s.Require().NoError(err)
-	err = k.AddTopicFeeRevenue(ctx, topicId, feeRevenue)
+	_, err = k.AddTopicFeeRevenue(ctx, topicId, feeRevenue)
 	s.Require().NoError(err)
 
 	// Calculate and set initial weight
@@ -809,7 +818,8 @@ func (s *KeeperTestSuite) TestUpdateTopicWeightAfterStakeChangeEmitsStakeChangeE
 	s.Require().NoError(s.StakingKeeper().SetTopicStake(ctx, topicId, topicStake))
 	revenueBefore, err := k.GetTopicFeeRevenue(ctx, topicId)
 	s.Require().NoError(err)
-	s.Require().NoError(k.AddTopicFeeRevenue(ctx, topicId, addedRevenue))
+	_, err = k.AddTopicFeeRevenue(ctx, topicId, addedRevenue)
+	s.Require().NoError(err)
 	feeRevenue := revenueBefore.Add(addedRevenue)
 
 	// Expected weight from the setup: EMA of S^μ·R^ν against the previous weight,
@@ -950,7 +960,7 @@ func (s *KeeperTestSuite) TestUpdateTopicWeightAfterStakeChangeOnInactiveTopic()
 				err = k.ActivateTopic(ctx, topicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec())
 				s.Require().NoError(err)
 				tc.addStake(topicId)
-				err = k.AddTopicFeeRevenue(ctx, topicId, feeRevenue)
+				_, err = k.AddTopicFeeRevenue(ctx, topicId, feeRevenue)
 				s.Require().NoError(err)
 				weight, _, _, err := k.GetCurrentTopicWeight(
 					ctx, topicId, epochLength,
@@ -1027,7 +1037,7 @@ func (s *KeeperTestSuite) TestRemoveStakeFromInactiveTopicWhenSumIsSmaller() {
 	s.Require().NoError(err)
 	err = s.StakingKeeper().AddReputerStake(ctx, topicId, reputerAddr, stakeAmount)
 	s.Require().NoError(err)
-	err = k.AddTopicFeeRevenue(ctx, topicId, cosmosMath.NewInt(100))
+	_, err = k.AddTopicFeeRevenue(ctx, topicId, cosmosMath.NewInt(100))
 	s.Require().NoError(err)
 	weight, _, _, err := k.GetCurrentTopicWeight(
 		ctx, topicId, epochLength,
@@ -1264,7 +1274,8 @@ func (s *KeeperTestSuite) TestFailedEpochEndReactivationLeavesTopicCoherent() {
 	heavyTopicId := s.CreateTopic(testutil.WithEpochLength(20), testutil.WithWorkerSubmissionWindow(20))
 	lightTopicId := s.CreateTopic(testutil.WithEpochLength(10), testutil.WithWorkerSubmissionWindow(10))
 	setTopicWeight := func(topicId uint64, revenue, stake int64) {
-		s.Require().NoError(k.AddTopicFeeRevenue(ctx, topicId, cosmosMath.NewInt(revenue)))
+		_, err := k.AddTopicFeeRevenue(ctx, topicId, cosmosMath.NewInt(revenue))
+		s.Require().NoError(err)
 		s.Require().NoError(s.StakingKeeper().SetTopicStake(ctx, topicId, cosmosMath.NewInt(stake)))
 	}
 	setTopicWeight(heavyTopicId, 1_000_000, 1_000_000)
@@ -1420,7 +1431,8 @@ func (s *KeeperTestSuite) TestActivateTopicInactivatesStaleTopicRefusedAtNewBloc
 	s.Require().NoError(s.ParamsKeeper().SetParams(ctx, params))
 
 	setTopicWeight := func(topicId uint64, revenue, stake int64) {
-		s.Require().NoError(k.AddTopicFeeRevenue(ctx, topicId, cosmosMath.NewInt(revenue)))
+		_, err := k.AddTopicFeeRevenue(ctx, topicId, cosmosMath.NewInt(revenue))
+		s.Require().NoError(err)
 		s.Require().NoError(s.StakingKeeper().SetTopicStake(ctx, topicId, cosmosMath.NewInt(stake)))
 	}
 	storeWeight := func(topicId uint64) alloraMath.Dec {
@@ -1598,9 +1610,11 @@ func (s *KeeperTestSuite) TestActivateTopicLeavesUnscheduledTopicRefusedAtNewBlo
 
 	heavyTopicId := s.CreateTopic(testutil.WithEpochLength(20), testutil.WithWorkerSubmissionWindow(20))
 	lightTopicId := s.CreateTopic(testutil.WithEpochLength(10), testutil.WithWorkerSubmissionWindow(10))
-	s.Require().NoError(k.AddTopicFeeRevenue(ctx, heavyTopicId, cosmosMath.NewInt(1_000_000)))
+	_, err := k.AddTopicFeeRevenue(ctx, heavyTopicId, cosmosMath.NewInt(1_000_000))
+	s.Require().NoError(err)
 	s.Require().NoError(s.StakingKeeper().SetTopicStake(ctx, heavyTopicId, cosmosMath.NewInt(1_000_000)))
-	s.Require().NoError(k.AddTopicFeeRevenue(ctx, lightTopicId, cosmosMath.NewInt(10)))
+	_, err = k.AddTopicFeeRevenue(ctx, lightTopicId, cosmosMath.NewInt(10))
+	s.Require().NoError(err)
 	s.Require().NoError(s.StakingKeeper().SetTopicStake(ctx, lightTopicId, cosmosMath.NewInt(10)))
 
 	s.Require().NoError(k.ActivateTopic(ctx, heavyTopicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec()))
