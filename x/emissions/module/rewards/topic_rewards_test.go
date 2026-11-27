@@ -379,9 +379,8 @@ func (s *RewardsTestSuite) TestGetAndUpdateActiveTopicWeightsReportsEpochEvictio
 	s.Require().True(lowest.Weight.Equal(took.ThresholdWeight), "expected threshold %s, got %s", lowest.Weight.String(), took.ThresholdWeight.String())
 }
 
-// A reactivation attempt that errors inactivates the topic with no comparison to report:
-// with MaxActiveTopicsPerBlock at zero, an empty next block counts as full, has no lowest
-// topic to evict, and evicting the placeholder topic id fails.
+// An inconsistent full-block entry whose lowest-weight topic has no record forces
+// reactivation to fail during eviction while all module params remain valid.
 func (s *RewardsTestSuite) TestGetAndUpdateActiveTopicWeightsReportsReactivationError() {
 	topic := s.MockTopic()
 	topic.Id = 2
@@ -407,11 +406,18 @@ func (s *RewardsTestSuite) TestGetAndUpdateActiveTopicWeightsReportsReactivation
 	s.Require().NoError(s.TopicKeeper().SetTopic(s.Ctx(), topic.Id, topic))
 	s.Require().NoError(s.TopicKeeper().ActivateTopic(s.Ctx(), topic.Id, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec()))
 
-	params.MaxActiveTopicsPerBlock = 0
-	s.Require().NoError(params.Validate(), "zero must be a valid param for this path to be reachable")
-	s.Require().NoError(s.ParamsKeeper().SetParams(s.Ctx(), params))
-
 	block := int64(10)
+	nextBlock := block + topic.EpochLength
+	ghostTopicId := topic.Id + 1
+	ghostExists, err := s.TopicKeeper().TopicExists(s.Ctx(), ghostTopicId)
+	s.Require().NoError(err)
+	s.Require().False(ghostExists)
+	s.Require().NoError(s.TopicKeeper().SetBlockToActiveTopics(s.Ctx(), nextBlock, types.TopicIds{TopicIds: []uint64{ghostTopicId}}))
+	s.Require().NoError(s.TopicKeeper().SetBlockToLowestActiveTopicWeight(s.Ctx(), nextBlock, types.TopicIdWeightPair{
+		TopicId: ghostTopicId,
+		Weight:  alloraMath.ZeroDec(),
+	}))
+
 	s.WithBlockHeight(block)
 	em := sdk.NewEventManager()
 	weights, _, _, err := rewards.GetAndUpdateActiveTopicWeights(s.Ctx().WithEventManager(em), *s.EmissionsKeeper(), block)
