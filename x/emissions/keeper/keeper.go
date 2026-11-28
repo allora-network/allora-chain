@@ -15,6 +15,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
+	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
@@ -62,6 +63,11 @@ type Keeper struct {
 
 	// Current block emission, set by mint module
 	rewardCurrentBlockEmission collections.Item[cosmosMath.Int]
+
+	// Per-block reward emission divided by the total sum of topic weights,
+	// indexed by block height. Stored as a Fenwick tree so that sums over
+	// block ranges (e.g. a topic's epoch) can be computed in logarithmic time.
+	blockRewardsByTotalWeight FenwickTree
 
 	// NONCES
 	nonceKeeper *NonceKeeper
@@ -132,6 +138,7 @@ func NewKeeper(
 		weightsKeeper:                          wgk,
 		whitelistsKeeper:                       wlk,
 		rewardCurrentBlockEmission:             collections.NewItem(sb, types.RewardCurrentBlockEmissionKey, "reward_current_block_emission", sdk.IntValue),
+		blockRewardsByTotalWeight:              NewFenwickTree(sb, types.BlockRewardsByTotalWeightKey, "block_rewards_by_total_weight"),
 		countInfererInclusionsInTopicActiveSet: collections.NewMap(sb, types.CountInfererInclusionsInTopicKey, "count_inferer_inclusions_in_topic", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), collections.Uint64Value),
 		countForecasterInclusionsInTopicActiveSet: collections.NewMap(sb, types.CountForecasterInclusionsInTopicKey, "count_forecaster_inclusions_in_topic", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), collections.Uint64Value),
 		networkInferences:                         collections.NewMap(sb, types.NetworkInferencesKey, "network_inferences", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.ValueBundle](cdc)),
@@ -393,6 +400,20 @@ func (k Keeper) SetRewardCurrentBlockEmission(ctx context.Context, emission cosm
 		return errorsmod.Wrap(types.ErrInvalidValue, "current block emission reward cannot be negative")
 	}
 	return k.rewardCurrentBlockEmission.Set(ctx, emission)
+}
+
+// AppendBlockRewardByTotalWeight records the reward emission per unit of topic
+// weight for a block. Block heights must be appended in strictly increasing
+// order; blocks with a zero value may simply be skipped, as missing entries
+// count as zero when summing.
+func (k *Keeper) AppendBlockRewardByTotalWeight(ctx context.Context, blockHeight BlockHeight, rewardByTotalWeight alloraMath.Dec) error {
+	return k.blockRewardsByTotalWeight.Append(ctx, blockHeight, rewardByTotalWeight)
+}
+
+// SumBlockRewardsByTotalWeight sums the per-unit-weight reward emissions over
+// the block range [startBlock, endBlock).
+func (k *Keeper) SumBlockRewardsByTotalWeight(ctx context.Context, startBlock, endBlock BlockHeight) (alloraMath.Dec, error) {
+	return k.blockRewardsByTotalWeight.RangeSum(ctx, startBlock, endBlock)
 }
 
 func (k *Keeper) GetScoresKeeper() *ScoresKeeper {
